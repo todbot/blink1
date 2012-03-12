@@ -15,8 +15,6 @@
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
 #include "oddebug.h"        /* This is also an example for using debug macros */
-//#include "requests.h"       /* The custom request numbers we use */
-
 
 
 // this is the new world order
@@ -27,7 +25,7 @@
 #define PIN_USBP PB2   // pin7 == USB D+ must be PB2 / INT0
 #define PIN_USBM PB3   // pin2 == USB D-
 
-
+// 
 #define setRed(x) ( OCR1B = (x) )
 #define setGrn(x) ( OCR0A = 255 - (x) )
 #define setBlu(x) ( OCR0B = 255 - (x) )
@@ -53,16 +51,10 @@ PROGMEM char usbHidReportDescriptor[22] = {    /* USB report descriptor */
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x95, 0x08,                    //   REPORT_COUNT (8)
-    // 0x95, 0x01,                    //   REPORT_COUNT (1)
     0x09, 0x00,                    //   USAGE (Undefined)
     0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
     0xc0                           // END_COLLECTION
 };
-/* The descriptor above is a dummy only, it silences the drivers. The report
- * it describes consists of one byte of undefined data.
- * We don't transfer our data through HID reports, we use custom requests
- * instead.
- */
 
 /* ------------------------------------------------------------------------- */
 
@@ -222,9 +214,13 @@ void pwmInit(void)
 
 int main(void)
 {
-    uchar   i;
+    uint8_t i;
 
-    uchar   calibrationValue;
+    // Even if you don't use the watchdog, turn it off here. 
+    // On newer devices, watchdog status (on/off, period) is PRESERVED ON RESET!
+    wdt_enable(WDTO_1S);
+
+    uint8_t calibrationValue;
     calibrationValue = eeprom_read_byte(0); // calibration value from last time 
     if(calibrationValue != 0xff){
         OSCCAL = calibrationValue;
@@ -232,24 +228,17 @@ int main(void)
 
     pwmInit();
 
-    odDebugInit();
-    usbDeviceDisconnect();
-    for(i=0;i<30;i++){  // 300 ms disconnect 
-        _delay_ms(10);
-    }
-
-    wdt_enable(WDTO_1S);
-    odDebugInit();
     usbInit();
-    usbDeviceDisconnect();  // enforce re-enumeration
-
+    usbDeviceDisconnect();
     i = 0;
-    while(--i) {             // fake USB disconnect for > 250 ms 
+    while(--i){             // fake USB disconnect for > 250 ms 
         wdt_reset();
         _delay_ms(1);
+        setRGB(i,i,i);
     }
     usbDeviceConnect();
 
+    setRGB(0,0,0);
 
     sei();
     for(;;){                // main event loop 
