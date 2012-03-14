@@ -105,7 +105,8 @@ $(TARGET).bin:	$(OBJECTS)
 $(TARGET).hex:	$(TARGET).bin
 	rm -f $(TARGET).hex $(TARGET).eep.hex
 	avr-objcopy -j .text -j .data -O ihex $(TARGET).bin $(TARGET).hex
-	./checksize $(TARGET).bin 4096 256
+	avr-size --mcu=$(MCU) --format=avr $(TARGET).bin
+	#./checksize $(TARGET).bin 4096 256
 # do the checksize script as our last action to allow successful compilation
 # on Windows with WinAVR where the Unix commands will fail.
 

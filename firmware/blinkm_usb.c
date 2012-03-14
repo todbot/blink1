@@ -3,19 +3,22 @@
  * 
  * Originally from:
  * Project: hid-custom-rq example by  Christian Starkjohann
+ *
+ *
+ *
  */
+
 
 #include <avr/io.h>
 #include <avr/wdt.h>
-#include <avr/interrupt.h>  /* for sei() */
-#include <util/delay.h>     /* for _delay_ms() */
-#include <avr/eeprom.h>
-#include <string.h>
+#include <avr/interrupt.h>  // for sei() 
+#include <util/delay.h>     // for _delay_ms() 
+#include <string.h>         // for memcpy()
+#include <inttypes.h>
 
-#include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
-#include "oddebug.h"        /* This is also an example for using debug macros */
 
+#include "osccal.h"         // oscialltor calibration via USB 
 
 // this is the new world order
 #define PIN_RED	 PB4   // OCR1B == red    == PB4 == pin3
@@ -25,25 +28,44 @@
 #define PIN_USBP PB2   // pin7 == USB D+ must be PB2 / INT0
 #define PIN_USBM PB3   // pin2 == USB D-
 
-// 
+// ease of use functions 
 #define setRed(x) ( OCR1B = (x) )
 #define setGrn(x) ( OCR0A = 255 - (x) )
 #define setBlu(x) ( OCR0B = 255 - (x) )
 
-#define setRGB(x,y,z) { setRed(x); setGrn(y); setBlu(z); }
+#define setRGB(r,g,b) { setRed(r); setGrn(g); setBlu(b); }
+
+// needs "setRGB()" defined
+#include "color_funcs.h"
 
 
-/* The following variables store the status of the current data transfer */
-static uchar    currentAddress;
-static uchar    bytesRemaining;
+// ------------------------------------------------------------------------- 
 
-static uint8_t msgbuf[8];
+// for "millis()" function, a count of 0.256ms units
+static volatile uint32_t tick;
+//
+uint32_t millis(void)
+{
+    return tick/4;
+}
+// overflows every 0.256msec -> "millis" = ~tick/4
+ISR(SIG_OVERFLOW1,ISR_NOBLOCK)
+{
+    tick++;
+}
 
 /* ------------------------------------------------------------------------- */
 /* ----------------------------- USB interface ----------------------------- */
 /* ------------------------------------------------------------------------- */
 
-PROGMEM char usbHidReportDescriptor[22] = {    /* USB report descriptor */
+// The following variables store the status of the current data transfer 
+static uchar    currentAddress;
+static uchar    bytesRemaining;
+
+static uint8_t msgbuf[8];
+
+//
+PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor 
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
@@ -56,14 +78,28 @@ PROGMEM char usbHidReportDescriptor[22] = {    /* USB report descriptor */
     0xc0                           // END_COLLECTION
 };
 
-/* ------------------------------------------------------------------------- */
+// ------------------------------------------------------------------------- 
 
 //
 void handleMessage(void)
 {
-    setRed( msgbuf[0] );
-    setGrn( msgbuf[1] );
-    setBlu( msgbuf[2] );
+    uint8_t cmd = msgbuf[0];
+    
+    // command {'c', r,g,b, t, 0,0 } = fade to RGB color over time t
+    if( cmd == 'c' ) { 
+        rgb_t* c = (rgb_t*)(msgbuf+1);
+        int t = msgbuf[3];
+        rgb_setDest( c, t );
+    }
+    // command {'n', r,g,b, 0,0,0,0 } == set RGB color immediately
+    else if( cmd == 'n' ) { 
+        rgb_t* c = (rgb_t*)(msgbuf+1);
+        rgb_setDest( c, 0 );
+        rgb_setCurr( c );
+    }
+    else { 
+        
+    }
 }
 
 /* usbFunctionRead() is called when the host requests a chunk of data from
@@ -126,72 +162,10 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
 }
 
 
-/* ------------------------------------------------------------------------- */
-/* ------------------------ Oscillator Calibration ------------------------- */
-/* ------------------------------------------------------------------------- */
-
-/* Calibrate the RC oscillator to 8.25 MHz. The core clock of 16.5 MHz is
- * derived from the 66 MHz peripheral clock by dividing. Our timing reference
- * is the Start Of Frame signal (a single SE0 bit) available immediately after
- * a USB RESET. We first do a binary search for the OSCCAL value and then
- * optimize this value with a neighboorhod search.
- * This algorithm may also be used to calibrate the RC oscillator directly to
- * 12 MHz (no PLL involved, can therefore be used on almost ALL AVRs), but this
- * is wide outside the spec for the OSCCAL value and the required precision for
- * the 12 MHz clock! Use the RC oscillator calibrated to 12 MHz for
- * experimental purposes only!
- */
-static void calibrateOscillator(void)
-{
-    uchar       step = 128;
-    uchar       trialValue = 0, optimumValue;
-    int         x, optimumDev;
-    int         targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
-
-    /* do a binary search: */
-    do{
-        OSCCAL = trialValue + step;
-        x = usbMeasureFrameLength();  // proportional to current real frequency 
-        if(x < targetValue)           // frequency still too low 
-            trialValue += step;
-        step >>= 1;
-    }while(step > 0);
-    /* We have a precision of +/- 1 for optimum OSCCAL here */
-    /* now do a neighborhood search for optimum value */
-    optimumValue = trialValue;
-    optimumDev = x; /* this is certainly far away from optimum */
-    for(OSCCAL = trialValue - 1; OSCCAL <= trialValue + 1; OSCCAL++){
-        x = usbMeasureFrameLength() - targetValue;
-        if(x < 0)
-            x = -x;
-        if(x < optimumDev){
-            optimumDev = x;
-            optimumValue = OSCCAL;
-        }
-    }
-    OSCCAL = optimumValue;
-}
-/*
-Note: This calibration algorithm may try OSCCAL values of up to 192 even if
-the optimum value is far below 192. It may therefore exceed the allowed clock
-frequency of the CPU in low voltage designs!
-You may replace this search algorithm with any other algorithm you like if
-you have additional constraints such as a maximum CPU clock.
-For version 5.x RC oscillators (those with a split range of 2x128 steps, e.g.
-ATTiny25, ATTiny45, ATTiny85), it may be useful to search for the optimum in
-both regions.
-*/
-
-void usbEventResetReady(void)
-{
-    calibrateOscillator();
-    eeprom_write_byte(0, OSCCAL);   // store the calibrated value in EEPROM 
-}
-
-
 // ------------------------------------------------------------------------- 
 
-void pwmInit(void)
+//
+void timerInit(void)
 {
     //configure outputs on PB0, PB1, PB4 
     //DDRB = _BV(PB0) | _BV(PB1) | _BV(PB4); 
@@ -210,40 +184,56 @@ void pwmInit(void)
     GTCCR = _BV(PWM1B) | _BV(COM1B1); 
     //GTCCR = _BV(PWM1B) | _BV(COM1B1) | _BV(COM1B0); // why doesn't this work?
 
+
+    // create a "millis" by using Timer1 overflow interrupt
+    TIFR  |= _BV( TOV1 );
+    TIMSK |= _BV( TOIE1 );
 }
 
+uint32_t ledLastMillis;
+const uint32_t ledUpdateMillis = 10;
+//
+void updateLEDs(void)
+{
+    if( (millis() - ledLastMillis) > ledUpdateMillis ) { 
+        ledLastMillis = millis();
+        rgb_updateCurrent();
+    }
+}
+
+// ------------------------------------------------------------------------- 
+
+//
 int main(void)
 {
-    uint8_t i;
-
     // Even if you don't use the watchdog, turn it off here. 
     // On newer devices, watchdog status (on/off, period) is PRESERVED ON RESET!
     wdt_enable(WDTO_1S);
 
-    uint8_t calibrationValue;
-    calibrationValue = eeprom_read_byte(0); // calibration value from last time 
-    if(calibrationValue != 0xff){
-        OSCCAL = calibrationValue;
-    }
+    calibrationLoad();
 
-    pwmInit();
+    timerInit();
 
     usbInit();
     usbDeviceDisconnect();
-    i = 0;
+
+    sei();  // done already for us I think, but just in case.
+
+    uint8_t i = 0;
     while(--i){             // fake USB disconnect for > 250 ms 
         wdt_reset();
         _delay_ms(1);
-        setRGB(i,i,i);
+        setRGB(i,i,i);      // fade down for funx
     }
     usbDeviceConnect();
 
-    setRGB(0,0,0);
+    setRGB(0,0,0);          // start at black
 
     sei();
     for(;;){                // main event loop 
         wdt_reset();
         usbPoll();
+        updateLEDs();
     }
     return 0;
 }
