@@ -11,44 +11,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>    // for usleep()
-#include "hiddata.h"
-#include "../firmware/usbconfig.h"  /* for device VID, PID, vendor name and product name */
 
-/* ------------------------------------------------------------------------- */
+#include "blinkmusb-lib.h"
 
-static char *usbErrorMessage(int errCode)
-{
-static char buffer[80];
 
-    switch(errCode){
-        case USBOPEN_ERR_ACCESS:      return "Access to device denied";
-        case USBOPEN_ERR_NOTFOUND:    return "The specified device was not found";
-        case USBOPEN_ERR_IO:          return "Communication error with device";
-        default:
-            sprintf(buffer, "Unknown USB error %d", errCode);
-            return buffer;
-    }
-    return NULL;    /* not reached */
-}
+int millis = 500;
 
-static usbDevice_t  *openDevice(void)
-{
-usbDevice_t     *dev = NULL;
-unsigned char   rawVid[2] = {USB_CFG_VENDOR_ID}, rawPid[2] = {USB_CFG_DEVICE_ID};
-char            vendorName[] = {USB_CFG_VENDOR_NAME, 0}, productName[] = {USB_CFG_DEVICE_NAME, 0};
-int             vid = rawVid[0] + 256 * rawVid[1];
-int             pid = rawPid[0] + 256 * rawPid[1];
-int             err;
 
-    if((err = usbhidOpenDevice(&dev, vid, vendorName, pid, productName, 0)) != 0){
-        fprintf(stderr, "error finding %s: %s\n", productName, usbErrorMessage(err));
-        return NULL;
-    }
-    return dev;
-}
 
-/* ------------------------------------------------------------------------- */
+//---------------------------------------------------------------------------- 
 
 static void hexdump(char *buffer, int len)
 {
@@ -81,8 +54,9 @@ int     pos = 0;
     return pos;
 }
 
-/* ------------------------------------------------------------------------- */
+// --------------------------------------------------------------------------- 
 
+//
 static void usage(char *myName)
 {
     fprintf(stderr, "usage:\n");
@@ -90,22 +64,23 @@ static void usage(char *myName)
     fprintf(stderr, "  %s write <listofbytes>\n", myName);
 }
 
+//
 int main(int argc, char **argv)
 {
-usbDevice_t *dev;
-char        buffer[9];    /* room for dummy report ID */
-int         err;
-
- int millis = 100;
-
+    usbDevice_t *dev;
+    char        buffer[9];    /* room for dummy report ID */
+    int         err;
+    
     if(argc < 2){
         usage(argv[0]);
         exit(1);
     }
     char* cmd = argv[1];
 
-    if((dev = openDevice()) == NULL)
+
+    if((dev = blinkmusb_open()) == NULL)
         exit(1);
+
     if(strcasecmp(cmd, "read") == 0){
         int len = sizeof(buffer);
         if((err = usbhidGetReport(dev, 0, buffer, &len)) != 0){
@@ -120,32 +95,59 @@ int         err;
             pos += hexread(buffer + pos, argv[i], sizeof(buffer) - pos);
         }
 
-        if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0)  // add a dummy report ID 
+        // add a dummy report ID 
+        if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
             fprintf(stderr, "error writing data: %s\n", usbErrorMessage(err));
 
     }
     else if( strcasecmp(cmd, "random") == 0 ) {
-        while( 1 )  { 
-            buffer[0] = rand();
-            buffer[1] = rand();
-            buffer[2] = rand();
-            if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
-                fprintf(stderr,"error writing data: %s\n",usbErrorMessage(err));
-            usleep(millis * 1000 ); // sleep milliseconds
+        int fadeMillis = 1000;
+        while( 1 ) { 
+            uint8_t r = rand();
+            uint8_t g = rand();
+            uint8_t b = rand();
+            printf("%2.2x,%2.2x,%2.2x \n", r,g,b);
+
+            err = blinkmusb_fadeToRGB( dev, fadeMillis, r,g,b  );
+            if( err ) { // on error, do something, anything. come on.
+                break;
+            }
+            usleep( fadeMillis * 1000);
         }
     }
     else if( strcasecmp(cmd, "ramp") == 0 ) {
-        millis = 10;
+        uint8_t v = 0;
         while( 1 )  { 
-            buffer[0]++;
-            buffer[1]++;
-            buffer[2]++;
-            if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
-                fprintf(stderr,"error writing data: %s\n",usbErrorMessage(err));
+            err = blinkmusb_setRGB( dev, v,v,v );
+            if( err ) { // on error, do something, anything. come on.
+                break;
+            }
+            v++;
+            printf("%x,%x,%x \n", v,v,v);
+            usleep(millis/10 * 1000 ); // sleep milliseconds
+        }
+    }
+    else if( strcasecmp(cmd, "blink") == 0 ) {
+        uint8_t v = 0;
+        while( 1 )  { 
+            err = blinkmusb_setRGB( dev, v,v,v );
+            if( err )  // on error, do something, anything. come on.
+                break;
+
+            v = (v) ? 0 : 255;
+            millis = millis * 100 / 110;
+            if( millis < 10 ) millis = 250;
+
+            printf("%d: %x,%x,%x \n", millis, v,v,v );
             usleep(millis * 1000 ); // sleep milliseconds
         }
     }
-
+    else if( strcasecmp(cmd,"eeprom") == 0 ) {
+        buffer[1] = 'e';
+        if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
+            fprintf(stderr,"error writing data: %s\n",usbErrorMessage(err));
+        printf("done\n");
+    }
     else{
         usage(argv[0]);
         exit(1);
@@ -154,4 +156,3 @@ int         err;
     return 0;
 }
 
-/* ------------------------------------------------------------------------- */

@@ -79,10 +79,7 @@ program: flash
 #        | +------------------ CKOUT (clock output on CKOUT pin -> disabled)
 #        +-------------------- CKDIV8 (divide clock by 8 -> don't divide)
 fuse:
-# PLL
 	$(AVRDUDE) -U hfuse:w:$(FUSE_H):m -U lfuse:w:$(FUSE_L):m
-# non-PLL
-#	$(AVRDUDE) -U hfuse:w:0xdd:m -U lfuse:w:0xe2:m
 
 
 readfuse: getfuse

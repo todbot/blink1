@@ -34,7 +34,7 @@ rgbint_t step100x;  // the amount of to move each tick
 rgbint_t curr100x;  // the current color, times 10 (to lessen int trunc issue)
 int stepcnt;
 
-#ifndef setRGB(r,g,b)
+#ifndef setRGB
 #error "setRGB(r,g,b) not defined"
 #endif
 
@@ -50,11 +50,12 @@ void rgb_setCurr( rgb_t* newcolor )
 
 // set a new destination color
 void rgb_setDest( rgb_t* newcolor, int steps  )
-{ 
+{
     dest100x.r = newcolor->r*100;
     dest100x.g = newcolor->g*100;
     dest100x.b = newcolor->b*100;
-    stepcnt=steps+1;
+
+    stepcnt = steps+1;
 
     step100x.r = (dest100x.r - curr100x.r ) / steps;
     step100x.g = (dest100x.g - curr100x.g ) / steps;
@@ -64,7 +65,9 @@ void rgb_setDest( rgb_t* newcolor, int steps  )
 // call at every tick
 void rgb_updateCurrent(void)
 {
-    if( !stepcnt ) return;
+    if( !stepcnt ) {
+        return;
+    }
     stepcnt--;
     if( stepcnt ) {
         curr100x.r += step100x.r;

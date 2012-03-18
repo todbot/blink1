@@ -28,10 +28,19 @@
 #define PIN_USBP PB2   // pin7 == USB D+ must be PB2 / INT0
 #define PIN_USBM PB3   // pin2 == USB D-
 
+// blinkmusb_b0 prototype board had wrong LED part (adafruit vs todbot)
+#define BAD_B0_BOARD
+
 // ease of use functions 
+#ifdef BAD_B0_BOARD
+#define setRed(x) ( OCR0A = 255 - (x) )
+#define setGrn(x) ( OCR1B = (x) )
+#define setBlu(x) ( OCR0B = 255 - (x) )
+#else
 #define setRed(x) ( OCR1B = (x) )
 #define setGrn(x) ( OCR0A = 255 - (x) )
 #define setBlu(x) ( OCR0B = 255 - (x) )
+#endif
 
 #define setRGB(r,g,b) { setRed(r); setGrn(g); setBlu(b); }
 
@@ -39,19 +48,23 @@
 #include "color_funcs.h"
 
 
+uint32_t ledLastMillis;
+uint32_t ledUpdateMillis = 10;  // tick msec
+
 // ------------------------------------------------------------------------- 
 
 // for "millis()" function, a count of 0.256ms units
-static volatile uint32_t tick;
+volatile uint32_t tick;
 //
-uint32_t millis(void)
+static uint32_t millis(void)
 {
-    return tick/4;
+    return tick;
 }
-// overflows every 0.256msec -> "millis" = ~tick/4
-ISR(SIG_OVERFLOW1,ISR_NOBLOCK)
+// 8MHz w/clk/8: overflows 1000/(8e6/8/256) = 0.256msec -> "millis" = ~tick/4
+// 16.5MHz w/clk/64: overflows 1000/(16.5e6/64/256) = ~1 msec
+ISR(SIG_OVERFLOW1,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run still
 {
-    tick++;
+    tick++;  //
 }
 
 /* ------------------------------------------------------------------------- */
@@ -85,10 +98,11 @@ void handleMessage(void)
 {
     uint8_t cmd = msgbuf[0];
     
-    // command {'c', r,g,b, t, 0,0 } = fade to RGB color over time t
-    if( cmd == 'c' ) { 
-        rgb_t* c = (rgb_t*)(msgbuf+1);
-        int t = msgbuf[3];
+    // command {'c', r,g,b, th, tl,0 } = fade to RGB color over time t
+    // where time 't' is a number of 10msec ticks
+    if(      cmd == 'c' ) { 
+        rgb_t* c = (rgb_t*)(msgbuf+1); //msgbuf[1],msgbuf[2],msgbuf[3]
+        int t = (msgbuf[4] << 8) | msgbuf[5];
         rgb_setDest( c, t );
     }
     // command {'n', r,g,b, 0,0,0,0 } == set RGB color immediately
@@ -97,7 +111,10 @@ void handleMessage(void)
         rgb_setDest( c, 0 );
         rgb_setCurr( c );
     }
-    else { 
+    else if( cmd == 'e' ) {  // FIXME: not complete
+        msgbuf[0] = eeprom_read_byte(0);
+    }
+    else {
         
     }
 }
@@ -144,6 +161,7 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
     // HID class request 
     if((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS) {
         // wValue: ReportType (highbyte), ReportID (lowbyte)
+        //uint8_t rid = rq->wValue.bytes[0];  // report Id
         if(rq->bRequest == USBRQ_HID_GET_REPORT){  
             // since we have only one report type, we can ignore the report-ID
             bytesRemaining = 8;
@@ -176,9 +194,11 @@ void timerInit(void)
         _BV(COM0A1) | _BV(COM0A0) | 
         _BV(COM0B1) | _BV(COM0B0);
     
-    TCCR0B = _BV(CS01); //Timer0 prescaler /8 
+    //TCCR0B = _BV(CS01); //Timer0 prescaler /8  (8kHz freq at 16.5MHz)
+    TCCR0B = _BV(CS01)|_BV(CS00); //Timer0 prescaler /64 (1kHz freq @ 16.5MHz)
 
-    TCCR1 = _BV(CS12);  //Timer1 prescaler /8 
+    //TCCR1 = _BV(CS12);  //Timer1 prescaler /8 (8kHz freq at 16.5MHz)
+    TCCR1 = _BV(CS12)|_BV(CS11)|_BV(CS10);  //Timer1 prescaler /8 (1kHz)
     //PWM1B = enable PWM on OCR1B 
     //COM1B1 = clear on compare match, set when 
     GTCCR = _BV(PWM1B) | _BV(COM1B1); 
@@ -190,13 +210,12 @@ void timerInit(void)
     TIMSK |= _BV( TOIE1 );
 }
 
-uint32_t ledLastMillis;
-const uint32_t ledUpdateMillis = 10;
 //
-void updateLEDs(void)
+static void updateLEDs(void)
 {
-    if( (millis() - ledLastMillis) > ledUpdateMillis ) { 
-        ledLastMillis = millis();
+    uint32_t now = millis();
+    if( (now - ledLastMillis) >= ledUpdateMillis ) { 
+        ledLastMillis = now;
         rgb_updateCurrent();
     }
 }
@@ -206,9 +225,7 @@ void updateLEDs(void)
 //
 int main(void)
 {
-    // Even if you don't use the watchdog, turn it off here. 
-    // On newer devices, watchdog status (on/off, period) is PRESERVED ON RESET!
-    wdt_enable(WDTO_1S);
+    wdt_enable(WDTO_1S);  // watchdog status is preserved on reset
 
     calibrationLoad();
 
@@ -216,8 +233,6 @@ int main(void)
 
     usbInit();
     usbDeviceDisconnect();
-
-    sei();  // done already for us I think, but just in case.
 
     uint8_t i = 0;
     while(--i){             // fake USB disconnect for > 250 ms 
@@ -227,9 +242,11 @@ int main(void)
     }
     usbDeviceConnect();
 
-    setRGB(0,0,0);          // start at black
-
     sei();
+
+    rgb_t cBlack = {0x00,0x00,0x00};
+    rgb_setCurr( &cBlack );
+
     for(;;){                // main event loop 
         wdt_reset();
         usbPoll();
@@ -237,5 +254,30 @@ int main(void)
     }
     return 0;
 }
+
+
+
+    /*
+    rgb_t cBlack = {0x00,0x00,0x00};
+    rgb_t cWhite = {0xff,0xff,0xff};
+    rgb_t cRed =   {0xff,0x00,0x00};
+    rgb_t cBlue =  {0x00,0x00,0xff};
+
+    while( 1 ) { 
+
+        rgb_setCurr(&cBlue);
+
+        while( (millis() - ledLastMillis) < 1000 ) { wdt_reset(); }
+        ledLastMillis = millis();
+
+        rgb_setCurr(&cBlack);
+
+        while( (millis() - ledLastMillis) < 1000 ) { wdt_reset(); }
+        ledLastMillis = millis();
+    }
+    
+    */
+    
+
 
 // -eof-

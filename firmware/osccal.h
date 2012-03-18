@@ -3,6 +3,7 @@
 
 #include <avr/eeprom.h>
 
+const uint8_t EEPROM_ADDR_OSCCAL = 0;
 
 /* ------------------------------------------------------------------------- */
 /* ------------------------ Oscillator Calibration ------------------------- */
@@ -12,7 +13,8 @@
 static void calibrationLoad(void)
 {
     uint8_t calibrationValue;
-    calibrationValue = eeprom_read_byte(0); // calibration value from last time 
+    // calibration value from last time 
+    calibrationValue = eeprom_read_byte(EEPROM_ADDR_OSCCAL); 
     if(calibrationValue != 0xff){
         OSCCAL = calibrationValue;
     }
@@ -73,7 +75,8 @@ both regions.
 void usbEventResetReady(void)
 {
     calibrateOscillator();
-    eeprom_write_byte(0, OSCCAL);   // store the calibrated value in EEPROM 
+    // store the calibrated value in EEPROM 
+    eeprom_write_byte(EEPROM_ADDR_OSCCAL, OSCCAL);
 }
 
 #endif
