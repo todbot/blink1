@@ -19,6 +19,7 @@
 
 int millis = 500;
 
+int fadeMillis = 500;
 
 
 //---------------------------------------------------------------------------- 
@@ -62,6 +63,10 @@ static void usage(char *myName)
     fprintf(stderr, "usage:\n");
     fprintf(stderr, "  %s read\n", myName);
     fprintf(stderr, "  %s write <listofbytes>\n", myName);
+    fprintf(stderr, "  %s blink \n", myName);
+    fprintf(stderr, "  %s random \n", myName);
+    fprintf(stderr, "  %s rgb <red>,<green>,<blue> \n", myName);
+
 }
 
 //
@@ -88,7 +93,8 @@ int main(int argc, char **argv)
         }else{
             hexdump(buffer + 1, sizeof(buffer) - 1);
         }
-    }else if(strcasecmp(cmd, "write") == 0){
+    }
+    else if(strcasecmp(cmd, "write") == 0){
         int i, pos;
         memset(buffer, 0, sizeof(buffer));
         for(pos = 1, i = 2; i < argc && pos < sizeof(buffer); i++){
@@ -100,8 +106,17 @@ int main(int argc, char **argv)
             fprintf(stderr, "error writing data: %s\n", usbErrorMessage(err));
 
     }
+    else if( strcasecmp(cmd, "rgb") == 0 ) { 
+        char colbuf[8];  // 5 more than we need  //FIXME: make uint8_t
+        hexread(colbuf, argv[2], sizeof(colbuf));  // cmd w/ hexlist arg
+        printf("setting rgb: %2.2x,%2.2x,%2.2x\n", 
+               (uint8_t)colbuf[0], (uint8_t)colbuf[1], (uint8_t)colbuf[2]);
+        err = blinkmusb_fadeToRGB(dev,fadeMillis,colbuf[0],colbuf[1],colbuf[2]);
+        if( err ) { // on error, do something, anything. come on.
+            printf("error on fadeToRGB\n");
+        }
+    }
     else if( strcasecmp(cmd, "random") == 0 ) {
-        int fadeMillis = 1000;
         while( 1 ) { 
             uint8_t r = rand();
             uint8_t g = rand();

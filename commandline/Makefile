@@ -40,13 +40,13 @@ ifeq "$(OS)" "macosx"
 #USBFLAGS=   `libusb-config --cflags`
 #USBLIBS=    `libusb-config --libs`
 LIBUSB_CONFIG=/opt/local/bin/libusb-legacy-config
-#LIBUSB_CONFIG=libusb-config
+#LIBUSB_CONFIG=/opt/local/bin/libusb-config
 # Use the following 3 lines on Unix (uncomment the framework on Mac OS X):
 USBFLAGS = `$(LIBUSB_CONFIG) --cflags` 
 USBLIBS = `$(LIBUSB_CONFIG) --libs`
 EXE_SUFFIX=
 
-CFLAGS=			-O -Wall $(USBFLAGS) -I./mongoose -pthread -g
+CFLAGS=			-O -Wall $(USBFLAGS) -I./mongoose -I../firmware -pthread -g
 LIBS=			$(USBLIBS) 
 
 endif
@@ -57,7 +57,7 @@ USBFLAGS=
 USBLIBS=    -lhid -lsetupapi 
 EXE_SUFFIX= .exe
 
-CFLAGS=			-O -Wall $(USBFLAGS) -I./mongoose -mthreads
+CFLAGS=			-O -Wall $(USBFLAGS) -I./mongoose -I../firmware -mthreads
 LIBS=			$(USBLIBS) -lws2_32 -ladvapi32
 
 endif
