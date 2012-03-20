@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 #include "hiddata.h"
-#include "../firmware/usbconfig.h"  //for VID, PID, vendor name & product name 
+#include "usbconfig.h"  //for VID, PID, vendor name & product name 
 
 usbDevice_t* blinkmusb_open(void);
 void blinkmusb_close( usbDevice_t* dev );

@@ -1,3 +1,9 @@
+//
+//
+//
+//
+//
+//
 
 #include "blinkmusb-lib.h"
 
@@ -19,7 +25,8 @@ usbDevice_t* blinkmusb_open(void)
     int             pid = rawPid[0] + 256 * rawPid[1];
     int             err;
 
-    if((err = usbhidOpenDevice(&dev, vid, vendorName, pid, productName, 0)) != 0){
+    //if((err = usbhidOpenDevice(&dev, vid,pid, vendorName, productName, 0)) != 0){
+    if((err = usbhidOpenDevice(&dev, vid,pid, NULL,NULL, 0)) != 0){
         fprintf(stderr, "error finding %s: %s\n", productName, usbErrorMessage(err));
         return NULL;
     }

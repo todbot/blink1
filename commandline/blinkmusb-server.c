@@ -1,7 +1,13 @@
+//
+//
+//
+//
+//
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #include "mongoose.h"
 
 #include "blinkmusb-lib.h"
@@ -52,9 +58,7 @@ static void *callback(enum mg_event event,
                 } else {
                     if( blinkmusb_fadeToRGB( dev, 100, r,g,b ) != 0 ) { 
                         sprintf(result, "(%x) fadeToRGB: couldn't find blinkmusb", dev);
-                        //blinkmusb_close(dev);
-                        //usb_close(dev);
-                        dev = NULL; // can't do close, it's already closed?
+                        blinkmusb_close(dev);
                     }
                 }
             }

@@ -1,11 +1,8 @@
-/* Name: hidtool.c
- * Project: hid-data example
- * Author: Christian Starkjohann
- * Creation Date: 2008-04-11
- * Tabsize: 4
- * Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
- * License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
- * This Revision: $Id$
+/* 
+ * blinkmusb-tool.c --
+ *
+ *
+ *
  */
 
 #include <stdio.h>
@@ -19,7 +16,7 @@
 
 int millis = 500;
 
-int fadeMillis = 500;
+int fadeMillis = 100;
 
 
 //---------------------------------------------------------------------------- 

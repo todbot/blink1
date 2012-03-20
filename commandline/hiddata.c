@@ -205,7 +205,7 @@ int     rval, i;
     return i-1;
 }
 
-int usbhidOpenDevice(usbDevice_t **device, int vendor, char *vendorName, int product, char *productName, int _usesReportIDs)
+int usbhidOpenDevice(usbDevice_t **device, int vendor, int product, char *productName, char *vendorName, int _usesReportIDs)
 {
 struct usb_bus      *bus;
 struct usb_device   *dev;
