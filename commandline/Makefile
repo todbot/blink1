@@ -137,7 +137,7 @@ jar: javac jni java
 
 
 processing: processinglib
-processinglib: java
+processinglib: jar
 	rm -f blinkmusb.zip
 	mkdir -p blinkmusb/library
 	cp packaging/processing-export.txt blinkmusb/library/export.txt
