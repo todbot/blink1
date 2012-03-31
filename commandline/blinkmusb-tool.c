@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     if(strcasecmp(cmd, "read") == 0){
         int len = sizeof(buffer);
         if((err = usbhidGetReport(dev, 0, buffer, &len)) != 0){
-            fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
+            fprintf(stderr,"error reading data: %s\n",blinkmusb_error_msg(err));
         }else{
             hexdump(buffer + 1, sizeof(buffer) - 1);
         }
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 
         // add a dummy report ID 
         if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
-            fprintf(stderr, "error writing data: %s\n", usbErrorMessage(err));
+            fprintf(stderr, "error writing data: %s\n", blinkmusb_error_msg(err));
 
     }
     else if( strcasecmp(cmd, "rgb") == 0 ) { 
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     else if( strcasecmp(cmd,"eeprom") == 0 ) {
         buffer[1] = 'e';
         if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
-            fprintf(stderr,"error writing data: %s\n",usbErrorMessage(err));
+            fprintf(stderr,"error writing data: %s\n",blinkmusb_error_msg(err));
         printf("done\n");
     }
     else{

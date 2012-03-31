@@ -47,8 +47,8 @@ static void *callback(enum mg_event event,
                 uint8_t r = ((rgbval >> 16) & 0xff);
                 uint8_t g = ((rgbval >>  8) & 0xff);
                 uint8_t b = ((rgbval >>  0) & 0xff);
-                sprintf(result, "(%x) setrgb: %x = %d,%d,%d", 
-                        dev, rgbval, r,g,b );
+                sprintf(result, "setrgb: %x = %d,%d,%d", 
+                        rgbval, r,g,b );
                 
                 if( dev==NULL ) {    // first run
                     dev = blinkmusb_open();
@@ -57,7 +57,7 @@ static void *callback(enum mg_event event,
                     sprintf(result,"no blinkmusb");
                 } else {
                     if( blinkmusb_fadeToRGB( dev, 100, r,g,b ) != 0 ) { 
-                        sprintf(result, "(%x) fadeToRGB: couldn't find blinkmusb", dev);
+                        sprintf(result, "fadeToRGB: couldn't find blinkmusb");
                         blinkmusb_close(dev);
                     }
                 }
