@@ -14,7 +14,7 @@ typedef IOHIDDeviceRef usbDevice_t;
 
 usbDevice_t* blinkmusb_open(void);
 void blinkmusb_close( usbDevice_t* dev );
-int blinkmusb_write(void *buf, int len, double timeout);
+int blinkmusb_write( usbDevice_t* dev, void *buf, int len, double timeout);
 
 int blinkmusb_fadeToRGB(usbDevice_t *dev, int fadeMillis,
                                uint8_t r, uint8_t g, uint8_t b );

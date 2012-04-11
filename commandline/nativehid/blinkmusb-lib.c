@@ -14,40 +14,26 @@
 #include <string.h>
 #include <unistd.h>
 
-// USB Access Functions
-/*
-int blnkmusb_open(void);
-int blinkmusb_write(void *buf, int len, double timeout);
-void blinkmusb_close(void);
-int hard_reboot(void);
-*/
 // Misc stuff
 int printf_verbose(const char *format, ...);
-void delay(double seconds);
 int verbose = 3;
 
 
-/****************************************************************/
-/*                                                              */
-/*             USB Access - Apple's IOKit, Mac OS-X             */
-/*                                                              */
-/****************************************************************/
 
 int blinkmusb_fadeToRGB(usbDevice_t *dev, int fadeMillis,
                         uint8_t r, uint8_t g, uint8_t b )
 {
-    char buffer[9];
+    char buffer[8];
     int dms = fadeMillis/10;
 
-    buffer[0] = 0;
-    buffer[1] = 'c';
-    buffer[2] = r;
-    buffer[3] = g;
-    buffer[4] = b;
-    buffer[5] = (dms >> 8);
-    buffer[6] = dms % 0xff;
+    buffer[0] = 'c';
+    buffer[1] = r;
+    buffer[2] = g;
+    buffer[3] = b;
+    buffer[4] = (dms >> 8);
+    buffer[5] = dms % 0xff;
     
-    int err = blinkmusb_write( buffer, sizeof(buffer), 100 );
+    int err = blinkmusb_write( dev, buffer, sizeof(buffer), 100 );
 
     return err;  // FIXME: remove fprintf
 }
@@ -61,11 +47,17 @@ int blinkmusb_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
     buffer[2] = g;
     buffer[3] = b;
     
-    int err = blinkmusb_write( buffer, sizeof(buffer), 100 );
+    int err = blinkmusb_write( dev, buffer, sizeof(buffer), 100 );
 
     return err;  // FIXME: remove fprintf
 }
 
+
+/****************************************************************/
+/*                                                              */
+/*             USB Access - Apple's IOKit, Mac OS-X             */
+/*                                                              */
+/****************************************************************/
 
 #if defined(USE_APPLE_IOKIT)
 
@@ -215,7 +207,7 @@ usbDevice_t* blinkmusb_open(void)
 }
 
 //
-int blinkmusb_write( void* buf, int len, double timeout)
+int blinkmusb_write( usbDevice_t* dev, void* buf, int len, double timeout)
 {
 	IOReturn ret;
 
@@ -223,12 +215,12 @@ int blinkmusb_write( void* buf, int len, double timeout)
 	// IOHIDDeviceSetReportWithCallback is not implemented
 	// even though Apple documents it with a code example!
 	// submitted to Apple on 22-sep-2009, problem ID 7245050
-	if (!iokit_blinkmusb_reference) return 0;
+	if (!iokit_blinkmusb_reference) return -1;
 	ret = IOHIDDeviceSetReport( iokit_blinkmusb_reference,
                                 kIOHIDReportTypeOutput, 0,  // <- reportid
                                 buf, len);
-	if (ret == kIOReturnSuccess) return 1;
-	return 0;
+	if (ret == kIOReturnSuccess) return 0;
+	return ret;
 }
 
 //
@@ -236,7 +228,7 @@ int blinkmusb_read( void* buf, int len, double timeout)
 {
 	IOReturn ret;
     CFIndex len2= len;
-	if (!iokit_blinkmusb_reference) return 0;
+	if (!iokit_blinkmusb_reference) return -1;
     ret = IOHIDDeviceGetReport( iokit_blinkmusb_reference,
                                 kIOHIDReportTypeInput, 0,  // <- reportid
                                 buf, &len2);
