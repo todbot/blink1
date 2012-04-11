@@ -10,9 +10,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static usbDevice_t* blinkmusbs[16];
+static int blinkmusbs_inuse[16];
+static int blinkmusbs_count = 0;
+
+//
+usbDevice_t* blinkmusb_getDevice(int i)
+{
+    return blinkmusbs[i];
+}
 
 //----------------------------------------------------------------------------
 
+//
 int blinkmusb_openstatic(usbDevice_t **dev)
 {
     unsigned char   rawVid[2] = {USB_CFG_VENDOR_ID}, 
@@ -21,6 +31,22 @@ int blinkmusb_openstatic(usbDevice_t **dev)
     int             pid = rawPid[0] + 256 * rawPid[1];
 
     return usbhidOpenDevice(dev, vid,pid, NULL,NULL, 0);
+}
+
+//
+int blinkmusb_openall(void)
+{
+    unsigned char   rawVid[2] = {USB_CFG_VENDOR_ID}, 
+        rawPid[2] = {USB_CFG_DEVICE_ID};
+    int             vid = rawVid[0] + 256 * rawVid[1];
+    int             pid = rawPid[0] + 256 * rawPid[1];
+
+    for( int i=0; i< 16; i++) { 
+        blinkmusbs[i] = NULL;
+        blinkmusbs_inuse[i] = 0;
+    }
+    int err =  usbhidOpenAllDevices(blinkmusbs, &blinkmusbs_count, vid,pid, 0);
+    return err;
 }
 
 //
@@ -47,27 +73,15 @@ void blinkmusb_close( usbDevice_t* dev )
 {
     usbhidCloseDevice(dev);
     dev = NULL;
+    // FIXME: search through blinkmusbs list to zot it too?
 }
 
 //
-int blinkmusb_command(usbDevice_t* dev, int num_send, int num_recv,
-                       uint8_t* buf_send, uint8_t* buf_recv )
+int blinkmusb_write( usbDevice_t* dev, void* buf, int len, double timeout)
 {
-    if( dev==NULL ) {
-        return -1; // BLINKMUSB_ERR_NOTOPEN;
-    }
-    int err = 0;
-    if( (err = usbhidSetReport(dev, (char*)buf_send, num_send)) != 0) {
+    int err;
+    if( (err = usbhidSetReport(dev, buf, len) != 0) ) {
         fprintf(stderr,"error writing data: %s\n",blinkmusb_error_msg(err));
-        return err;
-    }
-     
-    if( num_recv > 0 ) { 
-        int len = num_recv;
-        if((err = usbhidGetReport(dev, 0, (char*)buf_recv, &len)) != 0) {
-            fprintf(stderr,"error reading data: %s\n",blinkmusb_error_msg(err));
-        } else {  // it was good
-        }
     }
     return err;
 }
@@ -139,3 +153,27 @@ char *blinkmusb_error_msg(int errCode)
     return NULL;    /* not reached */
 }
 
+/*
+//
+int blinkmusb_command(usbDevice_t* dev, int num_send, int num_recv,
+                       uint8_t* buf_send, uint8_t* buf_recv )
+{
+    if( dev==NULL ) {
+        return -1; // BLINKMUSB_ERR_NOTOPEN;
+    }
+    int err = 0;
+    if( (err = usbhidSetReport(dev, (char*)buf_send, num_send)) != 0) {
+        fprintf(stderr,"error writing data: %s\n",blinkmusb_error_msg(err));
+        return err;
+    }
+     
+    if( num_recv > 0 ) { 
+        int len = num_recv;
+        if((err = usbhidGetReport(dev, 0, (char*)buf_recv, &len)) != 0) {
+            fprintf(stderr,"error reading data: %s\n",blinkmusb_error_msg(err));
+        } else {  // it was good
+        }
+    }
+    return err;
+}
+*/

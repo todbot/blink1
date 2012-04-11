@@ -35,6 +35,8 @@ typedef struct usbDevice    usbDevice_t;
 
 /* ------------------------------------------------------------------------ */
 
+int usbhidOpenAllDevices( usbDevice_t* devices[], int* devices_len, int vendor, int product, int _usesReportIDs);
+
 int usbhidOpenDevice(usbDevice_t **device, int vendorID, int productID, char *vendorName, char *productName, int usesReportIDs);
 //int usbhidOpenDevice(usbDevice_t **device, int vendorID, char *vendorName, int productID, char *productName, int usesReportIDs);
 /* This function opens a USB device. 'vendorID' and 'productID' are the numeric

@@ -10,6 +10,10 @@
 # Please read the definitions below and edit them as appropriate for your
 # system:
 
+
+LIBHID_STYLE=obdev
+#LIBHID_STYLE=native
+
 UNAME ?=$(shell uname)
 
 ifeq "$(UNAME)" "Darwin"
@@ -54,12 +58,19 @@ USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3-
 USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
 EXE_SUFFIX=
 
+
 # to build libusb-legacy for universal on Lion do:
 #  sudo port install libusb-legacy configure.compiler=llvm-gcc-4.2  +universal
 ARCHS=   -arch i386 -arch x86_64
-CFLAGS=	 -O -Wall $(USBFLAGS) $(ARCHS)
+CFLAGS=	 $(USBFLAGS) $(ARCHS)
 CFLAGS+=  -I./mongoose -I../firmware -pthread -g 
 LIBS=	 $(USBLIBS) $(ARCHS)
+
+ifeq "$(LIBHID_STYLE)" "obdev"
+CFLAGS+=  -I./libhid_obdevstyle
+else
+CFLAGS+=  -I./nativehid
+endif
 
 #OS_CFLAGS = -g -O2 -D_BSD_SOURCE -bundle 
 #OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6
@@ -84,10 +95,11 @@ endif
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
 USBFLAGS= 
+
 USBLIBS=    -lhid -lsetupapi 
 EXE_SUFFIX= .exe
 
-CFLAGS=	 -O -Wall $(USBFLAGS) -I./mongoose -I../firmware -mthreads
+CFLAGS=	 $(USBFLAGS) -I./mongoose -I../firmware -mthreads
 
 LIBS=	 $(USBLIBS) -lws2_32 -ladvapi32
 
@@ -97,7 +109,7 @@ endif
 
 INCLUDES = -I. $(JAVAINCLUDE) $(JAVANATINC) 
 
-CFLAGS += $(INCLUDES)
+CFLAGS += $(INCLUDES) -O -Wall -std=gnu99 
 
 OBJ=		blinkmusb-lib.o hiddata.o 
 PROGRAM1=	blinkmusb-tool$(EXE_SUFFIX)
@@ -109,7 +121,7 @@ PROGRAM2=   blinkmusb-server$(EXE_SUFFIX)
 all: $(PROGRAM1) $(PROGRAM2) processing
 
 $(PROGRAM1): $(OBJ) blinkmusb-tool.o
-	$(CC) -o $(PROGRAM1) blinkmusb-tool.o $(OBJ)  $(LIBS)
+	$(CC) -o $(PROGRAM1) blinkmusb-tool.o $(CFLAGS) $(OBJ)  $(LIBS)
 
 $(PROGRAM2): $(OBJ) blinkmusb-server.o
 	$(CC) -o $(PROGRAM2) blinkmusb-server.o mongoose/mongoose.c $(OBJ)  $(LIBS)
@@ -150,7 +162,8 @@ processinglib: jar
 
 
 .c.o:
-	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
+	$(CC) $(CFLAGS) -c $*.c -o $*.o
+#	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
 
 strip: $(PROGRAM1) $(PROGRAM2)
 	strip $(PROGRAM1)
@@ -158,7 +171,7 @@ strip: $(PROGRAM1) $(PROGRAM2)
 
 clean:
 	rm -f $(OBJ) $(PROGRAM1) $(PROGRAM2) *.o *.a *.dll *jnilib 
-	rm thingm/blinkm/BlinkMUSB.class
+	rm -f thingm/blinkm/BlinkMUSB.class
 
 distclean:
 	rm -rf blinkmusb

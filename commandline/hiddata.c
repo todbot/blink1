@@ -174,6 +174,7 @@ BOOLEAN rval = 0;
 
 
 static int  usesReportIDs;
+static int          didUsbInit = 0;
 
 /* ------------------------------------------------------------------------- */
 
@@ -205,13 +206,54 @@ int     rval, i;
     return i-1;
 }
 
+//
+int usbhidOpenAllDevices( usbDevice_t* devices[], int* devices_len, int vendor, int product, int _usesReportIDs)
+{
+    struct usb_bus      *bus;
+    struct usb_device   *dev;
+    usb_dev_handle      *handle = NULL;
+    int                 errorCode = USBOPEN_ERR_NOTFOUND;
+    int dev_cnt = 0;
+
+    usesReportIDs = _usesReportIDs;
+
+    if(!didUsbInit){
+        usb_init();
+        didUsbInit = 1;
+    }
+    usb_find_busses();
+    usb_find_devices();
+    for(bus=usb_get_busses(); bus; bus=bus->next){
+        for(dev=bus->devices; dev; dev=dev->next){
+            if(dev->descriptor.idVendor == vendor && dev->descriptor.idProduct == product){
+                handle = usb_open(dev); // need to open device to query strings
+                if(!handle){
+                    errorCode = USBOPEN_ERR_ACCESS;
+                    fprintf(stderr, "Warning: cannot open USB device: %s\n", usb_strerror());
+                    continue;
+                }
+                else {
+                    //*device = (void *)handle;
+                    devices[dev_cnt] = (void*) handle;
+                    dev_cnt++;
+                    errorCode = 0;
+                }
+
+            }
+        }
+    }
+
+    *devices_len = dev_cnt;
+    return errorCode;
+}
+
 int usbhidOpenDevice(usbDevice_t **device, int vendor, int product, char *productName, char *vendorName, int _usesReportIDs)
 {
 struct usb_bus      *bus;
 struct usb_device   *dev;
 usb_dev_handle      *handle = NULL;
 int                 errorCode = USBOPEN_ERR_NOTFOUND;
-static int          didUsbInit = 0;
+//static int          didUsbInit = 0;
 
     if(!didUsbInit){
         usb_init();
