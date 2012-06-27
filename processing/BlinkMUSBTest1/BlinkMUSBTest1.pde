@@ -21,7 +21,7 @@ color backColor = color(226);
 color previewColor = color(255,0,255); // start off with a default
 PGraphics colorPickerImage;
 PFont font;
-
+String statusText="";
 
 //
 void setup()
@@ -37,6 +37,10 @@ void setup()
   int rc = blinkmusb.open();
   if( rc!=0 ) { 
     println("oops no blinkmusb");
+    statusText = "no BlinkMUSB found";
+  }
+  else {
+    statusText = "BlinkMUSB";
   }
 
   pickX = colorPickerX + (colorPickerWidth/8)*7; // hack
@@ -51,15 +55,6 @@ void setup()
 }
 
 //
-void draw()
-{
-  background( backColor );
-  drawColorPicker();
-
-  drawPreview( previewX, previewY, previewWidth, previewHeight);
-
-}
-
 void updateBlinkMUSB() {
     int r = int(red(previewColor));
     int g = int(green(previewColor));
@@ -72,6 +67,18 @@ void updateBlinkMUSB() {
     println("r,g,b: (lin)"+r+","+g+","+b + " => (log)"+rn+","+gn+","+bn);
     blinkmusb.setRGB( rn, gn, bn );
 }
+
+//
+void draw()
+{
+  background( backColor );
+  drawColorPicker();
+
+  drawPreview( previewX, previewY, previewWidth, previewHeight);
+
+  drawStatus();
+}
+
 
 //
 void mousePressed() {
@@ -90,6 +97,10 @@ void mouseDragged() {
   mousePressed();
 }
 
+void drawStatus() {
+  textFont(font, 12);
+  text( statusText, colorPickerX+colorPickerWidth+5, height-13);
+}
 
 
 //
