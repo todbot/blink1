@@ -16,10 +16,22 @@
 
 int millis = 500;
 
-int fadeMillis = 100;
+int fadeMillis = 200;
 
+int multiMillis = 1000;
+
+int numDevicesToUse = 1;
 
 //---------------------------------------------------------------------------- 
+
+// a simple logarithmic -> linear mapping as a sort of gamma correction
+// maps from 0-255 to 0-255
+static int log2lin( int n )  
+{
+  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
+  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+}
+
 //
 static void hexdump(char *buffer, int len)
 {
@@ -62,7 +74,7 @@ static void usage(char *myName)
     fprintf(stderr, "  %s read\n", myName);
     fprintf(stderr, "  %s write <listofbytes>\n", myName);
     fprintf(stderr, "  %s blink \n", myName);
-    fprintf(stderr, "  %s random \n", myName);
+    fprintf(stderr, "  %s random <numdevices>\n", myName);
     fprintf(stderr, "  %s rgb <red>,<green>,<blue> \n", myName);
 }
 
@@ -88,7 +100,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "no devices found\n");
             exit(1);
         }
-        if(0) {
+        if(1) {
         for( int i=0; i<4; i++ ) {
             fprintf(stderr,"device:%p\n", (void*)blinkmusb_getDevice(i));
         }
@@ -119,31 +131,59 @@ int main(int argc, char **argv)
     else if( strcasecmp(cmd, "rgb") == 0 ) { 
         char colbuf[8];  // 5 more than we need  //FIXME: make uint8_t
         hexread(colbuf, argv[2], sizeof(colbuf));  // cmd w/ hexlist arg
-        printf("setting rgb: %2.2x,%2.2x,%2.2x\n", 
-               (uint8_t)colbuf[0], (uint8_t)colbuf[1], (uint8_t)colbuf[2]);
-        rc = blinkmusb_fadeToRGB(dev,fadeMillis,colbuf[0],colbuf[1],colbuf[2]);
+        uint8_t r = colbuf[0];
+        uint8_t g = colbuf[1];
+        uint8_t b = colbuf[2];
+        printf("setting rgb: %2.2x,%2.2x,%2.2x\n", r,g,b );
+        int rn = log2lin( r );
+        int gn = log2lin( g );
+        int bn = log2lin( b );
+
+        rc = blinkmusb_fadeToRGB(dev,fadeMillis, rn,gn,bn);
+        //rc=blinkmusb_fadeToRGB(dev,fadeMillis,colbuf[0],colbuf[1],colbuf[2]);
         if( rc ) { // on error, do something, anything. come on.
             printf("error on fadeToRGB\n");
         }
     }
     else if( strcasecmp(cmd, "random") == 0 ) {
+        if( argc > 2 ) {
+            numDevicesToUse = strtol( argv[2],NULL,0);
+            if( numDevicesToUse <1 || numDevicesToUse > 16 ) 
+                numDevicesToUse = 1;
+        }
+        
         while( 1 ) { 
-            uint8_t r = rand();
-            uint8_t g = rand();
-            uint8_t b = rand();
-            printf("%2.2x,%2.2x,%2.2x \n", r,g,b);
-
-            rc = blinkmusb_fadeToRGB(blinkmusb_getDevice(0),fadeMillis,r,g,b);
-            if( rc ) { // on error, do something, anything. come on.
-                break;
-            }
-
-            rc = blinkmusb_fadeToRGB(blinkmusb_getDevice(1),fadeMillis,r,g,b);
-            //err = blinkmusb_fadeToRGB( dev, fadeMillis, r,g,b  );
-            if( rc ) { // on error, do something, anything. come on.
-                break;
+            uint8_t r = log2lin( rand() );
+            uint8_t g = log2lin( rand() );
+            uint8_t b = log2lin( rand() );
+            printf("%d : %2.2x,%2.2x,%2.2x \n", numDevicesToUse, r,g,b);
+            
+            for( int i=0; i< numDevicesToUse; i++ ) {
+                usbDevice_t* mydev = blinkmusb_getDevice(i);
+                rc = blinkmusb_fadeToRGB(mydev, fadeMillis,r,g,b);
+                if( rc ) { // on error, do something, anything. come on.
+                    break;
+                }
             }
             usleep( fadeMillis * 1000);
+        }
+    }
+    else if(strcasecmp(cmd, "multi") == 0 ) {
+        while( 1 ) {
+            uint8_t r = log2lin( rand() );
+            uint8_t g = log2lin( rand() );
+            uint8_t b = log2lin( rand() );
+            printf("%2.2x,%2.2x,%2.2x \n", r,g,b);
+
+            for( int i=0; i< 2; i++ ) { 
+                usbDevice_t* bu = blinkmusb_getDevice(i);
+                rc = blinkmusb_fadeToRGB(bu, fadeMillis,r,g,b);
+                if( rc ) { // on error, do something, anything. come on.
+                    printf("error!\n");
+                    break;
+                }
+            }
+            usleep( multiMillis * 1000);
         }
     }
     else if( strcasecmp(cmd, "ramp") == 0 ) {

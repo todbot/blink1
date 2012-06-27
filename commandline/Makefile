@@ -95,13 +95,22 @@ endif
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
 USBFLAGS= 
-
 USBLIBS=    -lhid -lsetupapi 
 EXE_SUFFIX= .exe
 
 CFLAGS=	 $(USBFLAGS) -I./mongoose -I../firmware -mthreads
 
 LIBS=	 $(USBLIBS) -lws2_32 -ladvapi32
+
+endif
+
+################## Linux ####################################################
+ifeq "$(OS)" "linux"
+USBFLAGS =   `libusb-config --cflags`
+USBLIBS  =   `libusb-config --libs`
+EXE_SUFFIX=
+CFLAGS+=  $(USBFLAGS) -I./mongoose -I../firmware -pthread -g 
+LIBS = $(USBLIBS)
 
 endif
 
