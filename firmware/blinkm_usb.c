@@ -29,17 +29,17 @@
 #define PIN_USBM PB3   // pin2 == USB D-
 
 // blinkmusb_b0 prototype board had wrong LED part (adafruit vs todbot)
-#define BAD_B0_BOARD
+//#define BAD_B0_BOARD
 
 // ease of use functions 
 #ifdef BAD_B0_BOARD
-#define setRed(x) ( OCR0A = 255 - (x) )
-#define setGrn(x) ( OCR1B = (x) )
-#define setBlu(x) ( OCR0B = 255 - (x) )
+  #define setRed(x) ( OCR0A = 255 - (x) )
+  #define setGrn(x) ( OCR1B = (x) )
+  #define setBlu(x) ( OCR0B = 255 - (x) )
 #else
-#define setRed(x) ( OCR1B = (x) )
-#define setGrn(x) ( OCR0A = 255 - (x) )
-#define setBlu(x) ( OCR0B = 255 - (x) )
+  #define setRed(x) ( OCR1B = (x) )
+  #define setGrn(x) ( OCR0A = 255 - (x) )
+  #define setBlu(x) ( OCR0B = 255 - (x) )
 #endif
 
 #define setRGB(r,g,b) { setRed(r); setGrn(g); setBlu(b); }

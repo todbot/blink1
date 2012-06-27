@@ -11,6 +11,8 @@
 #ifndef __usbconfig_h_included__
 #define __usbconfig_h_included__
 
+//#include <avr/interrupt.h>
+
 /*
 General Description:
 This file is an example configuration (with inline documentation) for the USB
@@ -204,7 +206,8 @@ section at the end of this file).
 #ifndef __ASSEMBLER__
 extern void usbEventResetReady(void);
 #endif
-#define USB_RESET_HOOK(isReset)             if(!isReset){cli(); usbEventResetReady();sei()}
+#define USB_RESET_HOOK(isReset)             if(!isReset){usbEventResetReady();}
+//#define USB_RESET_HOOK(isReset)             if(!isReset){cli(); usbEventResetReady();sei();}
 #define USB_CFG_HAVE_MEASURE_FRAME_LENGTH   1
 /* define this macro to 1 if you want the function usbMeasureFrameLength()
  * compiled in. This function can be used to calibrate the AVR's RC oscillator.

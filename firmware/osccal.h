@@ -2,6 +2,7 @@
 #define __OSCAL_H__
 
 #include <avr/eeprom.h>
+#include <avr/interrupt.h>
 
 const uint8_t EEPROM_ADDR_OSCCAL = 0;
 
