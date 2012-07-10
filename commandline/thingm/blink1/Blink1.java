@@ -1,16 +1,16 @@
 
 
-package thingm.blinkm;
+package thingm.blink1;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
 
-public class BlinkMUSB 
+public class Blink1 
 {
   static {
-    System.loadLibrary("BlinkMUSB");     // Load the library
+    System.loadLibrary("Blink1");     // Load the library
   }  
 
   public static void usage() { 
@@ -27,10 +27,10 @@ public class BlinkMUSB
     }
     
     // 
-    BlinkMUSB blinkmusb = new BlinkMUSB();
+    Blink1 blink1 = new Blink1();
 
-    //blinkmusb.open(0,0,null,null);
-    blinkmusb.open();
+    //blink1.open(0,0,null,null);
+    blink1.open();
       
     //while( //
     Random rand = new Random();
@@ -39,17 +39,17 @@ public class BlinkMUSB
       int g = rand.nextInt() & 0xFF;
       int b = rand.nextInt() & 0xFF;
       
-      blinkmusb.setRGB( r,g,b );
-      blinkmusb.pause( 1000 );
+      blink1.setRGB( r,g,b );
+      blink1.pause( 1000 );
     }
 
-    blinkmusb.close();
+    blink1.close();
     
   }
 
 
   /**
-   * Open BlinkMUSB dongle 
+   * Open Blink1 dongle 
    * @param vid vendor id of device
    * @param pid product id of device
    * @param vstr vender string of device
@@ -65,7 +65,7 @@ public class BlinkMUSB
    * @param cmd the linkm command code
    * @param buf_send is byte array of command to send, may be null
    * @param buf_recv is byte array of any receive data, may be null
-   * @returns blinkmusb_command response code, 0 == success, non-zero == fail
+   * @returns blink1_command response code, 0 == success, non-zero == fail
    */
   public native synchronized int command(int cmd, 
                                          byte[] buf_send, 

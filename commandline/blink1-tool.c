@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <unistd.h>    // for usleep()
 
-#include "blinkmusb-lib.h"
+#include "blink1-lib.h"
 
 
 int millis = 500;
@@ -92,26 +92,26 @@ int main(int argc, char **argv)
     char* cmd = argv[1];
 
     if( 0 ) {     
-        if((dev = blinkmusb_open()) == NULL)
+        if((dev = blink1_open()) == NULL)
             exit(1);
     }
     else { 
-        if( blinkmusb_openall() != 0 ) { 
+        if( blink1_openall() != 0 ) { 
             fprintf(stderr, "no devices found\n");
             exit(1);
         }
         if(1) {
         for( int i=0; i<4; i++ ) {
-            fprintf(stderr,"device:%p\n", (void*)blinkmusb_getDevice(i));
+            fprintf(stderr,"device:%p\n", (void*)blink1_getDevice(i));
         }
         }
-        dev = blinkmusb_getDevice(0);
+        dev = blink1_getDevice(0);
     }
     
     if(strcasecmp(cmd, "read") == 0){
         int len = sizeof(buffer);
         if((rc = usbhidGetReport(dev, 0, buffer, &len)) != 0){
-            fprintf(stderr,"error reading data: %s\n",blinkmusb_error_msg(rc));
+            fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
         }else{
             hexdump(buffer + 1, sizeof(buffer) - 1);
         }
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
         // add a dummy report ID 
         if((rc = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
-            fprintf(stderr,"error writing data: %s\n",blinkmusb_error_msg(rc));
+            fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
 
     }
     else if( strcasecmp(cmd, "rgb") == 0 ) { 
@@ -139,8 +139,8 @@ int main(int argc, char **argv)
         int gn = log2lin( g );
         int bn = log2lin( b );
 
-        rc = blinkmusb_fadeToRGB(dev,fadeMillis, rn,gn,bn);
-        //rc=blinkmusb_fadeToRGB(dev,fadeMillis,colbuf[0],colbuf[1],colbuf[2]);
+        rc = blink1_fadeToRGB(dev,fadeMillis, rn,gn,bn);
+        //rc=blink1_fadeToRGB(dev,fadeMillis,colbuf[0],colbuf[1],colbuf[2]);
         if( rc ) { // on error, do something, anything. come on.
             printf("error on fadeToRGB\n");
         }
@@ -159,8 +159,8 @@ int main(int argc, char **argv)
             printf("%d : %2.2x,%2.2x,%2.2x \n", numDevicesToUse, r,g,b);
             
             for( int i=0; i< numDevicesToUse; i++ ) {
-                usbDevice_t* mydev = blinkmusb_getDevice(i);
-                rc = blinkmusb_fadeToRGB(mydev, fadeMillis,r,g,b);
+                usbDevice_t* mydev = blink1_getDevice(i);
+                rc = blink1_fadeToRGB(mydev, fadeMillis,r,g,b);
                 if( rc ) { // on error, do something, anything. come on.
                     break;
                 }
@@ -176,8 +176,8 @@ int main(int argc, char **argv)
             printf("%2.2x,%2.2x,%2.2x \n", r,g,b);
 
             for( int i=0; i< 2; i++ ) { 
-                usbDevice_t* bu = blinkmusb_getDevice(i);
-                rc = blinkmusb_fadeToRGB(bu, fadeMillis,r,g,b);
+                usbDevice_t* bu = blink1_getDevice(i);
+                rc = blink1_fadeToRGB(bu, fadeMillis,r,g,b);
                 if( rc ) { // on error, do something, anything. come on.
                     printf("error!\n");
                     break;
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
     else if( strcasecmp(cmd, "ramp") == 0 ) {
         uint8_t v = 0;
         while( 1 )  { 
-            rc = blinkmusb_setRGB( dev, v,v,v );
+            rc = blink1_setRGB( dev, v,v,v );
             if( rc ) { // on error, do something, anything. come on.
                 break;
             }
@@ -201,7 +201,7 @@ int main(int argc, char **argv)
     else if( strcasecmp(cmd, "blink") == 0 ) {
         uint8_t v = 0;
         while( 1 )  { 
-            rc = blinkmusb_setRGB( dev, v,v,v );
+            rc = blink1_setRGB( dev, v,v,v );
             if( rc )  // on error, do something, anything. come on.
                 break;
 
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
     else if( strcasecmp(cmd,"eeprom") == 0 ) {
         buffer[1] = 'e';
         if((rc = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
-            fprintf(stderr,"error writing data: %s\n",blinkmusb_error_msg(rc));
+            fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
         printf("done\n");
     }
     else{

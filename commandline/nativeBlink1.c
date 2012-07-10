@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "hiddata.h"
-#include "blinkmusb-lib.h"
+#include "blink1-lib.h"
 
 /* ------------------------------------------------------------------------- */
 
@@ -25,13 +25,13 @@ static usbDevice_t* dev = NULL;   // sigh.
 /**
  *
  */
-JNIEXPORT jint JNICALL Java_thingm_blinkm_BlinkMUSB_open
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
 (JNIEnv *env, jobject obj) //, jint vid, jint pid, jstring vstr, jstring pstr)
 {
     int err;
     
     // open up linkm, get back a 'dev' to pass around
-    err = blinkmusb_openstatic( &dev ); // FIXME: pass in vid/pid in the future
+    err = blink1_openstatic( &dev ); // FIXME: pass in vid/pid in the future
 
     return err;
 }
@@ -39,32 +39,32 @@ JNIEXPORT jint JNICALL Java_thingm_blinkm_BlinkMUSB_open
 /**
  *
  */
-JNIEXPORT void JNICALL Java_thingm_blinkm_BlinkMUSB_close
+JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
 (JNIEnv *env, jobject obj)
 {
-    blinkmusb_close(dev);
+    blink1_close(dev);
 }
 
-JNIEXPORT jint JNICALL Java_thingm_blinkm_BlinkMUSB_setRGB
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 (JNIEnv *env, jobject obj, jint r, jint g, jint b)
 {
     int err;
-    err = blinkmusb_setRGB(dev, r,g,b);
+    err = blink1_setRGB(dev, r,g,b);
     return err;
 }
 
-JNIEXPORT jint JNICALL Java_thingm_blinkm_BlinkMUSB_fadeToRGB
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b)
 {
     int err;
-    err = blinkmusb_fadeToRGB(dev, fadeMillis, r,g,b);
+    err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
     return err;
 }
 
 /**
  *
  *
-JNIEXPORT void JNICALL Java_thingm_blinkm_BlinkMUSB_command
+JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_command
 (JNIEnv *env, jobject obj, jint cmd, jbyteArray jb_send, jbyteArray jb_recv)
 {
     int err;
@@ -83,13 +83,13 @@ JNIEXPORT void JNICALL Java_thingm_blinkm_BlinkMUSB_command
         byte_recv = (uint8_t*)(*env)->GetByteArrayElements(env, jb_recv,0);
     }
 
-    err = blinkmusb_command(dev, cmdbyte,num_send,num_recv,byte_send,byte_recv);
+    err = blink1_command(dev, cmdbyte,num_send,num_recv,byte_send,byte_recv);
 
     if( err ) {
         (*env)->ExceptionDescribe(env);          // throw an exception.
         (*env)->ExceptionClear(env);
         jclass newExcCls = (*env)->FindClass(env,"java/io/IOException");
-        (*env)->ThrowNew(env, newExcCls, blinkmusb_error_msg(err));
+        (*env)->ThrowNew(env, newExcCls, blink1_error_msg(err));
     }
     
     if( jb_send != NULL )

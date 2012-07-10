@@ -35,7 +35,7 @@ endif
 $(warning Building for OS='$(OS)')
 
 
-TARGET = BlinkMUSB
+TARGET = Blink1
 
 CC=gcc
 
@@ -87,7 +87,7 @@ JAVA_LIB  = lib$(TARGET).jnilib
 
 
 # build a static lib:
-# libtool -static -o blinkmusb-lib.a  blinkmusb-lib.o hiddata.o /opt/local/lib/libusb-legacy/libusb-legacy.a
+# libtool -static -o blink1-lib.a  blink1-lib.o hiddata.o /opt/local/lib/libusb-legacy/libusb-legacy.a
 # 
 
 endif
@@ -120,9 +120,10 @@ INCLUDES = -I. $(JAVAINCLUDE) $(JAVANATINC)
 
 CFLAGS += $(INCLUDES) -O -Wall -std=gnu99 
 
-OBJ=		blinkmusb-lib.o hiddata.o 
-PROGRAM1=	blinkmusb-tool$(EXE_SUFFIX)
-PROGRAM2=   blinkmusb-server$(EXE_SUFFIX)
+OBJ=		blink1-lib.o hiddata.o 
+
+PROGRAM1=	blink1-tool$(EXE_SUFFIX)
+PROGRAM2=   blink1-server$(EXE_SUFFIX)
 
 
 #################  #######  ##################################################
@@ -131,47 +132,48 @@ all:
 	@echo "Available targets for this Makefile:"
 	@echo " make $(PROGRAM1) -- build $(PROGRAM1) (and library)"
 	@echo " make $(PROGRAM2) -- build $(PROGRAM2) (and library)" 
+	@echo " make jar         -- build Java library"
 	@echo " make processing  -- build library, Java lib, and Processsing lib"
 
-$(PROGRAM1): $(OBJ) blinkmusb-tool.o
-	$(CC) -o $(PROGRAM1) blinkmusb-tool.o $(CFLAGS) $(OBJ)  $(LIBS)
+$(PROGRAM1): $(OBJ) blink1-tool.o
+	$(CC) -o $(PROGRAM1) blink1-tool.o $(CFLAGS) $(OBJ)  $(LIBS)
 
-$(PROGRAM2): $(OBJ) blinkmusb-server.o
-	$(CC) -o $(PROGRAM2) blinkmusb-server.o mongoose/mongoose.c $(OBJ)  $(LIBS)
+$(PROGRAM2): $(OBJ) blink1-server.o
+	$(CC) -o $(PROGRAM2) blink1-server.o mongoose/mongoose.c $(OBJ)  $(LIBS)
 
 lib-mac: $(PROGRAM1)
-	libtool -static -o blinkmusb-lib.a  blinkmusb-lib.o hiddata.o /opt/local/lib/libusb-legacy/libusb-legacy.a
+	libtool -static -o blink1-lib.a  blink1-lib.o hiddata.o /opt/local/lib/libusb-legacy/libusb-legacy.a
 
 javac:
-#	javac -target 1.5 thingm/blinkm/BlinkMUSB.java
-	javac thingm/blinkm/BlinkMUSB.java
+#	javac -target 1.5 thingm/blink1/Blink1.java
+	javac thingm/blink1/Blink1.java
 
 jni:
 	which javah
-	javah -jni thingm.blinkm.BlinkMUSB
+	javah -jni thingm.blink1.Blink1
 
-java: javac jni $(OBJ) nativeBlinkMUSB.o
+java: javac jni $(OBJ) nativeBlink1.o
 #	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(OBJ) $(LDFLAGS) 
-	$(CC) $(JAVA_CFLAGS) -o $(JAVA_LIB) $(LIBS) $(OBJ) nativeBlinkMUSB.o
+	$(CC) $(JAVA_CFLAGS) -o $(JAVA_LIB) $(LIBS) $(OBJ) nativeBlink1.o
 	mkdir -p libtargets && mv $(JAVA_LIB) libtargets
  
 
 jar: javac jni java
-	jar -cfm blinkmusb.jar  packaging/Manifest.txt thingm/blinkm/*.class
-	mv blinkmusb.jar libtargets
+	jar -cfm blink1.jar  packaging/Manifest.txt thingm/blink1/*.class
+	mv blink1.jar libtargets
 
 
 processing: processinglib
 processinglib: jar
-	rm -f blinkmusb.zip
-	mkdir -p blinkmusb/library
-	cp packaging/processing-export.txt blinkmusb/library/export.txt
-	cp libtargets/* blinkmusb/library
-	zip -r blinkmusb.zip blinkmusb
+	rm -f blink1.zip
+	mkdir -p blink1/library
+	cp packaging/processing-export.txt blink1/library/export.txt
+	cp libtargets/* blink1/library
+	zip -r blink1.zip blink1
 	@echo
-	@echo "now unzip blinkmusb.zip into ~/Documents/Processing/libraries"
-#	@echo "or maybe just:\ncp -r blinkmusb ~/Documents/Processing/libraries"
-	@echo "or maybe just:\nln -s \`pwd\`/blinkmusb ~/Documents/Processing/libraries/blinkmusb"
+	@echo "now unzip blink1b.zip into ~/Documents/Processing/libraries"
+#	@echo "or maybe just:\ncp -r blink1 ~/Documents/Processing/libraries"
+	@echo "or maybe just:\nln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
 
 
 .c.o:
@@ -184,10 +186,10 @@ strip: $(PROGRAM1) $(PROGRAM2)
 
 clean:
 	rm -f $(OBJ) $(PROGRAM1) $(PROGRAM2) *.o *.a *.dll *jnilib 
-	rm -f thingm/blinkm/BlinkMUSB.class
+	rm -f thingm/blink1/Blink1.class
 
 distclean:
-	rm -rf blinkmusb
+	rm -rf blink1
 	rm -f libtargets/*
 
 

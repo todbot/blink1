@@ -1,4 +1,4 @@
-application.macosx = blinkmusb.jar, libBlinkMUSB.jnilib
-application.linux = blinkmusb.jar, libBlinkMUSB.so
-application.windows = blinkmusb.jar, BlinkMUSB.dll
+application.macosx = blink1.jar, libBlink1.jnilib
+application.linux = blink1.jar, libBlink1.so
+application.windows = blink1.jar, Blink1.dll
 
