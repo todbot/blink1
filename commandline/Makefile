@@ -127,7 +127,11 @@ PROGRAM2=   blinkmusb-server$(EXE_SUFFIX)
 
 #################  #######  ##################################################
 
-all: $(PROGRAM1) $(PROGRAM2) processing
+all: 
+	@echo "Available targets for this Makefile:"
+	@echo " make $(PROGRAM1) -- build $(PROGRAM1) (and library)"
+	@echo " make $(PROGRAM2) -- build $(PROGRAM2) (and library)" 
+	@echo " make processing  -- build library, Java lib, and Processsing lib"
 
 $(PROGRAM1): $(OBJ) blinkmusb-tool.o
 	$(CC) -o $(PROGRAM1) blinkmusb-tool.o $(CFLAGS) $(OBJ)  $(LIBS)
