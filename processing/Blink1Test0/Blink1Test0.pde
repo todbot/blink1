@@ -1,9 +1,9 @@
 //
 //
 //
-import thingm.blinkm.*;
+import thingm.blink1.*;
 
-BlinkMUSB blinkmusb;
+Blink1 blink1;
 Random rand;
 
 //
@@ -11,12 +11,12 @@ void setup()
 {
   frameRate(1);
 
-  blinkmusb = new BlinkMUSB();
+  blink1 = new Blink1();
 
-  int rc = blinkmusb.open();
+  int rc = blink1.open();
 
   if( rc != 0 ) { 
-      println("uh oh, no BlinkMUSB device found");
+      println("uh oh, no Blink1 device found");
   }
 
   rand = new Random();
@@ -35,7 +35,7 @@ void draw()
   fill(c);
   rect(0, 0, width, height);
 
-  blinkmusb.setRGB( r, g, b );
+  blink1.setRGB( r, g, b );
   
 }
 

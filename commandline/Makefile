@@ -188,8 +188,9 @@ clean:
 	rm -f $(OBJ) $(PROGRAM1) $(PROGRAM2) *.o *.a *.dll *jnilib 
 	rm -f thingm/blink1/Blink1.class
 
-distclean:
+distclean: clean
 	rm -rf blink1
-	rm -f libtargets/*
+#	rm -f libtargets/*
+	rm -rf libtargets
 
 

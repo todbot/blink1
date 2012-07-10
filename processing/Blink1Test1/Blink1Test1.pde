@@ -1,9 +1,9 @@
 //
 //
 //
-import thingm.blinkm.*;
+import thingm.blink1.*;
 
-BlinkMUSB blinkmusb;
+Blink1 blink1;
 
 int sketchWidth  = 400;
 int sketchHeight = 240;
@@ -32,15 +32,15 @@ void setup()
   smooth();
   font = loadFont("LucidaSans-12.vlw");
 
-  blinkmusb = new BlinkMUSB();
+  blink1 = new Blink1();
 
-  int rc = blinkmusb.open();
+  int rc = blink1.open();
   if( rc!=0 ) { 
-    println("oops no blinkmusb");
-    statusText = "no BlinkMUSB found";
+    println("oops no blink1");
+    statusText = "no Blink1 found";
   }
   else {
-    statusText = "BlinkMUSB";
+    statusText = "Blink1";
   }
 
   pickX = colorPickerX + (colorPickerWidth/8)*7; // hack
@@ -51,11 +51,11 @@ void setup()
 
   colorPickerImage = createColorPickerImage();
 
-  updateBlinkMUSB();
+  updateBlink1();
 }
 
 //
-void updateBlinkMUSB() {
+void updateBlink1() {
     int r = int(red(previewColor));
     int g = int(green(previewColor));
     int b = int(blue(previewColor));
@@ -65,7 +65,7 @@ void updateBlinkMUSB() {
     int bn = log2lin(b);
 
     println("r,g,b: (lin)"+r+","+g+","+b + " => (log)"+rn+","+gn+","+bn);
-    blinkmusb.setRGB( rn, gn, bn );
+    blink1.setRGB( rn, gn, bn );
 }
 
 //
@@ -89,7 +89,7 @@ void mousePressed() {
     previewColor = colorPickerImage.get( mouseX-colorPickerX,mouseY-colorPickerY);
     pickX = mouseX; pickY = mouseY;
 
-    updateBlinkMUSB();
+    updateBlink1();
   }
 }
 // handle drag the same way as a press, kinda lame, yeah
