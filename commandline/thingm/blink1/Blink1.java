@@ -15,7 +15,7 @@ public class Blink1
 
   public static void usage() { 
     println(""+
-"Usage: LinkM <cmd> [options]\n" +
+"Usage: Blink1 <cmd> [options]\n" +
             "");
   }
 
@@ -30,17 +30,26 @@ public class Blink1
     Blink1 blink1 = new Blink1();
 
     //blink1.open(0,0,null,null);
-    blink1.open();
+    int rc = blink1.open();
+    if( rc != 0 ) { 
+      System.err.println("no Blink1 detected");
+      System.exit(1);
+    }
       
-    //while( //
     Random rand = new Random();
     for( int i=0; i<20; i++ ) {
       int r = rand.nextInt() & 0xFF;
       int g = rand.nextInt() & 0xFF;
       int b = rand.nextInt() & 0xFF;
       
-      blink1.setRGB( r,g,b );
-      blink1.pause( 1000 );
+      System.out.println("setting color "+r+","+g+","+b);
+
+      rc = blink1.setRGB( r,g,b );
+      if( rc!=0 ) { 
+        System.err.println("error detected");
+      }
+
+      blink1.pause( 500 );
     }
 
     blink1.close();
@@ -60,9 +69,9 @@ public class Blink1
   public native int open();
 
   /**
-   * Do a transaction with the LinkM dongle
+   * Do a transaction with the Blink1
    * length of both byte arrays determines amount of data sent or received
-   * @param cmd the linkm command code
+   * @param cmd the blink1 command code
    * @param buf_send is byte array of command to send, may be null
    * @param buf_recv is byte array of any receive data, may be null
    * @returns blink1_command response code, 0 == success, non-zero == fail
@@ -81,7 +90,7 @@ public class Blink1
   
  
   /**
-   * Close LinkM dongle
+   * Close Blink1 dongle
    */
   public native void close();  
 
