@@ -1,3 +1,49 @@
+# Makefile for "linkm-lib" and "linkm-tool"
+# should work on Mac OS X, Windows, and Linux
+#  
+# Build arguments:
+# - "OS=macosx"  -- build Mac version on Mac OS X
+# - "OS=windows" -- build Windows version on Windows
+# - "OS=linux"   -- build Linux version on Linux
+# - "OS=wrt"     -- build OpenWrt/DD-WRT version on Linux
+# - "ADDBOOTLOAD=1" -- add ability to linkm-lib and linkm-tool to use bootloader
+# - "ADDBOOTLOAD=0" -- to disable ability to use bootloader
+#
+# Dependencies: 
+# - libusb is required
+# - if "make ADDBOOTLOAD=1", then
+#    "../bootloadHID/commandline/linkmbootload" 
+#  must be compiled beforehand if using bootload functionality
+# - Or, if "make ADDBOATLOAD=0", then no other dependencies other than OS-specific ones below.
+#
+# Platform-specific notes:
+#
+# Mac OS X 
+#   - Install Xcode with Unix Dev Support 
+#   - Install 'make' from macports (or similar)
+#
+# Windows XP/7  
+#   - Install MinGW and MSYS (http://www.tdragon.net/recentgcc/ )
+#
+# Linux (Ubuntu) 
+#   - apt-get install gcc-avr avr-libc avrdude java librxtx-java
+#
+# OpenWrt / DD-WRT
+#   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
+#   - set WRT_SDK_HOME environment variable
+#   - type "make OS=wrt" to build
+#
+# BeagleBone / BeagleBoard (on Angstrom Linux)
+#   - Install USB dev support 
+#      "opkg install libusb-0.1-4-dev"
+#   - May need to symlink libusb 
+#      "cd /lib; ln -s libusb-0.1.so.4 libusb.so"
+#   - Build "linkm-tool" command-line app
+#      "make ADDBOOTLOAD=0"
+#
+#
+# -----
+# Based off of obdev hid-data "hidtool":
 # Name: Makefile
 # Project: hid-data example
 # Author: Christian Starkjohann
@@ -5,16 +51,17 @@
 # Tabsize: 4
 # Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
-# This Revision: $Id$
-
-# Please read the definitions below and edit them as appropriate for your
-# system:
+# This Revision: $Id: Makefile 692 2008-11-07 15:07:40Z cs $
 
 
-LIBHID_STYLE=obdev
-#LIBHID_STYLE=native
+TARGET=blink1-tool
 
-UNAME ?=$(shell uname)
+# set to 1 to enable macosx single architecture compiling 
+# (whatever your arch is, otherwise compile for x86_64, i386, and ppc )
+SINGLEARCH := 0
+
+# try to do some autodetecting
+UNAME := $(shell uname -s)
 
 ifeq "$(UNAME)" "Darwin"
 	OS=macosx
@@ -28,169 +75,102 @@ ifeq "$(UNAME)" "Linux"
 	OS=linux
 endif
 
-ifndef OS
-#	$(error No OS specified)
-endif
-
-$(warning Building for OS='$(OS)')
-
-
-TARGET = Blink1
-
 CC=gcc
 
+
 #################  Mac OS X  ##################################################
-
 ifeq "$(OS)" "macosx"
-# Use the following 3 lines on Unix and Mac OS X:
-#USBFLAGS=   `libusb-config --cflags`
-#USBLIBS=    `libusb-config --libs`
-#LIBUSB_CONFIG=/opt/local/bin/libusb-legacy-config
-#LIBUSB_CONFIG=/opt/local/bin/libusb-config
-# Use the following 3 lines on Unix (uncomment the framework on Mac OS X):
-#USBFLAGS = `$(LIBUSB_CONFIG) --cflags` 
-#USBLIBS = `$(LIBUSB_CONFIG) --libs`
-
+# Mac OS X: "sudo port install libusb-legacy +universal" using MacPorts
+# If you want to build for PowerPC too, you'll need to edit 
+# /opt/local/etc/macports/macports.conf: universal_archs and add "ppc"
+# otherwise swap the OS_CFLAGS with the commented one below
 USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
 # get just the path to the static lib
 USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
 # get everything else in --libs
 USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
-EXE_SUFFIX=
 
-
-# to build libusb-legacy for universal on Lion do:
-#  sudo port install libusb-legacy configure.compiler=llvm-gcc-4.2  +universal
-ARCHS=   -arch i386 -arch x86_64
-CFLAGS=	 $(USBFLAGS) $(ARCHS)
-CFLAGS+=  -I./mongoose -I../firmware -pthread -g 
-LIBS=	 $(USBLIBS) $(ARCHS)
-
-ifeq "$(LIBHID_STYLE)" "obdev"
-CFLAGS+=  -I./libhid_obdevstyle
-else
-CFLAGS+=  -I./nativehid
+ifeq ($(SINGLEARCH), 0) 
+#OS_CFLAGS= -arch i386 -arch ppc 
+#OS_CFLAGS= -arch i386 -arch x86_64 -arch ppc
+#OS_CFLAGS= -arch i386 -arch x86_64
+OS_CFLAGS= -arch x86_64
 endif
-
-#OS_CFLAGS = -g -O2 -D_BSD_SOURCE -bundle 
-#OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6
-#OS_LDFLAGS =  -Wl,-search_paths_first -framework JavaVM -framework IOKit -framework CoreFoundation $(USBLIBS) 
-
-JAVAINCLUDEDIR = /System/Library/Frameworks/JavaVM.framework/Headers
-JAVANATINC = -I $(JAVAINCLUDEDIR)/./
-JAVAINCLUDE = -I $(JAVAINCLUDEDIR)
-
-JAVA_CFLAGS = $(CFLAGS) -bundle 
-JAVA_LDFLAGS = $(LDFLAGS)  
-
-JAVA_LIB  = lib$(TARGET).jnilib
-
-
-# build a static lib:
-# libtool -static -o blink1-lib.a  blink1-lib.o hiddata.o /opt/local/lib/libusb-legacy/libusb-legacy.a
-# 
-
+##OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -no_compact_linkedit
+#OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6 -no_compact_linkedit
+OS_LIBS  = $(OS_CFLAGS) 
+EXE_SUFFIX=
 endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
-USBFLAGS= 
-USBLIBS=    -lhid -lsetupapi 
+USBFLAGS=
+USBLIBS=    -lhid -lsetupapi
+#USBLIBS=    -lhid -lusb -lsetupapi
 EXE_SUFFIX= .exe
-
-CFLAGS=	 $(USBFLAGS) -I./mongoose -I../firmware -mthreads
-
-LIBS=	 $(USBLIBS) -lws2_32 -ladvapi32
-
 endif
 
-################## Linux ####################################################
+#################  Linux  ###################################################
 ifeq "$(OS)" "linux"
 USBFLAGS =   `libusb-config --cflags`
 USBLIBS  =   `libusb-config --libs`
 EXE_SUFFIX=
-CFLAGS+=  $(USBFLAGS) -I./mongoose -I../firmware -pthread -g 
-LIBS = $(USBLIBS)
+endif
+
+#################  OpenWrt / DD-WRT #########################################
+ifeq "$(OS)" "wrt"
+
+WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
+
+CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
+LD = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-ld
+USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
+USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
 
 endif
 
-#################  Common  ##################################################
 
-INCLUDES = -I. $(JAVAINCLUDE) $(JAVANATINC) 
+#CC=		gcc
+CFLAGS=	$(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../firmware
+LIBS=	$(OS_LIBS) $(USBLIBS) 
 
-CFLAGS += $(INCLUDES) -O -Wall -std=gnu99 
+OBJ=		$(TARGET).o blink1-lib.o hiddata.o 
 
-OBJ=		blink1-lib.o hiddata.o 
+PROGRAM=	$(TARGET)$(EXE_SUFFIX)
 
-PROGRAM1=	blink1-tool$(EXE_SUFFIX)
-PROGRAM2=   blink1-server$(EXE_SUFFIX)
+all: msg $(PROGRAM)
 
+msg: 
+	@echo "building for OS=$(OS)"
 
-#################  #######  ##################################################
-
-all: 
-	@echo "Available targets for this Makefile:"
-	@echo " make $(PROGRAM1) -- build $(PROGRAM1) (and library)"
-	@echo " make $(PROGRAM2) -- build $(PROGRAM2) (and library)" 
-	@echo " make jar         -- build Java library"
-	@echo " make processing  -- build library, Java lib, and Processsing lib"
-
-$(PROGRAM1): $(OBJ) blink1-tool.o
-	$(CC) -o $(PROGRAM1) blink1-tool.o $(CFLAGS) $(OBJ)  $(LIBS)
-
-$(PROGRAM2): $(OBJ) blink1-server.o
-	$(CC) -o $(PROGRAM2) blink1-server.o mongoose/mongoose.c $(OBJ)  $(LIBS)
-
-lib-mac: $(PROGRAM1)
-	libtool -static -o blink1-lib.a  blink1-lib.o hiddata.o /opt/local/lib/libusb-legacy/libusb-legacy.a
-
-javac:
-#	javac -target 1.5 thingm/blink1/Blink1.java
-	javac thingm/blink1/Blink1.java
-
-jni:
-	which javah
-	javah -jni thingm.blink1.Blink1
-
-java: javac jni $(OBJ) nativeBlink1.o
-#	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(OBJ) $(LDFLAGS) 
-	$(CC) $(JAVA_CFLAGS) -o $(JAVA_LIB) $(LIBS) $(OBJ) nativeBlink1.o
-	mkdir -p libtargets && mv $(JAVA_LIB) libtargets
- 
-
-jar: javac jni java
-	jar -cfm blink1.jar  packaging/Manifest.txt thingm/blink1/*.class
-	mv blink1.jar libtargets
-
-
-processing: processinglib
-processinglib: jar
-	rm -f blink1.zip
-	mkdir -p blink1/library
-	cp packaging/processing-export.txt blink1/library/export.txt
-	cp libtargets/* blink1/library
-	zip -r blink1.zip blink1
+# symbolic targets:
+help:
+	@echo "This Makefile works on multiple archs. Use one of the following:"
+	@echo "make OS=windows ... build Windows  linkm-lib and linkm-tool" 
+	@echo "make OS=linux   ... build Linux    linkm-lib and linkm-tool" 
+	@echo "make OS=macosx  ... build Mac OS X linkm-lib and linkm-tool" 
+	@echo "make clean ..... to delete objects and hex file"
 	@echo
-	@echo "now unzip blink1b.zip into ~/Documents/Processing/libraries"
-#	@echo "or maybe just:\ncp -r blink1 ~/Documents/Processing/libraries"
-	@echo "or maybe just:\nln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
 
+$(PROGRAM): $(OBJ)
+	$(CC) -o $(PROGRAM) $(OBJ) $(LIBS) 
 
 .c.o:
-	$(CC) $(CFLAGS) -c $*.c -o $*.o
-#	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
+	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
 
-strip: $(PROGRAM1) $(PROGRAM2)
-	strip $(PROGRAM1)
-	strip $(PROGRAM2)
+strip: $(PROGRAM)
+	strip $(PROGRAM)
 
 clean:
-	rm -f $(OBJ) $(PROGRAM1) $(PROGRAM2) *.o *.a *.dll *jnilib 
-	rm -f thingm/blink1/Blink1.class
+	rm -f $(OBJ) $(PROGRAM)
 
 distclean: clean
-	rm -rf blink1
-#	rm -f libtargets/*
-	rm -rf libtargets
+	rm -f $(TARGET).exe
+	rm -f $(TARGET)
 
+# shows shared lib usage on Mac OS X
+otool:
+	otool -L $(TARGET)
 
+foo:
+	@echo "OS=$(OS), USBFLAGS=$(USBFLAGS)"

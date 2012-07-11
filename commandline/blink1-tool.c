@@ -130,7 +130,9 @@ int main(int argc, char **argv)
     }
     else if( strcasecmp(cmd, "rgb") == 0 ) { 
         char colbuf[8];  // 5 more than we need  //FIXME: make uint8_t
-        hexread(colbuf, argv[2], sizeof(colbuf));  // cmd w/ hexlist arg
+        if( argc >= 3 ) {
+            hexread(colbuf, argv[2], sizeof(colbuf));  // cmd w/ hexlist arg
+        }
         uint8_t r = colbuf[0];
         uint8_t g = colbuf[1];
         uint8_t b = colbuf[2];

@@ -1,11 +1,17 @@
 /* 
- * BlinkM USB
+ * BlinkM USB - BlinkM-like device with USB interface
+ *  2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
  * 
  * Originally from:
  * Project: hid-custom-rq example by  Christian Starkjohann
  *
  *
- *
+ * Firmware TODOs:
+ * - detect plugged in to power supply vs computer, play pattern if former?
+ * - log2lin() function, maybe map in memory (256 RAM bytes, compute at boot)
+ * - upload new log2lin table
+ * - upload of pattern
+ * - 
  */
 
 
@@ -20,27 +26,17 @@
 
 #include "osccal.h"         // oscialltor calibration via USB 
 
-// this is the new world order
+// pins for RGB LED
 #define PIN_RED	 PB4   // OCR1B == red    == PB4 == pin3
 #define PIN_GRN	 PB0   // OCR0A == green  == PB0 == pin5
 #define PIN_BLU	 PB1   // OCR0B == blue   == PB1 == pin6
-// and i guess
+// pins for USB
 #define PIN_USBP PB2   // pin7 == USB D+ must be PB2 / INT0
 #define PIN_USBM PB3   // pin2 == USB D-
 
-// blinkmusb_b0 prototype board had wrong LED part (adafruit vs todbot)
-//#define BAD_B0_BOARD
-
-// ease of use functions 
-#ifdef BAD_B0_BOARD
-  #define setRed(x) ( OCR0A = 255 - (x) )
-  #define setGrn(x) ( OCR1B = (x) )
-  #define setBlu(x) ( OCR0B = 255 - (x) )
-#else
-  #define setRed(x) ( OCR1B = (x) )
-  #define setGrn(x) ( OCR0A = 255 - (x) )
-  #define setBlu(x) ( OCR0B = 255 - (x) )
-#endif
+#define setRed(x) ( OCR1B = (x) )
+#define setGrn(x) ( OCR0A = 255 - (x) )
+#define setBlu(x) ( OCR0B = 255 - (x) )
 
 #define setRGB(r,g,b) { setRed(r); setGrn(g); setBlu(b); }
 
@@ -94,11 +90,21 @@ PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor
 // ------------------------------------------------------------------------- 
 
 //
+// msgbuf[] is 8 bytes long
+//  byte0 = command
+//  byte1..byte7 = args for command
+// Available commands:
+// x Fade to RGB color  format: {'c', r,g,b, th, tl, 0, 0}
+// x Set RGB color now  format: {'n', r,g,b,  0,0, 0,0}
+// - Save last N commands for playback
+// - Playback
+// - Read playback loc n
+// 
 void handleMessage(void)
 {
     uint8_t cmd = msgbuf[0];
     
-    // command {'c', r,g,b, th, tl,0 } = fade to RGB color over time t
+    // command {'c', r,g,b, th,tl, 0,0 } = fade to RGB color over time t
     // where time 't' is a number of 10msec ticks
     if(      cmd == 'c' ) { 
         rgb_t* c = (rgb_t*)(msgbuf+1); //msgbuf[1],msgbuf[2],msgbuf[3]

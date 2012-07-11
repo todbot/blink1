@@ -106,7 +106,7 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
     buffer[4] = b;
     buffer[5] = (dms >> 8);
     buffer[6] = dms % 0xff;
-    
+
     if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
         fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
     }

@@ -42,7 +42,13 @@ char            *ascii = buffer;
     *ascii++ = 0;
 }
 
-int usbhidOpenDevice(usbDevice_t **device, int vendor, char *vendorName, int product, char *productName, int usesReportIDs)
+// FIXME: this is incorrect
+int usbhidOpenAllDevices( usbDevice_t* devices[], int* devices_len, int vendor, int product, int _usesReportIDs)
+{
+    return usbhidOpenDevice(devices, vendor,product, NULL,NULL ,_usesReportIDs);
+}
+
+int usbhidOpenDevice(usbDevice_t **device, int vendor, int product, char *vendorName, char *productName, int usesReportIDs)
 {
 GUID                                hidGuid;        /* GUID for HID driver */
 HDEVINFO                            deviceInfoList;
