@@ -7,8 +7,9 @@
  *   LinkM : http://linkm.thingm.com/
  *
  *
- * Firmware TODOs:
- * - detect plugged in to power supply vs computer, play pattern if former?
+ * Firmware TODOs: (x=done)
+ * x detect plugged in to power supply vs computer, 
+ * - play pattern if not on computer
  * - log2lin() function, maybe map in memory (256 RAM bytes, compute at boot)
  * - upload new log2lin table
  * - upload of pattern
@@ -25,7 +26,7 @@
 
 #include "usbdrv.h"
 
-uint8_t usbHasBeenSetup = 0;
+static uint8_t usbHasBeenSetup;
 
 #include "osccal.h"         // oscillator calibration via USB 
 
@@ -40,23 +41,35 @@ uint8_t usbHasBeenSetup = 0;
 #define setRedOut(x) ( OCR1B = (x) )
 #define setGrnOut(x) ( OCR0A = 255 - (x) )
 #define setBluOut(x) ( OCR0B = 255 - (x) )
-
 #define setRGBOut(r,g,b) { setRedOut(r); setGrnOut(g); setBluOut(b); }
 
-// needs "setRGB()" defined
+// needs "setRGBOut()" defined
 #include "color_funcs.h"
 
-
-rgb_t ctmp;
-
 uint32_t ledUpdateTimeNext;
-//uint32_t connectedTestTimeNext;
-//uint32_t ledLastMillis;
-uint32_t ledUpdateMillis = 10;  // tick msec
+const uint32_t ledUpdateMillis = 10;  // tick msec
+
+
+rgb_t cplay;     // holder for currently playing color
+uint16_t tplay;
+uint8_t playpos;
+uint8_t playing; // boolean
+scriptline_t pattern[8] = {
+    { { 0xff, 0x00, 0x00 }, 100 },
+    { { 0x00, 0xff, 0x00 }, 100 },
+    { { 0x00, 0x00, 0xff }, 100 },
+    { { 0xff, 0xff, 0xff }, 100 },
+    { { 0xff, 0xff, 0xff }, 100 },
+    { { 0xff, 0x00, 0xff }, 100 },
+    { { 0xff, 0xff, 0x00 }, 100 },
+    { { 0x00, 0xff, 0xff }, 200 },
+};
+
 
 // ------------------------------------------------------------------------- 
 // ----------------------- millis time keeping -----------------------------
 // -------------------------------------------------------------------------
+
 // for "millis()" function, a count of 0.256ms units
 volatile uint32_t tick;
 
@@ -109,7 +122,8 @@ PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor
 // x Set RGB color now       format: {'n', r,g,b,        0,0, 0,0 }
 // - Nightlight mode on/off  format: {'N', {1/0},th,tl,  0,0, 0,0 }
 // - Serverdown mode on/off  format: {'D', {1/0},th,tl,  0,0, 0,0 }
-// - Save last N cmds for playback : 
+//// - Set attern col & t at pos i   : {'P', r,g,b, th,tl, i,0 }
+// // Save last N cmds for playback : 
 // - Playback
 // - Read playback loc n
 // - Set log2lin vals        format: {'M', i, v0, v1,v2,v3,v4, 0,0 } 
@@ -122,8 +136,11 @@ void handleMessage(void)
     // command {'c', r,g,b, th,tl, 0,0 } = fade to RGB color over time t
     // where time 't' is a number of 10msec ticks
     if(      cmd == 'c' ) { 
-        rgb_t* c = (rgb_t*)(msgbuf+1); //msgbuf[1],msgbuf[2],msgbuf[3]
-        int t = (msgbuf[4] << 8) | msgbuf[5];
+        rgb_t* c = (rgb_t*)(msgbuf+1); // msgbuf[1],msgbuf[2],msgbuf[3]
+        int t = (msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
+        uint8_t i = msgbuf[6];
+        memcpy( pattern+i, (scriptline_t*)(msgbuf+1), sizeof(scriptline_t) );
+        playing = 0;
         rgb_setDest( c, t );
     }
     // command {'n', r,g,b, 0,0,0,0 } == set RGB color immediately
@@ -134,6 +151,10 @@ void handleMessage(void)
     }
     else if( cmd == 'e' ) {  // FIXME: not complete
         msgbuf[0] = eeprom_read_byte(0);
+    }
+    else if( cmd == 'p' ) { 
+        playing = msgbuf[1];
+        playpos = msgbuf[2];
     }
     else if( cmd == '!' ) { // testing testing
         msgbuf[0] = 0x55;
@@ -239,33 +260,36 @@ void timerInit(void)
 
 
 // ------------------------------------------------------------------------- 
+// -------------------------- main logic -----------------------------------
+// -------------------------------------------------------------------------
 
-
+uint32_t patternUpdateNext;
 //
 static void updateLEDs(void)
 {
-    if( ((long)millis() - ledUpdateTimeNext) > 0 ) { 
+    // update LED for lading every ledUpdateMillis
+    if( (long)(millis() - ledUpdateTimeNext) > 0 ) { 
         ledUpdateTimeNext += ledUpdateMillis;
         rgb_updateCurrent();
         
-        if( millis() > 500 && !usbHasBeenSetup ) { 
-            rgb_t cNoUsb = {0xff,0x22,0xff}; 
-            rgb_setCurr( &cNoUsb );
-            
+        // check for not on computer power up
+        if( !playing && millis() > 500 && !usbHasBeenSetup ) { 
+            playing = 1;
+            patternUpdateNext = millis();
         }
     }
-}
-
-/*
-static void updateLEDs(void)
-{
-    uint32_t now = millis();
-    if( (now - ledLastMillis) >= ledUpdateMillis ) { 
-        ledLastMillis = now;
-        rgb_updateCurrent();
+    if( playing ) {
+        if( (long)(millis() - patternUpdateNext) > 0  ) {
+            cplay = pattern[playpos].color;
+            tplay = pattern[playpos].dmillis;
+            rgb_setDest( &cplay, tplay );
+            playpos++;
+            if( playpos == 8 ) playpos = 0; // wrap around
+            patternUpdateNext += tplay*10;
+        }
     }
+
 }
-*/
 
 //
 int main(void)
@@ -283,18 +307,15 @@ int main(void)
     for( uint8_t i=255; i>0; i-- ) {
         wdt_reset();
         _delay_ms(1);
-        uint8_t j = i>>4;
+        uint8_t j = i>>4;      // not so bright, please
         setRGBOut(j,j,j);      // fade down for fun
-        //setRGBOut(i,i,i);      // fade down for fun
     }
     usbDeviceConnect();
 
     sei();
 
-    //ctmp = {0xff,0xdd,0xdd}; // warm white
-    //ctmp.r = 00,0x00,0x00}; // off
-    setRGBt(ctmp, 0, 0, 0);
-    rgb_setCurr( &ctmp );
+    setRGBt(cplay, 0,0,0);      // starting color
+    rgb_setCurr( &cplay );
 
     for(;;){                // main event loop 
         wdt_reset();
@@ -305,6 +326,18 @@ int main(void)
 }
 
 
+
+
+/*
+static void updateLEDs(void)
+{
+    uint32_t now = millis();
+    if( (now - ledLastMillis) >= ledUpdateMillis ) { 
+        ledLastMillis = now;
+        rgb_updateCurrent();
+    }
+}
+*/
 
 /*
 

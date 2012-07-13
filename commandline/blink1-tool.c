@@ -147,6 +147,12 @@ int main(int argc, char **argv)
             printf("error on fadeToRGB\n");
         }
     }
+    else if( strcasecmp(cmd, "off") == 0 ) {
+        rc = blink1_fadeToRGB(dev,fadeMillis, 0,0,0);
+    }
+    else if( strcasecmp(cmd, "on") == 0 ) {
+        rc = blink1_fadeToRGB(dev,fadeMillis, 255,255,255);
+    }
     else if( strcasecmp(cmd, "random") == 0 ) {
         if( argc > 2 ) {
             numDevicesToUse = strtol( argv[2],NULL,0);

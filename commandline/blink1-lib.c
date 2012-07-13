@@ -97,7 +97,7 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
         return -1; // BLINK1_ERR_NOTOPEN;
     }
 
-    int dms = fadeMillis/10;
+    int dms = fadeMillis/10;  // millis_divided_by_10
 
     buffer[0] = 0;
     buffer[1] = 'c';

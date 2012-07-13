@@ -29,6 +29,12 @@ typedef struct {
     int b;
 } rgbint_t;
 
+//
+typedef struct {
+    rgb_t color;
+    uint8_t  dmillis;
+} scriptline_t;
+
 #define setRGBt(rgbt,x,y,z) { rgbt.r=x; rgbt.g=y; rgbt.b=z; }
 
 rgbint_t dest100x;  // the eventual destination color we want to hit
@@ -46,6 +52,11 @@ void rgb_setCurr( rgb_t* newcolor )
     curr100x.r = newcolor->r * 100;
     curr100x.g = newcolor->g * 100;
     curr100x.b = newcolor->b * 100;
+
+    dest100x.r = curr100x.r;
+    dest100x.g = curr100x.g;
+    dest100x.b = curr100x.b;
+    stepcnt = 0;
 
     setRGBOut( newcolor->r, newcolor->g, newcolor->b );
 }
