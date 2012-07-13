@@ -46,7 +46,7 @@ static uint8_t usbHasBeenSetup;
 // needs "setRGBOut()" defined
 #include "color_funcs.h"
 
-uint32_t ledUpdateTimeNext;
+static uint32_t ledUpdateTimeNext;
 const uint32_t ledUpdateMillis = 10;  // tick msec
 
 
@@ -278,6 +278,7 @@ static void updateLEDs(void)
             patternUpdateNext = millis();
         }
     }
+    
     if( playing ) {
         if( (long)(millis() - patternUpdateNext) > 0  ) {
             cplay = pattern[playpos].color;
