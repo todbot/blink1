@@ -2,8 +2,9 @@
  * BlinkM USB - BlinkM-like device with USB interface
  *  2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
  * 
- * Originally from:
- * Project: hid-custom-rq example by  Christian Starkjohann
+ * Based on much code from:
+ *   Project: hid-custom-rq example by  Christian Starkjohann
+ *   LinkM : http://linkm.thingm.com/
  *
  *
  * Firmware TODOs:
@@ -24,7 +25,9 @@
 
 #include "usbdrv.h"
 
-#include "osccal.h"         // oscialltor calibration via USB 
+uint8_t usbHasBeenSetup = 0;
+
+#include "osccal.h"         // oscillator calibration via USB 
 
 // pins for RGB LED
 #define PIN_RED	 PB4   // OCR1B == red    == PB4 == pin3
@@ -34,38 +37,45 @@
 #define PIN_USBP PB2   // pin7 == USB D+ must be PB2 / INT0
 #define PIN_USBM PB3   // pin2 == USB D-
 
-#define setRed(x) ( OCR1B = (x) )
-#define setGrn(x) ( OCR0A = 255 - (x) )
-#define setBlu(x) ( OCR0B = 255 - (x) )
+#define setRedOut(x) ( OCR1B = (x) )
+#define setGrnOut(x) ( OCR0A = 255 - (x) )
+#define setBluOut(x) ( OCR0B = 255 - (x) )
 
-#define setRGB(r,g,b) { setRed(r); setGrn(g); setBlu(b); }
+#define setRGBOut(r,g,b) { setRedOut(r); setGrnOut(g); setBluOut(b); }
 
 // needs "setRGB()" defined
 #include "color_funcs.h"
 
 
-uint32_t ledLastMillis;
+rgb_t ctmp;
+
+uint32_t ledUpdateTimeNext;
+//uint32_t connectedTestTimeNext;
+//uint32_t ledLastMillis;
 uint32_t ledUpdateMillis = 10;  // tick msec
 
 // ------------------------------------------------------------------------- 
-
+// ----------------------- millis time keeping -----------------------------
+// -------------------------------------------------------------------------
 // for "millis()" function, a count of 0.256ms units
 volatile uint32_t tick;
+
 //
-static uint32_t millis(void)
+static inline uint32_t millis(void)
 {
     return tick;
 }
+
 // 8MHz w/clk/8: overflows 1000/(8e6/8/256) = 0.256msec -> "millis" = ~tick/4
 // 16.5MHz w/clk/64: overflows 1000/(16.5e6/64/256) = ~1 msec
-ISR(SIG_OVERFLOW1,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run still
+ISR(SIG_OVERFLOW1,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run
 {
     tick++;  //
 }
 
-/* ------------------------------------------------------------------------- */
-/* ----------------------------- USB interface ----------------------------- */
-/* ------------------------------------------------------------------------- */
+// ------------------------------------------------------------------------- 
+// ----------------------------- USB interface ----------------------------- 
+// ------------------------------------------------------------------------- 
 
 // The following variables store the status of the current data transfer 
 static uchar    currentAddress;
@@ -93,13 +103,18 @@ PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor
 // msgbuf[] is 8 bytes long
 //  byte0 = command
 //  byte1..byte7 = args for command
+//
 // Available commands:
-// x Fade to RGB color  format: {'c', r,g,b, th, tl, 0, 0}
-// x Set RGB color now  format: {'n', r,g,b,  0,0, 0,0}
-// - Save last N commands for playback
+// x Fade to RGB color       format: {'c', r,g,b,      th,tl, 0,0 }
+// x Set RGB color now       format: {'n', r,g,b,        0,0, 0,0 }
+// - Nightlight mode on/off  format: {'N', {1/0},th,tl,  0,0, 0,0 }
+// - Serverdown mode on/off  format: {'D', {1/0},th,tl,  0,0, 0,0 }
+// - Save last N cmds for playback : 
 // - Playback
 // - Read playback loc n
-// 
+// - Set log2lin vals        format: {'M', i, v0, v1,v2,v3,v4, 0,0 } 
+// - Get log2lin val 
+//
 void handleMessage(void)
 {
     uint8_t cmd = msgbuf[0];
@@ -119,6 +134,11 @@ void handleMessage(void)
     }
     else if( cmd == 'e' ) {  // FIXME: not complete
         msgbuf[0] = eeprom_read_byte(0);
+    }
+    else if( cmd == '!' ) { // testing testing
+        msgbuf[0] = 0x55;
+        msgbuf[1] = 0xAA;
+        msgbuf[2] = usbHasBeenSetup;
     }
     else {
         
@@ -187,12 +207,16 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
 
 
 // ------------------------------------------------------------------------- 
+// ------------------------ chip setup -------------------------------------
+// -------------------------------------------------------------------------
 
+//
+// timerInit -- initialize the various PWM & timekeeping functions
+//  there are 3 PWMs to be setup and one timer for "millis" counting 
 //
 void timerInit(void)
 {
-    //configure outputs on PB0, PB1, PB4 
-    //DDRB = _BV(PB0) | _BV(PB1) | _BV(PB4); 
+    // configure PWM outputs 
     DDRB = _BV( PIN_RED ) | _BV( PIN_GRN ) | _BV( PIN_BLU );
 
     //WGM00 & WGM01 = FastPWM 
@@ -200,23 +224,39 @@ void timerInit(void)
         _BV(COM0A1) | _BV(COM0A0) | 
         _BV(COM0B1) | _BV(COM0B0);
     
-    //TCCR0B = _BV(CS01); //Timer0 prescaler /8  (8kHz freq at 16.5MHz)
     TCCR0B = _BV(CS01)|_BV(CS00); //Timer0 prescaler /64 (1kHz freq @ 16.5MHz)
 
-    //TCCR1 = _BV(CS12);  //Timer1 prescaler /8 (8kHz freq at 16.5MHz)
-    TCCR1 = _BV(CS12)|_BV(CS11)|_BV(CS10);  //Timer1 prescaler /8 (1kHz)
+    TCCR1 = _BV(CS12)|_BV(CS11)|_BV(CS10);  //Timer1 prescaler /64 (1kHz)
     //PWM1B = enable PWM on OCR1B 
     //COM1B1 = clear on compare match, set when 
     GTCCR = _BV(PWM1B) | _BV(COM1B1); 
     //GTCCR = _BV(PWM1B) | _BV(COM1B1) | _BV(COM1B0); // why doesn't this work?
-
 
     // create a "millis" by using Timer1 overflow interrupt
     TIFR  |= _BV( TOV1 );
     TIMSK |= _BV( TOIE1 );
 }
 
+
+// ------------------------------------------------------------------------- 
+
+
 //
+static void updateLEDs(void)
+{
+    if( ((long)millis() - ledUpdateTimeNext) > 0 ) { 
+        ledUpdateTimeNext += ledUpdateMillis;
+        rgb_updateCurrent();
+        
+        if( millis() > 500 && !usbHasBeenSetup ) { 
+            rgb_t cNoUsb = {0xff,0x22,0xff}; 
+            rgb_setCurr( &cNoUsb );
+            
+        }
+    }
+}
+
+/*
 static void updateLEDs(void)
 {
     uint32_t now = millis();
@@ -225,8 +265,7 @@ static void updateLEDs(void)
         rgb_updateCurrent();
     }
 }
-
-// ------------------------------------------------------------------------- 
+*/
 
 //
 int main(void)
@@ -236,22 +275,26 @@ int main(void)
     calibrationLoad();
 
     timerInit();
-
+    
     usbInit();
     usbDeviceDisconnect();
 
-    uint8_t i = 0;
-    while(--i){             // fake USB disconnect for > 250 ms 
+    // fake USB disconnect for > 250 ms 
+    for( uint8_t i=255; i>0; i-- ) {
         wdt_reset();
         _delay_ms(1);
-        setRGB(i,i,i);      // fade down for funx
+        uint8_t j = i>>4;
+        setRGBOut(j,j,j);      // fade down for fun
+        //setRGBOut(i,i,i);      // fade down for fun
     }
     usbDeviceConnect();
 
     sei();
 
-    rgb_t cBlack = {0x00,0x00,0x00};
-    rgb_setCurr( &cBlack );
+    //ctmp = {0xff,0xdd,0xdd}; // warm white
+    //ctmp.r = 00,0x00,0x00}; // off
+    setRGBt(ctmp, 0, 0, 0);
+    rgb_setCurr( &ctmp );
 
     for(;;){                // main event loop 
         wdt_reset();
@@ -263,27 +306,39 @@ int main(void)
 
 
 
-    /*
-    rgb_t cBlack = {0x00,0x00,0x00};
-    rgb_t cWhite = {0xff,0xff,0xff};
-    rgb_t cRed =   {0xff,0x00,0x00};
-    rgb_t cBlue =  {0x00,0x00,0xff};
+/*
 
-    while( 1 ) { 
+// scrapped idea for using pinchange to detect bus activity
+// (and thus use it for plug/unplug state)
+//
 
-        rgb_setCurr(&cBlue);
+//volatile uint8_t pintick;
 
-        while( (millis() - ledLastMillis) < 1000 ) { wdt_reset(); }
-        ledLastMillis = millis();
+//
+ISR(SIG_PIN_CHANGE,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run
+{
+    pintick++;
+}
 
-        rgb_setCurr(&cBlack);
+//
+void pinChangeInit(void)
+{
+    PCMSK |= _BV(PCINT3);
+    GIMSK |= _BV(PCIE);
+}
 
-        while( (millis() - ledLastMillis) < 1000 ) { wdt_reset(); }
-        ledLastMillis = millis();
+//
+void connectedTest(void)
+{
+    if( ((long)millis() - connectedTestTimeNext) > 0 ) {
+        connectedTestTimeNext += 1000;
+        if( pintick < 20 ) { // disconnected
+            rgb_t cDisconn = {0xff,0xdd,0x33}; 
+            rgb_setCurr( &cDisconn );
+        }
+        pintick = 0;
     }
-    
-    */
-    
-
+}
+*/
 
 // -eof-

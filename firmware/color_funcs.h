@@ -29,13 +29,15 @@ typedef struct {
     int b;
 } rgbint_t;
 
+#define setRGBt(rgbt,x,y,z) { rgbt.r=x; rgbt.g=y; rgbt.b=z; }
+
 rgbint_t dest100x;  // the eventual destination color we want to hit
 rgbint_t step100x;  // the amount of to move each tick
 rgbint_t curr100x;  // the current color, times 10 (to lessen int trunc issue)
 int stepcnt;
 
-#ifndef setRGB
-#error "setRGB(r,g,b) not defined"
+#ifndef setRGBOut
+#error "setRGBOut(r,g,b) not defined"
 #endif
 
 // set the current color
@@ -45,7 +47,7 @@ void rgb_setCurr( rgb_t* newcolor )
     curr100x.g = newcolor->g * 100;
     curr100x.b = newcolor->b * 100;
 
-    setRGB( newcolor->r, newcolor->g, newcolor->b );
+    setRGBOut( newcolor->r, newcolor->g, newcolor->b );
 }
 
 // set a new destination color
@@ -79,7 +81,7 @@ void rgb_updateCurrent(void)
         curr100x.b = dest100x.b;
     }
 
-    setRGB( curr100x.r/100, curr100x.g/100, curr100x.b/100 );
+    setRGBOut( curr100x.r/100, curr100x.g/100, curr100x.b/100 );
 }
 
 

@@ -78,6 +78,8 @@ void usbEventResetReady(void)
     calibrateOscillator();
     // store the calibrated value in EEPROM 
     eeprom_write_byte(EEPROM_ADDR_OSCCAL, OSCCAL);
+    
+    usbHasBeenSetup++;
 }
 
 #endif
