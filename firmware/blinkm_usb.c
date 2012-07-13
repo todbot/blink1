@@ -50,19 +50,22 @@ static uint32_t ledUpdateTimeNext;
 const uint32_t ledUpdateMillis = 10;  // tick msec
 
 
+#define patt_len 10
 rgb_t cplay;     // holder for currently playing color
 uint16_t tplay;
 uint8_t playpos;
 uint8_t playing; // boolean
-scriptline_t pattern[8] = {
-    { { 0xff, 0x00, 0x00 }, 100 },
-    { { 0x00, 0xff, 0x00 }, 100 },
-    { { 0x00, 0x00, 0xff }, 100 },
+scriptline_t pattern[patt_len] = {
+    { { 0xff, 0x00, 0x00 }, 200 },
+    { { 0x00, 0xff, 0x00 }, 200 },
+    { { 0x00, 0x00, 0xff }, 200 },
     { { 0xff, 0xff, 0xff }, 100 },
     { { 0xff, 0xff, 0xff }, 100 },
-    { { 0xff, 0x00, 0xff }, 100 },
-    { { 0xff, 0xff, 0x00 }, 100 },
-    { { 0x00, 0xff, 0xff }, 200 },
+    { { 0xff, 0x00, 0xff },  50 },
+    { { 0xff, 0xff, 0x00 },  50 },
+    { { 0x00, 0xff, 0xff },  50 },
+    { { 0x00, 0x00, 0x00 },  50 },
+    { { 0x00, 0x00, 0x00 }, 400 },
 };
 
 
@@ -285,7 +288,7 @@ static void updateLEDs(void)
             tplay = pattern[playpos].dmillis;
             rgb_setDest( &cplay, tplay );
             playpos++;
-            if( playpos == 8 ) playpos = 0; // wrap around
+            if( playpos == patt_len ) playpos = 0; // wrap around
             patternUpdateNext += tplay*10;
         }
     }
