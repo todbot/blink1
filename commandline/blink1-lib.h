@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 #include "hiddata.h"
-#include "usbconfig.h"  //for VID, PID, vendor name & product name 
+#include "usbconfig.h" // from firmware, for VID,PID,vendor name & product name 
 
 
 usbDevice_t* blink1_getDevice(int i);

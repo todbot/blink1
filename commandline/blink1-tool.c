@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     }
     char* cmd = argv[1];
 
-    if( 0 ) {     
+    if( 0 ) {
         if((dev = blink1_open()) == NULL)
             exit(1);
     }

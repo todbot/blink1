@@ -133,7 +133,7 @@ endif
 #####################  Common  ##############################################
 
 #CC=		gcc
-CFLAGS = $(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../firmware 
+CFLAGS = $(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../hardware/firmware 
 CFLAGS += -I ./mongoose -pthread -g
 LIBS=	$(OS_LIBS) $(USBLIBS) 
 #LIBS += 

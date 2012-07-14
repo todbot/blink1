@@ -95,7 +95,7 @@ endif
 
 
 # now construct normal env vars based on OS-specific ones
-INCLUDES = -I. -I../commandline -I../firmware $(JAVAINCLUDE) $(JAVANATINC) 
+INCLUDES = -I. -I../commandline -I../hardware/firmware $(JAVAINCLUDE) $(JAVANATINC) 
 OBJ = ../commandline/hiddata.o  ../commandline/blink1-lib.o  native$(TARGET).o 
 
 CFLAGS  = $(OS_CFLAGS) -O -Wall -std=gnu99  $(INCLUDES)
@@ -114,7 +114,7 @@ help:
 	@echo "#make libprep ... to get libusb usable for compiling"
 	@echo "make compile ....to build the C code" 
 	@echo "make jar ....... to build the distribution jar"
-	@echo "make processing. to build the processing library (only for OSX!)"
+	@echo "make processing. to build the processing library (for current arch)"
 	@echo "make clean ..... to clean all built files"
 	@echo "make javadoc ... to make the javadoc"
 
@@ -149,7 +149,7 @@ jar: javac jni compile
 	mv blink1.jar libtargets
 
 processing: processinglib
-processinglib:
+processinglib: jar
 	rm -f blink1.zip
 	mkdir -p blink1/library
 	cp packaging/processing-export.txt blink1/library/export.txt

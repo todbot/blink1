@@ -51,6 +51,14 @@ static uint8_t usbHasBeenSetup;
 // needs "setRGBOut()" defined
 #include "color_funcs.h"
 
+// a simple logarithmic -> linear mapping as a sort of gamma correction
+// maps from 0-255 to 0-255
+static int log2lin( int n )  
+{
+  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
+  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+}
+
 static uint32_t ledUpdateTimeNext;
 const uint32_t ledUpdateMillis = 10;  // tick msec
 
