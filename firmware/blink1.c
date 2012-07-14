@@ -1,11 +1,16 @@
 /* 
- * BlinkM USB - BlinkM-like device with USB interface
+ * blink(1) - BlinkM-like device with USB interface
  *  2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
  * 
  * Based on much code from:
  *   Project: hid-custom-rq example by  Christian Starkjohann
  *   LinkM : http://linkm.thingm.com/
+ *   BlinkM : http://blinkm.thingm.com/
  *
+ * 
+ * Note: blink(1) contains no code from BlinkM.  The circuit is different,
+ * the PWM is hardware, not software, and the fading and script engine work
+ * differently. 
  *
  * Firmware TODOs: (x=done)
  * x detect plugged in to power supply vs computer, 

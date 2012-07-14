@@ -1,5 +1,4 @@
-# BlinkM USB Makefile
-# 
+# blink(1) firmware Makefile
 #
 # 2012, Tod E. Kurt, http://thingm.com/  http://todbot.com/blog/
 #
@@ -7,7 +6,7 @@
 # License: GPLv2.
 #
 
-TARGET=blinkm_usb
+TARGET=blink1
 
 #DEVICE=attiny85
 DEVICE=attiny45
