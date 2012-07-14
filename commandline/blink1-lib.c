@@ -1,7 +1,7 @@
 //
+// blink(1) C library -- 
 //
-//
-//
+// 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
 //
 //
 
