@@ -65,6 +65,37 @@ static struct mg_context *ctx;      // Set by start_mongoose()
 #define CONFIG_FILE "mongoose.conf"
 #endif /* !CONFIG_FILE */
 
+static void *callback(enum mg_event event,
+                      struct mg_connection *conn,
+                      const struct mg_request_info *request_info)
+{
+
+    if (event == MG_NEW_REQUEST) {
+        const char* uri = request_info->uri;
+        
+        if( strncmp(uri,"/todbot", 7) == 0 ) { // match
+            
+        // Echo requested URI back to the client
+        mg_printf(conn, "HTTP/1.1 200 OK\r\n"
+                  "Content-Type: text/plain\r\n\r\n"
+                  "-- hello there! message received --\n"
+                  );
+ 
+
+        return (void*)""; // processed
+        }
+        else { 
+            return NULL; // not processed
+        }
+    }
+    else {
+        return NULL;
+    }
+
+
+}
+
+
 static void WINCDECL signal_handler(int sig_num) {
   exit_flag = sig_num;
 }
@@ -242,7 +273,7 @@ static void start_mongoose(int argc, char *argv[]) {
   signal(SIGINT, signal_handler);
 
   /* Start Mongoose */
-  ctx = mg_start(NULL, NULL, (const char **) options);
+  ctx = mg_start(&callback, NULL, (const char **) options);
   for (i = 0; options[i] != NULL; i++) {
     free(options[i]);
   }

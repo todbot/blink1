@@ -93,8 +93,8 @@ USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
 ifeq ($(SINGLEARCH), 0) 
 #OS_CFLAGS= -arch i386 -arch ppc 
 #OS_CFLAGS= -arch i386 -arch x86_64 -arch ppc
-#OS_CFLAGS= -arch i386 -arch x86_64
-OS_CFLAGS= -arch x86_64
+OS_CFLAGS= -arch i386 -arch x86_64
+#OS_CFLAGS= -arch x86_64
 endif
 ##OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -no_compact_linkedit
 #OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6 -no_compact_linkedit
@@ -130,11 +130,15 @@ USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
 endif
 
 
-#CC=		gcc
-CFLAGS=	$(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../firmware
-LIBS=	$(OS_LIBS) $(USBLIBS) 
+#####################  Common  ##############################################
 
-OBJ=		$(TARGET).o blink1-lib.o hiddata.o 
+#CC=		gcc
+CFLAGS = $(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../firmware 
+CFLAGS += -I ./mongoose -pthread -g
+LIBS=	$(OS_LIBS) $(USBLIBS) 
+#LIBS += 
+
+OBJ=		blink1-lib.o hiddata.o 
 
 PROGRAM=	$(TARGET)$(EXE_SUFFIX)
 
@@ -152,8 +156,11 @@ help:
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
 
-$(PROGRAM): $(OBJ)
-	$(CC) -o $(PROGRAM) $(OBJ) $(LIBS) 
+$(PROGRAM): $(OBJ) $(TARGET).o
+	$(CC) -o $(PROGRAM) $(TARGET).o $(OBJ) $(LIBS) 
+
+blink1-server: $(OBJ) blink1-server.o ./mongoose/mongoose.o
+	$(CC) -o blink1-server $(OBJ) $(LIBS) $(CFLAGS) blink1-server.o ./mongoose/mongoose.o
 
 .c.o:
 	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
@@ -162,6 +169,7 @@ strip: $(PROGRAM)
 	strip $(PROGRAM)
 
 clean:
+	rm -f blink1-server
 	rm -f $(OBJ) $(PROGRAM)
 
 distclean: clean
