@@ -31,6 +31,9 @@
 #include <inttypes.h>
 #include "usbdrv.h"
 
+#define blink1_ver_major  '1'
+#define blink1_ver_minor  '0'
+
 static uint8_t usbHasBeenSetup;
 
 #include "osccal.h"         // oscillator calibration via USB 
@@ -233,6 +236,7 @@ void handleMessage(void)
     // fade to RGB color
     // command {'c', r,g,b, th,tl, 0,0 } = fade to RGB color over time t
     // where time 't' is a number of 10msec ticks
+    //
     if(      cmd == 'c' ) { 
         rgb_t* c = (rgb_t*)(msgbuf+1); // msgbuf[1],msgbuf[2],msgbuf[3]
         uint16_t t = (msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
@@ -240,27 +244,31 @@ void handleMessage(void)
         rgb_setDest( c, t );
     }
     // set RGB color immediately  - {'n', r,g,b, 0,0,0,0 } 
+    //
     else if( cmd == 'n' ) { 
         rgb_t* c = (rgb_t*)(msgbuf+1);
         rgb_setDest( c, 0 );
         rgb_setCurr( c );
     }
     // play/pause, with position
+    //
     else if( cmd == 'p' ) { 
         playing = msgbuf[1]; 
         playpos = msgbuf[2];
         // FIXME: what about on boot?
     }
     // write pattern entry {'P', r,g,b, th,tl, i, 0,0}
+    //
     else if ( cmd == 'P' ) { 
+        // was doing this copy with a cast, but broke it out for clarity
         patternline_t ptmp;
         ptmp.color.r = msgbuf[1];
         ptmp.color.g = msgbuf[2];
         ptmp.color.b = msgbuf[3];
-        ptmp.dmillis = ((uint16_t)msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
+        ptmp.dmillis = ((uint16_t)msgbuf[4] << 8) | msgbuf[5]; 
         uint8_t i = msgbuf[6];
         if( i >= patt_max ) i = 0;
-        // save pattern line to ramto RAM 
+        // save pattern line to RAM 
         memcpy( &pattern[i], &ptmp, sizeof(patternline_t) );
         eeprom_write_block( &pattern[i], &ee_pattern[i], sizeof(patternline_t));
     }
@@ -279,11 +287,6 @@ void handleMessage(void)
         // FIXME: put in bounds checking on addr
         eeprom_write_byte( (uint8_t*)(uint16_t)addr, val ); // dumb
     }
-    // nightlight mode on/off 
-    //
-    //else if( cmd == 'N' ) { 
-    //    eeprom_write_byte( &ee_bootmode, msgbuf[1] );
-    //}
     // servermode tickle  
     // {'D', {1/0},th,tl,  0,0, 0,0 }
     else if( cmd == 'D' ) {
@@ -296,6 +299,16 @@ void handleMessage(void)
             serverdown_millis = 0; // turn off serverdown mode
         }
     }
+    // version info
+    else if( cmd == 'v' ) { 
+        msgbuf[1] = blink1_ver_major;
+        msgbuf[2] = blink1_ver_minor;
+    }
+    // nightlight mode on/off 
+    //
+    //else if( cmd == 'N' ) { 
+    //    eeprom_write_byte( &ee_bootmode, msgbuf[1] );
+    //}
     else if( cmd == '!' ) { // testing testing
         msgbuf[0] = 0x55;
         msgbuf[1] = 0xAA;
@@ -400,15 +413,15 @@ int main(void)
 
     timerInit();
     
-    /* 
-       this is unneeded currently, use USB activity to determine play/not-play
+    /*  this is unneeded currently, use USB activity to determine play/not-play
     // load startup mode 
     uint8_t bootmode = eeprom_read_byte( &ee_bootmode );
     if( bootmode == BOOT_NIGHTLIGHT ) { 
-        playing = 1;
         eeprom_read_block( &pattern,&ee_pattern,sizeof(patternline_t)*patt_max);
+        playing = 1;
     }
     */
+
     usbInit();
     usbDeviceDisconnect();
 

@@ -8,15 +8,15 @@
 
 TARGET=blink1
 
-#DEVICE=attiny85
-DEVICE=attiny45
+#MCU=attiny85
+MCU=attiny45
 # PLL
 F_CPU=16500000
 # non-PLL
 #F_CPU=8000000
 #F_CPU=12800000
 
-# set fuse based on clock freq (and mayb other things)
+# set fuse based on clock freq (and maybe other things)
 ifeq ($(F_CPU),16500000)
 FUSE_H=0xdd
 FUSE_L=0xe1
@@ -26,12 +26,12 @@ FUSE_H=0xdd
 FUSE_L=0xe2
 endif
 
-AVRDUDE = avrdude -c avrispmkii -P usb -p $(DEVICE)
+AVRDUDE = avrdude -c avrispmkii -P usb -p $(MCU)
 # The two lines above are for "avrdude" and the STK500 programmer connected
 # to an USB to serial converter to a Mac running Mac OS X.
 # Choose your favorite programmer and interface.
 
-COMPILE = avr-gcc -std=gnu99 -Wall -Os -Iusbdrv -I.      -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) -DDEBUG_LEVEL=0
+COMPILE = avr-gcc -std=gnu99 -Wall -Os -Iusbdrv -I.   -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DDEBUG_LEVEL=0
 # NEVER compile the final product with debugging! Any debug output will
 # distort timing so that the specs can't be met.
 
@@ -59,13 +59,11 @@ flash:	all
 
 program: flash 
 
+# FIXME: i can't makefile
 $(TARGET).eep: $(TARGET).bin
 	@echo
 	avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 	--change-section-lma .eeprom=0 -O ihex $< $@
-
-readeep: 
-	$(AVRDUDE) -U  eeprom:r:-:h
 
 
 # ATtiny85
@@ -92,12 +90,13 @@ fuse:
 
 readfuse: getfuse
 getfuse:
-	rm -f hfuse.txt lfuse.txt efuse.txt lockfuse.txt
-	$(AVRDUDE) -U hfuse:r:/dev/stdout:h -U lfuse:r:/dev/stdout:h 
+	$(AVRDUDE) -U hfuse:r:-:h -U lfuse:r:-:h 
 
 readcal:
-	$(AVRDUDE) -U calibration:r:/dev/stdout:h
-#	$(AVRDUDE) -U calibration:r:/dev/stdout:i | head -1
+	$(AVRDUDE) -U calibration:r:-:h
+
+readeep: 
+	$(AVRDUDE) -U  eeprom:r:-:h
 
 
 clean:
