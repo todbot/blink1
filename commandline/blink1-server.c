@@ -102,16 +102,12 @@ int main(void) {
   printf("blink1-server: running on port %s\n",
          mg_get_option(ctx, "listening_ports"));
 
-  int childpid = fork();
-  if( childpid == 0 ) {  // child
-  
-      //getchar();  // Wait until user hits "enter"
-      while (exit_flag == 0) {
-          sleep(1);
-      }
-
-      mg_stop(ctx);
+  //getchar();  // Wait until user hits "enter"
+  while (exit_flag == 0) {
+      sleep(1);
   }
+
+  mg_stop(ctx);
 
   return 0;
 }

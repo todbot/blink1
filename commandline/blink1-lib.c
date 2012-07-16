@@ -14,6 +14,9 @@ static usbDevice_t* blink1s[16];
 static int blink1s_inuse[16];
 static int blink1s_count = 0;
 
+///static blink1_error = 0;
+
+
 //
 usbDevice_t* blink1_getDevice(int i)
 {
@@ -77,29 +80,42 @@ void blink1_close( usbDevice_t* dev )
 }
 
 //
-int blink1_write( usbDevice_t* dev, void* buf, int len, double timeout)
+int blink1_write( usbDevice_t* dev, void* buf, int len)
 {
+    //for( int i=0; i<len; i++) printf("0x%2.2x,", ((uint8_t*)buf)[i]);
+    //printf("\n");
+
+    if( dev==NULL ) {
+        return -1; // BLINK1_ERR_NOTOPEN;
+    }
     int err;
-    if( (err = usbhidSetReport(dev, buf, len) != 0) ) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
+    err = usbhidSetReport(dev, buf, len);
+    return err;
+}
+
+// len should contain length of buf
+// after call, len will contain actual len of buf read
+int blink1_read( usbDevice_t* dev, void* buf, int* len)
+{
+    if( dev==NULL ) {
+        return -1; // BLINK1_ERR_NOTOPEN;
+    }
+    int err;
+    if( (err = usbhidGetReport(dev, 0, buf, len) != 0) ) {
+        fprintf(stderr,"error reading data: %s\n",blink1_error_msg(err));
     }
     return err;
 }
 
 //
-int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
-                        uint8_t r, uint8_t g, uint8_t b )
+int blink1_fadeToRGB(usbDevice_t *dev,  uint16_t fadeMillis,
+                     uint8_t r, uint8_t g, uint8_t b)
 {
     char buffer[9];
-    int err;
-
-    if( dev==NULL ) {
-        return -1; // BLINK1_ERR_NOTOPEN;
-    }
 
     int dms = fadeMillis/10;  // millis_divided_by_10
 
-    buffer[0] = 0;
+    buffer[0] = 0;  // report id
     buffer[1] = 'c';
     buffer[2] = r;
     buffer[3] = g;
@@ -107,9 +123,12 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
     buffer[5] = (dms >> 8);
     buffer[6] = dms % 0xff;
 
-    if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
+    int err = blink1_write(dev, buffer, sizeof(buffer) );
+
+    if( err != 0 ) {
         fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
     }
+    //if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
     return err;  // FIXME: remove fprintf
 }
 
@@ -117,11 +136,6 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
 int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
 {
     char buffer[9];
-    int err;
-
-    if( dev==NULL ) {
-        return -1; // BLINK1_ERR_NOTOPEN;
-    }
 
     buffer[0] = 0;
     buffer[1] = 'n';
@@ -129,11 +143,42 @@ int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
     buffer[3] = g;
     buffer[4] = b;
     
-    if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
+    int err = blink1_write(dev, buffer, sizeof(buffer) );
+
+    if( err != 0 ) {
         fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
     }
     return err;  // FIXME: remove fprintf
 }
+
+//
+int blink1_eeread(usbDevice_t *dev, uint16_t addr, uint8_t* val)
+{
+    return -1;
+}
+
+int blink1_eewrite(usbDevice_t *dev, uint16_t addr, uint8_t val)
+{
+    return -1;
+}
+
+int blink1_nightlight(usbDevice_t *dev, uint8_t on)
+{
+    return -1;
+}
+
+int blink1_serverdown(usbDevice_t *dev, uint8_t on, uint16_t millis)
+{
+    return -1;
+}
+
+int blink1_writePatternLine(usbDevice_t *dev, uint16_t fadeMillis, 
+                            uint8_t r, uint8_t g, uint8_t b, 
+                            uint8_t pos)
+{
+    return -1;
+}
+
 
 /* ------------------------------------------------------------------------- */
 
