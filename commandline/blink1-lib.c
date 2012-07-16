@@ -108,6 +108,21 @@ int blink1_read( usbDevice_t* dev, void* buf, int* len)
 }
 
 //
+int blink1_getVersion(usbDevice_t *dev)
+{
+    
+    char buf[9] = { 0, 'v'};
+    int len = sizeof(buf);
+    int rc;
+    rc = blink1_write(dev, buf, sizeof(buf));
+    if( rc == 0 ) // no error
+        rc = blink1_read(dev, buf, &len);
+    if( rc == 0 ) 
+        rc = ((buf[2]-'0') * 100) + (buf[3]-'0');  // rc is now version number
+    return rc;
+}
+
+//
 int blink1_fadeToRGB(usbDevice_t *dev,  uint16_t fadeMillis,
                      uint8_t r, uint8_t g, uint8_t b)
 {
@@ -178,6 +193,7 @@ int blink1_writePatternLine(usbDevice_t *dev, uint16_t fadeMillis,
 {
     return -1;
 }
+
 
 
 /* ------------------------------------------------------------------------- */

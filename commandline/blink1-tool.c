@@ -32,6 +32,7 @@ int numDevicesToUse = 1;
 usbDevice_t *dev;
 char  cmdbuf[9];    // room at front for reportID 
 
+int verbose;
 
 // local states for the "cmd" option variable
 enum { 
@@ -45,10 +46,8 @@ enum {
     CMD_OFF,
     CMD_ON,
     CMD_RANDOM,
+    CMD_VERSION,
 };
-
-int verbose;
-int cmd  = CMD_NONE;
 //---------------------------------------------------------------------------- 
 
 // a simple logarithmic -> linear mapping as a sort of gamma correction
@@ -125,6 +124,8 @@ int main(int argc, char** argv)
     //int blink1_count;
     int16_t arg;
     int  rc;
+    static int cmd  = CMD_NONE;
+
 
     // parse options
     int option_index = 0, opt;
@@ -143,6 +144,7 @@ int main(int argc, char** argv)
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
         {"random",     required_argument, &cmd,   CMD_RANDOM },
+        {"version",    no_argument,       &cmd,   CMD_VERSION },
         {NULL,         0,                 0,      0}
     };
     while(1) {
@@ -177,7 +179,6 @@ int main(int argc, char** argv)
             break;
         }
     }
-
     if(argc < 2){
         usage( "blink1-tool" );
         exit(1);
@@ -220,6 +221,11 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_EEWRITE ) {
         printf("eewrite: ");
+    }
+    else if( cmd == CMD_VERSION ) { 
+        printf("version: ");
+        rc = blink1_getVersion(dev);
+        printf("%d\n", rc );
     }
     else if( cmd == CMD_RGB ) { 
         uint8_t r = cmdbuf[0];

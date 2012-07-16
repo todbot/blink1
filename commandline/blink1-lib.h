@@ -17,6 +17,8 @@ void blink1_close( usbDevice_t* dev );
 int blink1_write( usbDevice_t* dev, void* buf, int len);
 int blink1_read( usbDevice_t* dev, void* buf, int* len);
 
+int blink1_getVersion(usbDevice_t *dev);
+
 int blink1_fadeToRGB(usbDevice_t *dev, uint16_t fadeMillis,
                      uint8_t r, uint8_t g, uint8_t b );
 
