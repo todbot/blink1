@@ -5,7 +5,6 @@
  * Based on much code from:
  *   Project: hid-custom-rq example by  Christian Starkjohann
  *   LinkM : http://linkm.thingm.com/
- *   BlinkM : http://blinkm.thingm.com/
  *
  * 
  * Note: blink(1) contains no code from BlinkM.  The circuit is different,
