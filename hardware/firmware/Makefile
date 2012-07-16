@@ -38,7 +38,7 @@ COMPILE = avr-gcc -std=gnu99 -Wall -Os -Iusbdrv -I.      -mmcu=$(DEVICE) -DF_CPU
 OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o $(TARGET).o
 
 # symbolic targets:
-all:	$(TARGET).hex
+all:	$(TARGET).hex $(TARGET).eep
 
 .c.o:
 	$(COMPILE) -c $< -o $@
@@ -54,10 +54,19 @@ all:	$(TARGET).hex
 	$(COMPILE) -S $< -o $@
 
 flash:	all
-	$(AVRDUDE) -U flash:w:$(TARGET).hex:i
+	$(AVRDUDE) -U flash:w:$(TARGET).hex:i -U eeprom:w:$(TARGET).eep
 #	$(AVRDUDE) -D -U flash:w:$(TARGET).hex:i
 
-program: flash
+program: flash 
+
+$(TARGET).eep: $(TARGET).bin
+	@echo
+	avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+	--change-section-lma .eeprom=0 -O ihex $< $@
+
+readeep: 
+	$(AVRDUDE) -U  eeprom:r:-:h
+
 
 # ATtiny85
 # Fuse high byte:

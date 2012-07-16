@@ -9,12 +9,12 @@
  *
  * 
  * Note: blink(1) contains no code from BlinkM.  The circuit is different,
- * the PWM is hardware, not software, and the fading and script engine work
+ * the PWM is hardware, not software, and the fading and pattern engine work
  * differently. 
  *
  * Firmware TODOs: (x=done)
  * x detect plugged in to power supply vs computer, 
- * - play pattern if not on computer
+ * x play pattern if not on computer
  * - log2lin() function, maybe map in memory (256 RAM bytes, compute at boot)
  * - upload new log2lin table
  * - upload of pattern
@@ -25,10 +25,10 @@
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>  // for sei() 
+#include <avr/eeprom.h>
 #include <util/delay.h>     // for _delay_ms() 
 #include <string.h>         // for memcpy()
 #include <inttypes.h>
-
 #include "usbdrv.h"
 
 static uint8_t usbHasBeenSetup;
@@ -48,37 +48,51 @@ static uint8_t usbHasBeenSetup;
 #define setBluOut(x) ( OCR0B = 255 - (x) )
 #define setRGBOut(r,g,b) { setRedOut(r); setGrnOut(g); setBluOut(b); }
 
-// needs "setRGBOut()" defined
-#include "color_funcs.h"
+#include "color_funcs.h"  // needs "setRGBOut()" defined before inclusion
 
-// a simple logarithmic -> linear mapping as a sort of gamma correction
-// maps from 0-255 to 0-255
-static int log2lin( int n )  
-{
-  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
-  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
-}
+// next time 
+const uint32_t led_update_millis = 10;  // tick msec
+static uint32_t led_update_next;
+static uint32_t pattern_update_next;
+static uint16_t serverdown_millis;
+static uint32_t serverdown_update_next;
 
-static uint32_t ledUpdateTimeNext;
-const uint32_t ledUpdateMillis = 10;  // tick msec
-
-
-#define patt_len 10
+#define patt_max 10
 rgb_t cplay;     // holder for currently playing color
 uint16_t tplay;
 uint8_t playpos;
 uint8_t playing; // boolean
-scriptline_t pattern[patt_len] = {
-    { { 0xff, 0x00, 0x00 }, 200 },
-    { { 0x00, 0xff, 0x00 }, 200 },
-    { { 0x00, 0x00, 0xff }, 200 },
+patternline_t pattern[patt_max] = {
+    { { 0x11, 0x11, 0x11 }, 100 },
+    { { 0x44, 0x44, 0x44 }, 100 },
+    { { 0x88, 0x88, 0x88 }, 100 },
     { { 0xff, 0xff, 0xff }, 100 },
     { { 0xff, 0xff, 0xff }, 100 },
     { { 0xff, 0x00, 0xff },  50 },
     { { 0xff, 0xff, 0x00 },  50 },
     { { 0x00, 0xff, 0xff },  50 },
     { { 0x00, 0x00, 0x00 },  50 },
-    { { 0x00, 0x00, 0x00 }, 400 },
+    { { 0x00, 0x00, 0x00 }, 100 },
+};
+
+// possible values for boot_mode
+#define BOOT_NORMAL      0
+#define BOOT_NIGHTLIGHT  1
+#define BOOT_MODE_END    2
+
+uint8_t ee_osccal          EEMEM; // used by "osccal.h"
+uint8_t ee_bootmode        EEMEM = BOOT_NORMAL;
+patternline_t ee_pattern[patt_max]  EEMEM = {
+    { { 0xff, 0x01, 0x02 }, 100 },
+    { { 0x03, 0xff, 0x05 }, 100 },
+    { { 0x06, 0x07, 0xff }, 100 },
+    { { 0xff, 0xff, 0xff }, 100 },
+    { { 0xff, 0xff, 0xff }, 100 },
+    { { 0xff, 0x00, 0xff },  50 },
+    { { 0xff, 0xff, 0x00 },  50 },
+    { { 0x00, 0xff, 0xff },  50 },
+    { { 0x88, 0x88, 0x88 },  50 },
+    { { 0x00, 0x00, 0x00 }, 100 },
 };
 
 
@@ -86,8 +100,7 @@ scriptline_t pattern[patt_len] = {
 // ----------------------- millis time keeping -----------------------------
 // -------------------------------------------------------------------------
 
-// for "millis()" function, a count of 0.256ms units
-volatile uint32_t tick;
+volatile uint32_t tick;  // for "millis()" function, a count of 1.024msec units
 
 //
 static inline uint32_t millis(void)
@@ -99,7 +112,7 @@ static inline uint32_t millis(void)
 // 16.5MHz w/clk/64: overflows 1000/(16.5e6/64/256) = ~1 msec
 ISR(SIG_OVERFLOW1,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run
 {
-    tick++;  //
+    tick++;  // in this case, tick == millis, to <1%
 }
 
 // ------------------------------------------------------------------------- 
@@ -111,6 +124,7 @@ static uchar    currentAddress;
 static uchar    bytesRemaining;
 
 static uint8_t msgbuf[8];
+//static uint8_t msgbufout[8];
 
 //
 PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor 
@@ -126,61 +140,7 @@ PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor
     0xc0                           // END_COLLECTION
 };
 
-// ------------------------------------------------------------------------- 
-
-//
-// msgbuf[] is 8 bytes long
-//  byte0 = command
-//  byte1..byte7 = args for command
-//
-// Available commands:
-// x Fade to RGB color       format: {'c', r,g,b,      th,tl, 0,0 }
-// x Set RGB color now       format: {'n', r,g,b,        0,0, 0,0 }
-// - Nightlight mode on/off  format: {'N', {1/0},th,tl,  0,0, 0,0 }
-// - Serverdown mode on/off  format: {'D', {1/0},th,tl,  0,0, 0,0 }
-//// - Set attern col & t at pos i   : {'P', r,g,b, th,tl, i,0 }
-// // Save last N cmds for playback : 
-// - Playback
-// - Read playback loc n
-// - Set log2lin vals        format: {'M', i, v0, v1,v2,v3,v4, 0,0 } 
-// - Get log2lin val 
-//
-void handleMessage(void)
-{
-    uint8_t cmd = msgbuf[0];
-    
-    // command {'c', r,g,b, th,tl, 0,0 } = fade to RGB color over time t
-    // where time 't' is a number of 10msec ticks
-    if(      cmd == 'c' ) { 
-        rgb_t* c = (rgb_t*)(msgbuf+1); // msgbuf[1],msgbuf[2],msgbuf[3]
-        int t = (msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
-        uint8_t i = msgbuf[6];
-        memcpy( pattern+i, (scriptline_t*)(msgbuf+1), sizeof(scriptline_t) );
-        playing = 0;
-        rgb_setDest( c, t );
-    }
-    // command {'n', r,g,b, 0,0,0,0 } == set RGB color immediately
-    else if( cmd == 'n' ) { 
-        rgb_t* c = (rgb_t*)(msgbuf+1);
-        rgb_setDest( c, 0 );
-        rgb_setCurr( c );
-    }
-    else if( cmd == 'e' ) {  // FIXME: not complete
-        msgbuf[0] = eeprom_read_byte(0);
-    }
-    else if( cmd == 'p' ) { 
-        playing = msgbuf[1];
-        playpos = msgbuf[2];
-    }
-    else if( cmd == '!' ) { // testing testing
-        msgbuf[0] = 0x55;
-        msgbuf[1] = 0xAA;
-        msgbuf[2] = usbHasBeenSetup;
-    }
-    else {
-        
-    }
-}
+void handleMessage(void);
 
 /* usbFunctionRead() is called when the host requests a chunk of data from
  * the device. For more information see the documentation in usbdrv/usbdrv.h.
@@ -242,6 +202,109 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
     return 0;
 }
 
+// ------------------------------------------------------------------------- 
+
+//
+// msgbuf[] is 8 bytes long
+//  byte0 = command
+//  byte1..byte7 = args for command
+//
+// Available commands: ('x' == implemented)
+// x Fade to RGB color       format: {'c', r,g,b,      th,tl, 0,0 }
+// x Set RGB color now       format: {'n', r,g,b,        0,0, 0,0 }
+// X Nightlight mode on/off  format: {'N', {1/0},  0,0,  0,0, 0,0 }
+// x Serverdown tickle/off   format: {'D', {1/0},th,tl,  0,0, 0,0 }
+// x Play/Pause              format: {'p', {1/0},pos,0,  0,0, 0,0 }
+// - Set pattern entry       format: {'P', r,g,b, th,tl, i,0 }
+// - Read playback loc n
+// - Set log2lin vals        format: {'M', i, v0, v1,v2,v3,v4, 0,0 } 
+// - Get log2lin val 
+// x Read EEPROM location    format: {'e' addr, }
+// x Write EEPROM location   format: {'E', addr, val, }
+//
+// // Save last N cmds for playback : 
+//
+
+//
+void handleMessage(void)
+{
+    uint8_t cmd = msgbuf[0];
+    
+    // fade to RGB color
+    // command {'c', r,g,b, th,tl, 0,0 } = fade to RGB color over time t
+    // where time 't' is a number of 10msec ticks
+    if(      cmd == 'c' ) { 
+        rgb_t* c = (rgb_t*)(msgbuf+1); // msgbuf[1],msgbuf[2],msgbuf[3]
+        uint16_t t = (msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
+        playing = 0;
+        rgb_setDest( c, t );
+    }
+    // set RGB color immediately  - {'n', r,g,b, 0,0,0,0 } 
+    else if( cmd == 'n' ) { 
+        rgb_t* c = (rgb_t*)(msgbuf+1);
+        rgb_setDest( c, 0 );
+        rgb_setCurr( c );
+    }
+    // play/pause, with position
+    else if( cmd == 'p' ) { 
+        playing = msgbuf[1]; 
+        playpos = msgbuf[2];
+        // FIXME: what about on boot?
+    }
+    // write pattern entry {'P', r,g,b, th,tl, i, 0,0}
+    else if ( cmd == 'P' ) { 
+        patternline_t ptmp;
+        ptmp.color.r = msgbuf[1];
+        ptmp.color.g = msgbuf[2];
+        ptmp.color.b = msgbuf[3];
+        ptmp.dmillis = ((uint16_t)msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
+        uint8_t i = msgbuf[6];
+        if( i >= patt_max ) i = 0;
+        // save pattern line to ramto RAM 
+        memcpy( &pattern[i], &ptmp, sizeof(patternline_t) );
+        eeprom_write_block( &pattern[i], &ee_pattern[i], sizeof(patternline_t));
+    }
+    // read eeprom byte
+    //
+    else if( cmd == 'e' ) { 
+        uint8_t addr = msgbuf[1];
+        uint8_t val = eeprom_read_byte( (uint8_t*)(uint16_t)addr ); // dumb
+        msgbuf[2] = val;  // put read byte in output buff
+    }
+    // write eeprom byte
+    //
+    else if( cmd == 'E' ) { 
+        uint8_t addr = msgbuf[1];
+        uint8_t val  = msgbuf[2];
+        // FIXME: put in bounds checking on addr
+        eeprom_write_byte( (uint8_t*)(uint16_t)addr, val ); // dumb
+    }
+    // nightlight mode on/off 
+    //
+    //else if( cmd == 'N' ) { 
+    //    eeprom_write_byte( &ee_bootmode, msgbuf[1] );
+    //}
+    // servermode tickle  
+    // {'D', {1/0},th,tl,  0,0, 0,0 }
+    else if( cmd == 'D' ) {
+        uint8_t serverdown_on = msgbuf[1];
+        uint16_t t = (msgbuf[4] << 8) | msgbuf[5]; 
+        if( serverdown_on ) { 
+            serverdown_millis = t;
+            serverdown_update_next = millis() + t;
+        } else {
+            serverdown_millis = 0; // turn off serverdown mode
+        }
+    }
+    else if( cmd == '!' ) { // testing testing
+        msgbuf[0] = 0x55;
+        msgbuf[1] = 0xAA;
+        msgbuf[2] = usbHasBeenSetup;
+    }
+    else {
+        
+    }
+}
 
 // ------------------------------------------------------------------------- 
 // ------------------------ chip setup -------------------------------------
@@ -279,33 +342,53 @@ void timerInit(void)
 // -------------------------- main logic -----------------------------------
 // -------------------------------------------------------------------------
 
-uint32_t patternUpdateNext;
+// a simple logarithmic -> linear mapping as a sort of gamma correction
+// maps from 0-255 to 0-255
+static int log2lin( int n )  
+{
+  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
+  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+}
+
 //
 static void updateLEDs(void)
 {
-    // update LED for lading every ledUpdateMillis
-    if( (long)(millis() - ledUpdateTimeNext) > 0 ) { 
-        ledUpdateTimeNext += ledUpdateMillis;
+    uint32_t now = millis();
+    // update LED for lading every led_update_millis
+    if( (long)(now - led_update_next) > 0 ) { 
+        led_update_next += led_update_millis;
         rgb_updateCurrent();
         
         // check for not on computer power up
-        if( !playing && millis() > 500 && !usbHasBeenSetup ) { 
+        if( !usbHasBeenSetup && !playing && now > 250 ) {  // 250 msec wait
             playing = 1;
-            patternUpdateNext = millis();
+            playpos = 0;
+            pattern_update_next = now;
+            eeprom_read_block( &pattern, &ee_pattern,
+                               sizeof(patternline_t)*patt_max);
         }
     }
-    
+    /*
+    // serverdown logic
+    if( serverdown_millis != 0 ) {  // i.e. servermode has been turned on
+        if( (long)(now - serverdown_update_next) > 0 ) { 
+            playing = 1;
+            pattern_update_next = now;
+        }
+    }
+    */
+    // playing light pattern
     if( playing ) {
-        if( (long)(millis() - patternUpdateNext) > 0  ) {
+        if( (long)(now - pattern_update_next) > 0  ) {
             cplay = pattern[playpos].color;
             tplay = pattern[playpos].dmillis;
             rgb_setDest( &cplay, tplay );
             playpos++;
-            if( playpos == patt_len ) playpos = 0; // wrap around
-            patternUpdateNext += tplay*10;
+            if( playpos == patt_max ) playpos = 0; // wrap around
+            pattern_update_next += tplay*10;
         }
     }
-
+    
 }
 
 //
@@ -317,6 +400,15 @@ int main(void)
 
     timerInit();
     
+    /* 
+       this is unneeded currently, use USB activity to determine play/not-play
+    // load startup mode 
+    uint8_t bootmode = eeprom_read_byte( &ee_bootmode );
+    if( bootmode == BOOT_NIGHTLIGHT ) { 
+        playing = 1;
+        eeprom_read_block( &pattern,&ee_pattern,sizeof(patternline_t)*patt_max);
+    }
+    */
     usbInit();
     usbDeviceDisconnect();
 
@@ -325,7 +417,7 @@ int main(void)
         wdt_reset();
         _delay_ms(1);
         uint8_t j = i>>4;      // not so bright, please
-        setRGBOut(j,j,j);      // fade down for fun
+        setRGBOut(j,j,j);      // fade down for fun, let's us see disconnect
     }
     usbDeviceConnect();
 
