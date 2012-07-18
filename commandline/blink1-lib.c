@@ -232,7 +232,7 @@ int blink1_writePatternLine(usbDevice_t *dev, uint16_t fadeMillis,
                             uint8_t r, uint8_t g, uint8_t b, 
                             uint8_t pos)
 {
-    int dms = millis/10;  // millis_divided_by_10
+    int dms = fadeMillis/10;  // millis_divided_by_10
     char buf[9] = { 0, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
