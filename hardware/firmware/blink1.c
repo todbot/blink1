@@ -16,8 +16,9 @@
  * x play pattern if not on computer
  * - log2lin() function, maybe map in memory (256 RAM bytes, compute at boot)
  * - upload new log2lin table
- * - upload of pattern
- * - 
+ * x upload of pattern
+ * -
+ * 
  */
 
 
@@ -217,12 +218,13 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
 // X Nightlight mode on/off  format: {'N', {1/0},  0,0,  0,0, 0,0 }
 // x Serverdown tickle/off   format: {'D', {1/0},th,tl,  0,0, 0,0 }
 // x Play/Pause              format: {'p', {1/0},pos,0,  0,0, 0,0 }
-// - Set pattern entry       format: {'P', r,g,b, th,tl, i,0 }
+// x Set pattern entry       format: {'P', r,g,b, th,tl, i,0 }
 // - Read playback loc n
 // - Set log2lin vals        format: {'M', i, v0, v1,v2,v3,v4, 0,0 } 
 // - Get log2lin val 
 // x Read EEPROM location    format: {'e' addr, }
 // x Write EEPROM location   format: {'E', addr, val, }
+// x Get version             format: {'v',} 
 //
 // // Save last N cmds for playback : 
 //

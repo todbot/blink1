@@ -134,7 +134,7 @@ endif
 
 #CC=		gcc
 CFLAGS = $(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../hardware/firmware 
-CFLAGS += -I ./mongoose -pthread -g
+#CFLAGS += -I ./mongoose -pthread -g 
 LIBS=	$(OS_LIBS) $(USBLIBS) 
 #LIBS += 
 
@@ -160,7 +160,7 @@ $(PROGRAM): $(OBJ) $(TARGET).o
 	$(CC) -o $(PROGRAM) $(TARGET).o $(OBJ) $(LIBS) 
 
 blink1-server: $(OBJ) blink1-server.o ./mongoose/mongoose.o
-	$(CC) -o blink1-server $(OBJ) $(LIBS) $(CFLAGS) blink1-server.o ./mongoose/mongoose.o
+	$(CC) -o blink1-server $(OBJ) $(LIBS) $(CFLAGS) -I ./mongoose -pthread -g blink1-server.o ./mongoose/mongoose.o
 
 .c.o:
 	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
@@ -169,8 +169,9 @@ strip: $(PROGRAM)
 	strip $(PROGRAM)
 
 clean:
-	rm -f blink1-server
-	rm -f $(OBJ) $(PROGRAM)
+	#rm -f blink1-server
+	#rm -f $(OBJ) $(PROGRAM)
+	rm -f $(OBJ) blink1-server.o $(TARGET).o
 
 distclean: clean
 	rm -f $(TARGET).exe

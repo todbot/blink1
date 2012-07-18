@@ -1,21 +1,26 @@
-//
-// blink(1) C library -- 
-//
-// 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
-//
-//
+/*
+ * blink(1) C library -- 
+ *
+ *
+ * 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
+ *
+ */
 
 #include "blink1-lib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-static usbDevice_t* blink1s[16];
-static int blink1s_inuse[16];
+static usbDevice_t* blink1s[ blink1_max_devices ];
+static int blink1s_inuse[ blink1_max_devices ];
 static int blink1s_count = 0;
 
 ///static blink1_error = 0;
 
+int blink1_maxDevices(void)
+{
+    return blink1_max_devices;
+}
 
 //
 usbDevice_t* blink1_getDevice(int i)
@@ -36,6 +41,16 @@ int blink1_openstatic(usbDevice_t **dev)
     return usbhidOpenDevice(dev, vid,pid, NULL,NULL, 0);
 }
 
+int blink1_openall_byid( int vid, int pid )
+{
+    for( int i=0; i< 16; i++) { 
+        blink1s[i] = NULL;
+        blink1s_inuse[i] = 0;
+    }
+    int rc =  usbhidOpenAllDevices(blink1s, &blink1s_count, vid,pid, 0);
+    return rc;
+}
+
 //
 int blink1_openall(void)
 {
@@ -44,12 +59,7 @@ int blink1_openall(void)
     int             vid = rawVid[0] + 256 * rawVid[1];
     int             pid = rawPid[0] + 256 * rawPid[1];
 
-    for( int i=0; i< 16; i++) { 
-        blink1s[i] = NULL;
-        blink1s_inuse[i] = 0;
-    }
-    int err =  usbhidOpenAllDevices(blink1s, &blink1s_count, vid,pid, 0);
-    return err;
+    return blink1_openall_byid( vid,pid );
 }
 
 //
@@ -62,10 +72,10 @@ usbDevice_t* blink1_open(void)
     //              productName[] = {USB_CFG_DEVICE_NAME, 0};
     int             vid = rawVid[0] + 256 * rawVid[1];
     int             pid = rawPid[0] + 256 * rawPid[1];
-    int             err;
+    int             rc;
 
-    if((err = usbhidOpenDevice(&dev, vid,pid, NULL,NULL, 0)) != 0){
-        fprintf(stderr, "error finding %x:%x: %s\n",vid,pid,blink1_error_msg(err));
+    if((rc = usbhidOpenDevice(&dev, vid,pid, NULL,NULL, 0)) != 0){
+        fprintf(stderr,"rcor finding %x:%x: %s\n",vid,pid,blink1_error_msg(rc));
         return NULL;
     }
     return dev;
@@ -88,9 +98,9 @@ int blink1_write( usbDevice_t* dev, void* buf, int len)
     if( dev==NULL ) {
         return -1; // BLINK1_ERR_NOTOPEN;
     }
-    int err;
-    err = usbhidSetReport(dev, buf, len);
-    return err;
+    int rc;
+    rc = usbhidSetReport(dev, buf, len);
+    return rc;
 }
 
 // len should contain length of buf
@@ -100,25 +110,56 @@ int blink1_read( usbDevice_t* dev, void* buf, int* len)
     if( dev==NULL ) {
         return -1; // BLINK1_ERR_NOTOPEN;
     }
-    int err;
-    if( (err = usbhidGetReport(dev, 0, buf, len) != 0) ) {
-        fprintf(stderr,"error reading data: %s\n",blink1_error_msg(err));
+    int rc;
+    if( (rc = usbhidGetReport(dev, 0, buf, len) != 0) ) {
+        fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
     }
-    return err;
+    return rc;
 }
+
+// -------------------------------------------------------------------------
+// everything below here doesn't need to know about USB details
+// except for a "usbDevice_t*"
+// -------------------------------------------------------------------------
 
 //
 int blink1_getVersion(usbDevice_t *dev)
 {
     
-    char buf[9] = { 0, 'v'};
+    char buf[9] = { 0, 'v' };
     int len = sizeof(buf);
-    int rc;
-    rc = blink1_write(dev, buf, sizeof(buf));
+
+    int rc = blink1_write(dev, buf, sizeof(buf));
     if( rc == 0 ) // no error
         rc = blink1_read(dev, buf, &len);
+    if( rc == 0 ) // also no error
+        rc = ((buf[2]-'0') * 100) + (buf[3]-'0'); 
+    // rc is now version number or error  
+    // FIXME: we don't know vals of errcodes
+    return rc;
+}
+
+//
+int blink1_eeread(usbDevice_t *dev, uint16_t addr, uint8_t* val)
+{
+    char buf[9] = { 0, 'e', addr };
+    int len = sizeof(buf);
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    if( rc == 0 ) // no error
+        rc = blink1_read(dev, buf, &len );
     if( rc == 0 ) 
-        rc = ((buf[2]-'0') * 100) + (buf[3]-'0');  // rc is now version number
+        *val = buf[3];
+    return rc;
+}
+
+//
+int blink1_eewrite(usbDevice_t *dev, uint16_t addr, uint8_t val)
+{
+    char buf[9] = { 0, 'E', addr, val };
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+        
     return rc;
 }
 
@@ -126,72 +167,75 @@ int blink1_getVersion(usbDevice_t *dev)
 int blink1_fadeToRGB(usbDevice_t *dev,  uint16_t fadeMillis,
                      uint8_t r, uint8_t g, uint8_t b)
 {
-    char buffer[9];
-
     int dms = fadeMillis/10;  // millis_divided_by_10
 
-    buffer[0] = 0;  // report id
-    buffer[1] = 'c';
-    buffer[2] = r;
-    buffer[3] = g;
-    buffer[4] = b;
-    buffer[5] = (dms >> 8);
-    buffer[6] = dms % 0xff;
+    char buf[9];
 
-    int err = blink1_write(dev, buffer, sizeof(buffer) );
+    buf[0] = 0;     // report id
+    buf[1] = 'c';   // command code for 'fade to rgb'
+    buf[2] = r;
+    buf[3] = g;
+    buf[4] = b;
+    buf[5] = (dms >> 8);
+    buf[6] = dms % 0xff;
 
-    if( err != 0 ) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+
+    if( rc != 0 ) {
+        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
     }
-    //if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
-    return err;  // FIXME: remove fprintf
+    return rc;  // FIXME: remove fprintf
 }
 
 //
 int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
 {
-    char buffer[9];
+    char buf[9];
 
-    buffer[0] = 0;
-    buffer[1] = 'n';
-    buffer[2] = r;
-    buffer[3] = g;
-    buffer[4] = b;
+    buf[0] = 0;     // report id
+    buf[1] = 'n';   // command code for "set rgb now"
+    buf[2] = r;     // red
+    buf[3] = g;     // grn
+    buf[4] = b;     // blu
     
-    int err = blink1_write(dev, buffer, sizeof(buffer) );
+    int rc = blink1_write(dev, buf, sizeof(buf) );
 
-    if( err != 0 ) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
+    if( rc != 0 ) {
+        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
     }
-    return err;  // FIXME: remove fprintf
+    return rc;  // FIXME: remove fprintf
 }
 
 //
-int blink1_eeread(usbDevice_t *dev, uint16_t addr, uint8_t* val)
-{
-    return -1;
-}
-
-int blink1_eewrite(usbDevice_t *dev, uint16_t addr, uint8_t val)
-{
-    return -1;
-}
-
 int blink1_nightlight(usbDevice_t *dev, uint8_t on)
 {
-    return -1;
+    char buf[9] = { 0, 'N', on };
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    
+    return rc;
 }
 
+//
 int blink1_serverdown(usbDevice_t *dev, uint8_t on, uint16_t millis)
 {
-    return -1;
+    int dms = millis/10;  // millis_divided_by_10
+
+    char buf[9] = { 0, 'D', on, (dms>>8), (dms % 0xff) };
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    return rc;
 }
 
+//
 int blink1_writePatternLine(usbDevice_t *dev, uint16_t fadeMillis, 
                             uint8_t r, uint8_t g, uint8_t b, 
                             uint8_t pos)
 {
-    return -1;
+    int dms = millis/10;  // millis_divided_by_10
+    char buf[9] = { 0, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    return rc;
 }
 
 
@@ -201,15 +245,15 @@ int blink1_writePatternLine(usbDevice_t *dev, uint16_t fadeMillis,
 //
 char *blink1_error_msg(int errCode)
 {
-    static char buffer[80];
+    static char buf[80];
 
     switch(errCode){
         case USBOPEN_ERR_ACCESS:    return "Access to device denied";
         case USBOPEN_ERR_NOTFOUND:  return "The specified device was not found";
         case USBOPEN_ERR_IO:        return "Communication error with device";
         default:
-            sprintf(buffer, "Unknown USB error %d", errCode);
-            return buffer;
+            sprintf(buf, "Unknown USB error %d", errCode);
+            return buf;
     }
     return NULL;    /* not reached */
 }

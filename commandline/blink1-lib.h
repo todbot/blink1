@@ -1,3 +1,10 @@
+/*
+ * blink(1) C library -- 
+ *
+ * 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
+ *
+ */
+
 
 #ifndef __BLINK1_LIB_H__
 #define __BLINK1_LIB_H__
@@ -6,10 +13,13 @@
 #include "hiddata.h"
 #include "usbconfig.h" // from firmware, for VID,PID,vendor name & product name 
 
+#define blink1_max_devices 16
 
+int blink1_maxDevices(void);
 usbDevice_t* blink1_getDevice(int i);
 
 int blink1_openall(void);
+int blink1_openall_byid( int vid, int pid );
 int blink1_openstatic(usbDevice_t** dev);
 usbDevice_t* blink1_open(void);
 void blink1_close( usbDevice_t* dev );
