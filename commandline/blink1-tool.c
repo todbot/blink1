@@ -23,7 +23,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <getopt.h>    // for getopt_long()
+
+
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>    // for usleep()
+#endif
+
 
 #include "blink1-lib.h"
 
@@ -33,7 +40,7 @@ int delayMillis = 1000;
 int multiMillis = 1000;
 int numDevicesToUse = 1;
 
-usbDevice_t *dev;
+hid_device* dev;
 char  deviceNums[blink1_max_devices];
 
 char  cmdbuf[9];    // room at front for reportID
@@ -49,6 +56,7 @@ enum {
     CMD_EEREAD,
     CMD_EEWRITE,
     CMD_RGB,
+    CMD_SAVERGB,
     CMD_OFF,
     CMD_ON,
     CMD_RANDOM,
@@ -106,22 +114,30 @@ static void usage(char *myName)
 "Usage: \n"
 "  %s <cmd> [options]\n"
 "where <cmd> is one of:\n"
-"  --hidread \n"
-"  --hidwrite <listofbytes> \n"
-"  --eeread <addr> \n"
-"  --eewrite <addr>,<val> \n"
-"  --blink <numtimes> \n"
-"  --random <numtimes> \n"
-"  --rgb <red>,<green>,<blue> \n"
-"  --on \n"
-"  --off \n"
-"  --list \n"
+"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
+"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
+"  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
+"  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
+"  --blink <numtimes>          Blink on/off \n"
+"  --random <numtimes>         Flash a number of random colors \n"
+"  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
+"  --savergb <red>,<grn>,<blu>,<pos> Save RGB value at pos\n" 
+"  --on                        Turn blink(1) full-on white \n"
+"  --off                       Turn blink(1) off \n"
+"  --list                      List connected blink(1) devices \n"
+"  --version                   Display blink(1) firmware version \n"
 "and [options] are: \n"
-"  -d dNum  --device=deviceNum  blink(1) device number (from --list) \n"
+"  -d dNum  --device=deviceNum  Use this blink(1) device (from --list) \n"
 "  -m ms,   --miilis=millis     Set millisecs for color fading (default 300)\n"
 "  -t ms,   --delay=millis      Set millisecs between events (default 500)\n"
 "  --vid=vid --pid=pid          Specifcy alternate USB VID & PID\n"
 "  -v, --verbose                verbose debugging msgs\n"
+"\n"
+"Examples \n"
+"  blink1-tool -m 100 --rgb 255,0,255   # fade to #FF00FF in 0.1 seconds \n"
+"\n"
+"\n"
+
             ,myName);
 }
 
@@ -150,6 +166,7 @@ int main(int argc, char** argv)
         {"eeread",     required_argument, &cmd,   CMD_EEREAD },
         {"eewrite",    required_argument, &cmd,   CMD_EEWRITE },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
+        {"savergb",    required_argument, &cmd,   CMD_SAVERGB },
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
         {"random",     required_argument, &cmd,   CMD_RANDOM },
@@ -168,6 +185,7 @@ int main(int argc, char** argv)
             case CMD_EEREAD:
             case CMD_EEWRITE:
             case CMD_RGB:
+            case CMD_SAVERGB:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
@@ -215,7 +233,7 @@ int main(int argc, char** argv)
     } else {
         rc = blink1_openall();
     }
-    if( rc != 0 ) { 
+    if( rc == -1 ) { 
         fprintf(stderr, "no devices found\n");
         //exit(1);
     }
@@ -231,33 +249,32 @@ int main(int argc, char** argv)
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
         for( int i=0; i< blink1_max_devices; i++ ) { 
-            usbDevice_t* d = blink1_getDevice(i);
-            if( d!=NULL ) printf("%d: %x\n", i, (uint32_t)d);
+            hid_device* d = blink1_getDevice(i);
+            if( d!=NULL ) printf("%d: %p\n", i, d);
         }
     }
     else if( cmd == CMD_HIDREAD ) { 
         printf("hidread:  ");
         int len = sizeof(cmdbuf);
-        if((rc = usbhidGetReport(dev, 0, cmdbuf, &len)) != 0){
+        if((rc = hid_get_feature_report(dev, cmdbuf, len)) == -1){
             fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
         } else {
-            hexdump(cmdbuf + 1, sizeof(cmdbuf) - 1);
+            hexdump(cmdbuf, sizeof(cmdbuf));
         }
     } 
     else if( cmd == CMD_HIDWRITE ) { 
         printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
-        memmove( cmdbuf+1, cmdbuf, sizeof(cmdbuf)-1 );
-        cmdbuf[0] = 0; // reportid
-        printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
-        if((rc = usbhidSetReport(dev, cmdbuf, sizeof(cmdbuf))) != 0) {
-            fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
+        //memmove( cmdbuf+1, cmdbuf, sizeof(cmdbuf)-1 );
+        //printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
+        if((rc = hid_send_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1) {
+            fprintf(stderr,"error writing data: %d\n",rc);
         }
     }
     else if( cmd == CMD_EEREAD ) {  // FIXME
         printf("eeread:  addr 0x%2.2x = ", cmdbuf[0]);
         uint8_t val = 0;
         rc = blink1_eeread(dev, cmdbuf[0], &val );
-        if( rc ) { // on error
+        if( rc==-1 ) { // on error
             printf("error\n");
         } else { 
             printf("%2.2x\n", val);
@@ -266,7 +283,7 @@ int main(int argc, char** argv)
     else if( cmd == CMD_EEWRITE ) {  // FIXME
         printf("eewrite: \n");
         rc = blink1_eewrite(dev, cmdbuf[0], cmdbuf[1] );
-        if( rc ) { // error
+        if( rc==-1 ) { // error
         }
     }
     else if( cmd == CMD_VERSION ) { 
@@ -284,20 +301,31 @@ int main(int argc, char** argv)
         int bn = log2lin( b );
 
         rc = blink1_fadeToRGB(dev,millis, rn,gn,bn);
-        if( rc ) { // on error, do something, anything. come on.
+        if( rc == -1 ) { // on error, do something, anything. come on.
             printf("error on fadeToRGB\n");
+        }
+    }
+    else if( cmd == CMD_SAVERGB ) {
+        uint8_t r = cmdbuf[0];
+        uint8_t g = cmdbuf[1];
+        uint8_t b = cmdbuf[2];
+        uint8_t p = cmdbuf[3];
+        printf("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x to pos %d\n", r,g,b,p );
+        rc = blink1_writePatternLine(dev, millis, r,g,b, p );
+        if( rc ) { 
+            printf("error on writePatternLine\n");
         }
     }
     else if( cmd == CMD_ON ) {
         printf("turning on\n");
         rc = blink1_fadeToRGB(dev, millis, 255,255,255);
-        if( rc ) // on error, do something, anything. come on.
+        if( rc == -1 ) // on error, do something, anything. come on.
             printf("error on ON fadeToRGB\n");
     }
     else if( cmd == CMD_OFF ) { 
         printf("turning off\n");
         rc = blink1_fadeToRGB(dev, millis, 0,0,0);
-        if( rc ) // on error, do something, anything. come on.
+        if( rc == -1) // on error, do something, anything. come on.
             printf("error on OFF fadeToRGB\n");
     }
     else if( cmd == CMD_RANDOM ) { 
@@ -309,13 +337,17 @@ int main(int argc, char** argv)
             printf("%d : %2.2x,%2.2x,%2.2x \n", numDevicesToUse, r,g,b);
             
             for( int i=0; i< numDevicesToUse; i++ ) {
-                usbDevice_t* mydev = blink1_getDevice(i);
+                hid_device* mydev = blink1_getDevice(i);
                 rc = blink1_fadeToRGB(mydev, millis,r,g,b);
-                if( rc ) { // on error, do something, anything. come on.
+                if( rc == -1 ) { // on error, do something, anything. come on.
                     break;
                 }
             }
+#ifdef WIN32
+            Sleep(delayMillis);
+#else 
             usleep( delayMillis * 1000);
+#endif
         }
     }   
 

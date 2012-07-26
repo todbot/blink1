@@ -1,10 +1,58 @@
-# This file is part of Mongoose project, http://code.google.com/p/mongoose
+# This file was part of Mongoose project, http://code.google.com/p/mongoose
 # $Id: Makefile 473 2009-09-02 11:20:06Z valenok $
 
-PROG=	mongoose
+PROG=	blink1-server
 
-all:
-	@echo "make (linux|bsd|solaris|mac|windows|mingw)"
+
+# try to do some autodetecting
+UNAME := $(shell uname -s)
+
+ifeq "$(UNAME)" "Darwin"
+	OS=macosx
+endif
+
+ifeq "$(OS)" "Windows_NT"
+	OS=windows
+endif
+
+ifeq "$(UNAME)" "Linux"
+	OS=linux
+endif
+
+
+#################  Mac OS X  ##################################################
+ifeq "$(OS)" "macosx"
+LIBUSB_CONFIG=/opt/local/bin/libusb-legacy-config
+USBFLAGS = `$(LIBUSB_CONFIG) --cflags`
+USBLIBS = `$(LIBUSB_CONFIG) --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
+USBLIBS +=  `$(LIBUSB_CONFIG) --libs | cut -d' ' -f 3- `
+CFLAGS += -arch i386 -arch x86_64
+CFLAGS += -pthread
+#SHARED_FLAGS =  -bundle
+#SHARED_FLAGS = -flat_namespace -bundle -undefined suppress
+EXE_SUFFIX=
+endif
+
+#################  Windows  ##################################################
+ifeq "$(OS)" "windows"
+USBFLAGS=
+USBLIBS=    -lhid -lsetupapi
+#USBLIBS=    -lhid -lusb -lsetupapi
+EXE_SUFFIX= .exe
+endif
+
+#################  Linux  ###################################################
+ifeq "$(OS)" "linux"
+USBFLAGS =   `libusb-config --cflags`
+USBLIBS  =   `libusb-config --libs`
+EXE_SUFFIX=
+CFLAGS += -ldl -pthread $(CFLAGS)  
+#SHARED_FLAGS=
+EXE_SUFFIX=
+endif
+
+
+
 
 # Possible COPT values: (in brackets are rough numbers for 'gcc -O2' on i386)
 # -DHAVE_MD5		- use system md5 library (-2kb)
@@ -22,32 +70,41 @@ all:
 ###                 UNIX build: linux, bsd, mac, rtems
 ##########################################################################
 
-CFLAGS = -W -Wall -std=c99 -pedantic -O2 $(COPT)
-MAC_SHARED = -flat_namespace -bundle -undefined suppress
-LINFLAGS = -ldl -pthread $(CFLAGS)
+CFLAGS += -W -Wall -std=gnu99  -O2 $(COPT) $(USBFLAGS)
+#CFLAGS += -W -Wall -std=c99 -pedantic -O2 $(COPT)
+CFLAGS += -I.. -I../../hardware/firmware
+LDFLAGS += $(USBLIBS)
 LIB = _$(PROG).so
-CC = g++
+#CC = g++
+CC = gcc
+
+all: msg blink1-server
+
+msg: 
+	@echo "Building for OS '$(OS)'"
+
+blink1-server: blink1-server.o
+	$(CC) mongoose.c blink1-server.c ../blink1-lib.c ../hiddata.c -o $(PROG) $(CFLAGS) $(LDFLAGS)
+
 
 # Make sure that the compiler flags come last in the compilation string.
-# If not so, this can break some on some Linux distros which use
+#man If not so, this can break some on some Linux distros which use
 # "-Wl,--as-needed" turned on by default  in cc command.
 # Also, this is turned in many other distros in static linkage builds.
-linux:
-	$(CC) mongoose.c -shared -fPIC -fpic -o $(LIB) $(LINFLAGS)
-	$(CC) mongoose.c main.c -o $(PROG) $(LINFLAGS)
+#linux:
+#	$(CC) mongoose.c -shared -fPIC -fpic -o $(LIB) $(LINFLAGS) 
+#	$(CC) mongoose.c blink1-server.c -o $(PROG) $(LINFLAGS)
+#
+#bsd:
+#	$(CC) mongoose.c -shared -pthread -fpic -fPIC -o $(LIB) $(CFLAGS)
+#	$(CC) mongoose.c blink1-server.c -pthread -o $(PROG) $(CFLAGS)
+#
+#mac:
+#	$(CC) mongoose.c -pthread -o $(LIB) $(MAC_SHARED) $(CFLAGS)
+#	$(CC) mongoose.c blink1-server.c -pthread -o $(PROG) $(CFLAGS)
+#
 
-bsd:
-	$(CC) mongoose.c -shared -pthread -fpic -fPIC -o $(LIB) $(CFLAGS)
-	$(CC) mongoose.c main.c -pthread -o $(PROG) $(CFLAGS)
 
-mac:
-	$(CC) mongoose.c -pthread -o $(LIB) $(MAC_SHARED) $(CFLAGS)
-	$(CC) mongoose.c main.c -pthread -o $(PROG) $(CFLAGS)
-
-solaris:
-	gcc mongoose.c -pthread -lnsl \
-		-lsocket -fpic -fPIC -shared -o $(LIB) $(CFLAGS)
-	gcc mongoose.c main.c -pthread -lnsl -lsocket -o $(PROG) $(CFLAGS)
 
 
 ##########################################################################
@@ -107,7 +164,7 @@ cyassl:
 
 windows:
 	rc win32\res.rc
-	$(CL) main.c mongoose.c /GA $(LINK) win32\res.res \
+	$(CL) blink1-server.c mongoose.c /GA $(LINK) win32\res.res \
 		$(GUILIB) /out:$(PROG).exe
 	$(CL) mongoose.c /GD $(LINK) /DLL /DEF:win32\dll.def /out:_$(PROG).dll
 
@@ -120,27 +177,10 @@ mingw:
 	windres win32\res.rc win32\res.o
 	gcc $(MINGWOPT) mongoose.c -lws2_32 \
 		-shared -Wl,--out-implib=$(PROG).lib -o _$(PROG).dll
-	gcc $(MINGWOPT) mongoose.c main.c win32\res.o -lws2_32 -ladvapi32 \
+	gcc $(MINGWOPT) mongoose.c blink1-server.c win32\res.o -lws2_32 -ladvapi32 \
 		-o $(PROG).exe
 
 
-##########################################################################
-###            Manuals, cleanup, test, release
-##########################################################################
-
-man:
-	groff -man -T ascii mongoose.1 | col -b > mongoose.txt
-	groff -man -T ascii mongoose.1 | less
-
-# "TEST=unit make test" - perform unit test only
-# "TEST=embedded" - test embedded API by building and testing test/embed.c
-# "TEST=basic_tests" - perform basic tests only (no CGI, SSI..)
-test: do_test
-do_test:
-	perl test/test.pl $(TEST)
-
-release: clean
-	F=mongoose-`perl -lne '/define\s+MONGOOSE_VERSION\s+"(\S+)"/ and print $$1' mongoose.c`.tgz ; cd .. && tar --exclude \*.hg --exclude \*.svn --exclude \*.swp --exclude \*.nfs\* -czf x mongoose && mv x mongoose/$$F
 
 clean:
 	rm -rf *.o *.core $(PROG) *.obj *.so $(PROG).txt *.dSYM *.tgz

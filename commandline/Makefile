@@ -1,20 +1,14 @@
-# Makefile for "linkm-lib" and "linkm-tool"
-# should work on Mac OS X, Windows, and Linux
+# Makefile for "blink1-lib" and "blink1-tool"
+# should work on Mac OS X, Windows, Linux, and other Linux-like systems
 #  
 # Build arguments:
 # - "OS=macosx"  -- build Mac version on Mac OS X
 # - "OS=windows" -- build Windows version on Windows
 # - "OS=linux"   -- build Linux version on Linux
 # - "OS=wrt"     -- build OpenWrt/DD-WRT version on Linux
-# - "ADDBOOTLOAD=1" -- add ability to linkm-lib and linkm-tool to use bootloader
-# - "ADDBOOTLOAD=0" -- to disable ability to use bootloader
 #
 # Dependencies: 
 # - libusb is required
-# - if "make ADDBOOTLOAD=1", then
-#    "../bootloadHID/commandline/linkmbootload" 
-#  must be compiled beforehand if using bootload functionality
-# - Or, if "make ADDBOATLOAD=0", then no other dependencies other than OS-specific ones below.
 #
 # Platform-specific notes:
 #
@@ -54,12 +48,6 @@
 # This Revision: $Id: Makefile 692 2008-11-07 15:07:40Z cs $
 
 
-TARGET=blink1-tool
-
-# set to 1 to enable macosx single architecture compiling 
-# (whatever your arch is, otherwise compile for x86_64, i386, and ppc )
-SINGLEARCH := 0
-
 # try to do some autodetecting
 UNAME := $(shell uname -s)
 
@@ -80,69 +68,46 @@ CC=gcc
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
-# Mac OS X: "sudo port install libusb-legacy +universal" using MacPorts
-# If you want to build for PowerPC too, you'll need to edit 
-# /opt/local/etc/macports/macports.conf: universal_archs and add "ppc"
-# otherwise swap the OS_CFLAGS with the commented one below
-USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
-# get just the path to the static lib
-USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
-# get everything else in --libs
-USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
 
-ifeq ($(SINGLEARCH), 0) 
-#OS_CFLAGS= -arch i386 -arch ppc 
-#OS_CFLAGS= -arch i386 -arch x86_64 -arch ppc
-OS_CFLAGS= -arch i386 -arch x86_64
-#OS_CFLAGS= -arch x86_64
-endif
-##OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -no_compact_linkedit
-#OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6 -no_compact_linkedit
-OS_LIBS  = $(OS_CFLAGS) 
-EXE_SUFFIX=
+CFLAGS += -arch i386 -arch x86_64
+CFLAGS += -pthread
+LIBS += -framework IOKit -framework CoreFoundation
+
+OBJS = ./hidapi/mac/hid.o
+EXE=
 endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
-USBFLAGS=
-USBLIBS=    -lhid -lsetupapi
-#USBLIBS=    -lhid -lusb -lsetupapi
-EXE_SUFFIX= .exe
+#CFLAGS += 
+#LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
+LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
+OBJS = ./hidapi/windows/hid.o
+EXE= .exe
 endif
 
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
 USBFLAGS =   `libusb-config --cflags`
 USBLIBS  =   `libusb-config --libs`
-EXE_SUFFIX=
-endif
-
-#################  OpenWrt / DD-WRT #########################################
-ifeq "$(OS)" "wrt"
-
-WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
-
-CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
-LD = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-ld
-USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
-USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
-
+OBJS = ./hidapi/linux/hid.o
+EXE=
 endif
 
 
 #####################  Common  ##############################################
 
-#CC=		gcc
-CFLAGS = $(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS) -I ../hardware/firmware 
-#CFLAGS += -I ./mongoose -pthread -g 
-LIBS=	$(OS_LIBS) $(USBLIBS) 
-#LIBS += 
+CC = gcc
 
-OBJ=		blink1-lib.o hiddata.o 
+CFLAGS += -std=gnu99 -I ../hardware/firmware 
+#CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
+CFLAGS += -I./hidapi/hidapi -g
 
-PROGRAM=	$(TARGET)$(EXE_SUFFIX)
+OBJS +=  blink1-lib.o blink1-tool.o
 
-all: msg $(PROGRAM)
+
+#all: msg blink1-tool blink1-server-simple
+all: msg blink1-tool 
 
 msg: 
 	@echo "building for OS=$(OS)"
@@ -156,26 +121,26 @@ help:
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
 
-$(PROGRAM): $(OBJ) $(TARGET).o
-	$(CC) -o $(PROGRAM) $(TARGET).o $(OBJ) $(LIBS) 
+$(OBJS): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-blink1-server: $(OBJ) blink1-server.o ./mongoose/mongoose.o
-	$(CC) -o blink1-server $(OBJ) $(LIBS) $(CFLAGS) -I ./mongoose -pthread -g blink1-server.o ./mongoose/mongoose.o
+blink1-tool: $(OBJS) 
+	$(CC) -g $^ $(LIBS) -o blink1-tool$(EXE) 
 
-.c.o:
-	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
+blink1-server-simple: blink1-lib.o
+	$(CC) -o blink1-server-simple$(EXE) $(ARCH_COMPILE) $(CFLAGS) $(LIBS) blink1-lib.c hiddata.c -I ./mongoose -pthread -g ./mongoose/mongoose.c blink1-server-simple.c
 
-strip: $(PROGRAM)
-	strip $(PROGRAM)
 
-clean:
-	#rm -f blink1-server
-	#rm -f $(OBJ) $(PROGRAM)
-	rm -f $(OBJ) blink1-server.o $(TARGET).o
+#.c.o:
+#	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
+
+clean: 
+	rm -f $(OBJS) blink1-server-simple.o blink1-tool.o
+	rm -f mongoose/mongoose.o
 
 distclean: clean
-	rm -f $(TARGET).exe
-	rm -f $(TARGET)
+	rm -f blink1-tool$(EXE)
+	rm -f blink1-server-simple$(EXE)
 
 # shows shared lib usage on Mac OS X
 otool:

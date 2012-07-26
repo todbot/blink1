@@ -85,6 +85,7 @@ patternline_t pattern[patt_max] = {
 
 uint8_t ee_osccal          EEMEM; // used by "osccal.h"
 uint8_t ee_bootmode        EEMEM = BOOT_NORMAL;
+uint8_t ee_myid            EEMEM = 1;
 patternline_t ee_pattern[patt_max]  EEMEM = {
     { { 0xff, 0x01, 0x02 }, 100 },
     { { 0x03, 0xff, 0x05 }, 100 },
@@ -126,9 +127,10 @@ ISR(SIG_OVERFLOW1,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run
 static uchar    currentAddress;
 static uchar    bytesRemaining;
 
-static uint8_t msgbuf[8];
+static uint8_t msgbuf[8+1];
 //static uint8_t msgbufout[8];
 
+/*
 //
 PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor 
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
@@ -142,6 +144,22 @@ PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor
     0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
     0xc0                           // END_COLLECTION
 };
+*/
+
+PROGMEM char usbHidReportDescriptor[24] = {
+    0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
+    0x09, 0x01,                    // USAGE (Vendor Usage 1)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x85, 0x01,                    //   REPORT_ID (1)
+    0x95, 0x08,                    //   REPORT_COUNT (8)
+    0x09, 0x00,                    //   USAGE (Undefined)
+    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+    0xc0                           // END_COLLECTION
+};
+
 
 void handleMessage(void);
 
@@ -232,30 +250,32 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
 //
 void handleMessage(void)
 {
-    uint8_t cmd = msgbuf[0];
+    uint8_t* msgbufp = msgbuf+1;  // skip over report id
+
+    uint8_t cmd = msgbufp[0];
     
     // fade to RGB color
     // command {'c', r,g,b, th,tl, 0,0 } = fade to RGB color over time t
     // where time 't' is a number of 10msec ticks
     //
     if(      cmd == 'c' ) { 
-        rgb_t* c = (rgb_t*)(msgbuf+1); // msgbuf[1],msgbuf[2],msgbuf[3]
-        uint16_t t = (msgbuf[4] << 8) | msgbuf[5]; // msgbuf[4],[5]
+        rgb_t* c = (rgb_t*)(msgbufp+1); // msgbuf[1],msgbuf[2],msgbuf[3]
+        uint16_t t = (msgbufp[4] << 8) | msgbufp[5]; // msgbuf[4],[5]
         playing = 0;
         rgb_setDest( c, t );
     }
     // set RGB color immediately  - {'n', r,g,b, 0,0,0,0 } 
     //
     else if( cmd == 'n' ) { 
-        rgb_t* c = (rgb_t*)(msgbuf+1);
+        rgb_t* c = (rgb_t*)(msgbufp+1);
         rgb_setDest( c, 0 );
         rgb_setCurr( c );
     }
     // play/pause, with position
     //
     else if( cmd == 'p' ) { 
-        playing = msgbuf[1]; 
-        playpos = msgbuf[2];
+        playing = msgbufp[1]; 
+        playpos = msgbufp[2];
         // FIXME: what about on boot?
     }
     // write pattern entry {'P', r,g,b, th,tl, i, 0,0}
@@ -263,11 +283,11 @@ void handleMessage(void)
     else if ( cmd == 'P' ) { 
         // was doing this copy with a cast, but broke it out for clarity
         patternline_t ptmp;
-        ptmp.color.r = msgbuf[1];
-        ptmp.color.g = msgbuf[2];
-        ptmp.color.b = msgbuf[3];
-        ptmp.dmillis = ((uint16_t)msgbuf[4] << 8) | msgbuf[5]; 
-        uint8_t i = msgbuf[6];
+        ptmp.color.r = msgbufp[1];
+        ptmp.color.g = msgbufp[2];
+        ptmp.color.b = msgbufp[3];
+        ptmp.dmillis = ((uint16_t)msgbufp[4] << 8) | msgbufp[5]; 
+        uint8_t i = msgbufp[6];
         if( i >= patt_max ) i = 0;
         // save pattern line to RAM 
         memcpy( &pattern[i], &ptmp, sizeof(patternline_t) );
@@ -276,23 +296,24 @@ void handleMessage(void)
     // read eeprom byte
     //
     else if( cmd == 'e' ) { 
-        uint8_t addr = msgbuf[1];
+        uint8_t addr = msgbufp[1];
         uint8_t val = eeprom_read_byte( (uint8_t*)(uint16_t)addr ); // dumb
-        msgbuf[2] = val;  // put read byte in output buff
+        msgbufp[2] = val;  // put read byte in output buff
     }
     // write eeprom byte
     //
     else if( cmd == 'E' ) { 
-        uint8_t addr = msgbuf[1];
-        uint8_t val  = msgbuf[2];
-        // FIXME: put in bounds checking on addr
-        eeprom_write_byte( (uint8_t*)(uint16_t)addr, val ); // dumb
+        uint8_t addr = msgbufp[1];
+        uint8_t val  = msgbufp[2];
+        if( addr > 0 ) {  // don't let overwrite osccal value
+            eeprom_write_byte( (uint8_t*)(uint16_t)addr, val ); // dumb
+        }
     }
     // servermode tickle  
     // {'D', {1/0},th,tl,  0,0, 0,0 }
     else if( cmd == 'D' ) {
-        uint8_t serverdown_on = msgbuf[1];
-        uint16_t t = (msgbuf[4] << 8) | msgbuf[5]; 
+        uint8_t serverdown_on = msgbufp[1];
+        uint16_t t = (msgbufp[4] << 8) | msgbufp[5]; 
         if( serverdown_on ) { 
             serverdown_millis = t;
             serverdown_update_next = millis() + t;
@@ -302,8 +323,8 @@ void handleMessage(void)
     }
     // version info
     else if( cmd == 'v' ) { 
-        msgbuf[1] = blink1_ver_major;
-        msgbuf[2] = blink1_ver_minor;
+        msgbufp[2] = blink1_ver_major;
+        msgbufp[3] = blink1_ver_minor;
     }
     // nightlight mode on/off 
     //
@@ -311,9 +332,9 @@ void handleMessage(void)
     //    eeprom_write_byte( &ee_bootmode, msgbuf[1] );
     //}
     else if( cmd == '!' ) { // testing testing
-        msgbuf[0] = 0x55;
-        msgbuf[1] = 0xAA;
-        msgbuf[2] = usbHasBeenSetup;
+        msgbufp[0] = 0x55;
+        msgbufp[1] = 0xAA;
+        msgbufp[2] = usbHasBeenSetup;
     }
     else {
         

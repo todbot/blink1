@@ -2,11 +2,13 @@
 
 
 
-Making it a service
--------------------
+Making it a service on Mac OS X
+-------------------------------
 
-launchctl load -w /Users/tod/Library/LaunchAgents/com.thingm.blink1.plist
+to start:
+% launchctl load -w ./com.thingm.blink1.plist
+% launchctl start com.thingm.blink1
 
-launchctl start com.thingm.blink1
-
-
+to stop:
+% launchctl stop com.thingm.blink1
+% launchctl unload ./com.thingm.blink1.plist
