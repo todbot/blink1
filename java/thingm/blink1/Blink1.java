@@ -6,12 +6,15 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-
 public class Blink1 
 {
+  //java.nio.ByteBuffer hidDevicePtr;
+  long hidDevicePtr;
+
   static {
     System.loadLibrary("Blink1");     // Load the library
   }  
+
 
   public static void usage() { 
     println(""+
@@ -45,7 +48,7 @@ public class Blink1
       System.out.println("setting color "+r+","+g+","+b);
 
       rc = blink1.setRGB( r,g,b );
-      if( rc!=0 ) { 
+      if( rc==-1 ) { 
         System.err.println("error detected");
       }
 

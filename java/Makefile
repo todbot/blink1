@@ -44,24 +44,17 @@ JAVA_HOME:=/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home
 PATH:=$(JAVA_HOME)/bin:$(PATH)
 
 LIBTARGET = lib$(TARGET).jnilib
-#LIBUSBA   = libusb-macosx.a
-#USBLIBS   =  -L$(LIBUSBA_DIR)  -lusb-macosx
-#USBFLAGS  =  `libusb-legacy-config --cflags`
-#USBLIBS   = /opt/local/lib/libusb-legacy/libusb.a
-#USBFLAGS = `libusb-config --cflags`
-#USBLIBS = `libusb-config --libs | cut -d' ' -f1 | cut -c3- `/libusb.a
 USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
-# get just the path to the static lib
 USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
-# get everything else in --libs
 USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
+OBJS = ../commandline/hidapi/mac/hid.o
 
 #
 JAVAINCLUDEDIR = /System/Library/Frameworks/JavaVM.framework/Headers
 JAVANATINC = -I $(JAVAINCLUDEDIR)/./
 JAVAINCLUDE = -I $(JAVAINCLUDEDIR)
 
-OS_CFLAGS = -g -O2 -D_BSD_SOURCE -bundle -arch i386 -arch x86_64 -std=gnu99  $(USBFLAGS) 
+OS_CFLAGS = -g -O2 -D_BSD_SOURCE -bundle -arch i386 -arch x86_64 -std=gnu99 -pthread  $(USBFLAGS) 
 #OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5
 OS_LDFLAGS =  -Wl,-search_paths_first -framework JavaVM -framework IOKit -framework CoreFoundation $(USBLIBS) 
 endif
@@ -95,8 +88,11 @@ endif
 
 
 # now construct normal env vars based on OS-specific ones
-INCLUDES = -I. -I../commandline -I../hardware/firmware $(JAVAINCLUDE) $(JAVANATINC) 
-OBJ = ../commandline/hiddata.o  ../commandline/blink1-lib.o  native$(TARGET).o 
+INCLUDES = -I. -I../commandline -I../hardware/firmware 
+INCLUDES += -I ../commandline/hidapi/hidapi
+INCLUDES += $(JAVAINCLUDE) $(JAVANATINC) 
+
+OBJS += ../commandline/blink1-lib.o  native$(TARGET).o 
 
 CFLAGS  = $(OS_CFLAGS) -O -Wall -std=gnu99  $(INCLUDES)
 LDFLAGS = $(OS_LDFLAGS) 
@@ -104,7 +100,6 @@ LDFLAGS = $(OS_LDFLAGS)
 CC = gcc
 
 
-# FIXME: hack
 all: help
 
 help:
@@ -133,8 +128,8 @@ jni:
 #	cp `libusb-config --exec-prefix`/lib/libusb.a $(LIBUSBA_DIR)/$(LIBUSBA)
 
 #	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(LDFLAGS) $(OBJ)  -lc
-compile: msg $(OBJ)
-	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(OBJ) $(LDFLAGS) 
+compile: msg $(OBJS)
+	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(OBJS) $(LDFLAGS) 
 	mkdir -p libtargets && mv $(LIBTARGET) libtargets
 
 .c.o:
@@ -163,7 +158,7 @@ javadoc:
 	cd doc && javadoc -sourcepath .. thingm.blink1 && cd ..
 
 clean:
-	rm -f thingm/blink1/*.class *.o ../commandline/*.o 
+	rm -f thingm/blink1/*.class $(OBJS)
 	rm -f libtargets/blink1.jar
 	rm -f libtargets/$(LIBTARGET)
 	rm -f $(LIBTARGET) thingm_blink1_$(TARGET).h

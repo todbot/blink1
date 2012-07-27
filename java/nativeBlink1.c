@@ -4,22 +4,40 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "hiddata.h"
 #include "blink1-lib.h"
 
 /* ------------------------------------------------------------------------- */
 
-static usbDevice_t* dev = NULL;   // sigh.
+static hid_device* dev;
 
-// the goal is to have a usbDevice_t* per LinkM instance, 
-// but for some reason I cannot get a LinkM instance int or long to
-// store the pointer in and then retrieve it. 
-// So for now, there's one global 'dev', so only one LinkM per system.
+//
+hid_device* getDeviceFromJava(JNIEnv *env, jobject obj)
+{
+    jclass cls = (*env)->GetObjectClass(env,obj);
+    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "J");
+    if( fid==0 ) {
+        printf("nativeBlinkM: no fid");
+        return NULL;
+    }
+    jlong lp = (*env)->GetLongField(env,cls,fid);
+    hid_device* dev = (hid_device*)lp;
+    //hid_device* dev = (hid_device*) (*env)->GetLongField(env,cls,fid);
+    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
+    return dev;
+}
 
-// maybe one way to support multiple LinkMs per system is to have 
-// small array of devs (e.g "dev[8]") and then allow up to 8 devs
-// BUT, also need to change C API to support more advanced query & finding
-// of LinkMs.
+//
+void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev)
+{
+    jclass cls = (*env)->GetObjectClass(env,obj);
+    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "J");
+    if( fid==0 ) {
+        printf("nativeBlinkM: no fid");
+        return;
+    }
+    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
+    (*env)->SetLongField(env, obj, fid, (jlong)dev );
+}
 
 
 /**
@@ -28,12 +46,14 @@ static usbDevice_t* dev = NULL;   // sigh.
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
 (JNIEnv *env, jobject obj) //, jint vid, jint pid, jstring vstr, jstring pstr)
 {
-    int err;
+    int err=0;
     
-    // open up linkm, get back a 'dev' to pass around
-    err = blink1_openstatic( &dev ); // FIXME: pass in vid/pid in the future
+    hid_device* devt = blink1_open();
+    dev = devt;
 
-    return err;
+    //setDeviceToJava(env,obj, devt);
+    
+    return err;  // FIXME: error
 }
 
 /**
@@ -42,6 +62,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
 JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
 (JNIEnv *env, jobject obj)
 {
+    //hid_device* dev = getDeviceFromJava(env,obj);
     blink1_close(dev);
 }
 
@@ -49,6 +70,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 (JNIEnv *env, jobject obj, jint r, jint g, jint b)
 {
     int err;
+    //hid_device* dev = getDeviceFromJava(env,obj);
     err = blink1_setRGB(dev, r,g,b);
     return err;
 }
@@ -57,9 +79,31 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b)
 {
     int err;
+    //hid_device* dev = getDeviceFromJava(env,obj);
     err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
     return err;
 }
+
+/*
+//
+hid_device* getDeviceFromJava(JNIEnv *env, jobject obj)
+{
+    jclass cls = (*env)->GetObjectClass(env,obj);
+    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "Ljava/nio/ByteBuffer;");
+    jobject bb = (*env)->GetObjectField(env,obj,fid);
+    printf("got here\n");
+    hid_device* dev = (hid_device*) (*env)->GetDirectBufferAddress(env,bb);
+    printf("nativeBlink1: getDeviceFromJava: %ld\n", (long)dev);
+    return dev;
+}
+
+//
+void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev)
+{
+    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
+    (*env)->NewDirectByteBuffer( env, (void*) dev, 100 );
+}
+*/
 
 /**
  *

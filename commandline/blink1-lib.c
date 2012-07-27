@@ -202,7 +202,7 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
     
     int rc = blink1_write(dev, buf, sizeof(buf) );
 
-    if( rc != 0 ) {
+    if( rc == -1 ) {
         fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
     }
     return rc;  // FIXME: remove fprintf
