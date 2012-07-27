@@ -75,11 +75,11 @@ static struct mg_context *ctx;      // Set by start_mongoose()
 //
 #include "blink1-lib.h"
 
-volatile usbDevice_t* dev=NULL;
+//volatile hid_device* dev=NULL;
 
 const char* blink1_server_version = "0.91b";
 
-
+/*
 //
 int open_blink1(void)
 {
@@ -91,7 +91,7 @@ int open_blink1(void)
     } 
     return 0;
 }
-
+*/
 //
 // added by tod
 //
@@ -139,21 +139,27 @@ static void *callback(enum mg_event event,
             sprintf(result, "fadeToRgb: %x = %d,%d,%d @ %d msec", 
                     rgbval, r,g,b, millis );
             fprintf(stderr, "%s\n", result);
+            
+            hid_device* dev = blink1_open();
+            fprintf(stderr, "dev:%ld\n", (long)dev);
+            blink1_fadeToRGB( dev, 100, r,g,b );
+            blink1_close(dev);
 
-            if( open_blink1() == 0 ) {
+            /*
+            if( open_blink1() != -1 ) {
                 fprintf(stderr, "opened blink1 %p\n",dev);
                 rc = blink1_fadeToRGB( dev, 100, r,g,b ); 
-                if( rc != 0 ) {
+                if( rc == -1 ) {
                     sprintf(result, "fadeToRGB error %p",dev);
                     fprintf(stderr, "%s\n", result);
-                    dev = NULL;
-                    //blink1_close(dev);
+                    blink1_close(dev);
                 }
             }
             else {
                 sprintf(result,"no blink1 : %s", result);
                 blink1_close( dev );
             }
+            */
         }
         else if( strcasecmp(cmd, "list") == 0 ) { 
             

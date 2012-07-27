@@ -28,8 +28,9 @@ USBLIBS = `$(LIBUSB_CONFIG) --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
 USBLIBS +=  `$(LIBUSB_CONFIG) --libs | cut -d' ' -f 3- `
 CFLAGS += -arch i386 -arch x86_64
 CFLAGS += -pthread
-#SHARED_FLAGS =  -bundle
-#SHARED_FLAGS = -flat_namespace -bundle -undefined suppress
+LIBS += -framework IOKit -framework CoreFoundation
+
+HIDAPI_C = ../hidapi/mac/hid.c
 EXE_SUFFIX=
 endif
 
@@ -70,10 +71,11 @@ endif
 ###                 UNIX build: linux, bsd, mac, rtems
 ##########################################################################
 
-CFLAGS += -W -Wall -std=gnu99  -O2 $(COPT) $(USBFLAGS)
+CFLAGS +=  -std=gnu99  -O2 $(COPT) $(USBFLAGS)
+#CFLAGS += -W -Wall -std=gnu99  -O2 $(COPT) $(USBFLAGS)
 #CFLAGS += -W -Wall -std=c99 -pedantic -O2 $(COPT)
-CFLAGS += -I.. -I../../hardware/firmware
-LDFLAGS += $(USBLIBS)
+CFLAGS += -I.. -I../../hardware/firmware -I../hidapi/hidapi
+LDFLAGS += $(LIBS) $(USBLIBS)
 LIB = _$(PROG).so
 #CC = g++
 CC = gcc
@@ -84,7 +86,7 @@ msg:
 	@echo "Building for OS '$(OS)'"
 
 blink1-server: blink1-server.o
-	$(CC) mongoose.c blink1-server.c ../blink1-lib.c ../hiddata.c -o $(PROG) $(CFLAGS) $(LDFLAGS)
+	$(CC) mongoose.c blink1-server.c ../blink1-lib.c $(HIDAPI_C) -o $(PROG) $(CFLAGS) $(LDFLAGS)
 
 
 # Make sure that the compiler flags come last in the compilation string.

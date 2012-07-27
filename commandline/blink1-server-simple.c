@@ -30,13 +30,11 @@ static void get_qsvar(const struct mg_request_info *request_info,
 
 int open_blink1(void)
 {
-     if( dev==NULL ) {    // first run
-        dev = blink1_open();
-    }
-    if( dev == NULL ) {  // no blink1 found
-        return -1;
+    int rc = 0;
+    if( dev==NULL ) {    // first run
+        rc = blink1_open(&dev);
     } 
-    return 0;
+    return rc;
 }
 
 //

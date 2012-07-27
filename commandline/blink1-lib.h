@@ -14,15 +14,27 @@
 #include "hidapi.h"
 #include "usbconfig.h" // from firmware, for VID,PID,vendor name & product name 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define blink1_max_devices 16
 
-int blink1_maxDevices(void);
-hid_device* blink1_getDevice(int i);
+
+int blink1_vid(void);
+int blink1_pid(void);
+int blink1_sortpaths(void);
+
+int blink1_enumerate();
+int blink1_enumerate_byid(int vid, int pid);
+const char* blink1_cached_path(int i);
 
 int blink1_openall(void);
 int blink1_openall_byid( int vid, int pid );
 int blink1_openstatic(hid_device** dev);
+
 hid_device* blink1_open(void);
+hid_device* blink1_open_path(const char* path);
 void blink1_close( hid_device* dev );
 
 int blink1_write( hid_device* dev, void* buf, int len);
@@ -48,5 +60,9 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 
 char *blink1_error_msg(int errCode);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
