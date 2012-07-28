@@ -13,7 +13,7 @@
 
 #include "blink1-lib.h"
 
-hid_device* dev=NULL;
+//hid_device* dev=NULL;
 
 const char* blink1_server_version = "0.90b";
 
@@ -27,7 +27,7 @@ static void get_qsvar(const struct mg_request_info *request_info,
 }
 
 
-
+/*
 int open_blink1(void)
 {
     int rc = 0;
@@ -36,6 +36,7 @@ int open_blink1(void)
     } 
     return rc;
 }
+*/
 
 //
 static void *callback(enum mg_event event,
@@ -69,7 +70,8 @@ static void *callback(enum mg_event event,
                 sprintf(result, "setrgb: %x = %d,%d,%d @ %d msec", 
                         rgbval, r,g,b, millis );
 
-                if( open_blink1() ) {
+                hid_device* dev = blink1_open();
+                if( dev ) { 
                     if( blink1_fadeToRGB( dev, 100, r,g,b ) != 0 ) { 
                         sprintf(result, "%s\nfadeToRGB: couldn't find blink1",
                                 result);
