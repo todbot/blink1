@@ -13,10 +13,9 @@
 
 #define blink1_report_id 1
 
-static hid_device* blink1s[ blink1_max_devices ];
-static int blink1s_inuse[ blink1_max_devices ];
+//static hid_device* blink1s[ blink1_max_devices ];
+//static int blink1s_inuse[ blink1_max_devices ];
 //static int blink1s_count = 0;
-
 ///static blink1_error = 0;
 
 int blink1_maxDevices(void)
@@ -27,7 +26,8 @@ int blink1_maxDevices(void)
 //
 hid_device* blink1_getDevice(int i)
 {
-    return blink1s[i];
+    //return blink1s[i];
+    return NULL;
 }
 
 //----------------------------------------------------------------------------
@@ -42,9 +42,10 @@ int blink1_openstatic(hid_device **dev)
     return -1;
 }
 
-//
+// FIXME
 int blink1_openall_byid( int vid, int pid )
 {
+    /*
     for( int i=0; i< 16; i++) { 
         blink1s[i] = NULL;
         blink1s_inuse[i] = 0;
@@ -54,6 +55,8 @@ int blink1_openall_byid( int vid, int pid )
     blink1s_inuse[0] = 1;
     if( handle == NULL ) return -1;
     return 1;
+    */
+    return -1;
 }
 
 // returns number of devices opened

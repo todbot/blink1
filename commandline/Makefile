@@ -20,7 +20,9 @@
 #   - Install MinGW and MSYS (http://www.tdragon.net/recentgcc/ )
 #
 # Linux (Ubuntu) 
-#   - apt-get install gcc-avr avr-libc avrdude java librxtx-java
+#   - apt-get install gcc-avr avr-libc 
+#   - apt-get install libusb-1.0
+#   
 #
 # OpenWrt / DD-WRT
 #   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
@@ -88,9 +90,13 @@ endif
 
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
-USBFLAGS =   `libusb-config --cflags`
-USBLIBS  =   `libusb-config --libs`
-OBJS = ./hidapi/linux/hid.o
+#USBFLAGS =   `libusb-config --cflags`
+#USBLIBS  =   `libusb-config --libs`
+#LIBS   += `pkg-config libudev --libs` -lrt
+#CFLAGS += `pkg-config libusb-1.0 --cflags`
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread
+CFLAGS += `pkg-config libusb-1.0 --cflags`
+OBJS = ./hidapi/libusb/hid.o
 EXE=
 endif
 
