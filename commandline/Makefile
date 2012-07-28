@@ -94,8 +94,8 @@ ifeq "$(OS)" "linux"
 #USBLIBS  =   `libusb-config --libs`
 #LIBS   += `pkg-config libudev --libs` -lrt
 #CFLAGS += `pkg-config libusb-1.0 --cflags`
-LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread
 CFLAGS += `pkg-config libusb-1.0 --cflags`
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
 OBJS = ./hidapi/libusb/hid.o
 EXE=
 endif
@@ -136,8 +136,8 @@ blink1-tool: $(OBJS) blink1-tool.o
 
 blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
-	$(CC) $(CFLAGS)  -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
-	$(CC) -g $(OBJS) $(LIBS) ./mongoose/mongoose.o blink1-server-simple.o -o blink1-server-simple$(EXE)
+	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
+	$(CC) -g $(OBJS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
 
 
 clean: 

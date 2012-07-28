@@ -44,14 +44,16 @@ endif
 
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
-USBFLAGS =   `libusb-config --cflags`
-USBLIBS  =   `libusb-config --libs`
-EXE_SUFFIX=
-CFLAGS += -ldl -pthread $(CFLAGS)  
+#USBFLAGS =   `libusb-config --cflags`
+#USBLIBS  =   `libusb-config --libs`
+CFLAGS += -ldl -pthread  
+CFLAGS += `pkg-config libusb-1.0 --cflags`
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+HIDAPI_C = ../hidapi/libusb/hid.c
+
 #SHARED_FLAGS=
 EXE_SUFFIX=
 endif
-
 
 
 
@@ -71,7 +73,7 @@ endif
 ###                 UNIX build: linux, bsd, mac, rtems
 ##########################################################################
 
-CFLAGS +=  -std=gnu99  -O2 $(COPT) $(USBFLAGS)
+CFLAGS  += -std=gnu99 -O2 $(COPT) $(USBFLAGS)
 #CFLAGS += -W -Wall -std=gnu99  -O2 $(COPT) $(USBFLAGS)
 #CFLAGS += -W -Wall -std=c99 -pedantic -O2 $(COPT)
 CFLAGS += -I.. -I../../hardware/firmware -I../hidapi/hidapi
