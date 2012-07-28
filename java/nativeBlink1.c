@@ -10,6 +10,7 @@
 
 static hid_device* dev;
 
+/*
 //
 hid_device* getDeviceFromJava(JNIEnv *env, jobject obj)
 {
@@ -38,7 +39,37 @@ void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev)
     printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
     (*env)->SetLongField(env, obj, fid, (jlong)dev );
 }
+*/
 
+JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDevicePaths
+(JNIEnv *env, jobject obj)
+{
+    int count = blink1_enumerate();
+
+    jclass strCls = (*env)->FindClass(env,"Ljava/lang/String;");
+    jobjectArray strarray = (*env)->NewObjectArray(env,count,strCls,NULL);
+
+    for( int i=0; i<count; i++ ) { 
+        printf("path=%s\n",blink1_cached_path(i));
+        jstring str = (*env)->NewStringUTF(env, blink1_cached_path(i) );
+        (*env)->SetObjectArrayElement(env,strarray,i,str);
+        (*env)->DeleteLocalRef(env,str);
+    }
+    return strarray;
+}
+
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open__Ljava_lang_String_2
+  (JNIEnv *env, jobject obj, jstring jdevicepath)
+{
+    int err = 0;
+    const char *devicepath = (*env)->GetStringUTFChars(env, jdevicepath, 0);
+    
+    dev = blink1_open_path( devicepath );
+    
+    (*env)->ReleaseStringUTFChars(env, jdevicepath, devicepath);
+
+    return err;
+}
 
 /**
  *
@@ -83,6 +114,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
     err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
     return err;
 }
+
 
 /*
 //

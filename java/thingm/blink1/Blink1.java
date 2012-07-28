@@ -32,6 +32,12 @@ public class Blink1
     // 
     Blink1 blink1 = new Blink1();
 
+    System.out.println("device paths:");
+    String paths[] = blink1.getDevicePaths();
+    for( int i=0; i<paths.length; i++ ) { 
+      System.out.println( i + ": "+ paths[i]);
+    }
+
     //blink1.open(0,0,null,null);
     int rc = blink1.open();
     if( rc != 0 ) { 
@@ -45,11 +51,14 @@ public class Blink1
       int g = rand.nextInt() & 0xFF;
       int b = rand.nextInt() & 0xFF;
       
-      System.out.println("setting color "+r+","+g+","+b);
+      System.out.print("setting color "+r+","+g+","+b+"   ");
 
       rc = blink1.setRGB( r,g,b );
       if( rc==-1 ) { 
-        System.err.println("error detected");
+        System.out.println("error detected");
+      }
+      else { 
+        System.out.println();
       }
 
       blink1.pause( 500 );
@@ -61,6 +70,11 @@ public class Blink1
 
 
   /**
+   * Enumerate the bus and return a list of blink(1) device paths
+   */
+  public native String[] getDevicePaths();
+
+  /**
    * Open Blink1 dongle 
    * @param vid vendor id of device
    * @param pid product id of device
@@ -70,6 +84,11 @@ public class Blink1
    */
   //public native void open(int vid, int pid, String vstr, String pstr)
   public native int open();
+
+ /**
+   *
+   */
+  public native int open( String devicepath );
 
   /**
    * Do a transaction with the Blink1

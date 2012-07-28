@@ -6,10 +6,11 @@
  *
  */
 
-#include "blink1-lib.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "blink1-lib.h"
 
 #define blink1_report_id 1
 
@@ -18,10 +19,11 @@
 //static int blink1s_count = 0;
 ///static blink1_error = 0;
 
-int blink1_maxDevices(void)
-{
-    return blink1_max_devices;
-}
+#define pathmax 16
+#define pathstrmax 128
+
+static char blink1_cached_paths[pathmax][pathstrmax]; 
+static int blink1_cached_paths_count =0;
 
 //
 hid_device* blink1_getDevice(int i)
@@ -32,17 +34,14 @@ hid_device* blink1_getDevice(int i)
 
 //----------------------------------------------------------------------------
 
-//
+// FIXME: notworking
 int blink1_openstatic(hid_device **dev)
 {
-    //uint8_t  rawVid[2] = {USB_CFG_VENDOR_ID}, rawPid[2] = {USB_CFG_DEVICE_ID};
-    //int vid = rawVid[0] + 256 * rawVid[1];
-    //int pid = rawPid[0] + 256 * rawPid[1];
-
     return -1;
 }
 
-// FIXME
+
+// FIXME: not working
 int blink1_openall_byid( int vid, int pid )
 {
     /*
@@ -50,7 +49,7 @@ int blink1_openall_byid( int vid, int pid )
         blink1s[i] = NULL;
         blink1s_inuse[i] = 0;
     }
-    hid_device* handle = blink1_open(); // FIXME
+    hid_device* handle = blink1_open();
     blink1s[0] = handle;
     blink1s_inuse[0] = 1;
     if( handle == NULL ) return -1;
@@ -62,25 +61,64 @@ int blink1_openall_byid( int vid, int pid )
 // returns number of devices opened
 int blink1_openall(void)
 {
-    uint8_t rawVid[2] = {USB_CFG_VENDOR_ID}, rawPid[2] = {USB_CFG_DEVICE_ID};
-    int vid = rawVid[0] + 256 * rawVid[1];
-    int pid = rawPid[0] + 256 * rawPid[1];
+    int vid = blink1_vid();
+    int pid = blink1_pid();
 
     return blink1_openall_byid( vid,pid );
 }
 
 //
+int blink1_enumerate(void)
+{
+    return blink1_enumerate_byid( blink1_vid(), blink1_pid() );
+}
+
+// get all matching devices by VID/PID pair
+int blink1_enumerate_byid(int vid, int pid)
+{
+    struct hid_device_info *devs, *cur_dev;
+
+    int p = 0;
+	devs = hid_enumerate(vid, pid);
+	cur_dev = devs;	
+	while (cur_dev) {
+        if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
+            (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
+            strcpy( blink1_cached_paths[p++], cur_dev->path );
+        }
+		cur_dev = cur_dev->next;
+	}
+	hid_free_enumeration(devs);
+    
+    blink1_cached_paths_count = p;
+
+    blink1_sortpaths();
+
+    return p;
+}
+
+//
+const char* blink1_cached_path(int i)
+{
+    return blink1_cached_paths[i];    
+}
+
+//
+hid_device* blink1_open_path(const char* path)
+{
+    if( path == NULL || strlen(path) == 0 ) return NULL;
+	hid_device* handle = hid_open_path( path ); 
+    return handle;
+}
+
+
+//
 hid_device* blink1_open(void)
 {
-    uint8_t rawVid[2] = {USB_CFG_VENDOR_ID}, rawPid[2] = {USB_CFG_DEVICE_ID};
-    int vid = rawVid[0] + 256 * rawVid[1];
-    int pid = rawPid[0] + 256 * rawPid[1];
+    int vid = blink1_vid();
+    int pid = blink1_pid();
 
 	hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
-	if (!handle) {
-		printf("unable to open device\n");
- 		return NULL;
-	}
 
     return handle;
 }
@@ -204,10 +242,10 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
     buf[4] = b;     // blu
     
     int rc = blink1_write(dev, buf, sizeof(buf) );
-
-    if( rc == -1 ) {
+    /*
+    if( rc == -1 ) 
         fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
-    }
+    */
     return rc;  // FIXME: remove fprintf
 }
 
@@ -246,6 +284,36 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 
 
 /* ------------------------------------------------------------------------- */
+
+// qsort C-string comparison function 
+int cstring_cmp(const void *a, const void *b) 
+{ 
+    return strncmp( (const char *)a, (const char *)b, pathstrmax);
+} 
+
+//
+int blink1_sortpaths(void)
+{
+    size_t elemsize = sizeof( blink1_cached_paths[0] ); // 128 
+    size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
+    
+    qsort( blink1_cached_paths, blink1_cached_paths_count,elemsize,cstring_cmp);
+}
+
+//
+int blink1_vid(void)
+{
+    uint8_t  rawVid[2] = {USB_CFG_VENDOR_ID};
+    int vid = rawVid[0] + 256 * rawVid[1];
+    return vid;
+}
+//
+int blink1_pid(void)
+{
+    uint8_t  rawPid[2] = {USB_CFG_DEVICE_ID};
+    int pid = rawPid[0] + 256 * rawPid[1];
+    return pid;
+}
 
 //
 char *blink1_error_msg(int errCode)

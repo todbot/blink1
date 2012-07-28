@@ -32,6 +32,9 @@
 uint16_t  myvid = 0x20A0;
 uint16_t  mypid = 0x4111;
 
+char mypaths[16][128];
+int pathpos=0;
+
 int main(int argc, char* argv[])
 {
 	int res;
@@ -39,7 +42,6 @@ int main(int argc, char* argv[])
 	#define MAX_STR 255
 	wchar_t wstr[MAX_STR];
 	hid_device *handle;
-	int i;
 
 #ifdef WIN32
 	UNREFERENCED_PARAMETER(argc);
@@ -55,6 +57,7 @@ int main(int argc, char* argv[])
 		printf("Device Found\n  type: %04hx %04hx\n  path: %s\n  serial_number: %ls", cur_dev->vendor_id, cur_dev->product_id, cur_dev->path, cur_dev->serial_number);
         if( cur_dev->vendor_id == myvid && cur_dev->product_id == mypid ) { 
             printf("!!!YAY!!!");
+            strcpy( mypaths[pathpos++], cur_dev->path );
         }
 		printf("\n");
 		printf("  Manufacturer: %ls\n", cur_dev->manufacturer_string);
@@ -77,7 +80,11 @@ int main(int argc, char* argv[])
 	// Open the device using the VID, PID,
 	// and optionally the Serial number.
 	////handle = hid_open(0x4d8, 0x3f, L"12345");
-	handle = hid_open(myvid, mypid, NULL);
+	//handle = hid_open(myvid, mypid, NULL);
+    if( pathpos > 0 ) { 
+        printf("opening path '%s'\n", mypaths[0] );
+        handle = hid_open_path( mypaths[0] );
+    }
 	if (!handle) {
 		printf("unable to open device\n");
  		return 1;

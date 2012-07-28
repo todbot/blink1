@@ -41,6 +41,7 @@ int multiMillis = 1000;
 int numDevicesToUse = 1;
 
 hid_device* dev;
+const char* dev_path;
 char  deviceNums[blink1_max_devices];
 
 char  cmdbuf[9];    // room at front for reportID
@@ -147,9 +148,11 @@ int main(int argc, char** argv)
     int openall = 0;
     //int blink1_count;
     int16_t arg=0;
-    static int vid=0, pid=0;
+    static int vid,pid;
     int  rc;
     static int cmd  = CMD_NONE;
+
+    vid = blink1_vid(), pid = blink1_pid();
 
     // parse options
     int option_index = 0, opt;
@@ -219,38 +222,38 @@ int main(int argc, char** argv)
         }
     }
 
-    //printf("deviceNums: ");
-    //hexdump(deviceNums, sizeof(deviceNums));
-
     if(argc < 2){
         usage( "blink1-tool" );
         exit(1);
     }
 
-    if( vid!=0 && pid!=0 ) {
-        printf("using alternate VID/PID: 0x%4.4x/0x%4.4x\n", vid,pid);
-        rc = blink1_openall_byid( vid,pid );
-    } else {
-        rc = blink1_openall();
-    }
-    if( rc == -1 ) { 
-        fprintf(stderr, "no devices found\n");
-        //exit(1);
+    // get a list of all devices and their paths
+    int c = blink1_enumerate_byid(vid,pid);
+    if( c == 0 ) { 
+        printf("no blink(1) devices found\n");
+        exit(1);
     }
 
-    if(verbose) {
-        for( int i=0; i<4; i++ ) {
-            fprintf(stderr,"device:%p\n", (void*)blink1_getDevice(i));
+    dev_path = blink1_cached_path( deviceNums[0] );
+    if( verbose ) { 
+        printf("deviceNums[0] = %d\n", deviceNums[0]);
+        printf("cached path = '%s'\n", dev_path);
+        for( int i=0; i< c; i++ ) { 
+            printf("'%s'\n", blink1_cached_path(i) );
         }
     }
 
-    dev = blink1_getDevice( deviceNums[0] ); // FIXME:
+    // actually open up the device to start talking to it
+    dev = blink1_open_path( blink1_cached_path( deviceNums[0] ) );
+    if( dev == NULL ) { 
+        printf("cannot open blink(1), bad path\n");
+        exit(1);
+    }
 
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
-        for( int i=0; i< blink1_max_devices; i++ ) { 
-            hid_device* d = blink1_getDevice(i);
-            if( d!=NULL ) printf("%d: %p\n", i, d);
+        for( int i=0; i< c; i++ ) { 
+            printf("'%s'\n", blink1_cached_path(i) );
         }
     }
     else if( cmd == CMD_HIDREAD ) { 
@@ -317,13 +320,13 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_ON ) {
-        printf("turning on\n");
+        printf("turning on device '%s'\n",dev_path);
         rc = blink1_fadeToRGB(dev, millis, 255,255,255);
         if( rc == -1 ) // on error, do something, anything. come on.
             printf("error on ON fadeToRGB\n");
     }
     else if( cmd == CMD_OFF ) { 
-        printf("turning off\n");
+        printf("turning off device '%s'\n", dev_path);
         rc = blink1_fadeToRGB(dev, millis, 0,0,0);
         if( rc == -1) // on error, do something, anything. come on.
             printf("error on OFF fadeToRGB\n");
@@ -337,11 +340,12 @@ int main(int argc, char** argv)
             printf("%d : %2.2x,%2.2x,%2.2x \n", numDevicesToUse, r,g,b);
             
             for( int i=0; i< numDevicesToUse; i++ ) {
-                hid_device* mydev = blink1_getDevice(i);
-                rc = blink1_fadeToRGB(mydev, millis,r,g,b);
+                hid_device* mydev = blink1_open_path( blink1_cached_path(i) );
+                rc = blink1_fadeToRGB(dev, millis,r,g,b);
                 if( rc == -1 ) { // on error, do something, anything. come on.
                     break;
                 }
+                blink1_close(mydev);
             }
 #ifdef WIN32
             Sleep(delayMillis);

@@ -107,13 +107,13 @@ CC = gcc
 
 CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
-CFLAGS += -I./hidapi/hidapi -g
+CFLAGS += -I./hidapi/hidapi -I./mongoose -g
 
-OBJS +=  blink1-lib.o blink1-tool.o
+OBJS +=  blink1-lib.o 
 
 
 #all: msg blink1-tool blink1-server-simple
-all: msg blink1-tool 
+all: msg blink1-tool blink1-server-simple
 
 msg: 
 	@echo "building for OS=$(OS)"
@@ -130,18 +130,19 @@ help:
 $(OBJS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-blink1-tool: $(OBJS) 
-	$(CC) -g $^ $(LIBS) -o blink1-tool$(EXE) 
+blink1-tool: $(OBJS) blink1-tool.o
+	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
+	$(CC) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
-blink1-server-simple: blink1-lib.o
-	$(CC) -o blink1-server-simple$(EXE) $(ARCH_COMPILE) $(CFLAGS) $(LIBS) blink1-lib.c hiddata.c -I ./mongoose -pthread -g ./mongoose/mongoose.c blink1-server-simple.c
+blink1-server-simple: $(OBJS) blink1-server-simple.c
+	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
+	$(CC) $(CFLAGS)  -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
+	$(CC) -g $(OBJS) $(LIBS) ./mongoose/mongoose.o blink1-server-simple.o -o blink1-server-simple$(EXE)
 
-
-#.c.o:
-#	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
 
 clean: 
-	rm -f $(OBJS) blink1-server-simple.o blink1-tool.o
+	rm -f $(OBJS) 
+	rm -f blink1-server-simple.o blink1-tool.o
 	rm -f mongoose/mongoose.o
 
 distclean: clean
