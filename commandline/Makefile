@@ -22,20 +22,30 @@
 # Linux (Ubuntu) 
 #   - apt-get install gcc-avr avr-libc 
 #   - apt-get install libusb-1.0
+#
+#   optionally, to build 32-bit on 64-bit Ubuntu, try a chrooted build:
+#   (warning this will use up a lot of disk space)
+#   - sudo apt-get install ubuntu-dev-tools
+#   - pbuilder-dist oneiric i386 create
+#   - mkdir $HOME/i386
+#   - cp -r blink1 $HOME/i386
+#   - pbuilder-dist oneiric i386 login --bindmounts $HOME/i386
+#     (now in the chrooted area)
+#   - apt-get install libusb-1.0-0 libusb-1.0-0-dev
+#   - cd $HOME/i386/blink1
+#   - CFLAGS='-I/usr/include/libusb-1.0' LIBS='-lusb-1.0' make
+#   - exit
 #   
+# BeagleBone / BeagleBoard (on Angstrom Linux)
+#   - opkg install libusb-0.1-4-dev  (FIXME: uses HIDAPI & libusb-1.0 now)	
+#   - May need to symlink libusb 
+#      cd /lib; ln -s libusb-0.1.so.4 libusb.so
+#   - make
 #
 # OpenWrt / DD-WRT
 #   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
 #   - set WRT_SDK_HOME environment variable
 #   - type "make OS=wrt" to build
-#
-# BeagleBone / BeagleBoard (on Angstrom Linux)
-#   - Install USB dev support 
-#      "opkg install libusb-0.1-4-dev"
-#   - May need to symlink libusb 
-#      "cd /lib; ln -s libusb-0.1.so.4 libusb.so"
-#   - Build "linkm-tool" command-line app
-#      "make ADDBOOTLOAD=0"
 #
 #
 # -----
@@ -94,8 +104,9 @@ ifeq "$(OS)" "linux"
 #USBLIBS  =   `libusb-config --libs`
 #LIBS   += `pkg-config libudev --libs` -lrt
 #CFLAGS += `pkg-config libusb-1.0 --cflags`
+#CFLAGS += -m32
 CFLAGS += `pkg-config libusb-1.0 --cflags`
-LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl -static
 OBJS = ./hidapi/libusb/hid.o
 EXE=
 endif
