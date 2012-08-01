@@ -60,7 +60,7 @@ static uint32_t pattern_update_next;
 static uint16_t serverdown_millis;
 static uint32_t serverdown_update_next;
 
-#define patt_max 10
+#define patt_max 16
 rgb_t cplay;     // holder for currently playing color
 uint16_t tplay;
 uint8_t playpos;
@@ -87,10 +87,14 @@ uint8_t ee_osccal          EEMEM; // used by "osccal.h"
 uint8_t ee_bootmode        EEMEM = BOOT_NORMAL;
 uint8_t ee_myid            EEMEM = 1;
 patternline_t ee_pattern[patt_max]  EEMEM = {
-    { { 0xff, 0x01, 0x02 }, 100 },
-    { { 0x03, 0xff, 0x05 }, 100 },
-    { { 0x06, 0x07, 0xff }, 100 },
+    { { 0xff, 0x00, 0x00 },  50 },
+    { { 0x00, 0x00, 0x00 },  50 },
+    { { 0x00, 0xff, 0x00 },  50 },
+    { { 0x00, 0x00, 0x00 },  50 },
+    { { 0x00, 0x00, 0xff },  50 },
+    { { 0x00, 0x00, 0x00 },  50 },
     { { 0xff, 0xff, 0xff }, 100 },
+    { { 0x00, 0x00, 0x00 }, 100 },
     { { 0xff, 0xff, 0xff }, 100 },
     { { 0xff, 0x00, 0xff },  50 },
     { { 0xff, 0xff, 0x00 },  50 },
@@ -376,7 +380,7 @@ void timerInit(void)
 // ------------------------------------------------------------------------- 
 // -------------------------- main logic -----------------------------------
 // -------------------------------------------------------------------------
-
+/*
 // a simple logarithmic -> linear mapping as a sort of gamma correction
 // maps from 0-255 to 0-255
 static int log2lin( int n )  
@@ -384,6 +388,7 @@ static int log2lin( int n )
   //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
   return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
 }
+*/
 
 //
 static void updateLEDs(void)
@@ -395,12 +400,22 @@ static void updateLEDs(void)
         rgb_updateCurrent();
         
         // check for not on computer power up
-        if( !usbHasBeenSetup && !playing && now > 250 ) {  // 250 msec wait
-            playing = 1;
-            playpos = 0;
-            pattern_update_next = now;
-            eeprom_read_block( &pattern, &ee_pattern,
-                               sizeof(patternline_t)*patt_max);
+        if( !usbHasBeenSetup ) { 
+            if( !playing && now > 500 ) {  // 500 msec wait
+                playing = 2; // 2 == playing from powerup
+                playpos = 0;
+                pattern_update_next = now;
+                eeprom_read_block( &pattern, &ee_pattern,
+                                   sizeof(patternline_t)*patt_max);
+            }
+        }
+        else {  // usb is setup...
+            if( playing == 2 ) { // ...but we're doing a powerup play, so reset
+                playing = 0; 
+                setRGBt(cplay, 0,0,0);      // starting color
+                rgb_setCurr( &cplay );
+            }
+
         }
     }
     /*

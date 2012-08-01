@@ -211,7 +211,7 @@ int main(int argc, char** argv)
             else verbose = strtol(optarg,NULL,0);
             break;
         case 'd':
-            hexread(deviceNums, optarg, sizeof(deviceNums));
+            numDevicesToUse = hexread(deviceNums, optarg, sizeof(deviceNums));
             break;
         case 'U': 
             vid = strtol(optarg,NULL,0);
@@ -253,7 +253,7 @@ int main(int argc, char** argv)
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
         for( int i=0; i< c; i++ ) { 
-            printf("'%s'\n", blink1_cached_path(i) );
+            printf("%d - '%s'\n", i, blink1_cached_path(i) );
         }
     }
     else if( cmd == CMD_HIDREAD ) { 
@@ -320,16 +320,26 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_ON ) {
-        printf("turning on device '%s'\n",dev_path);
-        rc = blink1_fadeToRGB(dev, millis, 255,255,255);
-        if( rc == -1 ) // on error, do something, anything. come on.
-            printf("error on ON fadeToRGB\n");
+        for( int i=0; i< numDevicesToUse; i++ ) {
+            dev_path = blink1_cached_path( deviceNums[i] );
+            dev = blink1_open_path( dev_path );
+            if( dev == NULL ) continue;
+            printf("turning on device %d ('%s')\n",deviceNums[i], dev_path);
+            rc = blink1_fadeToRGB(dev, millis, 255,255,255);
+            if( rc == -1 ) // on error, do something, anything. come on.
+                printf("error on ON fadeToRGB\n");
+        }
     }
     else if( cmd == CMD_OFF ) { 
-        printf("turning off device '%s'\n", dev_path);
-        rc = blink1_fadeToRGB(dev, millis, 0,0,0);
-        if( rc == -1) // on error, do something, anything. come on.
-            printf("error on OFF fadeToRGB\n");
+        for( int i=0; i< numDevicesToUse; i++ ) {
+            dev_path = blink1_cached_path( deviceNums[i] );
+            dev = blink1_open_path( dev_path );
+            if( dev == NULL ) continue;
+            printf("turning off device %d ('%s')\n", deviceNums[i], dev_path);
+            rc = blink1_fadeToRGB(dev, millis, 0,0,0);
+            if( rc == -1) // on error, do something, anything. come on.
+                printf("error on OFF fadeToRGB\n");
+        }
     }
     else if( cmd == CMD_RANDOM ) { 
         printf("random %d times: \n", arg);
