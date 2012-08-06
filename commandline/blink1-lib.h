@@ -24,22 +24,22 @@ extern "C" {
 int blink1_vid(void);
 int blink1_pid(void);
 int blink1_sortpaths(void);
+int blink1_sortdevs(void);
 
 int blink1_enumerate();
 int blink1_enumerate_byid(int vid, int pid);
 const char* blink1_cached_path(int i);
-
-int blink1_openall(void);
-int blink1_openall_byid( int vid, int pid );
-int blink1_openstatic(hid_device** dev);
+const wchar_t* blink1_cached_serial(int i);
 
 hid_device* blink1_open(void);
-hid_device* blink1_open_path(const char* path);
+hid_device* blink1_open_bypath(const char* path);
+hid_device* blink1_open_byserial(const wchar_t* serial);
 void blink1_close( hid_device* dev );
 
 int blink1_write( hid_device* dev, void* buf, int len);
 int blink1_read( hid_device* dev, void* buf, int len);
 
+int blink1_getSerialNumber(hid_device *dev, char* buf);
 int blink1_getVersion(hid_device *dev);
 
 int blink1_fadeToRGB(hid_device *dev, uint16_t fadeMillis,
@@ -60,6 +60,7 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 
 char *blink1_error_msg(int errCode);
 
+int blink1_degamma(int n);
 
 #ifdef __cplusplus
 }

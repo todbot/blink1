@@ -21,30 +21,25 @@
 
 #define pathmax 16
 #define pathstrmax 128
+#define serialmax 8
 
 static char blink1_cached_paths[pathmax][pathstrmax]; 
-static int blink1_cached_paths_count =0;
+static int blink1_cached_paths_count = 0;
+static wchar_t blink1_cached_serials[pathmax][serialmax];
 
+//----------------------------------------------------------------------------
+/*
 //
 hid_device* blink1_getDevice(int i)
 {
     //return blink1s[i];
     return NULL;
 }
-
-//----------------------------------------------------------------------------
-
-// FIXME: notworking
-int blink1_openstatic(hid_device **dev)
-{
-    return -1;
-}
-
-
+*/
+/*
 // FIXME: not working
 int blink1_openall_byid( int vid, int pid )
 {
-    /*
     for( int i=0; i< 16; i++) { 
         blink1s[i] = NULL;
         blink1s_inuse[i] = 0;
@@ -54,7 +49,6 @@ int blink1_openall_byid( int vid, int pid )
     blink1s_inuse[0] = 1;
     if( handle == NULL ) return -1;
     return 1;
-    */
     return -1;
 }
 
@@ -63,9 +57,9 @@ int blink1_openall(void)
 {
     int vid = blink1_vid();
     int pid = blink1_pid();
-
     return blink1_openall_byid( vid,pid );
 }
+*/
 
 //
 int blink1_enumerate(void)
@@ -84,15 +78,19 @@ int blink1_enumerate_byid(int vid, int pid)
 	while (cur_dev) {
         if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
-            strcpy( blink1_cached_paths[p++], cur_dev->path );
+            strcpy( blink1_cached_paths[p], cur_dev->path );
+            wcscpy( blink1_cached_serials[p], cur_dev->serial_number );
+            //blink1_cached_serialnumbs[p] = {0};
+            //wcstombs( blink1_cached_serialnums[p], cur_dev->serial );
+            p++;
         }
 		cur_dev = cur_dev->next;
 	}
 	hid_free_enumeration(devs);
     
     blink1_cached_paths_count = p;
-
-    blink1_sortpaths();
+    
+    blink1_sortdevs();
 
     return p;
 }
@@ -102,15 +100,29 @@ const char* blink1_cached_path(int i)
 {
     return blink1_cached_paths[i];    
 }
+//
+const wchar_t* blink1_cached_serial(int i)
+{
+    return blink1_cached_serials[i];    
+}
 
 //
-hid_device* blink1_open_path(const char* path)
+hid_device* blink1_open_bypath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
 	hid_device* handle = hid_open_path( path ); 
     return handle;
 }
 
+hid_device* blink1_open_byserial(const wchar_t* serial)
+{
+    if( serial == NULL || wcslen(serial) == 0 ) return NULL;
+    int vid = blink1_vid();
+    int pid = blink1_pid();
+    
+	hid_device* handle = hid_open(vid,pid, serial ); 
+    return handle;
+}
 
 //
 hid_device* blink1_open(void)
@@ -160,12 +172,29 @@ int blink1_read( hid_device* dev, void* buf, int len)
     return rc;
 }
 
+
 // -------------------------------------------------------------------------
 // everything below here doesn't need to know about USB details
 // except for a "hid_device*"
 // -------------------------------------------------------------------------
 
 #include <unistd.h>
+
+//
+int blink1_getSerialNumber(hid_device *dev, char* buf)
+{
+    if( dev == NULL ) return -1;
+    /*
+    wchar_t* wbuf = dev->serial_number;
+    int i=0;
+    while( wbuf ) { 
+        buf[i++] = *wbuf;
+    }
+    return i;
+    */
+    return -1;
+}
+
 //
 int blink1_getVersion(hid_device *dev)
 {
@@ -283,7 +312,44 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 
 
 
+//
+int readUUID( hid_device* dev, uint8_t** uuid )
+{
+    return -1;
+}
+
+int setUUID( hid_device* dev, uint8_t* uuid )
+{
+    return -1;
+}
+
+
 /* ------------------------------------------------------------------------- */
+
+uint8_t degamma_lookup[256] = { 
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+  1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,4,
+  4,4,4,5,5,5,5,6,6,6,7,7,7,8,8,9,
+  9,9,10,10,11,11,11,12,12,13,13,14,14,15,15,16,
+  16,17,17,18,18,19,19,20,20,21,22,22,23,23,24,25,
+  25,26,27,27,28,29,29,30,31,31,32,33,33,34,35,36,
+  36,37,38,39,40,40,41,42,43,44,44,45,46,47,48,49,
+  50,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,
+  65,66,67,68,69,70,71,72,73,74,75,76,77,79,80,81,
+  82,83,84,85,87,88,89,90,91,93,94,95,96,97,99,100,
+  101,102,104,105,106,108,109,110,112,113,114,116,117,118,120,121,
+  122,124,125,127,128,129,131,132,134,135,137,138,140,141,143,144,
+  146,147,149,150,152,153,155,156,158,160,161,163,164,166,168,169,
+  171,172,174,176,177,179,181,182,184,186,188,189,191,193,195,196,
+  198,200,202,203,205,207,209,211,212,214,216,218,220,222,224,225,
+  227,229,231,233,235,237,239,241,243,245,247,249,251,253,255,255,
+};
+
+//
+int blink1_degamma( int n ) 
+{ 
+    return degamma_lookup[n];
+}
 
 // qsort C-string comparison function 
 int cstring_cmp(const void *a, const void *b) 
@@ -298,6 +364,15 @@ int blink1_sortpaths(void)
     size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
     
     qsort( blink1_cached_paths, blink1_cached_paths_count,elemsize,cstring_cmp);
+}
+
+//
+int blink1_sortdevs(void)
+{
+    size_t elemsize = sizeof( blink1_cached_serials[0] ); //  
+    size_t count = sizeof(blink1_cached_serials) / elemsize; // 
+    
+    qsort(blink1_cached_serials,blink1_cached_paths_count,elemsize,cstring_cmp);
 }
 
 //
