@@ -31,7 +31,7 @@ AVRDUDE = avrdude -c avrispmkii -P usb -p $(MCU)
 # to an USB to serial converter to a Mac running Mac OS X.
 # Choose your favorite programmer and interface.
 
-COMPILE = avr-gcc -std=gnu99 -Wall -Os -Iusbdrv -I.   -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DDEBUG_LEVEL=0
+COMPILE = avr-gcc -std=gnu99 -Wall -Os -Iusbdrv -I. -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DDEBUG_LEVEL=0
 # NEVER compile the final product with debugging! Any debug output will
 # distort timing so that the specs can't be met.
 
@@ -110,9 +110,6 @@ $(TARGET).hex:	$(TARGET).bin
 	rm -f $(TARGET).hex $(TARGET).eep.hex
 	avr-objcopy -j .text -j .data -O ihex $(TARGET).bin $(TARGET).hex
 	avr-size --mcu=$(MCU) --format=avr $(TARGET).bin
-	#./checksize $(TARGET).bin 4096 256
-# do the checksize script as our last action to allow successful compilation
-# on Windows with WinAVR where the Unix commands will fail.
 
 disasm:	$(TARGET).bin
 	avr-objdump -d $(TARGET).bin

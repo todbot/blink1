@@ -85,7 +85,8 @@ patternline_t pattern[patt_max] = {
 
 uint8_t ee_osccal          EEMEM; // used by "osccal.h"
 uint8_t ee_bootmode        EEMEM = BOOT_NORMAL;
-uint8_t ee_myid            EEMEM = 1;
+uint8_t ee_serialnum[8]    EEMEM = { '1','2','3','4','5','6','7','8'};
+
 patternline_t ee_pattern[patt_max]  EEMEM = {
     { { 0xff, 0x00, 0x00 },  50 },
     { { 0x00, 0x00, 0x00 },  50 },
@@ -164,6 +165,11 @@ PROGMEM char usbHidReportDescriptor[24] = {
     0xc0                           // END_COLLECTION
 };
 
+
+int usbDescriptorStringSerialNumber[] = {
+    USB_STRING_DESCRIPTOR_HEADER( USB_CFG_SERIAL_NUMBER_LEN ),
+    USB_CFG_SERIAL_NUMBER
+};
 
 void handleMessage(void);
 
@@ -456,8 +462,12 @@ int main(void)
     if( bootmode == BOOT_NIGHTLIGHT ) { 
         eeprom_read_block( &pattern,&ee_pattern,sizeof(patternline_t)*patt_max);
         playing = 1;
+    } */
+
+    for( uint8_t i=0; i< 8; i++ ) { 
+       uint8_t v = eeprom_read_byte( ee_serialnum + i );
+        usbDescriptorStringSerialNumber[1+i] = v;
     }
-    */
 
     usbInit();
     usbDeviceDisconnect();

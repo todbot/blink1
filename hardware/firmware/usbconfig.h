@@ -213,7 +213,7 @@ extern void usbEventResetReady(void);
  * compiled in. This function can be used to calibrate the AVR's RC oscillator.
  */
 
-#define USB_USE_FAST_CRC                0
+#define USB_USE_FAST_CRC                1
 /* The assembler module has two implementations for the CRC algorithm. One is
  * faster, the other is smaller. This CRC routine is only used for transmitted
  * messages where timing is not critical. The faster routine needs 31 cycles
@@ -267,6 +267,8 @@ extern void usbEventResetReady(void);
  */
 /*#define USB_CFG_SERIAL_NUMBER   'N', 'o', 'n', 'e' */
 /*#define USB_CFG_SERIAL_NUMBER_LEN   0 */
+#define USB_CFG_SERIAL_NUMBER   'N', 'o', 'n', 't','h','i','n','g' 
+#define USB_CFG_SERIAL_NUMBER_LEN   8 
 /* Same as above for the serial number. If you don't want a serial number,
  * undefine the macros.
  * It may be useful to provide the serial number through other means than at
@@ -358,7 +360,8 @@ extern void usbEventResetReady(void);
 #define USB_CFG_DESCR_PROPS_STRING_0                0
 #define USB_CFG_DESCR_PROPS_STRING_VENDOR           0
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT          0
-#define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    0
+//#define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    0
+#define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    (USB_PROP_IS_RAM | (2 * USB_PROP_LENGTH(8)+2))
 #define USB_CFG_DESCR_PROPS_HID                     0
 #define USB_CFG_DESCR_PROPS_HID_REPORT              0
 #define USB_CFG_DESCR_PROPS_UNKNOWN                 0
