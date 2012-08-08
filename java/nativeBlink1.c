@@ -10,64 +10,91 @@
 
 static hid_device* dev;
 
-/*
-//
-hid_device* getDeviceFromJava(JNIEnv *env, jobject obj)
+
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_enumerate
+(JNIEnv *env, jobject obj)
 {
-    jclass cls = (*env)->GetObjectClass(env,obj);
-    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "J");
-    if( fid==0 ) {
-        printf("nativeBlinkM: no fid");
-        return NULL;
-    }
-    jlong lp = (*env)->GetLongField(env,cls,fid);
-    hid_device* dev = (hid_device*)lp;
-    //hid_device* dev = (hid_device*) (*env)->GetLongField(env,cls,fid);
-    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
-    return dev;
+    //hid_device* dev = getDeviceFromJava(env,obj);
+    jint c = blink1_enumerate();
+    return c;
 }
 
-//
-void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev)
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_getCount
+(JNIEnv *env, jobject obj)
 {
-    jclass cls = (*env)->GetObjectClass(env,obj);
-    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "J");
-    if( fid==0 ) {
-        printf("nativeBlinkM: no fid");
-        return;
-    }
-    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
-    (*env)->SetLongField(env, obj, fid, (jlong)dev );
+    int count = blink1_getCachedCount();
+    return count;
 }
-*/
 
 JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDevicePaths
 (JNIEnv *env, jobject obj)
 {
-    int count = blink1_enumerate();
+    int count = blink1_getCachedCount();
 
     jclass strCls = (*env)->FindClass(env,"Ljava/lang/String;");
     jobjectArray strarray = (*env)->NewObjectArray(env,count,strCls,NULL);
 
     for( int i=0; i<count; i++ ) { 
-        printf("path=%s\n",blink1_cached_path(i));
-        jstring str = (*env)->NewStringUTF(env, blink1_cached_path(i) );
+        //printf("native path=%s\n",blink1_getCachedPath(i));
+        jstring str = (*env)->NewStringUTF(env, blink1_getCachedPath(i) );
         (*env)->SetObjectArrayElement(env,strarray,i,str);
         (*env)->DeleteLocalRef(env,str);
     }
     return strarray;
 }
 
-JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open__Ljava_lang_String_2
+JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDeviceSerials
+(JNIEnv *env, jobject obj)
+{
+    int count = blink1_getCachedCount();
+
+    jclass strCls = (*env)->FindClass(env,"Ljava/lang/String;");
+    jobjectArray strarray = (*env)->NewObjectArray(env,count,strCls,NULL);
+
+    for( int i=0; i<count; i++ ) { 
+        //printf("native serial=%ls\n", blink1_getCachedSerial(i));
+        //FIXME: wrt (char*)?
+        jstring str=(*env)->NewStringUTF(env,(char*)blink1_getCachedSerial(i) );
+        (*env)->SetObjectArrayElement(env,strarray,i,str);
+        (*env)->DeleteLocalRef(env,str);
+    }
+    return strarray;
+}
+
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openByPath__Ljava_lang_String_2
   (JNIEnv *env, jobject obj, jstring jdevicepath)
 {
     int err = 0;
     const char *devicepath = (*env)->GetStringUTFChars(env, jdevicepath, 0);
     
-    dev = blink1_open_path( devicepath );
+    dev = blink1_openByPath( devicepath );
     
     (*env)->ReleaseStringUTFChars(env, jdevicepath, devicepath);
 
+    return err;
+}
+
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openBySerial__Ljava_lang_String_2
+  (JNIEnv *env, jobject obj, jstring jserialnumber)
+{
+    int err = 0;
+    const jchar *serialnumber = (*env)->GetStringChars(env, jserialnumber, 0);
+    
+    dev = blink1_openBySerial( (wchar_t*) serialnumber ); //FIXME: okay?
+    
+    (*env)->ReleaseStringChars(env, jserialnumber, serialnumber);
+
+    return err;
+}
+
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
+(JNIEnv *env, jobject obj, jint id )
+{
+    int err;
+    hid_device* devt = blink1_openById( id );
+    dev = devt;
+
+    //setDeviceToJava(env,obj, devt);
     return err;
 }
 
@@ -115,6 +142,38 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
     return err;
 }
 
+
+
+/*
+//
+hid_device* getDeviceFromJava(JNIEnv *env, jobject obj)
+{
+    jclass cls = (*env)->GetObjectClass(env,obj);
+    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "J");
+    if( fid==0 ) {
+        printf("nativeBlinkM: no fid");
+        return NULL;
+    }
+    jlong lp = (*env)->GetLongField(env,cls,fid);
+    hid_device* dev = (hid_device*)lp;
+    //hid_device* dev = (hid_device*) (*env)->GetLongField(env,cls,fid);
+    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
+    return dev;
+}
+
+//
+void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev)
+{
+    jclass cls = (*env)->GetObjectClass(env,obj);
+    jfieldID fid = (*env)->GetFieldID(env, cls, "hidDevicePtr", "J");
+    if( fid==0 ) {
+        printf("nativeBlinkM: no fid");
+        return;
+    }
+    printf("nativeBlink1: setDeviceToJava: %ld\n", (long)dev);
+    (*env)->SetLongField(env, obj, fid, (jlong)dev );
+}
+*/
 
 /*
 //

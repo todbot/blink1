@@ -23,17 +23,20 @@ extern "C" {
 
 int blink1_vid(void);
 int blink1_pid(void);
-int blink1_sortpaths(void);
-int blink1_sortdevs(void);
+int blink1_sortPaths(void);
+int blink1_sortDevs(void);
 
 int blink1_enumerate();
-int blink1_enumerate_byid(int vid, int pid);
-const char* blink1_cached_path(int i);
-const wchar_t* blink1_cached_serial(int i);
+int blink1_enumerateByVidPid(int vid, int pid);
+const char* blink1_getCachedPath(int i);
+const wchar_t* blink1_getCachedSerial(int i);
+int blink1_getCachedCount(void);
 
 hid_device* blink1_open(void);
-hid_device* blink1_open_bypath(const char* path);
-hid_device* blink1_open_byserial(const wchar_t* serial);
+hid_device* blink1_openByPath(const char* path);
+hid_device* blink1_openBySerial(const wchar_t* serial);
+hid_device* blink1_openById( int i );
+
 void blink1_close( hid_device* dev );
 
 int blink1_write( hid_device* dev, void* buf, int len);

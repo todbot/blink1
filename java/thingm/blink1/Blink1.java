@@ -31,19 +31,16 @@ public class Blink1
     
     // 
     Blink1 blink1 = new Blink1();
+    blink1.enumerate();
 
+    System.out.println("found "+blink1.getCount()+ " devices");
     System.out.println("device paths:");
     String paths[] = blink1.getDevicePaths();
+    String serials[] = blink1.getDeviceSerials();
     for( int i=0; i<paths.length; i++ ) { 
-      System.out.println( i + ": "+ paths[i]);
+      System.out.println( i + ": "+ paths[i] + " : " + serials[i]);
     }
 
-    //blink1.open(0,0,null,null);
-    int rc = blink1.open();
-    if( rc != 0 ) { 
-      System.err.println("no Blink1 detected");
-      System.exit(1);
-    }
       
     Random rand = new Random();
     for( int i=0; i<20; i++ ) {
@@ -51,9 +48,20 @@ public class Blink1
       int g = rand.nextInt() & 0xFF;
       int b = rand.nextInt() & 0xFF;
       
-      System.out.print("setting color "+r+","+g+","+b+"   ");
+      int id = rand.nextInt() & (blink1.getCount()-1);
 
+      
+      System.out.print("setting id: "+id+" to color "+r+","+g+","+b+"   ");
+
+      int rc = blink1.openById( id );
+      if( rc == -1 ) { 
+        //break; 
+      }
+
+      rc = blink1.openById( id );
       rc = blink1.setRGB( r,g,b );
+      blink1.close();
+      
       if( rc==-1 ) { 
         System.out.println("error detected");
       }
@@ -61,18 +69,35 @@ public class Blink1
         System.out.println();
       }
 
-      blink1.pause( 500 );
+      blink1.pause( 250 );
     }
 
-    blink1.close();
+    //blink1.close();
     
   }
 
 
   /**
-   * Enumerate the bus and return a list of blink(1) device paths
+   * Enumerate the bus and return a count of blink(1) device found
+   */
+  public native int enumerate();
+
+ /**
+   *
+   */
+  public native int getCount();
+
+  /**
+   * Return the list of blink(1) device paths found by enumerate
    */
   public native String[] getDevicePaths();
+
+  /**
+   * Return the list of blink(1) device serials found by enumerate
+   * //Enumerate the bus and return a list of blink(1) device paths
+   */
+  public native String[] getDeviceSerials();
+
 
   /**
    * Open Blink1 dongle 
@@ -88,7 +113,17 @@ public class Blink1
  /**
    *
    */
-  public native int open( String devicepath );
+  public native int openByPath( String devicepath );
+
+ /**
+   *
+   */
+  public native int openBySerial( String serialnumber );
+
+ /**
+   *
+   */
+  public native int openById( int id );
 
   /**
    * Do a transaction with the Blink1

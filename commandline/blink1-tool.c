@@ -153,6 +153,9 @@ int main(int argc, char** argv)
     int  rc;
     char tmpstr[100];
 
+    uint16_t seed = time(NULL);
+    srand(seed);
+
     static int cmd  = CMD_NONE;
 
     vid = blink1_vid(), pid = blink1_pid();
@@ -197,7 +200,8 @@ int main(int argc, char** argv)
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
-                  if( optarg ) 
+                arg = 10;
+                if( optarg ) 
                     arg = strtol(optarg,NULL,0);   // cmd w/ number arg
                 break;
             }
@@ -240,26 +244,26 @@ int main(int argc, char** argv)
     }
 
     // get a list of all devices and their paths
-    int c = blink1_enumerate_byid(vid,pid);
+    int c = blink1_enumerateByVidPid(vid,pid);
     if( c == 0 ) { 
         printf("no blink(1) devices found\n");
         exit(1);
     }
-    numDevicesToUse = c; // FIXME?
+    //numDevicesToUse = c; // FIXME?
 
     if( !dev_serial ) 
-        dev_serial = blink1_cached_serial( deviceIds[0] );
+        dev_serial = blink1_getCachedSerial( deviceIds[0] );
 
     if( verbose ) { 
         printf("deviceId[0] = %d\n", deviceIds[0]);
         printf("cached path = '%ls'\n", dev_serial);
         for( int i=0; i< c; i++ ) { 
-            printf("'%ls'\n", blink1_cached_serial(i) );
+            printf("'%ls'\n", blink1_getCachedSerial(i) );
         }
     }
 
     // actually open up the device to start talking to it
-    dev = blink1_open_byserial( blink1_cached_serial( deviceIds[0] ) );
+    dev = blink1_openById( deviceIds[0] );
     if( dev == NULL ) { 
         printf("cannot open blink(1), bad serial number\n");
         exit(1);
@@ -268,7 +272,7 @@ int main(int argc, char** argv)
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
         for( int i=0; i< c; i++ ) { 
-            printf("id:%d - serialnum:%ls\n", i, blink1_cached_serial(i) );
+            printf("id:%d - serialnum:%ls\n", i, blink1_getCachedSerial(i) );
         }
     }
     else if( cmd == CMD_SERIAL ) { 
@@ -324,8 +328,8 @@ int main(int argc, char** argv)
         int bn = blink1_degamma(b); //log2lin( b );
 
         for( int i=0; i< numDevicesToUse; i++ ) {
-            dev_serial = blink1_cached_serial( deviceIds[i] );
-            dev = blink1_open_byserial( dev_serial );
+            dev_serial = blink1_getCachedSerial( deviceIds[i] );
+            dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
             printf("setting %d rgb: 0x%2.2x,0x%2.2x,0x%2.2x\n",deviceIds[i],r,g,b);
             rc = blink1_fadeToRGB(dev,millis, rn,gn,bn);
@@ -347,10 +351,11 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_ON ) {
         for( int i=0; i< numDevicesToUse; i++ ) {
-            dev_serial = blink1_cached_serial( deviceIds[i] );
-            dev = blink1_open_byserial( dev_serial );
+            int id = deviceIds[i];
+            dev_serial = blink1_getCachedSerial( id );
+            dev = blink1_openById( id );
             if( dev == NULL ) continue;
-            printf("turning on device %d ('%ls')\n",deviceIds[i], dev_serial);
+            printf("turning on device %d ('%ls')\n", id, dev_serial);
             rc = blink1_fadeToRGB(dev, millis, 255,255,255);
             if( rc == -1 ) // on error, do something, anything. come on.
                 printf("error on ON fadeToRGB\n");
@@ -358,10 +363,11 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_OFF ) { 
         for( int i=0; i< numDevicesToUse; i++ ) {
-            dev_serial = blink1_cached_serial( deviceIds[i] );
-            dev = blink1_open_byserial( dev_serial );
+            int id = deviceIds[i];
+            dev_serial = blink1_getCachedSerial( id );
+            dev = blink1_openById( id );
             if( dev == NULL ) continue;
-            printf("turning off device %d ('%ls')\n", deviceIds[i],dev_serial);
+            printf("turning off device %d ('%ls')\n", id, dev_serial);
             rc = blink1_fadeToRGB(dev, millis, 0,0,0);
             if( rc == -1) // on error, do something, anything. come on.
                 printf("error on OFF fadeToRGB\n");
@@ -373,15 +379,14 @@ int main(int argc, char** argv)
             uint8_t r = log2lin( (rand()%255) );
             uint8_t g = log2lin( (rand()%255) );
             uint8_t b = log2lin( (rand()%255) );
-            uint8_t i = rand() % numDevicesToUse;
-            i = deviceIds[i];
+            uint8_t id = rand() % blink1_getCachedCount();
 
-            printf("%d: %2.2x,%2.2x,%2.2x \n", i, r,g,b);
+            printf("%d: %d : %2.2x,%2.2x,%2.2x \n", i, id, r,g,b);
 
-            hid_device* mydev = blink1_open_byserial( blink1_cached_serial(i) );
+            hid_device* mydev = blink1_openById( id );
             rc = blink1_fadeToRGB(mydev, millis,r,g,b);
             if( rc == -1 ) { // on error, do something, anything. come on.
-                break;
+                //break;
             }
             blink1_close(mydev);
             

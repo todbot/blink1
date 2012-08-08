@@ -14,61 +14,24 @@
 
 #define blink1_report_id 1
 
-//static hid_device* blink1s[ blink1_max_devices ];
-//static int blink1s_inuse[ blink1_max_devices ];
-//static int blink1s_count = 0;
-///static blink1_error = 0;
-
 #define pathmax 16
 #define pathstrmax 128
-#define serialmax 8
+#define serialmax (8 + 1) 
 
 static char blink1_cached_paths[pathmax][pathstrmax]; 
-static int blink1_cached_paths_count = 0;
+static int blink1_cached_count = 0;
 static wchar_t blink1_cached_serials[pathmax][serialmax];
 
 //----------------------------------------------------------------------------
-/*
-//
-hid_device* blink1_getDevice(int i)
-{
-    //return blink1s[i];
-    return NULL;
-}
-*/
-/*
-// FIXME: not working
-int blink1_openall_byid( int vid, int pid )
-{
-    for( int i=0; i< 16; i++) { 
-        blink1s[i] = NULL;
-        blink1s_inuse[i] = 0;
-    }
-    hid_device* handle = blink1_open();
-    blink1s[0] = handle;
-    blink1s_inuse[0] = 1;
-    if( handle == NULL ) return -1;
-    return 1;
-    return -1;
-}
-
-// returns number of devices opened
-int blink1_openall(void)
-{
-    int vid = blink1_vid();
-    int pid = blink1_pid();
-    return blink1_openall_byid( vid,pid );
-}
-*/
 
 //
 int blink1_enumerate(void)
 {
-    return blink1_enumerate_byid( blink1_vid(), blink1_pid() );
+    return blink1_enumerateByVidPid( blink1_vid(), blink1_pid() );
 }
 
 // get all matching devices by VID/PID pair
-int blink1_enumerate_byid(int vid, int pid)
+int blink1_enumerateByVidPid(int vid, int pid)
 {
     struct hid_device_info *devs, *cur_dev;
 
@@ -88,33 +51,40 @@ int blink1_enumerate_byid(int vid, int pid)
 	}
 	hid_free_enumeration(devs);
     
-    blink1_cached_paths_count = p;
+    blink1_cached_count = p;
     
-    blink1_sortdevs();
+    blink1_sortDevs();
 
     return p;
 }
 
 //
-const char* blink1_cached_path(int i)
+const int blink1_getCachedCount(void)
+{
+    return blink1_cached_count;
+}
+
+//
+const char* blink1_getCachedPath(int i)
 {
     return blink1_cached_paths[i];    
 }
 //
-const wchar_t* blink1_cached_serial(int i)
+const wchar_t* blink1_getCachedSerial(int i)
 {
     return blink1_cached_serials[i];    
 }
 
 //
-hid_device* blink1_open_bypath(const char* path)
+hid_device* blink1_openByPath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
 	hid_device* handle = hid_open_path( path ); 
     return handle;
 }
 
-hid_device* blink1_open_byserial(const wchar_t* serial)
+//
+hid_device* blink1_openBySerial(const wchar_t* serial)
 {
     if( serial == NULL || wcslen(serial) == 0 ) return NULL;
     int vid = blink1_vid();
@@ -122,6 +92,12 @@ hid_device* blink1_open_byserial(const wchar_t* serial)
     
 	hid_device* handle = hid_open(vid,pid, serial ); 
     return handle;
+}
+
+//
+hid_device* blink1_openById( int i ) 
+{ 
+    return blink1_openByPath( blink1_getCachedPath(i) );
 }
 
 //
@@ -358,21 +334,21 @@ int cstring_cmp(const void *a, const void *b)
 } 
 
 //
-int blink1_sortpaths(void)
+int blink1_sortPaths(void)
 {
     size_t elemsize = sizeof( blink1_cached_paths[0] ); // 128 
     size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
     
-    qsort( blink1_cached_paths, blink1_cached_paths_count,elemsize,cstring_cmp);
+    qsort( blink1_cached_paths, blink1_cached_count,elemsize,cstring_cmp);
 }
 
 //
-int blink1_sortdevs(void)
+int blink1_sortDevs(void)
 {
     size_t elemsize = sizeof( blink1_cached_serials[0] ); //  
     size_t count = sizeof(blink1_cached_serials) / elemsize; // 
     
-    qsort(blink1_cached_serials,blink1_cached_paths_count,elemsize,cstring_cmp);
+    qsort(blink1_cached_serials,blink1_cached_count,elemsize,cstring_cmp);
 }
 
 //

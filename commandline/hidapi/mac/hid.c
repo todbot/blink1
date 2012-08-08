@@ -798,9 +798,10 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 	IOReturn res;
 
 	/* Return if the device has been disconnected. */
-   	if (dev->disconnected)
+   	if (dev->disconnected) {
+        //printf("disconnected!\n");
    		return -1;
-
+    }
 	if (data[0] == 0x0) {
 		/* Not using numbered Reports.
 		   Don't send the report number. */
@@ -823,8 +824,11 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 		if (res == kIOReturnSuccess) {
 			return length;
 		}
-		else
+		else {
+            // error could be 0xe000404f == kIOUSBPipeStalled
+            //printf("not success: %lx : len:%d\n", res,length_to_send);
 			return -1;
+        }
 	}
 	
 	return -1;
