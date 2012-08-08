@@ -23,8 +23,8 @@ extern "C" {
 
 int blink1_vid(void);
 int blink1_pid(void);
-int blink1_sortPaths(void);
-int blink1_sortDevs(void);
+void blink1_sortPaths(void);
+void blink1_sortDevs(void);
 
 int blink1_enumerate();
 int blink1_enumerateByVidPid(int vid, int pid);
@@ -63,6 +63,8 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 
 char *blink1_error_msg(int errCode);
 
+void blink1_enableDegamma();
+void blink1_disableDegamma();
 int blink1_degamma(int n);
 
 #ifdef __cplusplus

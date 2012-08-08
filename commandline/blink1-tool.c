@@ -63,6 +63,7 @@ enum {
     CMD_RANDOM,
     CMD_VERSION,
     CMD_SERIAL,
+    CMD_SERVERDOWN,
 };
 //---------------------------------------------------------------------------- 
 
@@ -124,6 +125,7 @@ static void usage(char *myName)
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
 "  --savergb <red>,<grn>,<blu>,<pos> Save RGB value at pos\n" 
+"  --serverdown <on/off,<millis>\n"
 "  --on                        Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --list                      List connected blink(1) devices \n"
@@ -181,6 +183,7 @@ int main(int argc, char** argv)
         {"random",     required_argument, &cmd,   CMD_RANDOM },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"serial",     no_argument,       &cmd,   CMD_SERIAL },
+        {"serverdown", required_argument, &cmd,   CMD_SERVERDOWN },
         {"vid",        required_argument, 0,      'U'}, // FIXME: This sucks
         {"pid",        required_argument, 0,      'u'},
         //{"serial",     required_argument, 0,      'z'},
@@ -200,11 +203,11 @@ int main(int argc, char** argv)
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
-                arg = 10;
+            case CMD_SERVERDOWN:
                 if( optarg ) 
                     arg = strtol(optarg,NULL,0);   // cmd w/ number arg
                 break;
-            }
+            } // switch(cmd)
             break;
         case 'a':
             openall = 1;
@@ -323,16 +326,16 @@ int main(int argc, char** argv)
         uint8_t g = cmdbuf[1];
         uint8_t b = cmdbuf[2];
 
-        int rn = blink1_degamma(r); //log2lin( r );
-        int gn = blink1_degamma(g); //log2lin( g );
-        int bn = blink1_degamma(b); //log2lin( b );
+        //int rn = blink1_degamma(r); //log2lin( r );
+        //int gn = blink1_degamma(g); //log2lin( g );
+        //int bn = blink1_degamma(b); //log2lin( b );
 
         for( int i=0; i< numDevicesToUse; i++ ) {
             dev_serial = blink1_getCachedSerial( deviceIds[i] );
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
-            printf("setting %d rgb: 0x%2.2x,0x%2.2x,0x%2.2x\n",deviceIds[i],r,g,b);
-            rc = blink1_fadeToRGB(dev,millis, rn,gn,bn);
+            printf("set %d rgb: 0x%2.2x,0x%2.2x,0x%2.2x\n",deviceIds[i],r,g,b);
+            rc = blink1_fadeToRGB(dev,millis, r,g,b);
             if( rc == -1 ) { // on error, do something, anything. come on.
                 printf("error on fadeToRGB\n");
             }
@@ -376,9 +379,9 @@ int main(int argc, char** argv)
     else if( cmd == CMD_RANDOM ) { 
         printf("random %d times: \n", arg);
         for( int i=0; i<arg; i++ ) { 
-            uint8_t r = log2lin( (rand()%255) );
-            uint8_t g = log2lin( (rand()%255) );
-            uint8_t b = log2lin( (rand()%255) );
+            uint8_t r = blink1_degamma( (rand()%255) );
+            uint8_t g = blink1_degamma( (rand()%255) );
+            uint8_t b = blink1_degamma( (rand()%255) );
             uint8_t id = rand() % blink1_getCachedCount();
 
             printf("%d: %d : %2.2x,%2.2x,%2.2x \n", i, id, r,g,b);
@@ -389,8 +392,26 @@ int main(int argc, char** argv)
                 //break;
             }
             blink1_close(mydev);
-            
-            /*            
+
+#ifdef WIN32
+            Sleep(delayMillis);
+#else 
+            usleep( delayMillis * 1000);
+#endif
+        }
+    } 
+    else if( cmd == CMD_SERVERDOWN ) { 
+        int on  = arg;
+        printf("setting serverdown to %d (at %d millis)\n", on, delayMillis);
+        blink1_serverdown( dev, on, delayMillis );
+    }
+
+    return 0;
+}
+
+
+
+            /* 
             printf("%d : %2.2x,%2.2x,%2.2x \n", numDevicesToUse, r,g,b);
             for( int i=0; i< numDevicesToUse; i++ ) {
                 hid_device* mydev = blink1_open_bypath( blink1_cached_path(i) );
@@ -401,16 +422,3 @@ int main(int argc, char** argv)
                 blink1_close(mydev)
             }
             */
-
-#ifdef WIN32
-            Sleep(delayMillis);
-#else 
-            usleep( delayMillis * 1000);
-#endif
-        }
-    }   
-
-    return 0;
-}
-
-

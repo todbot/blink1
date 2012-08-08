@@ -22,6 +22,8 @@ static char blink1_cached_paths[pathmax][pathstrmax];
 static int blink1_cached_count = 0;
 static wchar_t blink1_cached_serials[pathmax][serialmax];
 
+static int blink1_enable_degamma = 1;
+
 //----------------------------------------------------------------------------
 
 //
@@ -59,7 +61,7 @@ int blink1_enumerateByVidPid(int vid, int pid)
 }
 
 //
-const int blink1_getCachedCount(void)
+int blink1_getCachedCount(void)
 {
     return blink1_cached_count;
 }
@@ -224,9 +226,9 @@ int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
 
     buf[0] = blink1_report_id;     // report id
     buf[1] = 'c';   // command code for 'fade to rgb'
-    buf[2] = r;
-    buf[3] = g;
-    buf[4] = b;
+    buf[2] = ((blink1_enable_degamma) ? blink1_degamma(r) : r );
+    buf[3] = ((blink1_enable_degamma) ? blink1_degamma(g) : g );
+    buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );
     buf[5] = (dms >> 8);
     buf[6] = dms % 0xff;
 
@@ -242,9 +244,9 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
 
     buf[0] = blink1_report_id;     // report id
     buf[1] = 'n';   // command code for "set rgb now"
-    buf[2] = r;     // red
-    buf[3] = g;     // grn
-    buf[4] = b;     // blu
+    buf[2] = ((blink1_enable_degamma) ? blink1_degamma(r) : r );     // red
+    buf[3] = ((blink1_enable_degamma) ? blink1_degamma(g) : g );     // grn
+    buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );     // blu
     
     int rc = blink1_write(dev, buf, sizeof(buf) );
     /*
@@ -287,7 +289,6 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 }
 
 
-
 //
 int readUUID( hid_device* dev, uint8_t** uuid )
 {
@@ -302,6 +303,7 @@ int setUUID( hid_device* dev, uint8_t* uuid )
 
 /* ------------------------------------------------------------------------- */
 
+// FIXME: this is wrong
 uint8_t degamma_lookup[256] = { 
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
   1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,4,
@@ -321,10 +323,28 @@ uint8_t degamma_lookup[256] = {
   227,229,231,233,235,237,239,241,243,245,247,249,251,253,255,255,
 };
 
+void blink1_enableDegamma()
+{
+    blink1_enable_degamma = 1;
+}
+void blink1_disableDegamma()
+{
+    blink1_enable_degamma = 0;
+}
+
+// a simple logarithmic -> linear mapping as a sort of gamma correction
+// maps from 0-255 to 0-255
+static int blink1_degamma_log2lin( int n )  
+{
+  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
+  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+}
+
 //
 int blink1_degamma( int n ) 
 { 
-    return degamma_lookup[n];
+    //return degamma_lookup[n];
+    return blink1_degamma_log2lin(n);
 }
 
 // qsort C-string comparison function 
@@ -334,19 +354,19 @@ int cstring_cmp(const void *a, const void *b)
 } 
 
 //
-int blink1_sortPaths(void)
+void blink1_sortPaths(void)
 {
     size_t elemsize = sizeof( blink1_cached_paths[0] ); // 128 
-    size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
+    //size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
     
-    qsort( blink1_cached_paths, blink1_cached_count,elemsize,cstring_cmp);
+    return qsort( blink1_cached_paths, blink1_cached_count,elemsize,cstring_cmp);
 }
 
 //
-int blink1_sortDevs(void)
+void blink1_sortDevs(void)
 {
     size_t elemsize = sizeof( blink1_cached_serials[0] ); //  
-    size_t count = sizeof(blink1_cached_serials) / elemsize; // 
+    //size_t count = sizeof(blink1_cached_serials) / elemsize; // 
     
     qsort(blink1_cached_serials,blink1_cached_count,elemsize,cstring_cmp);
 }
