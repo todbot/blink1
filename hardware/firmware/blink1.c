@@ -236,6 +236,14 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
 // ------------------------------------------------------------------------- 
 
 //
+static void off(void)
+{
+    playing = 0;
+    setRGBt(cplay, 0,0,0);      // starting color
+    rgb_setCurr( &cplay );
+}
+
+//
 // msgbuf[] is 8 bytes long
 //  byte0 = command
 //  byte1..byte7 = args for command
@@ -323,13 +331,14 @@ void handleMessage(void)
     // {'D', {1/0},th,tl,  0,0, 0,0 }
     else if( cmd == 'D' ) {
         uint8_t serverdown_on = msgbufp[1];
-        uint16_t t = (msgbufp[4] << 8) | msgbufp[5]; 
+        uint16_t t = ((uint16_t)msgbufp[2] << 8) | msgbufp[3]; 
         if( serverdown_on ) { 
             serverdown_millis = t;
-            serverdown_update_next = millis() + t;
+            serverdown_update_next = millis() + (t*10);
         } else {
             serverdown_millis = 0; // turn off serverdown mode
         }
+        off();
     }
     // version info
     else if( cmd == 'v' ) { 
@@ -386,20 +395,12 @@ void timerInit(void)
 // ------------------------------------------------------------------------- 
 // -------------------------- main logic -----------------------------------
 // -------------------------------------------------------------------------
-/*
-// a simple logarithmic -> linear mapping as a sort of gamma correction
-// maps from 0-255 to 0-255
-static int log2lin( int n )  
-{
-  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
-  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
-}
-*/
 
 //
 static void updateLEDs(void)
 {
     uint32_t now = millis();
+
     // update LED for lading every led_update_millis
     if( (long)(now - led_update_next) > 0 ) { 
         led_update_next += led_update_millis;
@@ -417,22 +418,24 @@ static void updateLEDs(void)
         }
         else {  // usb is setup...
             if( playing == 2 ) { // ...but we're doing a powerup play, so reset
-                playing = 0; 
-                setRGBt(cplay, 0,0,0);      // starting color
-                rgb_setCurr( &cplay );
+                off();
             }
 
         }
     }
-    /*
+
     // serverdown logic
     if( serverdown_millis != 0 ) {  // i.e. servermode has been turned on
         if( (long)(now - serverdown_update_next) > 0 ) { 
             playing = 1;
+            playpos = 0;
             pattern_update_next = now;
+            eeprom_read_block( &pattern, &ee_pattern,
+                               sizeof(patternline_t)*patt_max);
+            serverdown_millis = 0;  // disable this check
         }
     }
-    */
+
     // playing light pattern
     if( playing ) {
         if( (long)(now - pattern_update_next) > 0  ) {
@@ -483,8 +486,7 @@ int main(void)
 
     sei();
 
-    setRGBt(cplay, 0,0,0);      // starting color
-    rgb_setCurr( &cplay );
+    off();
 
     for(;;){                // main event loop 
         wdt_reset();
@@ -496,6 +498,16 @@ int main(void)
 
 
 
+
+/*
+// a simple logarithmic -> linear mapping as a sort of gamma correction
+// maps from 0-255 to 0-255
+static int log2lin( int n )  
+{
+  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
+  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+}
+*/
 
 /*
 static void updateLEDs(void)
