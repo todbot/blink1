@@ -32,7 +32,7 @@ typedef struct {
 //
 typedef struct {
     rgb_t color;
-    uint16_t dmillis;
+    uint16_t dmillis; // hundreths of a sec
 } patternline_t;
 
 #define setRGBt(rgbt,x,y,z) { rgbt.r=x; rgbt.g=y; rgbt.b=z; }

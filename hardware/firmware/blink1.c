@@ -60,31 +60,35 @@ static uint32_t pattern_update_next;
 static uint16_t serverdown_millis;
 static uint32_t serverdown_update_next;
 
-#define patt_max 16
+#define patt_max 12
 rgb_t cplay;     // holder for currently playing color
 uint16_t tplay;
 uint8_t playpos;
 uint8_t playing; // boolean
-patternline_t pattern[patt_max] = {
-    { { 0x11, 0x11, 0x11 }, 100 },
-    { { 0x44, 0x44, 0x44 }, 100 },
-    { { 0x88, 0x88, 0x88 }, 100 },
-    { { 0xff, 0xff, 0xff }, 100 },
-    { { 0xff, 0xff, 0xff }, 100 },
-    { { 0xff, 0x00, 0xff },  50 },
-    { { 0xff, 0xff, 0x00 },  50 },
-    { { 0x00, 0xff, 0xff },  50 },
-    { { 0x00, 0x00, 0x00 },  50 },
-    { { 0x00, 0x00, 0x00 }, 100 },
-};
+// in-memory copy of EEPROM pattern 
+patternline_t pattern[patt_max];
+/* = {
+    { { 0x11, 0x11, 0x11 }, 100 }, // 0
+    { { 0x44, 0x44, 0x44 }, 100 }, // 1
+    { { 0x88, 0x88, 0x88 }, 100 }, // 2
+    { { 0xff, 0xff, 0xff }, 100 }, // 3
+    { { 0xff, 0xff, 0xff }, 100 }, // 4
+    { { 0xff, 0x00, 0xff },  50 }, // 5
+    { { 0xff, 0xff, 0x00 },  50 }, // 6
+    { { 0x00, 0xff, 0xff },  50 }, // 7
+    { { 0x00, 0x00, 0x00 },  50 }, // 8
+    { { 0x00, 0x00, 0x00 }, 100 }, // 9
+    { { 0x00, 0x00, 0x00 }, 100 }, // 10
+    { { 0x00, 0x00, 0x00 }, 100 }, // 11
+    };*/
 
 // possible values for boot_mode
 #define BOOT_NORMAL      0
 #define BOOT_NIGHTLIGHT  1
-#define BOOT_MODE_END    2
+#define BOOT_MODE_END    0x55
 
-uint8_t ee_osccal          EEMEM; // used by "osccal.h"
-uint8_t ee_bootmode        EEMEM = BOOT_NORMAL;
+uint8_t ee_osccal          EEMEM = 0;   // used by "osccal.h"
+uint8_t ee_bootmode        EEMEM = BOOT_MODE_END; // why is this not 
 uint8_t ee_serialnum[8]    EEMEM = { '1','2','3','4','5','6','7','8'};
 
 patternline_t ee_pattern[patt_max]  EEMEM = {
@@ -96,11 +100,9 @@ patternline_t ee_pattern[patt_max]  EEMEM = {
     { { 0x00, 0x00, 0x00 },  50 },
     { { 0xff, 0xff, 0xff }, 100 },
     { { 0x00, 0x00, 0x00 }, 100 },
-    { { 0xff, 0xff, 0xff }, 100 },
     { { 0xff, 0x00, 0xff },  50 },
     { { 0xff, 0xff, 0x00 },  50 },
     { { 0x00, 0xff, 0xff },  50 },
-    { { 0x88, 0x88, 0x88 },  50 },
     { { 0x00, 0x00, 0x00 }, 100 },
 };
 
@@ -128,28 +130,14 @@ ISR(SIG_OVERFLOW1,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run
 // ----------------------------- USB interface ----------------------------- 
 // ------------------------------------------------------------------------- 
 
+#define REPORT_COUNT 8
+
 // The following variables store the status of the current data transfer 
 static uchar    currentAddress;
 static uchar    bytesRemaining;
 
-static uint8_t msgbuf[8+1];
+static uint8_t msgbuf[REPORT_COUNT+1];
 //static uint8_t msgbufout[8];
-
-/*
-//
-PROGMEM char usbHidReportDescriptor[22] = {    // USB report descriptor 
-    0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
-    0x09, 0x01,                    // USAGE (Vendor Usage 1)
-    0xa1, 0x01,                    // COLLECTION (Application)
-    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
-    0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x95, 0x08,                    //   REPORT_COUNT (8)
-    0x09, 0x00,                    //   USAGE (Undefined)
-    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
-    0xc0                           // END_COLLECTION
-};
-*/
 
 PROGMEM char usbHidReportDescriptor[24] = {
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
@@ -159,7 +147,7 @@ PROGMEM char usbHidReportDescriptor[24] = {
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x85, 0x01,                    //   REPORT_ID (1)
-    0x95, 0x08,                    //   REPORT_COUNT (8)
+    0x95, REPORT_COUNT,            //   REPORT_COUNT (8)
     0x09, 0x00,                    //   USAGE (Undefined)
     0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
     0xc0                           // END_COLLECTION
@@ -218,12 +206,12 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
         //uint8_t rid = rq->wValue.bytes[0];  // report Id
         if(rq->bRequest == USBRQ_HID_GET_REPORT){  
             // since we have only one report type, we can ignore the report-ID
-            bytesRemaining = 8;
+            bytesRemaining = REPORT_COUNT;
             currentAddress = 0;
             return USB_NO_MSG; // use usbFunctionRead() to obtain data 
         } else if(rq->bRequest == USBRQ_HID_SET_REPORT) {
             // since we have only one report type, we can ignore the report-ID 
-            bytesRemaining = 8;
+            bytesRemaining = REPORT_COUNT;
             currentAddress = 0;
             return USB_NO_MSG; // use usbFunctionWrite() to recv data from host 
         }
@@ -251,7 +239,6 @@ static void off(void)
 // Available commands: ('x' == implemented)
 // x Fade to RGB color       format: {'c', r,g,b,      th,tl, 0,0 }
 // x Set RGB color now       format: {'n', r,g,b,        0,0, 0,0 }
-// X Nightlight mode on/off  format: {'N', {1/0},  0,0,  0,0, 0,0 }
 // x Serverdown tickle/off   format: {'D', {1/0},th,tl,  0,0, 0,0 }
 // x Play/Pause              format: {'p', {1/0},pos,0,  0,0, 0,0 }
 // x Set pattern entry       format: {'P', r,g,b, th,tl, i,0 }
@@ -296,7 +283,7 @@ void handleMessage(void)
         playpos = msgbufp[2];
         // FIXME: what about on boot?
     }
-    // write pattern entry {'P', r,g,b, th,tl, i, 0,0}
+    // write color pattern entry - {'P', r,g,b, th,tl, i, 0,0}
     //
     else if ( cmd == 'P' ) { 
         // was doing this copy with a cast, but broke it out for clarity
@@ -345,11 +332,6 @@ void handleMessage(void)
         msgbufp[2] = blink1_ver_major;
         msgbufp[3] = blink1_ver_minor;
     }
-    // nightlight mode on/off 
-    //
-    //else if( cmd == 'N' ) { 
-    //    eeprom_write_byte( &ee_bootmode, msgbuf[1] );
-    //}
     else if( cmd == '!' ) { // testing testing
         msgbufp[0] = 0x55;
         msgbufp[1] = 0xAA;
@@ -443,7 +425,7 @@ static void updateLEDs(void)
             tplay = pattern[playpos].dmillis;
             rgb_setDest( &cplay, tplay );
             playpos++;
-            if( playpos == patt_max ) playpos = 0; // wrap around
+            if( playpos == patt_max ) playpos = 0; // loop the pattern
             pattern_update_next += tplay*10;
         }
     }
@@ -468,7 +450,7 @@ int main(void)
     } */
 
     for( uint8_t i=0; i< 8; i++ ) { 
-       uint8_t v = eeprom_read_byte( ee_serialnum + i );
+        uint8_t v = eeprom_read_byte( ee_serialnum + i );
         usbDescriptorStringSerialNumber[1+i] = v;
     }
 
