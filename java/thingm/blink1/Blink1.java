@@ -9,7 +9,7 @@ import java.util.regex.*;
 public class Blink1 
 {
   //java.nio.ByteBuffer hidDevicePtr;
-  long hidDevicePtr;
+  //long hidDevicePtr; // FIXME: unused currently, but should be
 
   static {
     System.loadLibrary("Blink1");     // Load the library
@@ -31,38 +31,36 @@ public class Blink1
     
     // 
     Blink1 blink1 = new Blink1();
-    blink1.enumerate();
 
-    System.out.println("found "+blink1.getCount()+ " devices");
+    int count = blink1.getCount();
+
+    System.out.println("found "+count+ " devices");
     System.out.println("device paths:");
     String paths[] = blink1.getDevicePaths();
     String serials[] = blink1.getDeviceSerials();
     for( int i=0; i<paths.length; i++ ) { 
-      System.out.println( i + ": "+ paths[i] + " : " + serials[i]);
+      System.out.println( i + ": "+ serials[i] + " : " + paths[i]);
     }
 
-      
     Random rand = new Random();
-    for( int i=0; i<20; i++ ) {
+    for( int i=0; i<5; i++ ) {
       int r = rand.nextInt() & 0xFF;
       int g = rand.nextInt() & 0xFF;
       int b = rand.nextInt() & 0xFF;
       
-      int id = rand.nextInt() & (blink1.getCount()-1);
-
+      int id = (count==0) ? 0 : rand.nextInt() & (count-1);
       
       System.out.print("setting id: "+id+" to color "+r+","+g+","+b+"   ");
 
       int rc = blink1.openById( id );
       if( rc == -1 ) { 
-        //break; 
+        System.out.print("couldn't open "+id+" ");
       }
 
-      rc = blink1.openById( id );
       rc = blink1.setRGB( r,g,b );
       blink1.close();
       
-      if( rc==-1 ) { 
+      if( rc == -1 ) { 
         System.out.println("error detected");
       }
       else { 
@@ -72,13 +70,21 @@ public class Blink1
       blink1.pause( 250 );
     }
 
-    //blink1.close();
-    
+  }
+
+  //--------------------------------------------------------------------------
+
+  /**
+   *
+   */
+  public Blink1() 
+  {
+    enumerate();
   }
 
 
   /**
-   * Enumerate the bus and return a count of blink(1) device found
+   * (re)Enumerate the bus and return a count of blink(1) device found
    */
   public native int enumerate();
 
@@ -94,7 +100,6 @@ public class Blink1
 
   /**
    * Return the list of blink(1) device serials found by enumerate
-   * //Enumerate the bus and return a list of blink(1) device paths
    */
   public native String[] getDeviceSerials();
 
@@ -157,6 +162,7 @@ public class Blink1
 
   /**
    * one attempt at a degamma curve
+   * //FIXME: this is now in blink1-lib
    */
   static final public int log2lin( int n )  
   {

@@ -64,6 +64,7 @@ ifeq "$(OS)" "windows"
 LIBTARGET = $(TARGET).dll
 LIBUSBA   = libusb-windows.a
 USBLIBS   = -lhid -lsetupapi
+OBJS = ../commandline/hidapi/windows/hid.o
 
 # this must match your Java install
 #JAVA_HOME = "C:\\Program Files\\Java\\jdk1.7.0_05\\"

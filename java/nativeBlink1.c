@@ -71,6 +71,8 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openByPath__Ljava_lang_String_2
     
     (*env)->ReleaseStringUTFChars(env, jdevicepath, devicepath);
 
+    if( dev == NULL ) err = -1;
+
     return err;
 }
 
@@ -84,17 +86,22 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openBySerial__Ljava_lang_String
     
     (*env)->ReleaseStringChars(env, jserialnumber, serialnumber);
 
+    if( dev == NULL ) err = -1;
+
     return err;
 }
 
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
 (JNIEnv *env, jobject obj, jint id )
 {
-    int err;
+    int err = 0;
     hid_device* devt = blink1_openById( id );
     dev = devt;
 
     //setDeviceToJava(env,obj, devt);
+    if( dev == NULL ) err = -1;
+
+    fprintf(stderr, "nativeBlink1: dev=%d\n", err);
     return err;
 }
 
@@ -104,13 +111,14 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
 (JNIEnv *env, jobject obj) //, jint vid, jint pid, jstring vstr, jstring pstr)
 {
-    int err=0;
+    int err = 0;
     
     hid_device* devt = blink1_open();
     dev = devt;
 
     //setDeviceToJava(env,obj, devt);
-    
+    if( dev == NULL ) err = -1;
+
     return err;  // FIXME: error
 }
 
