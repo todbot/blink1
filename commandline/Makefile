@@ -124,7 +124,7 @@ OBJS +=  blink1-lib.o
 
 
 #all: msg blink1-tool blink1-server-simple
-all: msg blink1-tool blink1-server-simple
+all: msg blink1-tool 
 
 msg: 
 	@echo "building for OS=$(OS)"

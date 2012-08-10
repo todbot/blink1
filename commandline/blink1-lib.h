@@ -24,7 +24,7 @@ extern "C" {
 int blink1_vid(void);
 int blink1_pid(void);
 void blink1_sortPaths(void);
-void blink1_sortDevs(void);
+void blink1_sortSerials(void);
 
 int blink1_enumerate();
 int blink1_enumerateByVidPid(int vid, int pid);
@@ -52,6 +52,9 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b );
 
 int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val);
 int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val);
+
+int blink1_serialnumread(hid_device *dev, uint8_t** serialnum);
+int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnum);
 
 int blink1_nightlight(hid_device *dev, uint8_t on);
 int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis);

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <getopt.h>    // for getopt_long()
-
+#include <time.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -48,32 +48,15 @@ char  cmdbuf[9];    // room at front for reportID
 int verbose;
 
 
-// local states for the "cmd" option variable
-enum { 
-    CMD_NONE = 0,
-    CMD_LIST,
-    CMD_HIDREAD,
-    CMD_HIDWRITE,
-    CMD_EEREAD,
-    CMD_EEWRITE,
-    CMD_RGB,
-    CMD_SAVERGB,
-    CMD_OFF,
-    CMD_ON,
-    CMD_RANDOM,
-    CMD_VERSION,
-    CMD_SERIAL,
-    CMD_SERVERDOWN,
-};
 //---------------------------------------------------------------------------- 
 
 // a simple logarithmic -> linear mapping as a sort of gamma correction
 // maps from 0-255 to 0-255
-static int log2lin( int n )  
-{
+//static int log2lin( int n )  
+//{
   //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
-  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
-}
+//  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+//}
 
 //
 static void hexdump(char *buffer, int len)
@@ -130,8 +113,10 @@ static void usage(char *myName)
 "  --off                       Turn blink(1) off \n"
 "  --list                      List connected blink(1) devices \n"
 "  --version                   Display blink(1) firmware version \n"
+"  --serialnumwread            Read current serial number \n"
+"  --serialnumwrite <listofchars> Write new serial number (CAUTION)\n"
 "and [options] are: \n"
-"  -d dNums --device=all|deviceIds Use these blink(1)s (from --list) \n"
+"  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
 "// --serial <num>              Connect to blin(1) by its serial number \n"  
 "  -m ms,   --miilis=millis    Set millisecs for color fading (default 300)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
@@ -145,6 +130,25 @@ static void usage(char *myName)
 
             ,myName);
 }
+
+// local states for the "cmd" option variable
+enum { 
+    CMD_NONE = 0,
+    CMD_LIST,
+    CMD_HIDREAD,
+    CMD_HIDWRITE,
+    CMD_EEREAD,
+    CMD_EEWRITE,
+    CMD_RGB,
+    CMD_SAVERGB,
+    CMD_OFF,
+    CMD_ON,
+    CMD_RANDOM,
+    CMD_VERSION,
+    CMD_SERVERDOWN,
+    CMD_SERIALNUMREAD,
+    CMD_SERIALNUMWRITE,
+};
 
 //
 int main(int argc, char** argv)
@@ -170,7 +174,7 @@ int main(int argc, char** argv)
         {"verbose",    optional_argument, 0,      'v'},
         {"millis",     required_argument, 0,      'm'},
         {"delay",      required_argument, 0,      't'},
-        {"device",     required_argument, 0,      'd'},
+        {"id",         required_argument, 0,      'd'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
         {"hidread",    no_argument,       &cmd,   CMD_HIDREAD },
         {"hidwrite",   required_argument, &cmd,   CMD_HIDWRITE },
@@ -182,7 +186,8 @@ int main(int argc, char** argv)
         {"on",         no_argument,       &cmd,   CMD_ON },
         {"random",     required_argument, &cmd,   CMD_RANDOM },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
-        {"serial",     no_argument,       &cmd,   CMD_SERIAL },
+        {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
+        {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
         {"serverdown", required_argument, &cmd,   CMD_SERVERDOWN },
         {"vid",        required_argument, 0,      'U'}, // FIXME: This sucks
         {"pid",        required_argument, 0,      'u'},
@@ -207,6 +212,9 @@ int main(int argc, char** argv)
                 if( optarg ) 
                     arg = strtol(optarg,NULL,0);   // cmd w/ number arg
                 break;
+            case CMD_SERIALNUMWRITE:
+                strcpy(cmdbuf, optarg);
+                break;
             } // switch(cmd)
             break;
         case 'a':
@@ -224,8 +232,8 @@ int main(int argc, char** argv)
             break;
         case 'd':
             if( strcmp(optarg,"all") == 0 ) {
-                numDevicesToUse = blink1_max_devices;
-                for( int i=0; i< numDevicesToUse; i++) {
+                numDevicesToUse = 0; //blink1_max_devices;
+                for( int i=0; i< blink1_max_devices; i++) {
                     deviceIds[i] = i;
                 }
             } else {
@@ -247,12 +255,12 @@ int main(int argc, char** argv)
     }
 
     // get a list of all devices and their paths
-    int c = blink1_enumerateByVidPid(vid,pid);
-    if( c == 0 ) { 
+    int count = blink1_enumerateByVidPid(vid,pid);
+    if( count == 0 ) { 
         printf("no blink(1) devices found\n");
         exit(1);
     }
-    //numDevicesToUse = c; // FIXME?
+    if( numDevicesToUse == 0 ) numDevicesToUse = count; 
 
     if( !dev_serial ) 
         dev_serial = blink1_getCachedSerial( deviceIds[0] );
@@ -260,8 +268,8 @@ int main(int argc, char** argv)
     if( verbose ) { 
         printf("deviceId[0] = %d\n", deviceIds[0]);
         printf("cached path = '%ls'\n", dev_serial);
-        for( int i=0; i< c; i++ ) { 
-            printf("'%ls'\n", blink1_getCachedSerial(i) );
+        for( int i=0; i< count; i++ ) { 
+            printf("%d: serial: '%ls'\n", i,blink1_getCachedSerial(i) );
         }
     }
 
@@ -274,15 +282,16 @@ int main(int argc, char** argv)
 
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
-        for( int i=0; i< c; i++ ) { 
+        for( int i=0; i< count; i++ ) { 
             printf("id:%d - serialnum:%ls\n", i, blink1_getCachedSerial(i) );
         }
     }
+    /*
     else if( cmd == CMD_SERIAL ) { 
         char buf[8];
         blink1_getSerialNumber(dev,buf);
         printf("serial number: %s\n", buf);
-    }
+        }*/
     else if( cmd == CMD_HIDREAD ) { 
         printf("hidread:  ");
         int len = sizeof(cmdbuf);
@@ -322,6 +331,8 @@ int main(int argc, char** argv)
         printf("%d\n", rc );
     }
     else if( cmd == CMD_RGB ) { 
+        blink1_close(dev); // close global device, open as needed
+
         uint8_t r = cmdbuf[0];
         uint8_t g = cmdbuf[1];
         uint8_t b = cmdbuf[2];
@@ -353,35 +364,45 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_ON ) {
+        blink1_close(dev); // close global device, open as needed
         for( int i=0; i< numDevicesToUse; i++ ) {
             int id = deviceIds[i];
             dev_serial = blink1_getCachedSerial( id );
             dev = blink1_openById( id );
-            if( dev == NULL ) continue;
+            if( dev == NULL ) { 
+                printf("error opening blink1 #%d\n",id);
+            }
             printf("turning on device %d ('%ls')\n", id, dev_serial);
             rc = blink1_fadeToRGB(dev, millis, 255,255,255);
-            if( rc == -1 ) // on error, do something, anything. come on.
+            if( rc == -1 ) {// on error, do something, anything. come on.
                 printf("error on ON fadeToRGB\n");
+            }
+            blink1_close( dev );
         }
     }
     else if( cmd == CMD_OFF ) { 
+        blink1_close(dev); // close global device, open as needed
         for( int i=0; i< numDevicesToUse; i++ ) {
             int id = deviceIds[i];
             dev_serial = blink1_getCachedSerial( id );
             dev = blink1_openById( id );
-            if( dev == NULL ) continue;
+            if( dev == NULL ) {
+                printf("error opening blink1 #%d\n",id);
+            }
             printf("turning off device %d ('%ls')\n", id, dev_serial);
             rc = blink1_fadeToRGB(dev, millis, 0,0,0);
-            if( rc == -1) // on error, do something, anything. come on.
+            if( rc == -1) { // on error, do something, anything. come on.
                 printf("error on OFF fadeToRGB\n");
+            }
+            blink1_close( dev );
         }
     }
     else if( cmd == CMD_RANDOM ) { 
         printf("random %d times: \n", arg);
         for( int i=0; i<arg; i++ ) { 
-            uint8_t r = blink1_degamma( (rand()%255) );
-            uint8_t g = blink1_degamma( (rand()%255) );
-            uint8_t b = blink1_degamma( (rand()%255) );
+            uint8_t r = rand()%255;
+            uint8_t g = rand()%255;
+            uint8_t b = rand()%255 ;
             uint8_t id = rand() % blink1_getCachedCount();
 
             printf("%d: %d : %2.2x,%2.2x,%2.2x \n", i, id, r,g,b);
@@ -399,11 +420,17 @@ int main(int argc, char** argv)
             usleep( delayMillis * 1000);
 #endif
         }
-    } 
+    }
     else if( cmd == CMD_SERVERDOWN ) { 
         int on  = arg;
         printf("setting serverdown to %d (at %d millis)\n", on, delayMillis);
         blink1_serverdown( dev, on, delayMillis );
+    }
+    else if( cmd == CMD_SERIALNUMWRITE ) { 
+        printf("serial number write: %s\n", cmdbuf);
+        if( (rc = blink1_serialnumwrite( dev, cmdbuf)) == -1 ) { 
+            fprintf(stderr,"error writing new serial number: %d\n",rc);
+        }
     }
 
     return 0;

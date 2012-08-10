@@ -14,10 +14,19 @@
 
 #define blink1_report_id 1
 
+// addresses in EEPROM 
+#define blink1_eeaddr_osccal        0
+#define blink1_eeaddr_bootmode      1
+#define blink1_eeaddr_serialnum     2
+#define blink1_serialnum_len        8
+#define blink1_eeaddr_patternstart (blink1_eeaddr_serialnum + blink1_serialnum_len)
+
 #define pathmax 16
 #define pathstrmax 128
 #define serialmax (8 + 1) 
 
+
+// FIXME: use hid_device_info instead with custom sorter on serial or path
 static char blink1_cached_paths[pathmax][pathstrmax]; 
 static int blink1_cached_count = 0;
 static wchar_t blink1_cached_serials[pathmax][serialmax];
@@ -55,7 +64,7 @@ int blink1_enumerateByVidPid(int vid, int pid)
     
     blink1_cached_count = p;
     
-    blink1_sortDevs();
+    blink1_sortSerials();
 
     return p;
 }
@@ -74,7 +83,7 @@ const char* blink1_getCachedPath(int i)
 //
 const wchar_t* blink1_getCachedSerial(int i)
 {
-    return blink1_cached_serials[i];    
+    return blink1_cached_serials[i];
 }
 
 //
@@ -92,6 +101,7 @@ hid_device* blink1_openBySerial(const wchar_t* serial)
     int vid = blink1_vid();
     int pid = blink1_pid();
     
+    //fprintf(stderr,"opening %ls at vid/pid %x/%x\n", serial, vid,pid);
 	hid_device* handle = hid_open(vid,pid, serial ); 
     return handle;
 }
@@ -99,7 +109,8 @@ hid_device* blink1_openBySerial(const wchar_t* serial)
 //
 hid_device* blink1_openById( int i ) 
 { 
-    return blink1_openByPath( blink1_getCachedPath(i) );
+    //return blink1_openByPath( blink1_getCachedPath(i) );
+    return blink1_openBySerial( blink1_getCachedSerial(i) );
 }
 
 //
@@ -125,9 +136,6 @@ void blink1_close( hid_device* dev )
 //
 int blink1_write( hid_device* dev, void* buf, int len)
 {
-    //for( int i=0; i<len; i++) printf("0x%2.2x,", ((uint8_t*)buf)[i]);
-    //printf("\n");
-
     if( dev==NULL ) {
         return -1; // BLINK1_ERR_NOTOPEN;
     }
@@ -215,6 +223,33 @@ int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val)
         
     return rc;
 }
+
+int blink1_serialnumread(hid_device *dev, uint8_t** serialnum)
+{
+    int rc = 0;
+    for( int i=0; i<blink1_serialnum_len; i++ ) { // serial num is 8 chars long
+        //blink1_eeread( dev, blink1_eeaddr_serialnum+i, (serialnum+i) );
+    }
+    return rc;
+}
+int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnum)
+{
+    int rc = 0;
+    for( int i=0; i<blink1_serialnum_len; i++ ) { // serial num is 8 chars long
+        usleep(50*1000); // FIXME
+        int rc = blink1_eewrite( dev, blink1_eeaddr_serialnum+i, serialnum[i] );
+        if( rc == -1 ) { // try again
+            printf("blink1_serialwrite: oops, trying again on char %d\n",i);
+            int rc = blink1_eewrite(dev,blink1_eeaddr_serialnum+i,serialnum[i]);
+            if( rc == -1 ) { 
+                printf("blink1_serialwrite: error on try again\n");
+                break;
+            }
+        }
+    }
+    return rc;
+}
+
 
 //
 int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
@@ -348,9 +383,14 @@ int blink1_degamma( int n )
 }
 
 // qsort C-string comparison function 
-int cstring_cmp(const void *a, const void *b) 
+int cmp_path(const void *a, const void *b) 
 { 
     return strncmp( (const char *)a, (const char *)b, pathstrmax);
+} 
+// qsort wchar_t string comparison function 
+int cmp_serial(const void *a, const void *b) 
+{ 
+    return wcsncmp( (const wchar_t *)a, (const wchar_t *)b, serialmax);
 } 
 
 //
@@ -359,16 +399,19 @@ void blink1_sortPaths(void)
     size_t elemsize = sizeof( blink1_cached_paths[0] ); // 128 
     //size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
     
-    return qsort( blink1_cached_paths, blink1_cached_count,elemsize,cstring_cmp);
+    return qsort( blink1_cached_paths, blink1_cached_count,elemsize,cmp_path);
 }
 
 //
-void blink1_sortDevs(void)
+void blink1_sortSerials(void)
 {
     size_t elemsize = sizeof( blink1_cached_serials[0] ); //  
     //size_t count = sizeof(blink1_cached_serials) / elemsize; // 
     
-    qsort(blink1_cached_serials,blink1_cached_count,elemsize,cstring_cmp);
+    qsort( blink1_cached_serials, 
+           blink1_cached_count, 
+           elemsize, 
+           cmp_serial);
 }
 
 //
