@@ -224,7 +224,8 @@ extern void usbEventResetReady(void);
 
 /* -------------------------- Device Description --------------------------- */
 
-#define  USB_CFG_VENDOR_ID       0xA0, 0x20 /* = 0x20A0 = 8352 = obdev.at */
+#define  USB_CFG_VENDOR_ID       0xB8, 0x27 /* = 0x27B8 = 8352 = obdev.at */
+//#define  USB_CFG_VENDOR_ID       0xA0, 0x20 /* = 0x20A0 = 8352 = obdev.at */
 //#define  USB_CFG_VENDOR_ID       0xc0, 0x16 /* = 0x16c0 = 5824 = voti.nl */
 /* USB vendor ID for the device, low byte first. If you have registered your
  * own Vendor ID, define it here. Otherwise you may use one of obdev's free
@@ -234,7 +235,8 @@ extern void usbEventResetReady(void);
  * with libusb: 0x16c0/0x5dc.  Use this VID/PID pair ONLY if you understand
  * the implications!
  */
-#define  USB_CFG_DEVICE_ID       0x11, 0x41 /* = 0x4111 = 16657 = ThingM#2 */
+#define  USB_CFG_DEVICE_ID       0xED, 0x01 /* = 0x01ED */
+//#define  USB_CFG_DEVICE_ID       0x11, 0x41 /* = 0x4111 = 16657 = ThingM#2 */
 //#define  USB_CFG_DEVICE_ID       0xdf, 0x05 /* obdev's shared PID for HIDs */
 /* This is the ID of the product, low byte first. It is interpreted in the
  * scope of the vendor ID. If you have registered your own VID with usb.org
