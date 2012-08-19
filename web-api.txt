@@ -1,0 +1,90 @@
+
+
+
+Event Submission
+----------------
+Two kinds of event submission are supported: 
+- single event real-time
+- event bundle of recent past events (e.g. last 15 minutes)
+
+Single Event
+------------
+Submit via GET request with query argument parameters
+parameters: 
+- blink1_uid - UID of blink(1) this event is meant for
+- color_name - Name of color pattern to send to blink(1)
+- color_pattern - Color pattern to send
+- repeats - number of repeats of color pattern
+- source - event source designator (optional)
+
+Bundled Events
+--------------
+Submit via POST request with event list as JSON bundle
+
+ 
+
+api.thingm.com/blink1/sendevent/
+
+method: GET (for individual events)
+
+
+method: POST  (for timestamp list of events)
+{
+ "events": [ 
+  { 
+    "source": "ifttt",
+    "blink1_uid": "23049309b33ab3cdef",
+    "date": "Mon, 18 Jul 2012 21:13:43 +0000",
+    "color_name": "tweet",
+    "color_pattern": "#ff00ff,1,10,#00ff00,1,5",
+    "repeats": "3",
+   },
+   { 
+    "source": "gmail",
+    "blink1_uid": "23049309b33ab3cdef",
+    "date": "Mon, 18 Jul 2012 21:15:43 +0000",
+    "color_name": "msg-orange-red",
+    "color_pattern": "#ff00ff,1.0,0.3,#00ff00,0.5,10",
+    "repeats": "3",
+   },
+   // and so on
+  ]
+}
+
+sample result:
+{ 
+  "status_msg": "events received",
+  "event_count": 2,
+  "blink1_uid": "23049309b33ab3cdef"
+}
+
+
+----------------------------------------
+
+
+
+Event Fetch
+
+
+- blink(1) user app queries blink1-uid url every 60 seconds
+- url is of form:
+   api.thingm.com/blink1/getevents/23049309b33ab3cdef
+- response is JSON of last (60) minutes of events (4x15m):
+{
+ "events": [
+  { 
+    "source": "ifttt",
+    "blink1_uid": "23049309b33ab3cdef",
+    "date": "Mon, 18 Jul 2012 21:13:43 +0000",
+    "color_name": "tweet",
+    "color_pattern": "#ff00ff,0.5,1.0,#00ff00,1,2.0",
+    "repeats": 3,
+   },
+   // and so on
+   ]
+}
+
+
+links:
+- http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+
