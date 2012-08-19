@@ -8,8 +8,8 @@
 
 TARGET=blink1
 
-#MCU=attiny85
-MCU=attiny45
+MCU=attiny85
+#MCU=attiny45
 # PLL
 F_CPU=16500000
 # non-PLL
