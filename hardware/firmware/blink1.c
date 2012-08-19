@@ -29,6 +29,8 @@
 #include <util/delay.h>     // for _delay_ms() 
 #include <string.h>         // for memcpy()
 #include <inttypes.h>
+#include <ctype.h>          // for toupper()
+
 #include "usbdrv.h"
 
 #define blink1_ver_major  '1'
@@ -53,6 +55,34 @@ static uint8_t usbHasBeenSetup;
 
 #include "color_funcs.h"  // needs "setRGBOut()" defined before inclusion
 
+#define patt_max 12
+
+// possible values for boot_mode
+#define BOOT_NORMAL      0
+#define BOOT_NIGHTLIGHT  1
+#define BOOT_MODE_SPACER 0x55
+
+uint8_t ee_osccal          EEMEM = 0;   // used by "osccal.h"
+uint8_t ee_bootmode        EEMEM = BOOT_MODE_SPACER; 
+uint8_t ee_serialnum[4]    EEMEM = { 0x1A, 0xAA, 0x1B, 0x23 };  
+// serial num is represented as hex ascii on USB, ==> 8 bytes 
+patternline_t ee_pattern[patt_max]  EEMEM = {
+    { { 0xff, 0x00, 0x00 },  50 }, // 0
+    { { 0x00, 0x00, 0x00 },  50 }, // 1
+    { { 0x00, 0xff, 0x00 },  50 }, // 2
+    { { 0x00, 0x00, 0x00 },  50 }, // 3
+    { { 0x00, 0x00, 0xff },  50 }, // 4
+    { { 0x00, 0x00, 0x00 },  50 }, // 5
+    { { 0xff, 0xff, 0xff }, 100 }, // 6
+    { { 0x00, 0x00, 0x00 }, 100 }, // 7
+    { { 0xff, 0x00, 0xff },  50 }, // 8
+    { { 0xff, 0xff, 0x00 },  50 }, // 9
+    { { 0x00, 0xff, 0xff },  50 }, // 10
+    { { 0x00, 0x00, 0x00 }, 100 }, // 11
+};
+
+
+
 // next time 
 const uint32_t led_update_millis = 10;  // tick msec
 static uint32_t led_update_next;
@@ -60,7 +90,6 @@ static uint32_t pattern_update_next;
 static uint16_t serverdown_millis;
 static uint32_t serverdown_update_next;
 
-#define patt_max 12
 rgb_t cplay;     // holder for currently playing color
 uint16_t tplay;
 uint8_t playpos;
@@ -82,29 +111,6 @@ patternline_t pattern[patt_max];
     { { 0x00, 0x00, 0x00 }, 100 }, // 11
     };*/
 
-// possible values for boot_mode
-#define BOOT_NORMAL      0
-#define BOOT_NIGHTLIGHT  1
-#define BOOT_MODE_END    0x55
-
-uint8_t ee_osccal          EEMEM = 0;   // used by "osccal.h"
-uint8_t ee_bootmode        EEMEM = BOOT_MODE_END; // why is this not 
-uint8_t ee_serialnum[8]    EEMEM = { '1','2','3','4','5','6','7','8'};
-
-patternline_t ee_pattern[patt_max]  EEMEM = {
-    { { 0xff, 0x00, 0x00 },  50 },
-    { { 0x00, 0x00, 0x00 },  50 },
-    { { 0x00, 0xff, 0x00 },  50 },
-    { { 0x00, 0x00, 0x00 },  50 },
-    { { 0x00, 0x00, 0xff },  50 },
-    { { 0x00, 0x00, 0x00 },  50 },
-    { { 0xff, 0xff, 0xff }, 100 },
-    { { 0x00, 0x00, 0x00 }, 100 },
-    { { 0xff, 0x00, 0xff },  50 },
-    { { 0xff, 0xff, 0x00 },  50 },
-    { { 0x00, 0xff, 0xff },  50 },
-    { { 0x00, 0x00, 0x00 }, 100 },
-};
 
 
 // ------------------------------------------------------------------------- 
@@ -139,6 +145,7 @@ static uchar    bytesRemaining;
 static uint8_t msgbuf[REPORT_COUNT+1];
 //static uint8_t msgbufout[8];
 
+// HID descriptor, 1 report, 8 bytes long
 PROGMEM char usbHidReportDescriptor[24] = {
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
@@ -153,7 +160,7 @@ PROGMEM char usbHidReportDescriptor[24] = {
     0xc0                           // END_COLLECTION
 };
 
-
+// USB serial number is unique per device, stored in EEPROM
 int usbDescriptorStringSerialNumber[] = {
     USB_STRING_DESCRIPTOR_HEADER( USB_CFG_SERIAL_NUMBER_LEN ),
     USB_CFG_SERIAL_NUMBER
@@ -221,14 +228,33 @@ usbMsgLen_t usbFunctionSetup(uchar data[8])
     return 0;
 }
 
+
 // ------------------------------------------------------------------------- 
 
-//
-static void off(void)
+// set blink1 to not playing, and no LEDs lit
+void off(void)
 {
     playing = 0;
     setRGBt(cplay, 0,0,0);      // starting color
     rgb_setCurr( &cplay );
+}
+
+// start playing the light pattern
+// playing values: 0 = off, 1 = normal, 2 == playing from powerup
+void startPlaying( void )
+{
+    //playing = playtype; 
+    //playpos = 0;
+    pattern_update_next = millis(); //now;
+    eeprom_read_block( &pattern, &ee_pattern, sizeof(patternline_t)*patt_max);
+}
+
+// 
+static char tohex(uint8_t num)
+{
+    num &= 0x0f;
+    if( num<= 9 ) return num + '0';
+    return num - 10 + 'A';
 }
 
 //
@@ -276,36 +302,49 @@ void handleMessage(void)
         rgb_setDest( c, 0 );
         rgb_setCurr( c );
     }
-    // play/pause, with position
+    // play/pause, with position  - {'p', p, 0,0, 0,0,0,0}
     //
     else if( cmd == 'p' ) { 
         playing = msgbufp[1]; 
         playpos = msgbufp[2];
-        // FIXME: what about on boot?
+        startPlaying();
     }
-    // write color pattern entry - {'P', r,g,b, th,tl, i, 0,0}
+    // write color pattern entry - {'P', r,g,b, th,tl, p, 0}
     //
-    else if ( cmd == 'P' ) { 
+    else if( cmd == 'P' ) { 
         // was doing this copy with a cast, but broke it out for clarity
         patternline_t ptmp;
         ptmp.color.r = msgbufp[1];
         ptmp.color.g = msgbufp[2];
         ptmp.color.b = msgbufp[3];
         ptmp.dmillis = ((uint16_t)msgbufp[4] << 8) | msgbufp[5]; 
-        uint8_t i = msgbufp[6];
-        if( i >= patt_max ) i = 0;
+        uint8_t p = msgbufp[6];
+        if( p >= patt_max ) p = 0;
         // save pattern line to RAM 
-        memcpy( &pattern[i], &ptmp, sizeof(patternline_t) );
-        eeprom_write_block( &pattern[i], &ee_pattern[i], sizeof(patternline_t));
+        memcpy( &pattern[p], &ptmp, sizeof(patternline_t) );
+        eeprom_write_block( &pattern[p], &ee_pattern[p], sizeof(patternline_t));
     }
-    // read eeprom byte
+    // read color pattern entry - {'R', 0,0,0, 0,0, p,0}
+    //
+    else if( cmd == 'R' ) {
+        uint8_t p = msgbufp[6];
+        if( p >= patt_max ) p = 0;
+        patternline_t ptmp ;
+        eeprom_read_block( &ptmp, &ee_pattern[p], sizeof(patternline_t));
+        msgbuf[2] = ptmp.color.r;
+        msgbuf[3] = ptmp.color.g;
+        msgbuf[4] = ptmp.color.b;
+        msgbuf[5] = (ptmp.dmillis >> 8);
+        msgbuf[6] = (ptmp.dmillis & 0xff);
+    }
+    // read eeprom byte - { 'e', addr, 0,0, 0,0,0,0}
     //
     else if( cmd == 'e' ) { 
         uint8_t addr = msgbufp[1];
         uint8_t val = eeprom_read_byte( (uint8_t*)(uint16_t)addr ); // dumb
         msgbufp[2] = val;  // put read byte in output buff
     }
-    // write eeprom byte
+    // write eeprom byte - { 'E', addr,val, 0, 0,0,0,0}
     //
     else if( cmd == 'E' ) { 
         uint8_t addr = msgbufp[1];
@@ -314,8 +353,8 @@ void handleMessage(void)
             eeprom_write_byte( (uint8_t*)(uint16_t)addr, val ); // dumb
         }
     }
-    // servermode tickle  
-    // {'D', {1/0},th,tl,  0,0, 0,0 }
+    // servermode tickle - {'D', {1/0},th,tl,  0,0, 0,0 }
+    //
     else if( cmd == 'D' ) {
         uint8_t serverdown_on = msgbufp[1];
         uint16_t t = ((uint16_t)msgbufp[2] << 8) | msgbufp[3]; 
@@ -350,7 +389,7 @@ void handleMessage(void)
 // timerInit -- initialize the various PWM & timekeeping functions
 //  there are 3 PWMs to be setup and one timer for "millis" counting 
 //
-void timerInit(void)
+static void timerInit(void)
 {
     // configure PWM outputs 
     DDRB = _BV( PIN_RED ) | _BV( PIN_GRN ) | _BV( PIN_BLU );
@@ -388,18 +427,16 @@ static void updateLEDs(void)
         led_update_next += led_update_millis;
         rgb_updateCurrent();
         
-        // check for not on computer power up
+        // check for non-computer power up
         if( !usbHasBeenSetup ) { 
             if( !playing && now > 500 ) {  // 500 msec wait
-                playing = 2; // 2 == playing from powerup
+                playing = 2;
                 playpos = 0;
-                pattern_update_next = now;
-                eeprom_read_block( &pattern, &ee_pattern,
-                                   sizeof(patternline_t)*patt_max);
+                startPlaying();
             }
         }
-        else {  // usb is setup...
-            if( playing == 2 ) { // ...but we're doing a powerup play, so reset
+        else {  // else usb is setup...
+            if( playing == 2 ) { // ...but we started a powerup play, so reset
                 off();
             }
 
@@ -409,12 +446,10 @@ static void updateLEDs(void)
     // serverdown logic
     if( serverdown_millis != 0 ) {  // i.e. servermode has been turned on
         if( (long)(now - serverdown_update_next) > 0 ) { 
+            serverdown_millis = 0;  // disable this check
             playing = 1;
             playpos = 0;
-            pattern_update_next = now;
-            eeprom_read_block( &pattern, &ee_pattern,
-                               sizeof(patternline_t)*patt_max);
-            serverdown_millis = 0;  // disable this check
+            startPlaying();
         }
     }
 
@@ -432,6 +467,7 @@ static void updateLEDs(void)
     
 }
 
+
 //
 int main(void)
 {
@@ -441,17 +477,14 @@ int main(void)
 
     timerInit();
     
-    /*  this is unneeded currently, use USB activity to determine play/not-play
-    // load startup mode 
-    uint8_t bootmode = eeprom_read_byte( &ee_bootmode );
-    if( bootmode == BOOT_NIGHTLIGHT ) { 
-        eeprom_read_block( &pattern,&ee_pattern,sizeof(patternline_t)*patt_max);
-        playing = 1;
-    } */
-
-    for( uint8_t i=0; i< 8; i++ ) { 
+    // load the serial number from EEPROM into RAM
+    for( uint8_t i=0; i< 4; i++ )  {
         uint8_t v = eeprom_read_byte( ee_serialnum + i );
-        usbDescriptorStringSerialNumber[1+i] = v;
+        uint8_t c0 = tohex( v>>4 );
+        uint8_t c1 = tohex( v );
+        uint8_t p = 1 + (2*i);
+        usbDescriptorStringSerialNumber[p+0] = c0;
+        usbDescriptorStringSerialNumber[p+1] = c1;
     }
 
     usbInit();
@@ -480,6 +513,22 @@ int main(void)
 
 
 
+
+    /*  this is unneeded currently, use USB activity to determine play/not-play
+    // load startup mode 
+    uint8_t bootmode = eeprom_read_byte( &ee_bootmode );
+    if( bootmode == BOOT_NIGHTLIGHT ) { 
+        eeprom_read_block( &pattern,&ee_pattern,sizeof(patternline_t)*patt_max);
+        playing = 1;
+    } */
+    /*
+    // old style, where each serial num byte is a char
+    for( uint8_t i=0; i< 8; i++ ) { 
+        uint8_t v = eeprom_read_byte( ee_serialnum + i );
+        usbDescriptorStringSerialNumber[1+i] = v;
+    }
+    */
+    // new style, where serial num bytes are turned into chars
 
 /*
 // a simple logarithmic -> linear mapping as a sort of gamma correction
