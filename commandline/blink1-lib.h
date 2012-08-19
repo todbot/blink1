@@ -53,15 +53,19 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b );
 int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val);
 int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val);
 
-int blink1_serialnumread(hid_device *dev, uint8_t** serialnum);
-int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnum);
+int blink1_serialnumread(hid_device *dev, uint8_t** serialnumstr);
+int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr);
 
-int blink1_nightlight(hid_device *dev, uint8_t on);
+//int blink1_nightlight(hid_device *dev, uint8_t on);
 int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis);
 
+int blink1_play(hid_device *dev, uint8_t play, uint8_t pos);
 int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis, 
                             uint8_t r, uint8_t g, uint8_t b, 
                             uint8_t pos);
+int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis, 
+                           uint8_t* r, uint8_t* g, uint8_t* b, 
+                           uint8_t pos);
 //int blink1_playPattern(hid_device *dev,,);
 
 char *blink1_error_msg(int errCode);
@@ -69,6 +73,8 @@ char *blink1_error_msg(int errCode);
 void blink1_enableDegamma();
 void blink1_disableDegamma();
 int blink1_degamma(int n);
+
+void blink1_sleep(uint16_t delayMillis);
 
 #ifdef __cplusplus
 }

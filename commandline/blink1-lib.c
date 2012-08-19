@@ -9,8 +9,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>  // for toupper()
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>    // for usleep()
+#endif
 
 #include "blink1-lib.h"
+
 
 #define blink1_report_id 1
 
@@ -18,7 +26,7 @@
 #define blink1_eeaddr_osccal        0
 #define blink1_eeaddr_bootmode      1
 #define blink1_eeaddr_serialnum     2
-#define blink1_serialnum_len        8
+#define blink1_serialnum_len        4
 #define blink1_eeaddr_patternstart (blink1_eeaddr_serialnum + blink1_serialnum_len)
 
 #define pathmax 16
@@ -189,7 +197,7 @@ int blink1_getVersion(hid_device *dev)
 
 	//hid_set_nonblocking(dev, 0);
     int rc = blink1_write(dev, buf, sizeof(buf));
-    usleep(50*1000); // FIXME
+    blink1_sleep( 50 ); //FIXME:
     if( rc != -1 ) // no error
         rc = blink1_read(dev, buf, len);
     if( rc != -1 ) // also no error
@@ -206,7 +214,7 @@ int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val)
     int len = sizeof(buf);
 
     int rc = blink1_write(dev, buf, len );
-    usleep(50*1000); // FIXME
+    blink1_sleep( 50 ); // FIXME:
     if( rc != -1 ) // no error
         rc = blink1_read(dev, buf, len );
     if( rc != -1 ) 
@@ -224,6 +232,7 @@ int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val)
     return rc;
 }
 
+// FIXME: this doesn't work
 int blink1_serialnumread(hid_device *dev, uint8_t** serialnum)
 {
     int rc = 0;
@@ -232,20 +241,41 @@ int blink1_serialnumread(hid_device *dev, uint8_t** serialnum)
     }
     return rc;
 }
-int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnum)
+
+//
+static uint8_t parseHex(char c) 
 {
+    c = toupper(c);
+    if (c >= '0' && c <= '9')  return (c - '0');
+    if (c >= 'A' && c <= 'F')  return (c - 'A')+10;
+    return 0;
+}
+
+// serialnum comes in as an ascii set of 8 characters representing
+// 4-bytes (a 32-bit number)
+int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr)
+{
+    uint8_t serialnum[4];
+    serialnum[0] = parseHex( serialnumstr[0] )*16 + parseHex( serialnumstr[1] );
+    serialnum[1] = parseHex( serialnumstr[2] )*16 + parseHex( serialnumstr[3] );
+    serialnum[2] = parseHex( serialnumstr[4] )*16 + parseHex( serialnumstr[5] );
+    serialnum[3] = parseHex( serialnumstr[6] )*16 + parseHex( serialnumstr[7] );
+
     int rc = 0;
-    for( int i=0; i<blink1_serialnum_len; i++ ) { // serial num is 8 chars long
-        usleep(50*1000); // FIXME
-        int rc = blink1_eewrite( dev, blink1_eeaddr_serialnum+i, serialnum[i] );
+    for( int i=0; i<blink1_serialnum_len; i++ ) { // serialnum is 4 chars long
+        blink1_sleep(50); //FIXME: 
+        uint8_t v = serialnum[i];
+        printf("writing serialnum val: %x\n", v);
+        int rc = blink1_eewrite( dev, blink1_eeaddr_serialnum+i, v);
         if( rc == -1 ) { // try again
             printf("blink1_serialwrite: oops, trying again on char %d\n",i);
-            int rc = blink1_eewrite(dev,blink1_eeaddr_serialnum+i,serialnum[i]);
+            rc = blink1_eewrite(dev,blink1_eeaddr_serialnum+i, v);
             if( rc == -1 ) { 
                 printf("blink1_serialwrite: error on try again\n");
                 break;
             }
         }
+
     }
     return rc;
 }
@@ -284,22 +314,10 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
     buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );     // blu
     
     int rc = blink1_write(dev, buf, sizeof(buf) );
-    /*
-    if( rc == -1 ) 
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
-    */
-    return rc;  // FIXME: remove fprintf
+
+    return rc; 
 }
 
-//
-int blink1_nightlight(hid_device *dev, uint8_t on)
-{
-    char buf[9] = { blink1_report_id, 'N', on };
-
-    int rc = blink1_write(dev, buf, sizeof(buf) );
-    
-    return rc;
-}
 
 //
 int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
@@ -313,23 +331,53 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
 }
 
 //
+int blink1_play(hid_device *dev, uint8_t play, uint8_t pos)
+{
+    char buf[9] = {blink1_report_id, 'p', play, pos };
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    return rc;
+}
+    
+//
 int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis, 
                             uint8_t r, uint8_t g, uint8_t b, 
                             uint8_t pos)
 {
     int dms = fadeMillis/10;  // millis_divided_by_10
+    r = (blink1_enable_degamma) ? blink1_degamma(r) : r ;
+    g = (blink1_enable_degamma) ? blink1_degamma(g) : g ;
+    b = (blink1_enable_degamma) ? blink1_degamma(b) : b ;
     char buf[9] = {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
 
-
 //
+int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis, 
+                           uint8_t* r, uint8_t* g, uint8_t* b, 
+                           uint8_t pos)
+{
+    char buf[9] = {blink1_report_id, 'R', 0,0,0, 0,0, pos };
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    blink1_sleep( 50 ); // FIXME:
+    if( rc != -1 ) // no error
+        rc = blink1_read(dev, buf, sizeof(buf) );
+    if( rc != -1 ) {
+        *r = buf[2];
+        *g = buf[3];
+        *b = buf[4];
+        *fadeMillis = ((buf[5]<<8) + (buf[6] &0xff)) * 10;
+    }
+    return rc;
+}
+
+
+// FIXME: 
 int readUUID( hid_device* dev, uint8_t** uuid )
 {
     return -1;
 }
-
+// FIXME:
 int setUUID( hid_device* dev, uint8_t* uuid )
 {
     return -1;
@@ -339,6 +387,7 @@ int setUUID( hid_device* dev, uint8_t* uuid )
 /* ------------------------------------------------------------------------- */
 
 // FIXME: this is wrong
+// FIXME: provide function that generated this
 uint8_t degamma_lookup[256] = { 
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
   1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,4,
@@ -381,6 +430,7 @@ int blink1_degamma( int n )
     //return degamma_lookup[n];
     return blink1_degamma_log2lin(n);
 }
+
 
 // qsort C-string comparison function 
 int cmp_path(const void *a, const void *b) 
@@ -429,6 +479,16 @@ int blink1_pid(void)
     return pid;
 }
 
+// simple cross-platform millis sleep func
+void blink1_sleep(uint16_t millis)
+{
+#ifdef WIN32
+            Sleep(millis);
+#else 
+            usleep( millis * 1000);
+#endif
+}
+
 //
 char *blink1_error_msg(int errCode)
 {
@@ -447,7 +507,20 @@ char *blink1_error_msg(int errCode)
     return NULL;    /* not reached */
 }
 
+
 /*
+
+//
+int blink1_nightlight(hid_device *dev, uint8_t on)
+{
+    char buf[9] = { blink1_report_id, 'N', on };
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    
+    return rc;
+}
+
+
 //
 int blink1_command(hid_device* dev, int num_send, int num_recv,
                        uint8_t* buf_send, uint8_t* buf_recv )
