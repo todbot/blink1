@@ -11,13 +11,6 @@
  * the PWM is hardware, not software, and the fading and pattern engine work
  * differently. 
  *
- * Firmware TODOs: (x=done)
- * x detect plugged in to power supply vs computer, 
- * x play pattern if not on computer
- * - log2lin() function, maybe map in memory (256 RAM bytes, compute at boot)
- * - upload new log2lin table
- * x upload of pattern
- * -
  * 
  */
 
@@ -55,6 +48,7 @@ static uint8_t usbHasBeenSetup;
 
 #include "color_funcs.h"  // needs "setRGBOut()" defined before inclusion
 
+// number of entries a color pattern can contain
 #define patt_max 12
 
 // possible values for boot_mode
@@ -64,7 +58,7 @@ static uint8_t usbHasBeenSetup;
 
 uint8_t ee_osccal          EEMEM = 0;   // used by "osccal.h"
 uint8_t ee_bootmode        EEMEM = BOOT_MODE_SPACER; 
-uint8_t ee_serialnum[4]    EEMEM = { 0x1A, 0xAA, 0x1B, 0x23 };  
+uint8_t ee_serialnum[4]    EEMEM = { 0x01, 0xAA, 0x1A, 0x23 };  
 // serial num is represented as hex ascii on USB, ==> 8 bytes 
 patternline_t ee_pattern[patt_max]  EEMEM = {
     { { 0xff, 0x00, 0x00 },  50 }, // 0
@@ -513,77 +507,5 @@ int main(void)
 
 
 
-
-    /*  this is unneeded currently, use USB activity to determine play/not-play
-    // load startup mode 
-    uint8_t bootmode = eeprom_read_byte( &ee_bootmode );
-    if( bootmode == BOOT_NIGHTLIGHT ) { 
-        eeprom_read_block( &pattern,&ee_pattern,sizeof(patternline_t)*patt_max);
-        playing = 1;
-    } */
-    /*
-    // old style, where each serial num byte is a char
-    for( uint8_t i=0; i< 8; i++ ) { 
-        uint8_t v = eeprom_read_byte( ee_serialnum + i );
-        usbDescriptorStringSerialNumber[1+i] = v;
-    }
-    */
-    // new style, where serial num bytes are turned into chars
-
-/*
-// a simple logarithmic -> linear mapping as a sort of gamma correction
-// maps from 0-255 to 0-255
-static int log2lin( int n )  
-{
-  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
-  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
-}
-*/
-
-/*
-static void updateLEDs(void)
-{
-    uint32_t now = millis();
-    if( (now - ledLastMillis) >= ledUpdateMillis ) { 
-        ledLastMillis = now;
-        rgb_updateCurrent();
-    }
-}
-*/
-
-/*
-
-// scrapped idea for using pinchange to detect bus activity
-// (and thus use it for plug/unplug state)
-//
-
-//volatile uint8_t pintick;
-
-//
-ISR(SIG_PIN_CHANGE,ISR_NOBLOCK)  // NOBLOCK allows USB ISR to run
-{
-    pintick++;
-}
-
-//
-void pinChangeInit(void)
-{
-    PCMSK |= _BV(PCINT3);
-    GIMSK |= _BV(PCIE);
-}
-
-//
-void connectedTest(void)
-{
-    if( ((long)millis() - connectedTestTimeNext) > 0 ) {
-        connectedTestTimeNext += 1000;
-        if( pintick < 20 ) { // disconnected
-            rgb_t cDisconn = {0xff,0xdd,0x33}; 
-            rgb_setCurr( &cDisconn );
-        }
-        pintick = 0;
-    }
-}
-*/
 
 // -eof-

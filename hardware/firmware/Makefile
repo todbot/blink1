@@ -26,6 +26,8 @@ FUSE_H=0xdd
 FUSE_L=0xe2
 endif
 
+PKGDATE = `date +%Y%m%d`
+
 AVRDUDE = avrdude -c avrispmkii -P usb -p $(MCU)
 # The two lines above are for "avrdude" and the STK500 programmer connected
 # to an USB to serial converter to a Mac running Mac OS X.
@@ -100,7 +102,7 @@ readeep:
 
 
 clean:
-	rm -f $(TARGET).hex $(TARGET).lst $(TARGET).obj $(TARGET).cof $(TARGET).list $(TARGET).map $(TARGET).eep.hex $(TARGET).bin *.o usbdrv/*.o $(TARGET).s usbdrv/oddebug.s usbdrv/usbdrv.s
+	rm -f $(TARGET).hex $(TARGET).lst $(TARGET).obj $(TARGET).cof $(TARGET).list $(TARGET).map $(TARGET).eep.hex $(TARGET).bin *.o usbdrv/*.o $(TARGET).s usbdrv/oddebug.s usbdrv/usbdrv.s 
 
 # file targets:
 $(TARGET).bin:	$(OBJECTS)
@@ -116,3 +118,13 @@ disasm:	$(TARGET).bin
 
 cpp:
 	$(COMPILE) -E $(TARGET).c
+
+
+packaging:
+	echo "making $(TARGET)_$(PKGDATE)"
+	mkdir -p $(TARGET)_$(PKGDATE)
+	cp -f $(TARGET).hex $(TARGET)_$(PKGDATE)/$(TARGET)_$(PKGDATE).hex
+	cp -f $(TARGET).eep $(TARGET)_$(PKGDATE)/$(TARGET)_$(PKGDATE).eep
+	cp -f $(TARGET)_$(MCU)_fuse.txt $(TARGET)_$(PKGDATE)
+	cp -f $(TARGET)_eeprom_layout.txt $(TARGET)_$(PKGDATE)
+	zip -r $(TARGET)_$(PKGDATE).zip $(TARGET)_$(PKGDATE)

@@ -1,0 +1,8 @@
+blink(1) Fuse Settings
+======================
+15 Aug 2012, Tod E. Kurt, ThingM
+
+Part: Atmel AVR ATTINY85
+
+FUSE_LOW  = 0xE1
+FUSE_HIGH = 0xDD

@@ -1,0 +1,45 @@
+
+blink(1) EEPROM layout
+======================
+15 Aug 2012, Tod E. Kurt, ThingM
+
+address - default value - description
+----------------------------------
+0x00    -  0x00         - osc cal byte
+0x01    -  0x55         - (boot mode, reserved)
+0x02    -  0x01         - serial num byte 3  (MSB)
+0x03    -  0xAA         - serial num byte 2
+0x04    -  0x1B         - serial num byte 1
+0x05    -  0x23         - serial num byte 0  (LSB)
+0x06    -  0xFF         - start of light pattern data
+...
+
+EEPROM Serial Numbers 
+---------------------
+The default serial number is 0x01AA1B23 as seen above.
+It is invalid for production use.
+
+Production serial numbers range, inclusive:
+- start serial number: 0x1A001000  
+- end   serial number: 0x1A002FFF
+
+In EEPROM address form:
+
+Start serial number: 
+EEPROM[ 0x02 ] = 0x1A
+EEPROM[ 0x03 ] = 0x00
+EEPROM[ 0x04 ] = 0x01
+EEPROM[ 0x05 ] = 0x00
+
+End serial number:
+EEPROM[ 0x02 ] = 0x1A
+EEPROM[ 0x03 ] = 0x00
+EEPROM[ 0x04 ] = 0x2F
+EEPROM[ 0x05 ] = 0xFF
+
+
+
+-eof-
+
+
+
