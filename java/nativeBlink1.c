@@ -15,6 +15,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_enumerate
 (JNIEnv *env, jobject obj)
 {
     //hid_device* dev = getDeviceFromJava(env,obj);
+    printf("jni start here!\n");
     jint c = blink1_enumerate();
     return c;
 }
@@ -54,7 +55,11 @@ JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDeviceSerials
     for( int i=0; i<count; i++ ) { 
         //printf("native serial=%ls\n", blink1_getCachedSerial(i));
         //FIXME: wrt (char*)?
-        jstring str=(*env)->NewStringUTF(env,(char*)blink1_getCachedSerial(i) );
+        // FIXME: hardcoded 16 strlen
+        //jstring str=(*env)->NewString(env,(jchar*)blink1_getCachedSerial(i), 8*sizeof(jchar));
+        char serstr[9];
+        sprintf( serstr, "%ls", blink1_getCachedSerial(i) );
+        jstring str=(*env)->NewStringUTF(env, serstr);
         (*env)->SetObjectArrayElement(env,strarray,i,str);
         (*env)->DeleteLocalRef(env,str);
     }
@@ -101,7 +106,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
     //setDeviceToJava(env,obj, devt);
     if( dev == NULL ) err = -1;
 
-    fprintf(stderr, "nativeBlink1: dev=%d\n", err);
+    fprintf(stderr, "nativeBlink1:open devid=%d\n", err); // debug
     return err;
 }
 
@@ -132,6 +137,9 @@ JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
     blink1_close(dev);
 }
 
+/**
+ *
+ */
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 (JNIEnv *env, jobject obj, jint r, jint g, jint b)
 {
@@ -141,6 +149,9 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
     return err;
 }
 
+/**
+ *
+ */
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b)
 {
@@ -150,7 +161,47 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
     return err;
 }
 
+/**
+ *
+ */
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_writePatternLine
+(JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b, jint pos)
+{
+    int err;
+    //hid_device* dev = getDeviceFromJava(env,obj);
+    err = blink1_writePatternLine(dev, fadeMillis, r,g,b, pos);
+    return err;
+}
 
+/**
+ *
+ */
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_play
+(JNIEnv *env, jobject obj, jboolean play, jint pos)
+{
+    int err;
+    //play = (play) ? 1 : 0; // normalize just in case
+    //hid_device* dev = getDeviceFromJava(env,obj);
+    err = blink1_play(dev, play, pos);
+    return err;
+}
+
+/**
+ *
+ */
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_serverdown
+(JNIEnv *env, jobject obj, jboolean on, jint millis)
+{
+    int err;
+    //on = (on) ? 1 : 0; // normalize just in case
+    //hid_device* dev = getDeviceFromJava(env,obj);
+    err = blink1_serverdown(dev, on, millis);
+    return err;
+}
+
+
+// --------------------------------------------------------------------------
+// old ideas
 
 /*
 //

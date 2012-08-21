@@ -22,7 +22,9 @@ public class Blink1
             "");
   }
 
-  //
+  /**
+   * Simple command-line demonstration
+   */
   public static void main(String args[]) {
     
     if( args.length == 0 ) {
@@ -75,7 +77,8 @@ public class Blink1
   //--------------------------------------------------------------------------
 
   /**
-   *
+   * Constructor.  
+   * Searches for plugged in blink(1) devices and populates internal caches
    */
   public Blink1() 
   {
@@ -85,6 +88,7 @@ public class Blink1
 
   /**
    * (re)Enumerate the bus and return a count of blink(1) device found
+   * @returns blink1_command response code, -1 == fail 
    */
   public native int enumerate();
 
@@ -105,56 +109,96 @@ public class Blink1
 
 
   /**
-   * Open Blink1 dongle 
-   * @param vid vendor id of device
-   * @param pid product id of device
-   * @param vstr vender string of device
-   * @param pstr product string of device
-   * Setting these to {0,0,null,null} will open first default device found
+   * Open blink(1) device.  
+   * Stores open device id statically in native lib.
+   * Only one device can be open at once.
+   *
+   * @returns blink1_command response code, -1 == fail 
    */
-  //public native void open(int vid, int pid, String vstr, String pstr)
   public native int open();
 
- /**
+  /**
+   * Close blink(1) device
+   */
+  public native void close();  
+
+  /**
+   * Open blink(1) device by USB path, may be different for each insertion
+   * @returns blink1_command response code, -1 == fail 
    *
    */
   public native int openByPath( String devicepath );
-
- /**
-   *
+  
+  /**
+   * Open blink(1) device by blink(1) serial number
+   * @returns blink1_command response code, -1 == fail 
    */
   public native int openBySerial( String serialnumber );
-
- /**
-   *
+  
+  /**
+   * Open blink(1) device by blink(1) numerical id (0-getCount())
+   * Id list is ordered by serial number.
+   * @returns blink1_command response code, -1 == fail 
    */
   public native int openById( int id );
-
+  
   /**
+   * FIXME: this does not work
    * Do a transaction with the Blink1
    * length of both byte arrays determines amount of data sent or received
    * @param cmd the blink1 command code
    * @param buf_send is byte array of command to send, may be null
    * @param buf_recv is byte array of any receive data, may be null
-   * @returns blink1_command response code, 0 == success, non-zero == fail
+   * @returns blink1_command response code, -1 == fail 
    */
   public native synchronized int command(int cmd, 
                                          byte[] buf_send, 
                                          byte[] buf_recv);
 
-
   /**
-   *
+   * Set blink(1) RGB color immediately
+   * @param r red component 0-255
+   * @param g green component 0-255
+   * @param b blue component 0-255
+   * @returns blink1_command response code, -1 == fail 
    */
   public native synchronized int setRGB(int r, int g, int b);
 
+  /**
+   * Fade blink(1) to RGB color over fadeMillis milliseconds.
+   * @param fadeMillis milliseconds to take to get to color
+   * @param r red component 0-255
+   * @param g green component 0-255
+   * @param b blue component 0-255
+   * @returns blink1_command response code, -1 == fail 
+   */
   public native synchronized int fadeToRGB(int fadeMillis, int r, int g, int b);
   
- 
   /**
-   * Close Blink1 dongle
+   * Write a blink(1) light pattern entry
+   * @param fadeMillis milliseconds to take to get to color
+   * @param r red component 0-255
+   * @param g green component 0-255
+   * @param b blue component 0-255
+   * @param pos entry position 0-patt_max
+   * @returns blink1_command response code, -1 == fail 
    */
-  public native void close();  
+  public native synchronized int writePatternLine(int fadeMillis, 
+                                                  int r, int g, int b,
+                                                  int pos);
+  /**
+   * @param play  true to play, false to stop
+   * @param pos   starting position to play from, 0 = start
+   */
+  public native synchronized int play( boolean play, int pos);
+
+  /**
+   * @param on true = turn on serverdown mode, false = turn it off
+   * @param millis milliseconds until light pattern plays if not updated 
+   */
+  public native synchronized int serverdown( boolean on, int millis);
+
+ 
 
   //-------------------------------------------------------------------------
   // Utilty Class methods

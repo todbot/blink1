@@ -131,7 +131,8 @@ jni:
 #	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(LDFLAGS) $(OBJ)  -lc
 compile: msg $(OBJS)
 	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(OBJS) $(LDFLAGS) 
-	mkdir -p libtargets && mv $(LIBTARGET) libtargets
+	#mkdir -p libtargets && mv $(LIBTARGET) libtargets
+	mv $(LIBTARGET) ../libraries
 
 .c.o:
 	$(CC) $(ARCH_COMPILE) $(CFLAGS) -c $*.c -o $*.o
@@ -142,14 +143,15 @@ msg:
 # packaging
 jar: javac jni compile
 	jar -cfm blink1.jar  packaging/Manifest.txt thingm/blink1/*.class
-	mv blink1.jar libtargets
+	#mv blink1.jar libtargets
+	mv blink1.jar ../libraries
 
 processing: processinglib
 processinglib: jar
 	rm -f blink1.zip
 	mkdir -p blink1/library
 	cp packaging/processing-export.txt blink1/library/export.txt
-	cp libtargets/* blink1/library
+	cp ../libraries/* blink1/library
 	zip -r blink1.zip blink1
 	@echo
 	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
