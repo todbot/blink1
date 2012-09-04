@@ -64,9 +64,9 @@ void updateBlink1() {
     int gn = log2lin(g);
     int bn = log2lin(b);
 
-    println("r,g,b: (lin)"+r+","+g+","+b + " => (log)"+rn+","+gn+","+bn);
+    println("r,g,b: (lin)"+r+","+g+","+b + " ==> (log)"+rn+","+gn+","+bn);
     //blink1.open();
-    blink1.setRGB( rn, gn, bn );
+    blink1.setRGB( r, g, b );
     //blink1.close();
 }
 

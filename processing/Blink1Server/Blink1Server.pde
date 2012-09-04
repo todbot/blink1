@@ -3,7 +3,8 @@
 //
 import thingm.blink1.*;
 
-Blink1 blink1;
+int serverport = 8080;
+
 PatternPlayer player;
 
 int sketchWidth  = 400;
@@ -27,6 +28,18 @@ PFont font;
 boolean doRefresh = true;
 
 //
+void updateBlink1()
+{
+  int r = int(red(previewColor));
+  int g = int(green(previewColor));
+  int b = int(blue(previewColor));
+  
+  println("r,g,b: "+r+","+g+","+b );
+  java.awt.Color c = new java.awt.Color( r,g,b );
+  player.updateBlink1( 100, c );
+}
+
+//
 void setup()
 {
   size(sketchWidth, sketchHeight);
@@ -38,16 +51,15 @@ void setup()
   File docroot = new File(dataPath("html"));
 
   player = new PatternPlayer();
-  blink1 = player.blink1;
 
   // http://elonen.iki.fi/code/nanohttpd/
   Blink1NanoHTTPD server;
   try {
-      server = new Blink1NanoHTTPD( 8080, docroot);
+      server = new Blink1NanoHTTPD( serverport, docroot);
       server.setPatternPlayer(player);
-  } catch(Exception e) {
+  } catch(Exception e) { 
+      println("Couldn't start server on port "+serverport);
   }
-
 
   pickX = colorPickerX + (colorPickerWidth/8)*7; // hack
   pickY = colorPickerY + colorPickerHeight/2;
@@ -61,37 +73,23 @@ void setup()
   updateBlink1();
 }
 
-//
-void updateBlink1() {
-    int r = int(red(previewColor));
-    int g = int(green(previewColor));
-    int b = int(blue(previewColor));
-    
-    int rn = blink1.log2lin(r);
-    int gn = blink1.log2lin(g);
-    int bn = blink1.log2lin(b);
-    
-    println("r,g,b: (lin)"+r+","+g+","+b + " => (log)"+rn+","+gn+","+bn);
-    blink1.open();
-    blink1.fadeToRGB( 100, r, g, b );
-    blink1.close();
-    //doRefresh = true;
-}
-
+long lastMillis;
 //
 void draw()
 {
-  //if( doRefresh ) {
-    background( backColor );
-    drawColorPicker();
-    
-    drawPreview( previewX, previewY, previewWidth, previewHeight);
-    
-    drawStatus();
-    //doRefresh = false;
-    //}
-}
+  background( backColor );
+  drawColorPicker();
+  
+  drawPreview( previewX, previewY, previewWidth, previewHeight);
+  
+  drawStatus();
 
+  if( (millis() - lastMillis) > 1000 ) { 
+      lastMillis = millis();
+      //println("getting version");
+      player.pingBlink1();
+  }
+}
 
 //
 void mousePressed() {
@@ -110,7 +108,8 @@ void mouseDragged() {
   mousePressed();
 }
 
-void drawStatus() {
+void drawStatus() 
+{
   textFont(font, 12);
   String statusText = player.getStatus();
   text( statusText, colorPickerX+colorPickerWidth+5, height-13);
