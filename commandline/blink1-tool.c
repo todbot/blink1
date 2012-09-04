@@ -100,19 +100,17 @@ static void usage(char *myName)
 "  --blink <numtimes>          Blink on/off \n"
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
-"  --savergb <red>,<grn>,<blu>,<pos> Write pattern RGB value at pos\n" 
-"  --readrgb <pos>              Read pattern RGB value at pos\n" 
+"  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
+"  --readrgb <pos>             Read pattern RGB value at pos\n" 
 "  --servertickle <on/off>     Turn on/off servertickle (uses -t msec) \n"
 "  --on                        Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --list                      List connected blink(1) devices \n"
 "  --version                   Display blink(1) firmware version \n"
-"  --serialnumwread            Read current serial number \n"
-"  --serialnumwrite <listofchars> Write new serial number (CAUTION)\n"
 "and [options] are: \n"
-"  -g -nogamma                 Diable autogamma correction\n"
+"  -g -nogamma                 Disable autogamma correction\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
-"// --serial <num>              Connect to blin(1) by its serial number \n"  
+"//--serial <num>              Connect to blin(1) by its serial number \n"  
 "  -m ms,   --miilis=millis    Set millisecs for color fading (default 300)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
@@ -121,8 +119,6 @@ static void usage(char *myName)
 "Examples \n"
 "  blink1-tool -m 100 --rgb 255,0,255   # fade to #FF00FF in 0.1 seconds \n"
 "\n"
-"\n"
-
             ,myName);
 }
 
@@ -227,6 +223,12 @@ int main(int argc, char** argv)
             case CMD_SERIALNUMWRITE:
                 strcpy(tmpstr, optarg);
                 break;
+            case CMD_ON:
+                cmdbuf[0] = 255; cmdbuf[1] = 255; cmdbuf[2] = 255;
+                break;
+            case CMD_OFF:
+                cmdbuf[0] = 0; cmdbuf[1] = 0; cmdbuf[2] = 0;
+                break;
             case CMD_RED:
                 cmdbuf[0] = 255;
                 break;
@@ -316,12 +318,6 @@ int main(int argc, char** argv)
             printf("id:%d - serialnum:%ls\n", i, blink1_getCachedSerial(i) );
         }
     }
-    /*
-    else if( cmd == CMD_SERIAL ) { 
-        char buf[8];
-        blink1_getSerialNumber(dev,buf);
-        printf("serial number: %s\n", buf);
-        }*/
     else if( cmd == CMD_HIDREAD ) { 
         printf("hidread:  ");
         int len = sizeof(cmdbuf);
@@ -333,8 +329,6 @@ int main(int argc, char** argv)
     } 
     else if( cmd == CMD_HIDWRITE ) { 
         printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
-        //memmove( cmdbuf+1, cmdbuf, sizeof(cmdbuf)-1 );
-        //printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
         if((rc = hid_send_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1) {
             fprintf(stderr,"error writing data: %d\n",rc);
         }
@@ -353,14 +347,15 @@ int main(int argc, char** argv)
         printf("eewrite: \n");
         rc = blink1_eewrite(dev, cmdbuf[0], cmdbuf[1] );
         if( rc==-1 ) { // error
+            printf("error\n");
         }
     }
     else if( cmd == CMD_VERSION ) { 
-        printf("version: ");
+        printf("firmware version: ");
         rc = blink1_getVersion(dev);
         printf("%d\n", rc );
     }
-    else if( cmd == CMD_RGB || 
+    else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd ==CMD_GRN ) { 
         blink1_close(dev); // close global device, open as needed
         
@@ -372,7 +367,8 @@ int main(int argc, char** argv)
             dev_serial = blink1_getCachedSerial( deviceIds[i] );
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
-            printf("set %d rgb: 0x%2.2x,0x%2.2x,0x%2.2x\n",deviceIds[i],r,g,b);
+            printf("set dev:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+                   deviceIds[i],r,g,b,millis);
             rc = blink1_fadeToRGB(dev,millis, r,g,b);
             if( rc == -1 ) { // on error, do something, anything. come on.
                 printf("error on fadeToRGB\n");
@@ -411,40 +407,6 @@ int main(int argc, char** argv)
         }
         printf("r,g,b = %x,%x,%x millis:%d\n", r,g,b, msecs);
     }
-    else if( cmd == CMD_ON ) {
-        blink1_close(dev); // close global device, open as needed
-        for( int i=0; i< numDevicesToUse; i++ ) {
-            int id = deviceIds[i];
-            dev_serial = blink1_getCachedSerial( id );
-            dev = blink1_openById( id );
-            if( dev == NULL ) { 
-                printf("error opening blink1 #%d\n",id);
-            }
-            printf("turning on device %d ('%ls')\n", id, dev_serial);
-            rc = blink1_fadeToRGB(dev, millis, 255,255,255);
-            if( rc == -1 ) {// on error, do something, anything. come on.
-                printf("error on ON fadeToRGB\n");
-            }
-            blink1_close( dev );
-        }
-    }
-    else if( cmd == CMD_OFF ) { 
-        blink1_close(dev); // close global device, open as needed
-        for( int i=0; i< numDevicesToUse; i++ ) {
-            int id = deviceIds[i];
-            dev_serial = blink1_getCachedSerial( id );
-            dev = blink1_openById( id );
-            if( dev == NULL ) {
-                printf("error opening blink1 #%d\n",id);
-            }
-            printf("turning off device %d ('%ls')\n", id, dev_serial);
-            rc = blink1_fadeToRGB(dev, millis, 0,0,0);
-            if( rc == -1) { // on error, do something, anything. come on.
-                printf("error on OFF fadeToRGB\n");
-            }
-            blink1_close( dev );
-        }
-    }
     else if( cmd == CMD_RANDOM ) { 
         blink1_close(dev); // close global device, open as needed
         printf("random %d times: \n", arg);
@@ -467,10 +429,10 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_BLINK ) { 
-        uint8_t r = cmdbuf[0];
-        uint8_t g = cmdbuf[1];
-        uint8_t b = cmdbuf[2];
-        uint8_t n = cmdbuf[3]; 
+        uint8_t n = cmdbuf[0]; 
+        uint8_t r = 255;
+        uint8_t g = 255;
+        uint8_t b = 255;
         printf("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGB(dev, millis,r,g,b);
@@ -481,9 +443,11 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_SERVERDOWN ) { 
         int on  = arg;
-        printf("setting serverdown to %d (at %d millis)\n", on, delayMillis);
+        printf("setting serverdown %s (at %d millis)\n", 
+               ((on)?"ON":"OFF"), delayMillis);
         blink1_serverdown( dev, on, delayMillis );
     }
+    // use caution with this, could make your blink(1) unusable
     else if( cmd == CMD_SERIALNUMWRITE ) { 
         printf("serial number write: %s\n",tmpstr);
         //for( int i=0; i<4; i++)  printf("%2.2X,",cmdbuf[i]);
