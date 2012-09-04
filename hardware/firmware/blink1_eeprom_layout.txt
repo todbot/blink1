@@ -21,7 +21,7 @@ It is invalid for production use.
 
 Production serial numbers range, inclusive:
 - start serial number: 0x1A001000  
-- end   serial number: 0x1A002FFF
+- End   serial number: 0x1A002FFF
 
 In EEPROM address form:
 
@@ -36,7 +36,6 @@ EEPROM[ 0x02 ] = 0x1A
 EEPROM[ 0x03 ] = 0x00
 EEPROM[ 0x04 ] = 0x2F
 EEPROM[ 0x05 ] = 0xFF
-
 
 
 -eof-
