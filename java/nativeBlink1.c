@@ -15,7 +15,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_enumerate
 (JNIEnv *env, jobject obj)
 {
     //hid_device* dev = getDeviceFromJava(env,obj);
-    printf("jni start here!\n");
+    //printf("jni start here!\n");
     jint c = blink1_enumerate();
     return c;
 }
@@ -106,7 +106,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
     //setDeviceToJava(env,obj, devt);
     if( dev == NULL ) err = -1;
 
-    fprintf(stderr, "nativeBlink1:open devid=%d\n", err); // debug
+    //fprintf(stderr, "nativeBlink1:open devid=%d\n", err); // debug
     return err;
 }
 
@@ -197,6 +197,14 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_serverdown
     //hid_device* dev = getDeviceFromJava(env,obj);
     err = blink1_serverdown(dev, on, millis);
     return err;
+}
+
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_getFirmwareVersion
+(JNIEnv *env, jobject obj)
+{
+    //hid_device* dev = getDeviceFromJava(env,obj);
+    jint c = blink1_getVersion(dev);
+    return c;
 }
 
 
