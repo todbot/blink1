@@ -265,7 +265,6 @@ int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr)
     for( int i=0; i<blink1_serialnum_len; i++ ) { // serialnum is 4 chars long
         blink1_sleep(50); //FIXME: 
         uint8_t v = serialnum[i];
-        printf("writing serialnum val: %x\n", v);
         int rc = blink1_eewrite( dev, blink1_eeaddr_serialnum+i, v);
         if( rc == -1 ) { // try again
             printf("blink1_serialwrite: oops, trying again on char %d\n",i);
