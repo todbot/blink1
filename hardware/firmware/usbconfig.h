@@ -224,7 +224,7 @@ extern void usbEventResetReady(void);
 
 /* -------------------------- Device Description --------------------------- */
 
-#define  USB_CFG_VENDOR_ID       0xB8, 0x27 /* = 0x27B8 = 8352 = obdev.at */
+#define  USB_CFG_VENDOR_ID       0xB8, 0x27 /* = 0x27B8 = 10168 = thingm */
 //#define  USB_CFG_VENDOR_ID       0xA0, 0x20 /* = 0x20A0 = 8352 = obdev.at */
 //#define  USB_CFG_VENDOR_ID       0xc0, 0x16 /* = 0x16c0 = 5824 = voti.nl */
 /* USB vendor ID for the device, low byte first. If you have registered your
