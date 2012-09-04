@@ -131,18 +131,27 @@ public class Blink1NanoHTTPD extends NanoHTTPD
         blink1.serverdown( state, timems );
         blink1.close();
       }
-      else if( cmd.equalsIgnoreCase("addPttern") ) {
+      else if( cmd.equalsIgnoreCase("addPattern") ) {
         String patternstr = parms.getProperty("pattern");
-        Pattern patt = new Pattern( patternstr );
+        Pattern patt = new Pattern(player, patternstr );
 
         // add pattern to player
-        player.playPattern( "",patt );
+        player.addPattern( "", patt );
 
-        msg+= ": "+patt;
+        msg+= " added pattern: "+patt;
+        
+      }
+      else if( cmd.equalsIgnoreCase("playPattern") ) {
+        String pattName = parms.getProperty("patternName");
+
+        // add pattern to player
+        boolean rc = player.playPattern( "", pattName );
+
+        msg+= " play pattern: "+pattName+ ":"+rc;
         
       }
       else if( cmd.equalsIgnoreCase("listPatterns") ) {
-        player.listPatterns();
+        player.listPatterns();  // FIXME:
       }
 
       json.put( "cmd", cmd );
