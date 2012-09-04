@@ -1,14 +1,15 @@
 
+Web Service for IFTTT
+=====================
 
-
-Event Submission
+Event Submission, in General
 ----------------
 Two kinds of event submission are supported: 
 - single event real-time
 - event bundle of recent past events (e.g. last 15 minutes)
 
-Single Event
-------------
+Single Event Submission
+------------------------
 Submit via GET request with query argument parameters
 parameters: 
 - blink1_uid - UID of blink(1) this event is meant for
@@ -17,8 +18,8 @@ parameters:
 - repeats - number of repeats of color pattern
 - source - event source designator (optional)
 
-Bundled Events
---------------
+Multilple Event Submission
+--------------------------
 Submit via POST request with event list as JSON bundle
 
  
@@ -64,7 +65,7 @@ sample result:
 
 
 Event Fetch
-
+-----------
 
 - blink(1) user app queries blink1-uid url every 60 seconds
 - url is of form:
