@@ -38,6 +38,12 @@ public class Blink1
 
     System.out.println("found "+count+ " devices");
     System.out.println("device paths:");
+    
+    blink1.open();
+    int ver = blink1.getFirmwareVersion();
+    blink1.close();
+    System.out.println("firmware version: " + ver);
+    
     String paths[] = blink1.getDevicePaths();
     String serials[] = blink1.getDeviceSerials();
     for( int i=0; i<paths.length; i++ ) { 
@@ -198,7 +204,11 @@ public class Blink1
    */
   public native synchronized int serverdown( boolean on, int millis);
 
- 
+  /**
+   *
+   */
+  public native synchronized int getFirmwareVersion();
+
 
   //-------------------------------------------------------------------------
   // Utilty Class methods
