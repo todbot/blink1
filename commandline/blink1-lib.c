@@ -55,23 +55,23 @@ int blink1_enumerateByVidPid(int vid, int pid)
     struct hid_device_info *devs, *cur_dev;
 
     int p = 0;
-	devs = hid_enumerate(vid, pid);
-	cur_dev = devs;	
-	while (cur_dev) {
+    devs = hid_enumerate(vid, pid);
+    cur_dev = devs;    
+    while (cur_dev) {
         if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
-            strcpy( blink1_cached_paths[p], cur_dev->path );
-            wcscpy( blink1_cached_serials[p], cur_dev->serial_number );
-            //blink1_cached_serialnumbs[p] = {0};
-            //wcstombs( blink1_cached_serialnums[p], cur_dev->serial );
-            p++;
-        }
-		cur_dev = cur_dev->next;
+            if( cur_dev->serial_number != NULL ) { // can happen if not root
+	        strcpy( blink1_cached_paths[p], cur_dev->path );
+	        wcscpy( blink1_cached_serials[p], cur_dev->serial_number );
+		p++;
+	    }
 	}
-	hid_free_enumeration(devs);
+        cur_dev = cur_dev->next;
+    }
+    hid_free_enumeration(devs);
     
     blink1_cached_count = p;
-    
+
     blink1_sortSerials();
 
     return p;
@@ -98,7 +98,7 @@ const wchar_t* blink1_getCachedSerial(int i)
 hid_device* blink1_openByPath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
-	hid_device* handle = hid_open_path( path ); 
+    hid_device* handle = hid_open_path( path ); 
     return handle;
 }
 
@@ -110,7 +110,7 @@ hid_device* blink1_openBySerial(const wchar_t* serial)
     int pid = blink1_pid();
     
     //fprintf(stderr,"opening %ls at vid/pid %x/%x\n", serial, vid,pid);
-	hid_device* handle = hid_open(vid,pid, serial ); 
+    hid_device* handle = hid_open(vid,pid, serial ); 
     return handle;
 }
 
@@ -127,7 +127,7 @@ hid_device* blink1_open(void)
     int vid = blink1_vid();
     int pid = blink1_pid();
 
-	hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
+    hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
 
     return handle;
 }
@@ -195,7 +195,7 @@ int blink1_getVersion(hid_device *dev)
     char buf[9] = {blink1_report_id, 'v' };
     int len = sizeof(buf);
 
-	//hid_set_nonblocking(dev, 0);
+    //hid_set_nonblocking(dev, 0);
     int rc = blink1_write(dev, buf, sizeof(buf));
     blink1_sleep( 50 ); //FIXME:
     if( rc != -1 ) // no error
