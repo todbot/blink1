@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <getopt.h>    // for getopt_long()
 #include <time.h>
-
+#include <unistd.h>    // getuid()
 
 #include "blink1-lib.h"
 
@@ -286,12 +286,25 @@ int main(int argc, char** argv)
         blink1_disableDegamma();  
     }
 
+    // debug
+    if( 0 ) { 
+      uid_t id = getuid();
+      printf("userid:%d\n",id);
+
+      wchar_t myser[10];
+      dev = blink1_open();
+      printf("opened: %x\n",dev);
+      hid_get_serial_number_string(dev, myser, 10);
+      printf("ser:%ls\n",myser);
+    }
+
     // get a list of all devices and their paths
     int count = blink1_enumerateByVidPid(vid,pid);
     if( count == 0 ) { 
         printf("no blink(1) devices found\n");
         exit(1);
     }
+
     if( numDevicesToUse == 0 ) numDevicesToUse = count; 
 
     if( !dev_serial ) 
