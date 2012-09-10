@@ -43,7 +43,7 @@ static void *callback(enum mg_event event,
                       struct mg_connection *conn,
                       const struct mg_request_info *request_info)
 {
-    char result[1000] = "-";
+    char result[1000];  result[0] = 0;
 
     if (event == MG_NEW_REQUEST) {
         const char* uri = request_info->uri;
@@ -51,60 +51,68 @@ static void *callback(enum mg_event event,
         // get "id" query arg
         char cmd[32];
         char rgbstr[16];
-        char msstr[8];
+        char timestr[8];
 
-        get_qsvar(request_info, "cmd", cmd, sizeof(cmd));
-      
-        if( ! cmd[0] ) { // cmd is empy 
-            ///
-        }
-        else {
-            if( strcasecmp(cmd, "fadeToRgb")==0 ) { 
-                get_qsvar(request_info, "rgb", rgbstr, sizeof(rgbstr));
-                get_qsvar(request_info, "millis", msstr, sizeof(msstr));
-                uint32_t rgbval = strtoul(rgbstr,NULL,16);
-                uint16_t millis = strtoul(msstr,NULL,0);
-                uint8_t r = ((rgbval >> 16) & 0xff);
-                uint8_t g = ((rgbval >>  8) & 0xff);
-                uint8_t b = ((rgbval >>  0) & 0xff);
-                sprintf(result, "setrgb: %x = %d,%d,%d @ %d msec", 
-                        rgbval, r,g,b, millis );
+        //get_qsvar(request_info, "cmd", cmd, sizeof(cmd));
+	printf("got here: '%s'\n", uri);
 
-                hid_device* dev = blink1_open();
-                if( dev ) { 
-                    if( blink1_fadeToRGB( dev, 100, r,g,b ) != 0 ) { 
-                        sprintf(result, "%s\nfadeToRGB: couldn't find blink1",
-                                result);
-                        blink1_close(dev);
-                    }
-                }
-                else {
-                    sprintf(result,"no blink1 : %s", result);
-                }
-            }
-            else if( strcasecmp(cmd, "random") == 0) { 
+	if( strstr(uri, "/blink1/fadeToRGB") == uri ) { 
+	    uint32_t rgbval = 0;
+	    uint16_t millis = 100;
+	    get_qsvar(request_info, "rgb", rgbstr, sizeof(rgbstr));
+	    get_qsvar(request_info, "time", timestr, sizeof(timestr));
+	    printf("got here2: '%s'\n",rgbstr);
+	    if( rgbstr != NULL ) {
+	        rgbval = strtoul(rgbstr,NULL,16);
+	    }
+	    if( timestr != NULL ) {
+	        float time = strtof(timestr,NULL);
+		millis = time * 1000;
+	    }
+	    uint8_t r = ((rgbval >> 16) & 0xff);
+	    uint8_t g = ((rgbval >>  8) & 0xff);
+	    uint8_t b = ((rgbval >>  0) & 0xff);
+	    sprintf(result, "fadeToRGB: %x = %d,%d,%d @ %d msec", 
+		    rgbval, r,g,b, millis );
 
-            }
-        }
+	    hid_device* dev = blink1_open();
+	    if( dev ) { 
+	        if( blink1_fadeToRGB( dev, millis, r,g,b ) == -1 ) { 
+                    fprintf(stderr, "fadeToRGB: blink1 device error\n");
+		    sprintf(result, "%s\nfadeToRGB: couldn't find blink1",
+			    result);
+		}
+	    }
+	    else {
+	        sprintf(result,"no blink1 : %s", result);
+	    }
+	    blink1_close(dev);
+	}
+	else if( strstr(uri, "/blink1/random") == uri) { 
+	  sprintf(result, "random not implemented yet");
+	}
 
-        // Echo requested URI back to the client
-        mg_printf(conn, "HTTP/1.1 200 OK\r\n"
-                  "Content-Type: text/plain\r\n\r\n"
-                  "-- hello there! message received --\n"
-                  "uri:%s\n"
-                  "cmd:%s\n"
-                  "result:%s\n"
-                  "version: %s\n"
-                  "\n", 
-                  uri,
-                  cmd,
-                  result,
-                  blink1_server_version
-                  );
- 
-        return "";  // Mark as processed
-
-    } else {
+	if( result != NULL ) { 
+	  // Echo requested URI back to the client
+	  mg_printf(conn, "HTTP/1.1 200 OK\r\n"
+		    "Content-Type: text/plain\r\n\r\n"
+		    "-- hello there! message received --\n"
+		    "uri:%s\n"
+		    "result:%s\n"
+		    "version: %s\n"
+		    "\n", 
+		    uri,
+		    result,
+		    blink1_server_version
+		    );
+	  
+	  return "";  // Mark as processed
+	}
+	else { 
+	    return NULL;
+	}
+    }
+    else {
         return NULL;
     }
 }
