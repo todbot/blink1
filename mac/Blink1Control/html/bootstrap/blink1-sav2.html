@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>blink(1) control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- styles -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/colorpicker.css" rel="stylesheet">
+
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" href="assets/ico/favicon.ico">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">blink(1) control</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Status</a></li>
+              <li><a href="#about">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+<div class="tabbable"> <!-- Only required for left/right tabs -->
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#tab1" data-toggle="tab">Section 1</a></li>
+    <li><a href="#tab2" data-toggle="tab">Section 2</a></li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="tab1">
+      <h1>blink(1) main control</h1>
+      <p>I'm in Section 1.</p>
+
+      <p> Check on the general status of your blink(1) <br> </p>
+
+      <h2> Make a Color Pattern </h2>
+<!--
+      <p>choose a color: <span class="tod">
+          <input type="text" class="span1" value="#8fff00" id="cp1" >
+          </span>
+      </p>
+-->
+<p> Choose a pattern of colors to play on your blink(1). 
+</p>
+
+Pattern name: 
+<input type="text" class="span2" value="my pattern" id="pattern-name">
+
+<ul>
+<form id="pattern-form">
+
+
+<li class="form-inline clonetod" id="cpinput1">
+Color:
+<span class="input-prepend color" data-color="rgb(255,0,0)" data-color-format="hex" id="cpclone1">
+<span class="add-on"><i style="background-color: rgb(255,0,0)"></i></span><input class="btn" type="button" value="#ff0000" id="cpclonev1"  style="font-family:monospace">
+</span>
+Time: <input type="text" class="span1" value="100" id="cpclonet1"> msecs
+</li>
+
+</form>
+</ul>
+
+<div>
+<button class="btn" id="AddLine"><i class="icon-plus"></i> Add</button>
+<button class="btn offset2" id="TryPattern">Try Pattern</button>
+</div>
+
+
+    </div> <!-- end of tab1 -->
+    <div class="tab-pane" id="tab2">
+
+      <h1> Buttons </h1>
+      <p>Howdy, I'm in Section 2.</p>
+
+      <p>
+<a href="#" class="btn btn-success btn-large"><i class="icon-white icon-heart"></i> Get My Monkey</a></p>
+
+    </div>
+  </div>
+</div>
+
+
+    </div> <!-- /container -->
+
+    <!-- javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="assets/js/jquery.js"></script>
+    <script src="assets/js/bootstrap-transition.js"></script>
+    <script src="assets/js/bootstrap-alert.js"></script>
+    <script src="assets/js/bootstrap-modal.js"></script>
+    <script src="assets/js/bootstrap-dropdown.js"></script>
+    <script src="assets/js/bootstrap-scrollspy.js"></script>
+    <script src="assets/js/bootstrap-tab.js"></script>
+    <script src="assets/js/bootstrap-tooltip.js"></script>
+    <script src="assets/js/bootstrap-popover.js"></script>
+    <script src="assets/js/bootstrap-button.js"></script>
+    <script src="assets/js/bootstrap-collapse.js"></script>
+    <script src="assets/js/bootstrap-carousel.js"></script>
+    <script src="assets/js/bootstrap-typeahead.js"></script>
+    <script src="assets/js/bootstrap-colorpicker.js"></script>
+
+<script>
+  var showingColorPicker = false;
+  function updateColor(ev,id,idt) {
+      colr = ev.color.toHex();
+      $(idt).val(colr);
+      $(idt).text(colr);
+      jQuery.ajax("http://127.0.0.1:8080/blink1?cmd=fadeToRGB&rgb="+
+        encodeURIComponent(colr));
+  }
+
+  $(function()
+  {
+    $('#cpclone1').colorpicker().on('changeColor', function(ev){
+       updateColor(ev,'#cpclone1','#cpclonev1');
+    });
+    $('#cpclonev1').click( function(ev){
+       console.log("click!");
+       var cp = $('#cpclone1').data('colorpicker');
+       cp.show();
+    });
+
+    // idea from: http://charlie.griefer.com/blog/\
+    //             2009/09/17/jquery-dynamically-adding-form-elements/
+    $('#AddLine').click( function(){
+        var num = $( '.clonetod' ).length; // how many input fields curr have
+		var newNum = new Number( num + 1 ); // ID of the new input being added
+		var newElem = $('#cpinput' + num).clone(); 
+        newElem.attr('id','cpinput' + newNum);
+		$( '#cpinput' + num ).after( newElem );
+
+        newElem.find('#cpclone'+num).attr( 'id', 'cpclone' + newNum );
+        newElem.find('#cpclonet'+num).attr( 'id', 'cpclonet' + newNum );
+        newElem.find('#cpclonev'+num).attr( 'id', 'cpclonev' + newNum );
+
+        newElem.find('#cpclone'+newNum).colorpicker().on('changeColor', function(ev){
+          updateColor(ev,'#cpclone'+newNum,'#cpclonev'+newNum);
+        });
+
+        newElem.find('#cpclonev'+newNum).click( function(ev){
+          console.log("newclick");
+          var cp = $('#cpclone'+newNum).data('colorpicker');
+          cp.show();
+        });
+
+    });
+
+    $('#TryPattern').click( function(ev){
+        var $inputs = $('#pattern-form :input');
+        $inputs.each( function(){
+            var inp = $(this);
+            if( inp.is(":button") ) { console.log("btn! "+inp.val()); }
+            if( inp.is(":text") ) { console.log("text! "+inp.val()); }
+        });
+    });
+
+  });
+	</script>
+
+  </body>
+</html>
