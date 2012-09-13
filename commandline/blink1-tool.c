@@ -421,7 +421,8 @@ int main(int argc, char** argv)
         printf("r,g,b = %x,%x,%x millis:%d\n", r,g,b, msecs);
     }
     else if( cmd == CMD_RANDOM ) { 
-        blink1_close(dev); // close global device, open as needed
+        int cnt = blink1_getCachedCount();
+        if( cnt>1 ) blink1_close(dev); // close global device, open as needed
         printf("random %d times: \n", arg);
         for( int i=0; i<arg; i++ ) { 
             uint8_t r = rand()%255;
@@ -429,14 +430,17 @@ int main(int argc, char** argv)
             uint8_t b = rand()%255 ;
             uint8_t id = rand() % blink1_getCachedCount();
 
-            printf("%d: %d : %2.2x,%2.2x,%2.2x \n", i, id, r,g,b);
+            printf("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
+		   i, id, blink1_getCachedCount(), r,g,b);
 
-            hid_device* mydev = blink1_openById( id );
+            hid_device* mydev = dev;
+            if( cnt > 1 ) blink1_openById( id );
             rc = blink1_fadeToRGB(mydev, millis,r,g,b);
             if( rc == -1 ) { // on error, do something, anything. come on.
+	        printf("error during random\n");
                 //break;
             }
-            blink1_close(mydev);
+            if( cnt > 1 ) blink1_close(mydev);
             
             blink1_sleep(delayMillis);
         }

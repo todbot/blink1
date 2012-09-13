@@ -129,6 +129,8 @@ CC = gcc
 CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
 CFLAGS += -I./hidapi/hidapi -I./mongoose -g
+# only uncomment for debugging HIDAPI stuff
+#CFLAGS += -DDEBUG_PRINTF
 
 OBJS +=  blink1-lib.o 
 

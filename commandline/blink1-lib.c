@@ -20,6 +20,12 @@
 #include "blink1-lib.h"
 
 
+#ifdef DEBUG_PRINTF
+#define LOG(...) fprintf(stderr, __VA_ARGS__)
+#else
+#define LOG(...) do {} while (0)
+#endif
+
 #define blink1_report_id 1
 
 // addresses in EEPROM 
@@ -109,7 +115,7 @@ hid_device* blink1_openBySerial(const wchar_t* serial)
     int vid = blink1_vid();
     int pid = blink1_pid();
     
-    //fprintf(stderr,"opening %ls at vid/pid %x/%x\n", serial, vid,pid);
+    LOG("opening %ls at vid/pid %x/%x\n", serial, vid,pid);
     hid_device* handle = hid_open(vid,pid, serial ); 
     return handle;
 }
@@ -161,7 +167,7 @@ int blink1_read( hid_device* dev, void* buf, int len)
     int rc = hid_send_feature_report(dev, buf, len); // FIXME: check rc
 
     if( (rc = hid_get_feature_report(dev, buf, len) == -1) ) {
-        fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
+      LOG("error reading data: %s\n",blink1_error_msg(rc));
     }
     return rc;
 }
@@ -267,10 +273,10 @@ int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr)
         uint8_t v = serialnum[i];
         int rc = blink1_eewrite( dev, blink1_eeaddr_serialnum+i, v);
         if( rc == -1 ) { // try again
-            printf("blink1_serialwrite: oops, trying again on char %d\n",i);
+            LOG("blink1_serialwrite: oops, trying again on char %d\n",i);
             rc = blink1_eewrite(dev,blink1_eeaddr_serialnum+i, v);
             if( rc == -1 ) { 
-                printf("blink1_serialwrite: error on try again\n");
+                LOG("blink1_serialwrite: error on try again\n");
                 break;
             }
         }
