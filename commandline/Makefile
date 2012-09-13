@@ -6,6 +6,8 @@
 # - "OS=windows" -- build Windows version on Windows
 # - "OS=linux"   -- build Linux version on Linux
 # - "OS=wrt"     -- build OpenWrt/DD-WRT version on Linux
+# 
+# Architecture is usually detected automatically, so normally just type "make"
 #
 # Dependencies: 
 # - libusb is required
@@ -13,17 +15,21 @@
 # Platform-specific notes:
 #
 # Mac OS X 
-#   - Install Xcode with Unix Dev Support 
+#   - Install Xcode with Unix Dev Support and Command-line tools
 #   - Install 'make' from macports (or similar)
+#   - make
 #
 # Windows XP/7  
 #   - Install MinGW and MSYS (http://www.tdragon.net/recentgcc/ )
+#   - make
 #
 # Linux (Ubuntu) 
-#   - apt-get install gcc-avr avr-libc 
+#   - apt-get install gcc-avr avr-libc   (to build firmware files)
 #   - apt-get install libusb-1.0
+#   - make
 #
-#   optionally, to build 32-bit on 64-bit Ubuntu, try a chrooted build:
+# Linux Ubuntu 32-bit cross-compile on 64-bit
+#   To build 32-bit on 64-bit Ubuntu, try a chrooted build:
 #   (warning this will use up a lot of disk space)
 #   - sudo apt-get install ubuntu-dev-tools
 #   - pbuilder-dist oneiric i386 create
@@ -36,6 +42,10 @@
 #   - CFLAGS='-I/usr/include/libusb-1.0' LIBS='-lusb-1.0' make
 #   - exit
 #   
+# Raspberry Pi
+#   - apt-get install libusb-1.0-dev
+#   - make
+#
 # BeagleBone / BeagleBoard (on Angstrom Linux)
 #   - opkg install libusb-0.1-4-dev  (FIXME: uses HIDAPI & libusb-1.0 now)	
 #   - May need to symlink libusb 
