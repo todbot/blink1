@@ -1,0 +1,47 @@
+
+
+blink(1) Webservice Reflector Architecture
+==========================================
+
+1. General Overview
+1.1. Events enter Reflector as GETs (single event) and POSTs (multiple).
+1.2. Each event has a "blink1_uid" (UID for blink1-computer pair) & timestamp.
+1.3. Events are saved to disk using "blink1_uid" as primary key.
+1.4. Events are retrieved periodically by blink(1) client computers.
+
+2. Event Insert
+2.1. Events are GET query strings or POST with JSON "events" array
+2.2. Events attributes:
+       - 'blink1_uid'
+       - 'timestamp'
+       - 'color_name' - or -
+       - 'color_pattern'
+       - 'source' -- event source (optional) 
+2.3. 'color_name' is a small text identifier of the color pattern, 
+     and refers to an already created color pattern on the blink(1) client.
+     Can describe event semantics ("emergency", "john_called", etc.) or 
+     color descriptive ("flashing_red", "green-blue", etc.)
+2.4. 'color_pattern' is a list of colors and durations, 
+     used when color_name does not exist on blink(1) client     
+2.5.
+
+3. Event Forwarding/Retrieval
+3.1. blink(1) clients periodically request all events for their "blink1_uid".
+3.2. Event logs exist for last (15) minutes.
+3.3. It is up to clients to perceive new events (to them) from event log.
+
+4. Authentication
+4.1. Minimal authentication is performed (IP-based for IFTTT?)
+4.2. Rate limiting
+
+
+5.
+
+6.
+
+7. General Architecture
+7.1. PHP FastCGI
+7.2. Scenario 1: Single event via GET
+7.2.1. 
+
+7.3. Scenario 2: Multi event via POST
