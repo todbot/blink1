@@ -4,26 +4,27 @@ Web Service for IFTTT
 
 The blink(1) event web service lives at http://api.thingm.com/blink1
 
+
 Event Submission, in General
 ----------------
 Two kinds of event submission are supported: 
 - single event real-time
 - event bundle of recent past events (e.g. last 15 minutes)
 
+
 Single Event Submission
 ------------------------
 URL: http://api.thingm.com/blink1/sendevent/
+
 method: GET 
 Query argument parameters:
-- bl1id -or-
 - blink1_id - UID of blink(1) this event is meant for
-- color_name - Name of color pattern to send to blink(1)
-- color_pattern - Color pattern to send
-- repeats - number of repeats of color pattern
-- source - event source designator (optional)
+- name - Name of color pattern to trigger on blink(1)
+- source - IFTTT event source designator (e.g. Gmail, Twitter)
 
 Example: 
-  /blink1/sendevent/?blink1_id=2304...b3cdef
+  /blink1/sendevent/?blink1_id=2304...b3cdef&name=flash_red&source=twitter
+
 
 Multilple Event Submission
 --------------------------
@@ -34,20 +35,16 @@ POST content format: JSON list of events
 {
  "events": [ 
   { 
-    "source": "ifttt",
     "blink1_uid": "2304 9309 b33a b3cd ef",
     "date": Date(1224043200000),  # "Mon, 18 Jul 2012 21:13:43 +0000",
-    "color_name": "tweet",
-    "color_pattern": "#ff00ff,1,10,#00ff00,1,5",
-    "repeats": "3",
+    "name": "tweet",
+    "source": "ifttt",
    },
    { 
-    "source": "gmail",
     "blink1_uid": "23049309b33ab3cdef",
     "date": "Mon, 18 Jul 2012 21:15:43 +0000",
-    "color_name": "msg-orange-red",
-    "color_pattern": "#ff00ff,1.0,0.3,#00ff00,0.5,10",
-    "repeats": "3",
+    "name": "msg-orange-red",
+    "source": "gmail",
    },
    // and so on
   ]
@@ -55,7 +52,7 @@ POST content format: JSON list of events
 
 sample result:
 { 
-  "status_msg": "events received",
+  "status": "events received",
   "event_count": 2,
   "blink1_uid": "23049309b33ab3cdef"
 }
