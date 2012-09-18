@@ -1,5 +1,4 @@
 
-
 blink(1) Webservice Reflector Architecture
 ==========================================
 
@@ -14,16 +13,13 @@ blink(1) Webservice Reflector Architecture
 2.2. Events attributes:
        - 'blink1_uid'
        - 'timestamp'
-       - 'color_name' - or -
-       - 'color_pattern'
+       - 'name'
        - 'source' -- event source (optional) 
-2.3. 'color_name' is a small text identifier of the color pattern, 
+2.3. 'name' is a small text identifier of the color pattern, 
      and refers to an already created color pattern on the blink(1) client.
      Can describe event semantics ("emergency", "john_called", etc.) or 
      color descriptive ("flashing_red", "green-blue", etc.)
-2.4. 'color_pattern' is a list of colors and durations, 
-     used when color_name does not exist on blink(1) client     
-2.5.
+2.4.
 
 3. Event Forwarding/Retrieval
 3.1. blink(1) clients periodically request all events for their "blink1_uid".
@@ -40,7 +36,9 @@ blink(1) Webservice Reflector Architecture
 6.
 
 7. General Architecture
-7.1. PHP FastCGI
+7.1. PHP FastCGI 
+7.1.1. w/ Slim microframework to handle URL routing
+
 7.2. Scenario 1: Single event via GET
 7.2.1. 
 
