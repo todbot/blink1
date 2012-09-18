@@ -293,7 +293,6 @@ int main(int argc, char** argv)
 
       wchar_t myser[10];
       dev = blink1_open();
-      printf("opened: %x\n",dev);
       hid_get_serial_number_string(dev, myser, 10);
       printf("ser:%ls\n",myser);
     }
