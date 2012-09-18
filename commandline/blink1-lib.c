@@ -258,7 +258,7 @@ static uint8_t parseHex(char c)
 }
 
 // serialnum comes in as an ascii set of 8 characters representing
-// 4-bytes (a 32-bit number)
+// 4-bytes 
 int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr)
 {
     uint8_t serialnum[4];
