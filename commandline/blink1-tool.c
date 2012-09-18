@@ -110,7 +110,7 @@ static void usage(char *myName)
 "and [options] are: \n"
 "  -g -nogamma                 Disable autogamma correction\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
-"//--serial <num>              Connect to blin(1) by its serial number \n"  
+"//--serial <num>              Connect to blink(1) by its serial number \n"  
 "  -m ms,   --miilis=millis    Set millisecs for color fading (default 300)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
@@ -465,6 +465,7 @@ int main(int argc, char** argv)
         blink1_serverdown( dev, on, delayMillis );
     }
     // use caution with this, could make your blink(1) unusable
+    // --serialnumwrite abcd1234
     else if( cmd == CMD_SERIALNUMWRITE ) { 
         printf("serial number write: %s\n",tmpstr);
         //for( int i=0; i<4; i++)  printf("%2.2X,",cmdbuf[i]);
