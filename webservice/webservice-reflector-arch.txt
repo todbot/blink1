@@ -43,3 +43,37 @@ blink(1) Webservice Reflector Architecture
 7.2.1. 
 
 7.3. Scenario 2: Multi event via POST
+
+
+---------------------------
+
+
+Event Fetch
+-----------
+
+- blink(1) user app queries blink1-uid url every 60 seconds
+- url is of form:
+   api.thingm.com/blink1/getevents/23049309b33ab3cdef
+- response is JSON of last (60) minutes of events (4x15m):
+{
+ "events": [
+  { 
+    "source": "twitter",
+    "blink1_uid": "23049309b33ab3cdef",
+    "date": "Mon, 18 Jul 2012 21:13:43 +0000",
+    "name": "ladygagatweet",
+   },
+   {
+    "source": "gmail",
+    "blink1_uid": "23049309b33ab3cdef",
+    "date": "Mon, 18 Jul 2012 21:17:09 +0000",
+    "name": "newmail",
+   },
+   // and so on
+   ]
+}
+
+
+links:
+- http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+
