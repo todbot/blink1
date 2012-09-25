@@ -37,8 +37,8 @@ POST content format: JSON list of events
   { 
     "blink1_uid": "2304 9309 b33a b3cd ef",
     "date": Date(1224043200000),  # "Mon, 18 Jul 2012 21:13:43 +0000",
-    "name": "tweet",
-    "source": "ifttt",
+    "name": "ladygagatweet",
+    "source": "twitter",
    },
    { 
     "blink1_uid": "23049309b33ab3cdef",
@@ -72,12 +72,16 @@ Event Fetch
 {
  "events": [
   { 
-    "source": "ifttt",
+    "source": "twitter",
     "blink1_uid": "23049309b33ab3cdef",
     "date": "Mon, 18 Jul 2012 21:13:43 +0000",
-    "color_name": "tweet",
-    "color_pattern": "#ff00ff,0.5,1.0,#00ff00,1,2.0",
-    "repeats": 3,
+    "name": "ladygagatweet",
+   },
+   {
+    "source": "gmail",
+    "blink1_uid": "23049309b33ab3cdef",
+    "date": "Mon, 18 Jul 2012 21:17:09 +0000",
+    "name": "newmail",
    },
    // and so on
    ]

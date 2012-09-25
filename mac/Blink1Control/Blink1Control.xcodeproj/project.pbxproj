@@ -7,12 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DE1D05AD160BC69700B97943 /* B1SAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE1D05A0160BC69700B97943 /* B1SAppDelegate.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		DE1D05AE160BC69700B97943 /* Blink1.m in Sources */ = {isa = PBXBuildFile; fileRef = DE1D05A2160BC69700B97943 /* Blink1.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		DE1D05B0160BC69700B97943 /* Blink1Server.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = DE1D05A5160BC69700B97943 /* Blink1Server.entitlements */; };
+		DE1D05B1160BC69700B97943 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = DE1D05A6160BC69700B97943 /* Credits.rtf */; };
+		DE1D05B2160BC69700B97943 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DE1D05A8160BC69700B97943 /* InfoPlist.strings */; };
+		DE1D05B3160BC69700B97943 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DE1D05AA160BC69700B97943 /* MainMenu.xib */; };
+		DE1D05B4160BC69700B97943 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DE1D05AC160BC69700B97943 /* main.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		DE1D05B7160C018400B97943 /* Blink1Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = DE1D05B6160C018400B97943 /* Blink1Controller.m */; };
 		DE3097CC15F1CACB00B84287 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE3097CB15F1CACB00B84287 /* Cocoa.framework */; };
-		DE3097D615F1CACB00B84287 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DE3097D415F1CACB00B84287 /* InfoPlist.strings */; };
-		DE3097D815F1CACB00B84287 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3097D715F1CACB00B84287 /* main.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE3097DC15F1CACB00B84287 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = DE3097DA15F1CACB00B84287 /* Credits.rtf */; };
-		DE3097DF15F1CACB00B84287 /* B1SAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3097DE15F1CACB00B84287 /* B1SAppDelegate.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE3097E215F1CACB00B84287 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DE3097E015F1CACB00B84287 /* MainMenu.xib */; };
 		DE3097E915F1CBC100B84287 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE3097E815F1CBC100B84287 /* Security.framework */; };
 		DE30983115F1CCD300B84287 /* DDData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3097ED15F1CCD300B84287 /* DDData.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE30983215F1CCD300B84287 /* DDNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3097EF15F1CCD300B84287 /* DDNumber.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -62,26 +65,30 @@
 		DE9CDD8C15F8935F003F584C /* CPUuse.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8B15F8935F003F584C /* CPUuse.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDD9215F9290E003F584C /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE9CDD9115F9290D003F584C /* QTKit.framework */; };
 		DE9CDD9515F92F5B003F584C /* AudioListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD9415F92F5B003F584C /* AudioListener.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE9CDDA615F93F4A003F584C /* Blink1.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDDA515F93F4A003F584C /* Blink1.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDDCA15F9CA3C003F584C /* VDKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDDC815F9CA3C003F584C /* VDKQueue.m */; };
 		DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEFABAE015F47F59006E4BB7 /* WebKit.framework */; };
 		DEFABAE415F55D82006E4BB7 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = DEFABAE315F55D82006E4BB7 /* README.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		DE1D059F160BC69700B97943 /* B1SAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B1SAppDelegate.h; sourceTree = "<group>"; };
+		DE1D05A0160BC69700B97943 /* B1SAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = B1SAppDelegate.m; sourceTree = "<group>"; };
+		DE1D05A1160BC69700B97943 /* Blink1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1.h; sourceTree = "<group>"; };
+		DE1D05A2160BC69700B97943 /* Blink1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1.m; sourceTree = "<group>"; };
+		DE1D05A3160BC69700B97943 /* Blink1Control-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Blink1Control-Info.plist"; sourceTree = "<group>"; };
+		DE1D05A4160BC69700B97943 /* Blink1Control-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Blink1Control-Prefix.pch"; sourceTree = "<group>"; };
+		DE1D05A5160BC69700B97943 /* Blink1Server.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Blink1Server.entitlements; sourceTree = "<group>"; };
+		DE1D05A7160BC69700B97943 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		DE1D05A9160BC69700B97943 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		DE1D05AB160BC69700B97943 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		DE1D05AC160BC69700B97943 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		DE1D05B5160C018400B97943 /* Blink1Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1Controller.h; sourceTree = "<group>"; };
+		DE1D05B6160C018400B97943 /* Blink1Controller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Controller.m; sourceTree = "<group>"; };
 		DE3097C715F1CACB00B84287 /* Blink1Control.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blink1Control.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE3097CB15F1CACB00B84287 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		DE3097CE15F1CACB00B84287 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		DE3097CF15F1CACB00B84287 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		DE3097D015F1CACB00B84287 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		DE3097D315F1CACB00B84287 /* Blink1Control-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Blink1Control-Info.plist"; sourceTree = "<group>"; };
-		DE3097D515F1CACB00B84287 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		DE3097D715F1CACB00B84287 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DE3097D915F1CACB00B84287 /* Blink1Control-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Blink1Control-Prefix.pch"; sourceTree = "<group>"; };
-		DE3097DB15F1CACB00B84287 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
-		DE3097DD15F1CACB00B84287 /* B1SAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = B1SAppDelegate.h; sourceTree = "<group>"; };
-		DE3097DE15F1CACB00B84287 /* B1SAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = B1SAppDelegate.m; sourceTree = "<group>"; };
-		DE3097E115F1CACB00B84287 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		DE3097E815F1CBC100B84287 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		DE3097EC15F1CCD300B84287 /* DDData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DDData.h; sourceTree = "<group>"; };
 		DE3097ED15F1CCD300B84287 /* DDData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDData.m; sourceTree = "<group>"; };
@@ -139,7 +146,6 @@
 		DE30985B15F1CD1900B84287 /* RoutingConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RoutingConnection.m; sourceTree = "<group>"; };
 		DE30985C15F1CD1900B84287 /* RoutingHTTPServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RoutingHTTPServer.h; sourceTree = "<group>"; };
 		DE30985D15F1CD1900B84287 /* RoutingHTTPServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RoutingHTTPServer.m; sourceTree = "<group>"; };
-		DE30986415F1CFB300B84287 /* Blink1Server.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Blink1Server.entitlements; sourceTree = "<group>"; };
 		DE30986615F1DE8F00B84287 /* blink1-lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "blink1-lib.c"; path = "../../commandline/blink1-lib.c"; sourceTree = "<group>"; };
 		DE30986715F1DE8F00B84287 /* blink1-lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "blink1-lib.h"; path = "../../commandline/blink1-lib.h"; sourceTree = "<group>"; };
 		DE30986915F1DEC400B84287 /* hid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hid.c; path = ../../commandline/hidapi/mac/hid.c; sourceTree = "<group>"; };
@@ -180,8 +186,6 @@
 		DE9CDD9115F9290D003F584C /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = System/Library/Frameworks/QTKit.framework; sourceTree = SDKROOT; };
 		DE9CDD9315F92F5B003F584C /* AudioListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioListener.h; sourceTree = "<group>"; };
 		DE9CDD9415F92F5B003F584C /* AudioListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioListener.m; sourceTree = "<group>"; };
-		DE9CDDA415F93F4A003F584C /* Blink1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1.h; sourceTree = "<group>"; };
-		DE9CDDA515F93F4A003F584C /* Blink1.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1.m; sourceTree = "<group>"; };
 		DE9CDDC715F9CA3C003F584C /* VDKQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VDKQueue.h; sourceTree = "<group>"; };
 		DE9CDDC815F9CA3C003F584C /* VDKQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VDKQueue.m; sourceTree = "<group>"; };
 		DEFABAE015F47F59006E4BB7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -204,11 +208,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DE1D059E160BC69700B97943 /* Blink1Control */ = {
+			isa = PBXGroup;
+			children = (
+				DE1D059F160BC69700B97943 /* B1SAppDelegate.h */,
+				DE1D05A0160BC69700B97943 /* B1SAppDelegate.m */,
+				DE1D05B5160C018400B97943 /* Blink1Controller.h */,
+				DE1D05B6160C018400B97943 /* Blink1Controller.m */,
+				DE1D05A1160BC69700B97943 /* Blink1.h */,
+				DE1D05A2160BC69700B97943 /* Blink1.m */,
+				DE1D05AC160BC69700B97943 /* main.m */,
+				DE1D05AA160BC69700B97943 /* MainMenu.xib */,
+				DE1D05B8160C02B100B97943 /* misc bits */,
+			);
+			path = Blink1Control;
+			sourceTree = "<group>";
+		};
+		DE1D05B8160C02B100B97943 /* misc bits */ = {
+			isa = PBXGroup;
+			children = (
+				DE1D05A3160BC69700B97943 /* Blink1Control-Info.plist */,
+				DE1D05A4160BC69700B97943 /* Blink1Control-Prefix.pch */,
+				DE1D05A5160BC69700B97943 /* Blink1Server.entitlements */,
+				DE1D05A6160BC69700B97943 /* Credits.rtf */,
+				DE1D05A8160BC69700B97943 /* InfoPlist.strings */,
+			);
+			name = "misc bits";
+			sourceTree = "<group>";
+		};
 		DE3097BC15F1CACB00B84287 = {
 			isa = PBXGroup;
 			children = (
 				DEFABAE315F55D82006E4BB7 /* README.txt */,
-				DE3097D115F1CACB00B84287 /* Blink1Control */,
+				DE1D059E160BC69700B97943 /* Blink1Control */,
 				DE9CDD7115F5A428003F584C /* Resources */,
 				DE9CDD7915F862FE003F584C /* Utility Code */,
 				DE30986515F1DE5300B84287 /* blink1-lib */,
@@ -246,33 +278,6 @@
 				DE3097D015F1CACB00B84287 /* Foundation.framework */,
 			);
 			name = "Other Frameworks";
-			sourceTree = "<group>";
-		};
-		DE3097D115F1CACB00B84287 /* Blink1Control */ = {
-			isa = PBXGroup;
-			children = (
-				DE30986415F1CFB300B84287 /* Blink1Server.entitlements */,
-				DE9CDDA415F93F4A003F584C /* Blink1.h */,
-				DE9CDDA515F93F4A003F584C /* Blink1.m */,
-				DE3097DD15F1CACB00B84287 /* B1SAppDelegate.h */,
-				DE3097DE15F1CACB00B84287 /* B1SAppDelegate.m */,
-				DE3097E015F1CACB00B84287 /* MainMenu.xib */,
-				DE3097D215F1CACB00B84287 /* Supporting Files */,
-			);
-			name = Blink1Control;
-			path = Blink1Server;
-			sourceTree = "<group>";
-		};
-		DE3097D215F1CACB00B84287 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				DE3097D315F1CACB00B84287 /* Blink1Control-Info.plist */,
-				DE3097D415F1CACB00B84287 /* InfoPlist.strings */,
-				DE3097D715F1CACB00B84287 /* main.m */,
-				DE3097D915F1CACB00B84287 /* Blink1Control-Prefix.pch */,
-				DE3097DA15F1CACB00B84287 /* Credits.rtf */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		DE3097EA15F1CCD300B84287 /* Core */ = {
@@ -543,11 +548,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE3097D615F1CACB00B84287 /* InfoPlist.strings in Resources */,
-				DE3097DC15F1CACB00B84287 /* Credits.rtf in Resources */,
-				DE3097E215F1CACB00B84287 /* MainMenu.xib in Resources */,
 				DEFABAE415F55D82006E4BB7 /* README.txt in Resources */,
 				DE9CDD7315F5A454003F584C /* html in Resources */,
+				DE1D05B0160BC69700B97943 /* Blink1Server.entitlements in Resources */,
+				DE1D05B1160BC69700B97943 /* Credits.rtf in Resources */,
+				DE1D05B2160BC69700B97943 /* InfoPlist.strings in Resources */,
+				DE1D05B3160BC69700B97943 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,8 +564,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE3097D815F1CACB00B84287 /* main.m in Sources */,
-				DE3097DF15F1CACB00B84287 /* B1SAppDelegate.m in Sources */,
 				DE30983115F1CCD300B84287 /* DDData.m in Sources */,
 				DE30983215F1CCD300B84287 /* DDNumber.m in Sources */,
 				DE30983315F1CCD300B84287 /* DDRange.m in Sources */,
@@ -605,34 +609,37 @@
 				DE9CDD8515F886C9003F584C /* Task.m in Sources */,
 				DE9CDD8C15F8935F003F584C /* CPUuse.m in Sources */,
 				DE9CDD9515F92F5B003F584C /* AudioListener.m in Sources */,
-				DE9CDDA615F93F4A003F584C /* Blink1.m in Sources */,
 				DE9CDDCA15F9CA3C003F584C /* VDKQueue.m in Sources */,
+				DE1D05AD160BC69700B97943 /* B1SAppDelegate.m in Sources */,
+				DE1D05AE160BC69700B97943 /* Blink1.m in Sources */,
+				DE1D05B4160BC69700B97943 /* main.m in Sources */,
+				DE1D05B7160C018400B97943 /* Blink1Controller.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		DE3097D415F1CACB00B84287 /* InfoPlist.strings */ = {
+		DE1D05A6160BC69700B97943 /* Credits.rtf */ = {
 			isa = PBXVariantGroup;
 			children = (
-				DE3097D515F1CACB00B84287 /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		DE3097DA15F1CACB00B84287 /* Credits.rtf */ = {
-			isa = PBXVariantGroup;
-			children = (
-				DE3097DB15F1CACB00B84287 /* en */,
+				DE1D05A7160BC69700B97943 /* en */,
 			);
 			name = Credits.rtf;
 			sourceTree = "<group>";
 		};
-		DE3097E015F1CACB00B84287 /* MainMenu.xib */ = {
+		DE1D05A8160BC69700B97943 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				DE3097E115F1CACB00B84287 /* en */,
+				DE1D05A9160BC69700B97943 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		DE1D05AA160BC69700B97943 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DE1D05AB160BC69700B97943 /* en */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -696,8 +703,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Blink1Server/Blink1Control-Prefix.pch";
-				INFOPLIST_FILE = "Blink1Server/Blink1Control-Info.plist";
+				GCC_PREFIX_HEADER = "Blink1Control/Blink1Control-Prefix.pch";
+				INFOPLIST_FILE = "Blink1Control/Blink1Control-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_CFLAGS = (
@@ -715,8 +722,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Blink1Server/Blink1Control-Prefix.pch";
-				INFOPLIST_FILE = "Blink1Server/Blink1Control-Info.plist";
+				GCC_PREFIX_HEADER = "Blink1Control/Blink1Control-Prefix.pch";
+				INFOPLIST_FILE = "Blink1Control/Blink1Control-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_CFLAGS = (

@@ -51,7 +51,7 @@ BOOL watchFileChanged;
     NSLog(@"updateFileWatcher %@",path);
     watchPath = [path stringByExpandingTildeInPath];
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:watchPath];
-    if( !fileExists ) {
+    if( !fileExists ) { // if no file, make one to watch, with dummy content
         NSString *content = @"Put this in a file please.";
         NSData *fileContents = [content dataUsingEncoding:NSUTF8StringEncoding];
         [[NSFileManager defaultManager] createFileAtPath:watchPath
@@ -89,20 +89,17 @@ BOOL watchFileChanged;
 	if (!appVersion) {
 		appVersion = [bundleInfo objectForKey:@"CFBundleVersion"];
 	}
-    NSLog(@"appVersion: %@",appVersion);
 	NSString *serverHeader = [NSString stringWithFormat:@"%@/%@",
 							  [bundleInfo objectForKey:@"CFBundleName"],
 							  appVersion];
-    NSLog(@"serverHeader: %@",serverHeader);
 	[http setDefaultHeader:@"Server" value:serverHeader];
     
+	// Server on port 8080 serving files from our embedded Web folder
 	[self setupRoutes];
 	[http setPort:8080];
-	//[http setDocumentRoot:[@"~/Sites" stringByExpandingTildeInPath]];
-	// Serve files from our embedded Web folder
 	NSString *htmlPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"html"];
-    NSLog(@"htmlPath: %@",htmlPath);
 	[http setDocumentRoot:htmlPath];
+    NSLog(@"htmlPath: %@",htmlPath);
     
 	NSError *error;
 	if (![http start:&error]) {
@@ -115,13 +112,13 @@ BOOL watchFileChanged;
     _jsonwriter.humanReadable = YES;
     _jsonwriter.sortKeys = YES;
 
+    // set up file watcher
     myVDKQ = [[VDKQueue alloc] init];
     [myVDKQ setDelegate:self];
     [self updateFileWatcher:@"/Users/tod/tmp/blink1-colors.txt"];
     
     // set up blink(1) library
-    self.blink1 = [[Blink1 alloc]init];
-
+    self.blink1 = [[Blink1 alloc] init];
     serialnums = [blink1 enumerate]; 
     [self updateUI];  //FIXME: right way to do this?
 
@@ -138,7 +135,7 @@ BOOL watchFileChanged;
     
 }
 
-//
+// set up urls for local http server
 - (void)setupRoutes {
 	[http get:@"/blink1" withBlock:^(RouteRequest *request, RouteResponse *response) {
         

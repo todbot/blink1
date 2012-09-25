@@ -16,14 +16,14 @@ $app->contentType('application/json;charset=utf-8');
 $eventDir = getcwd() . "/events";
 
 //
-function writeEvent($event)
+function writeEvent($blink1_id,$event)
 {
     global $eventDir;
     global $log;
 
     $retstr = "";
 
-    $blink1_id = $event['blink1_id'];
+    //$blink1_id = $event['blink1_id'];
     $fname = "$eventDir/" . $blink1_id; // . ".txt";
 
     if (!$handle = fopen($fname, 'w')) {
@@ -32,7 +32,7 @@ function writeEvent($event)
         return;
     }
 
-    $eventstr = json_pretty( json_encode($event) );
+    $eventstr = json_pretty( json_encode($event) ) . "\n";
 
     // Write $somecontent to our opened file.
     if (fwrite($handle, $eventstr) === FALSE) {
@@ -54,10 +54,113 @@ function isValidBlink1Id($blink1_id)
     if( empty($blink1_id) ) {
         return FALSE;        
     }
+    if( $blink1_id == 0 ) {
+        return FALSE;
+    }
     
     return TRUE;
 }
 
+function send_json_response($status_str, $data)
+{
+    $data['status'] = $status_str;
+    $str = json_encode($data);
+    $str =  json_pretty($str) . "\n";
+    echo $str;
+}
+
+// -------------------------------------------
+
+//
+$app->get('/', function () {
+        $str = <<<EOT
+blink1 api service.  valid paths are /blink1/sendevent
+EOT;
+
+        $event['result'] = $str;
+        echo json_pretty( json_encode($event) );
+
+    });
+
+//
+$app->get('/hello/:name', function ($name) {
+        echo "Hello, $name";
+    });
+
+//
+$app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) { 
+        #$blink1_id  = $req->get('blink1_id');
+        $name       = $req->get('name');
+        $source     = $req->get('source');
+
+        if( !isValidBlink1Id( $blink1_id ) ) { 
+            send_json_response( "invalid blink1_id", NULL);
+            return;
+        }
+
+        if( empty($name) ) { $name = 'default'; } 
+        if( empty($source) ) { $source = 'default'; } 
+
+        $event['blink1_id'] = $blink1_id;
+        $event['name']      = $name;
+        $event['source']    = $source;
+        $event['date']      = time();
+
+        $result = writeEvent( $blink1_id, $event );
+
+        send_json_response( "success: $result", $events);
+
+    });
+
+//
+$app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) { 
+        $post = $req->post();
+        $body = $req->getBody();
+        $jsondata = json_decode($body);
+        $status_str = "";
+
+        if( !isValidBlink1Id( $blink1_id ) ) { 
+            $status_str = "invalid blink1_id";
+            send_json_response($status_str, NULL);
+            return;
+        }
+
+        $events = $jsondata->{'events'};
+        if( empty($events) ) { 
+            $status_str = "no 'events' datastruct found in POST body";
+            send_json_response($status_str, NULL);
+            return;
+        }
+
+        foreach ( $events as $event ) {
+            $bl_id = $event->{'blink1_id'};
+            $date = $event->{'date'};
+            if( empty($date) ) {
+                $event->{'date'} = time();
+            }
+                               
+            echo "blink1_id = $bl_id\n";
+            if( !isValidBlink1Id( $bl_id ) ) { 
+                #echo "{\"status\":\"invalid id\"}"; //FIXME: 
+                next;
+            }
+        }
+
+        $result = writeEvent($blink1_id, $events);
+
+        $status_str = "success: $result";
+ 
+        send_json_response($status_str, $events);
+
+        return true;
+    });
+
+// run it!
+$app->run();
+
+
+
+// ------------------------------------------------------------------------
 //
 function json_pretty($json) 
 {
@@ -101,46 +204,3 @@ function json_pretty($json)
     }
     return $result;
 }
-
-
-// -------------------------------------------
-
-//
-$app->get('/', function () {
-        echo "{\"result\" : \"so the index then\"}";
-    });
-
-//
-$app->get('/hello/:name', function ($name) {
-        echo "Hello, $name";
-    });
-
-//
-$app->get('/blink1/sendevent', function() use( &$req ) { 
-        $blink1_id  = $req->get('blink1_id');
-        $name       = $req->get('name');
-        $source     = $req->get('source');
-
-        if( !isValidBlink1Id( $blink1_id ) ) { 
-            echo "{\"status\":\"invalid id\"}"; //FIXME: 
-            return;
-        }
-
-        if( empty($name) ) { $name = 'default'; } 
-        if( empty($source) ) { $source = 'default'; } 
-
-        $event['blink1_id'] = $blink1_id;
-        $event['name']      = $name;
-        $event['source']    = $source;
-        $event['date']      = time();
-
-        $result = writeEvent( $event );
-
-        $event['status'] = "success: $result";
- 
-        $str = json_encode($event);
-        echo json_pretty($str);
-
-    });
-
-$app->run();
