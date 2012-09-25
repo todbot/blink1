@@ -286,7 +286,8 @@ int main(int argc, char** argv)
         blink1_disableDegamma();  
     }
 
-    // debug
+    // debug  (not on Windows though, no getuid())
+    /*
     if( 0 ) { 
       uid_t id = getuid();
       printf("userid:%d\n",id);
@@ -296,6 +297,7 @@ int main(int argc, char** argv)
       hid_get_serial_number_string(dev, myser, 10);
       printf("ser:%ls\n",myser);
     }
+    */
 
     // get a list of all devices and their paths
     int count = blink1_enumerateByVidPid(vid,pid);

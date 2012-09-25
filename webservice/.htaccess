@@ -5,7 +5,9 @@ RewriteEngine On
 # absolute physical path to the directory that contains this htaccess file.
 #
 # RewriteBase /
-#RewwriteBase /Users/tod/Sites/php/slimtst
+#RewriteBase /Users/tod/Sites/blink1
+RewriteBase /~tod/blink1
 
 RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^ index.php [QSA,L]
 RewriteRule ^ index.php [QSA,L]

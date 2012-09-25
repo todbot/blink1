@@ -145,6 +145,7 @@ void blink1_close( hid_device* dev )
     if( dev != NULL ) 
         hid_close(dev);
     dev = NULL;
+    hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
 }
 
 //
