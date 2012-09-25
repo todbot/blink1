@@ -1,10 +1,10 @@
 
-blink(1) Web Service Reflector for IFTTT
+blink(1) Web Service Reflector for IFTTT             20120924 tod at thingm.com
 ========================================
 
 The blink(1) event web service lives at:
 
-     http://api.thingm.com/blink1
+    http://api.thingm.com/blink1
 
 Events
 ------
