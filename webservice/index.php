@@ -1,5 +1,8 @@
 <?php
 /*
+ * Webservice API for blink(1), for IFTTT
+ *
+ * 2012, ThingM Corporation, Tod E. Kurt, http://thingm.com/
  *
  */
 
@@ -17,13 +20,13 @@ $app->notFound(function () use ($app) {
         send_json_response("url not found",NULL);
 });
 
-//$log->setEnabled(true);
+//$log->setEnabled(true);  // for debugging
 
 
 $eventDir = getcwd() . "/events";
 
 //
-function writeEvent($blink1_id,$event)
+function writeEvents($blink1_id,$events)
 {
     global $eventDir;
     global $log;
@@ -39,7 +42,7 @@ function writeEvent($blink1_id,$event)
         return $retstr;
     }
 
-    $eventstr = json_pretty( json_encode($event) ) . "\n";
+    $eventstr = json_pretty( json_encode($events,true) ) . "\n";
 
     // Write $somecontent to our opened file.
     if (fwrite($handle, $eventstr) === FALSE) {
@@ -70,7 +73,7 @@ function isValidBlink1Id($blink1_id)
 function send_json_response($status_str, $data)
 {
     $data['status'] = $status_str;
-    $str = json_encode($data);
+    $str = json_encode($data,true);
     $str = str_replace("\/","/",$str); 
     $str =  json_pretty($str) . "\n";
     echo $str;
@@ -92,6 +95,13 @@ $app->get('/hello/:name', function ($name) {
     });
 
 //
+/*
+$app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) { 
+        echo "bah!";
+        $app->render("events/$blink1_id"); // FIXME:
+    });
+*/
+//
 $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) { 
         //blink1_id  = $req->get('blink1_id');
         $name       = $req->get('name');
@@ -105,15 +115,16 @@ $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) {
 
         if( empty($name) ) { $name = 'default'; } 
         if( empty($source) ) { $source = 'default'; } 
-
+        
         $event['blink1_id'] = $blink1_id;
         $event['name']      = $name;
         $event['source']    = $source;
         $event['date']      = "".time(); // FIXME: hack convert to $result
 
-        $str = writeEvent( $blink1_id, $event );
+        $events['events'][] = $event; // push onto events list
+        $str = writeEvents( $blink1_id, $events );
 
-        send_json_response( "success: $str", $event);
+        send_json_response( "success: $str", $events);
 
     });
 
@@ -151,15 +162,16 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
                 //echo "{\"status\":\"invalid id\"}"; //FIXME: 
                 next;
             }
+            $events_to_save['events'][] = $event;
             $event_count++;
         }
-        $events['event_count'] = $event_count;
+        $events_to_save['event_count'] = $event_count;
 
-        $result = writeEvent($blink1_id, $events);
+        $result = writeEvents($blink1_id, $events_to_save);
 
         $status_str = "success: $result";
  
-        send_json_response($status_str, $events);
+        send_json_response($status_str, $events_to_save);
 
         return true;
     });
