@@ -1,7 +1,7 @@
 
 URL API for blink(1) Applications
 =================================
-20121001 - Tod E. Kurt
+version 0.3 -- 20121001 -- Tod E. Kurt
 
 The application that controls a blink(1) device is comprised of an HTML5 GUI 
 running on an embedded webserver.  The GUI communicates to the application
@@ -17,12 +17,11 @@ In this document:
 ## Architecture ##############################################################
 
 ### Overview ###
-The application maintains a list of data inputs from which it reads.
-These inputs emit consume data and output color pattern names.
-Color patterns are a list of color commands for blink(1).
-The application maintains a these color patterns.
+The application maintains a list of inputs from which it reads.
+An input emits a color pattern name when its input condition is met.
+A color pattern is a list of color commands for blink(1).
+The application maintains a list of color patterns.
 The application runs one or more color patterns when triggered by inputs.
-
 There is a user-defined mapping of input source to color pattern.
 
 ### Inputs ###
@@ -53,11 +52,13 @@ One exception to the JSON rule, is the simple "RGB hex string" for files and URL
 ### File Format Examples ###
 
 __File with color pattern name:__
+
     { 
       "color_pattern":"blink3_red"
     }
 
 __Standard JSON response for `/blink1/fadeToRGB?rgb=#0000FF&time=5.0`:__
+
     {
       "rgb": "#0000ff",
       "status": "fadeToRGB: no blink(1) detected",
@@ -65,27 +66,35 @@ __Standard JSON response for `/blink1/fadeToRGB?rgb=#0000FF&time=5.0`:__
     }
 
 __IFTTT response:__
+
     {
       "blink1_id":"323abcd3f",
       "name":"default",
       "source":"default",
       "date":"1348604132"
     }
+
 __IFTTT response:__
+
     {
       "blink1_id":"7890abcd12",
       "name":"New Mail",
       "source":"gmail",
       "date":"1348604177"
     }
+
 __File with RGB hex string:__
+
     {
       "rgb":"#FF0023"
     }
 
 __File with RGB hex string:__
+
     color: #FF2233
+
 __File with RGB hex string:__
+
     #CCFF00
 
 
@@ -98,129 +107,100 @@ Base URL: `http://localhost:8080/blink1`
 
 * `/blink1/enumerate` 
 -- Re-enumerate and List available blink(1) devices
-    - e.g. `/blink1/enumerate`
 
 * `/blink1/fadeToRGB` 
 -- Send fadeToRGB command to blink(1) with hex color & fade time
-    - e.g. `/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
 
 ### Input Selection ###
 
 * `/blink1/input/` 
 -- List configured inputs
 
-* `/blink`/input/del` 
+* `/blink1/input/del` 
 -- Remove a configured input
-    - e.g. `/blink1/input/del?iname=mysqllog`
 
 * `/blink1/input/file` 
 -- Start file watcher on given filepath
-    - e.g. `/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
 
 * `/blink1/input/url` 
 -- Start URL watcher on given URL
-    - e.g. `/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
 
-* `/blink1/input/script` -- Run command-line script
-    - e.g. `/blink1/input/script?iname=checkService&cmd=CheckServ.bat`
+* `/blink1/input/script` -- Start command-line script executer
 
 * `/blink1/input/ifttt` -- Start watching messages from IFTTT webservice
-    - e.g. `/blink1/input/ifttt
 
 * `/blink1/input/cpuload` -- Start CPU load watching input
-    - e.g. /blink1/input/cpuload?iname=cpu99p&level=99
 
 * `/blink1/input/netload`
-    - Start network load watching input
-    - If no arguments, return network load as 0-100 percentage
-    - e.g. `/blink1/input/netload?iname=net95&level=95`
+-- Start network load watching input
 
 
-### Color Pattern Handling ###
+### Color Patterns ###
 
 * `/blink1/pattern/`
-    - List color patterns
+-- List saved color patterns
 
 * `/blink1/pattern/add`
-    - Add color pattern to color pattern list
-    e.g. `/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
+-- Add color pattern to color pattern list
 
 * `/blink1/pattern/del`
-    - Remove color pattern to color pattern list
+-- Remove color pattern from color pattern list
 
 * `/blink1/pattern/play`
-    - play/test a specific color pattern
-    - e.g. `/blink1/pattern/play?pname=blink_red`
+-- Play/test a specific color pattern
 
 * `/blink1/pattern/stop`
-    - stop a pattern playback, for a given pattern or all patterns
+-- Stop a pattern playback, for a given pattern or all patterns
 
-
-
-### Trigger Mapping ###
-
-* `/blink1/trigger/`
-    - List trigger mappings
-
-* `/blink1/trigger/add`
-    - Add an input to color name trigger map
-    - e.g. `/blink1/trigger/add/?iname=ifttt-gmail&pname=blink1_red`
-
-* `/blink1/trigger/del`
-    - Remove an input to color name trigger map
-    - e.g. `/blink1/trigger/del?iname=ifttt-gmail`
-
-    
 
 
 
 ## URL Command Reference  ###################################################
 
-/blink1/fadeToRGB
------------------
-Description:
-
-Query args:
-
-* rgb : hex RGB color (e.g. "#ff00ff")
-* time : time in seconds to complete fade (e.g. "0.8")
-
-Response:
-
-Example:
-
-
 /blink1/enumerate
 -----------------
-Description: Re-enumerate and List available blink(1) devices
+__Description:__ Re-enumerate and List available blink(1) devices
 
-Query args:
+__Query args:__ -none-
 
-Response:
-
-Example:
+__Example:__
 `/blink1/enumerate`
+
+__Response:__ 
+    { 
+      "status": "blink(1) devices detected",
+      "blink1_serialnums" : [ "01A12345", "01A12346", "01A12347" ]
+    } 
 
 
 /blink1/fadeToRGB
 -----------------
-Description: Send fadeToRGB command to blink(1) with hex color & fade time
+__Description:__ Send fadeToRGB command to blink(1) with hex color & fade time
 
-Query args:
+__Query args:__
 
-Response:
+* `rgb` : hex RGB color (e.g. "#ff00ff")
+* `time` : time in seconds to complete fade (e.g. "0.8")
 
-Example:
+__Example:__
 `/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
+
+__Response:__ 
+Standard JSON 'status' response
 
 
 /blink1/input/
 --------------
-Description: List configured inputs
+__Description:__ List configured inputs
 
-Query args: -none-
+__Query args:__ -none-
 
-Response: 
+__Example:__ 
+`/blink1/input`
+
+__Response:__ 
+(example with several inputs configured)
+
     {
       "inputs" : [
        { 
@@ -232,144 +212,223 @@ Response:
          "iname":"myarduino",
          "type":"url",
          "url":"http://todbot.com/tst/color.txt",
+       },
+       { 
+         "iname":"cpu99",
+         "type":"cpuload",
+         "level":"99"
+       },
+       { 
+         "iname":"net95",
+         "type":"netload",
+         "level":"95"
+       },
+       {
+         "iname":"ifttt",
+         "type":"ifttt",
        } 
        ]
     }
 
-Example:
 
 /blink1/input/del
 -----------------
-Description: Remove a configured input
+__Description:__ Remove a configured input
 
-Query args: 
+__Query args:__ 
 
 * `iname` -- input name
 
-Response: standard JSON 'status' response
-
-Example:
-
+__Example:__
 `/blink1/input/del?iname=mysqllog`
+
+__Response:__ Standard JSON 'status' response
+
 
 
 /blink1/input/file
 ------------------
-Description: Start file watcher on given filepath; file contains color pattern names or hex rgb color
+__Description:__ Start file watcher on given filepath; file contains color pattern names or hex rgb color
 
-Query args:
+__Query args:__
 
 * `iname` -- name for this input
 * `file` -- fully-qualified filepath to text file to parse
+* `pname` -- (optional) color pattern name to trigger
 
-Response: standard JSON 'status' response
-
-Example:
-
+__Example:__
 `/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
+
+__Response:__ Standard JSON 'status' response
+
 
 
 /blink1/input/url
 -----------------
-Description: Start URL watcher on given URL; URL contains color pattern names
+__Description:__ Start URL watcher on given URL; URL contains color pattern names
 
-Query args: 
+__Query args:__ 
 
 * `iname` -- name for this input
 * `url`  -- URL path to text file to watch, properly escaped
+* `pname` -- (optional) color pattern name to trigger
 
-Response: standard JSON 'status' response
-
-Example:
-
+__Example:__
 `/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
+
+__Response:__ Standard JSON 'status' response
 
 
 /blink1/input/script
 --------------------
-Description: Run command-line script, get output as color name or rgb color code
+__Description:__ Run command-line script, get output as color name or rgb color code
 
-Query args:
+__Query args:__
 
 * `iname` -- name for this input
 * `script` -- script name (must live in blink1 'scripts' directory)
+* `pname` -- (optional) color pattern name to trigger
 
-Response:  standard JSON 'status' response
-
-Example:
-
+__Example:__
 `/blink1/input/script?iname=checkService&script=CheckServ.bat`
+
+__Response:__  Standard JSON 'status' response
 
 
 /blink1/input/ifttt
 -------------------
-Description: Start/stop watching for messages from IFTTT webservice
+__Description:__ Start watching for messages from IFTTT webservice
 
-Query args: 
+__Query args:__ -none-
 
-`enable` -- "on" or "off"
+__Example:__
+`/blink1/input/ifttt`
 
-Response:  standard JSON 'status' response
+__Response:__  Standard JSON 'status' response
 
-Example:
-`/blink1/input/ifttt?enable=on`
+
+/blink1/input/cpuload
+---------------------
+__Description:__
+Start CPU load watching input.  If no arguments, return network load as 0-100 percentage
+
+____Query args:____ 
+
+* `iname` -- name for this input
+* `level` -- level from 1-100 on which to trigger this event
+* `pname` -- (optional) color pattern name to trigger
+
+__Example:__
+`/blink1/input/cpuload?iname=cpu99&level=99`
+
+__Response:__  Standard JSON 'status' response
+
+
+/blink1/input/netload
+---------------------
+__Description:__
+Start network load watching input.  If no arguments, return network load as 0-100 percentage.
+
+____Query args:____ 
+
+* `iname` -- name for this input
+* `level` -- level from 1-100 on which to trigger this event
+* `pname` -- (optional) color pattern name to trigger
+
+__Example:__
+`/blink1/input/cpuload?iname=net95&level=95`
+
+__Response:__  Standard JSON 'status' response
 
 
 /blink1/pattern/
 ----------------
-Description:
+__Description:__
+List saved color patterns
 
-Query args:
+__Query args:__ -none-
 
-Response: 
+__Example:__
+`/blink1/pattern/`
 
-Example:
+__Response:__ 
+
+    { 
+      "patterns": [ 
+        { 
+           "name":"blink3_red",
+           "pattern":"3,%23FF0000,1.0,%23000000,1.0"
+        },
+        { 
+           "name":"Springtime",
+           "pattern":"0,%2333FF000,2.1,%255ff00,3.0"
+        }
+      ]
+    }
+
 
 
 /blink1/pattern/add
 -------------------
-Description:
+__Description:__
+Add color pattern to color pattern list
 
-Query args:
+__Query args:__
 
-Response:
+* `pname` -- name of color pattern to add
+* `pattern` -- color pattern definition in string format
+    
+    format: "repeats,color1,color1time,color2,color2time,..."
 
-Example:
+__Example:__
+`/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
+
+__Response:__ Standard JSON 'status' response
 
 
 /blink1/pattern/del
 -------------------
-Description:
+__Description:__
+Remove color pattern from color pattern list
 
-Query args:
+__Query args:__
 
-Response:
+* `pname` -- name of color pattern to delete
 
-Example:
+__Example:__
+`/blink1/pattern/del?pname=blink3_red`
+
+__Response:__ Standard JSON 'status' response
 
 
 /blink1/pattern/play
 --------------------
-Description:
+__Description:__
+Play/test a specific color pattern
 
-Query args:
+__Query args:__
 
-Response:
+* `pname` -- name of color pattern to play
 
-Example:
+__Example:__
+`/blink1/pattern/play?pname=blink3_red`
+
+__Response:__ Standard JSON 'status' response
 
 
 /blink1/pattern/stop
 --------------------
-Description:
+__Description:__
+Stop a pattern playback, for a given pattern or all patterns
 
-Query args:
+__Query args:__
 
 * `pname` -- pattern name string
 
-Response: standard 'status' JSON response
+__Example:__
+`/blink1/pattern/stop?pname=blink3_red`
 
-Example:
+__Response:__ Standard 'status' JSON response
 
 
 
