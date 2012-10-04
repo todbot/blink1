@@ -51,18 +51,18 @@ One exception to the JSON rule, is the simple "RGB hex string" for files and URL
 
 ### File Format Examples ###
 
-__File with color pattern name:__
-
-    { 
-      "color_pattern":"blink3_red"
-    }
-
 __Standard JSON response for `/blink1/fadeToRGB?rgb=#0000FF&time=5.0`:__
 
     {
       "rgb": "#0000ff",
-      "status": "fadeToRGB: no blink(1) detected",
       "time": "5.000"
+      "status": "fadeToRGB: no blink(1) detected",
+    }
+
+__File with color pattern name:__
+
+    { 
+      "color_pattern":"blink3_red"
     }
 
 __IFTTT response:__
@@ -167,6 +167,7 @@ __Example:__
 `/blink1/enumerate`
 
 __Response:__ 
+
     { 
       "status": "blink(1) devices detected",
       "blink1_serialnums" : [ "01A12345", "01A12346", "01A12347" ]
