@@ -25,10 +25,26 @@
     
     NSMutableArray* serialnums;
     CPUuse* cpuuse;
+    
     SBJsonWriter *_jsonwriter;
     SBJsonParser *_jsonparser;
+    
     VDKQueue * myVDKQ;
+    //NSString* watchPath;
+    Boolean watchFileChanged;
+
+    NSTimer * iftttWatchTimer;
+    Boolean enableIftttWatch;
+    
+    NSTimer * urlWatchTimer;
+    Boolean enableUrlWatch;
+    
+    NSMutableDictionary *inputs;
+    NSMutableDictionary *patterns;
 }
+
+@property (strong) RoutingHTTPServer *http;
+@property (strong) Blink1 *blink1;
 
 @property (assign) IBOutlet NSWindow *window;
 @property (strong) IBOutlet WebView *webView;
@@ -39,9 +55,6 @@
 @property (assign) IBOutlet NSMenu *statusMenu;
 @property (retain) NSStatusItem * statusItem;
 
-@property (strong) RoutingHTTPServer *http;
-
-@property (strong) Blink1 *blink1;
 
 
 @end

@@ -6,8 +6,15 @@
 //  Copyright (c) 2012 ThingM. All rights reserved.
 //
 
+// this class is unused. using nsmutabledictionary instead so jsonwriter can see it
+
 #import "DataInput.h"
 
 @implementation DataInput
+
+@synthesize name;
+@synthesize type;
+@synthesize value;
+
 
 @end

@@ -1,4 +1,4 @@
-
+ 
 URL API for blink(1) Applications
 =================================
 version 0.3 -- 20121001 -- Tod E. Kurt
@@ -10,6 +10,7 @@ backend via the URL API described below.
 In this document:
 
 * Architecture
+* Internal Architecture
 * URL Summary
 * URL Command Reference
 
@@ -96,6 +97,30 @@ __File with RGB hex string:__
 __File with RGB hex string:__
 
     #CCFF00
+
+
+## Internal Architecture ####################################################
+
+### Mapping Inputs to Color Patterns ###
+
+### File Watcher ###
+
+There can be at most 5 tracked files.  
+These files contain RGB hex strings or color pattern names in simple text files.
+If the underlying OS supports file system events, those should be used.
+Otherwise, files are scanned every 30 seconds for changes.
+
+### URL Watcher ###
+
+There can be at most 5 tracked URLs.
+These URLs contain RGB hex strings or color pattern names in simple text files.
+URLs are scanned for changes every 30 seconds.
+
+### Color Pattern Player ###
+Color patterns are updated on the blink(1) device at a maximum rate of 100msec.
+Multiple color patterns may be active simultaneously.
+The color pattern player does not need to reconcile collisions between
+color patterns, but instead just sends the color commands.
 
 
 ## URL Summary ##############################################################
