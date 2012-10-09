@@ -10,4 +10,8 @@
 
 @interface DataInput : NSObject
 
+@property (retain) NSString* name;
+@property (retain) NSString* type;
+@property (retain) NSString* value;
+
 @end

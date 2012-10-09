@@ -59,6 +59,7 @@
 		DE3098A115F285A400B84287 /* SBJsonTokeniser.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30989315F285A400B84287 /* SBJsonTokeniser.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3098A215F285A400B84287 /* SBJsonUTF8Stream.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30989515F285A400B84287 /* SBJsonUTF8Stream.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3098A315F285A400B84287 /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30989715F285A400B84287 /* SBJsonWriter.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		DE3C79DA161E1C4D00104F4D /* DataInput.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3C79D9161E1C4D00104F4D /* DataInput.m */; };
 		DE9CDD7315F5A454003F584C /* html in Resources */ = {isa = PBXBuildFile; fileRef = DE9CDD7215F5A454003F584C /* html */; };
 		DE9CDD8215F86D36003F584C /* PLWeakCompatibilityStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDD8515F886C9003F584C /* Task.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8415F886C9003F584C /* Task.m */; };
@@ -177,6 +178,8 @@
 		DE30989515F285A400B84287 /* SBJsonUTF8Stream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonUTF8Stream.m; sourceTree = "<group>"; };
 		DE30989615F285A400B84287 /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonWriter.h; sourceTree = "<group>"; };
 		DE30989715F285A400B84287 /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonWriter.m; sourceTree = "<group>"; };
+		DE3C79D8161E1C4D00104F4D /* DataInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataInput.h; sourceTree = "<group>"; };
+		DE3C79D9161E1C4D00104F4D /* DataInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataInput.m; sourceTree = "<group>"; };
 		DE9CDD7215F5A454003F584C /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
 		DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PLWeakCompatibilityStubs.m; path = PLWeakCompatibility/PLWeakCompatibility/PLWeakCompatibilityStubs.m; sourceTree = "<group>"; };
 		DE9CDD8315F886C9003F584C /* Task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Task.h; path = PolKit/Task.h; sourceTree = "<group>"; };
@@ -217,6 +220,8 @@
 				DE1D05B6160C018400B97943 /* Blink1Controller.m */,
 				DE1D05A1160BC69700B97943 /* Blink1.h */,
 				DE1D05A2160BC69700B97943 /* Blink1.m */,
+				DE3C79D8161E1C4D00104F4D /* DataInput.h */,
+				DE3C79D9161E1C4D00104F4D /* DataInput.m */,
 				DE1D05AC160BC69700B97943 /* main.m */,
 				DE1D05AA160BC69700B97943 /* MainMenu.xib */,
 				DE1D05B8160C02B100B97943 /* misc bits */,
@@ -614,6 +619,7 @@
 				DE1D05AE160BC69700B97943 /* Blink1.m in Sources */,
 				DE1D05B4160BC69700B97943 /* main.m in Sources */,
 				DE1D05B7160C018400B97943 /* Blink1Controller.m in Sources */,
+				DE3C79DA161E1C4D00104F4D /* DataInput.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

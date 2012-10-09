@@ -16,8 +16,11 @@ The following directories exist:
 - hardware  -- all hardware-related info (firmware & schematic)
 - commandline -- C library and command-line tools
 - java -- Java / Processing library
-- processing -- Processing applications written for blink(1)
-
+- processing -- Processing applications  (http://processing.org)
+- libraries -- libraries common to all systems
+- mac -- Mac OS X details and GUI control application
+- windows -- Windows and GUI control application
+- linux -- Linux details 
 
 
 More Info
