@@ -17,6 +17,8 @@
 
 - (void) fadeToRGB:(NSColor*) c atTime:(float) t;
 
-- (NSColor *) colorFromHexRGB:(NSString *) inColorString;
++ (NSColor *) colorFromInt: (unsigned int)colorCode;
++ (NSColor *) colorFromHexRGB:(NSString *) inColorString;
++ (NSString*) toHexColorString: (NSColor*)colr;
 
 @end
