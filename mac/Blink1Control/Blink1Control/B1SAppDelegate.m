@@ -43,10 +43,55 @@ NSString* confURL =  @"http://127.0.0.1:8080/bootstrap/blink1.html";
 NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 
-// for "watchfile" functionality
-- (void)updateFileWatcher:(NSString*)wPath
+// called every 100ms
+- (void) playPattern: (NSString*)pname
 {
-    NSLog(@"updateFileWatcher %@",wPath);
+    //if( pname != nil ) {
+    //}
+    NSString* key;
+    for( key in patterns) {
+        Blink1Pattern* pattern = [patterns objectForKey:key];
+        [pattern update];
+    }
+    
+}
+
+//
+- (NSString*) getContentsOfUrl: (NSString*) urlstr
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlstr]];
+    NSData *response = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+    NSString *responseStr = [[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
+    return responseStr;
+}
+
+//
+// Search for 'pattern: "pattern name"' in contentStr
+// contentStr can also be JSON
+// returns pattern name if successful, or 'nil' if no pattern found
+//
+- (NSString*) readColorPattern: (NSString*)contentStr
+{
+    NSString* str = nil;
+    NSScanner *scanner = [NSScanner scannerWithString:contentStr];
+    Boolean isPattern = [scanner scanUpToString:@"pattern" intoString:&str];
+    if( isPattern || (!isPattern && str==nil) ) { // match or at begining of string
+        [scanner scanString:@"pattern" intoString:NULL]; // consume 'pattern'
+        [scanner scanUpToString:@":" intoString:NULL];   // read colon
+        [scanner scanString:@":" intoString:NULL];       // consume colon
+        [scanner scanUpToString:@"\"" intoString:NULL];  // read open quote
+        [scanner scanString:@"\"" intoString:NULL];      // consume open quote
+        [scanner scanUpToString:@"\"" intoString:&str];  // read string
+    }
+    return str;
+}
+
+
+
+// for "watchfile" functionality
+- (void)updateWatchFile:(NSString*)wPath
+{
+    NSLog(@"updateWatchFile %@",wPath);
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:wPath];
     if( !fileExists ) { // if no file, make one to watch, with dummy content
         NSString *content = @"Put this in a file please.";
@@ -64,7 +109,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 // for "watchfile" functionality
 -(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
 {
-    NSLog(@"watcher: %@ %@", noteName, fpath);
+    NSLog(@"watch file: %@ %@", noteName, fpath);
     if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
         NSLog(@"watcher: file written %@ %@", noteName, fpath);
         watchFileChanged = true;
@@ -72,36 +117,51 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     // FIXME: this doesn't work
     if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
         NSLog(@"re-adding deleted file");
-        [self updateFileWatcher:fpath];
+        [self updateWatchFile:fpath];
     }
 }
 
 
 //
-- (void) urlWatch
+- (void) watchUrl
 {
-    if( enableUrlWatch ) {
-        NSLog(@"urlWatch!");
+    NSLog(@"watchUrl!");
+    NSString* key;
+    for( key in inputs) {
+        NSMutableDictionary* input = [inputs objectForKey:key];
+        NSString* type = [input valueForKey:@"type"];
+        NSString* val  = [input valueForKey:@"value"];
+        if( [type isEqualToString:@"url"]) {
+            NSString *urlstr = val;
+            NSString* respstr = [self getContentsOfUrl:urlstr];
+            NSString* patternstr = [self readColorPattern:respstr];
+            if( patternstr ) {  // pattern detected
+                [self playPattern: patternstr];                
+            }
+            else { // is rgb hex string? convert to fake pattern
+                //NSString* colorstr = [self readColorString:respstr];
+                //if( colorstr )
+                //[self playColor: colorstr];
+                // else no pattern or rgb hex string detected
+            }
+        }
+        //else if( [type isEqualToString:@"file"] ) {
+        //}
     }
-
 }
 
 //
-- (void) iftttWatch
-{
-    if( !enableIftttWatch ) {
-        return;
-    }
-    
+// a special case of watchUrl really
+//
+- (void) watchIfttt
+{   
+    if( !enableIftttWatch ) { return; }
     NSLog(@"iftttWatch!");
-    
     NSString* blink1_uid = @"2023abcdf";
     NSString* baseEventUrl = @"http://api.thingm.com/blink1/events";
     NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", baseEventUrl, blink1_uid];
-    
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:eventUrlStr]];
-    NSData *response = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-    NSString *jsonStr = [[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
+
+    NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
     NSLog(@"got string: %@",jsonStr);
     
     id object = [_jsonparser objectWithString:jsonStr];
@@ -114,57 +174,86 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     }
 }
 
+//
+// trigger color patterns when they need to be
+//
+- (void) updatePattern
+{
+    //NSLog(@"updatePattern");
+    NSString* key;
+    for( key in patterns) {
+        
+    }
+}
+
+
 
 //
+- (void) loadPrefs
+{
+    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+    NSDictionary *inputspref = [prefs dictionaryForKey:@"inputs"];
+    NSDictionary *patternspref = [prefs dictionaryForKey:@"patterns"];
+    
+    if( inputspref != nil ) {    NSLog(@"inputspref: %@", [_jsonwriter stringWithObject:inputspref]);
+        [inputs addEntriesFromDictionary:inputspref];
+    }
+    if( patternspref != nil ) {  NSLog(@"patternspref: %@", [_jsonwriter stringWithObject:patternspref]);
+        [patterns addEntriesFromDictionary:patternspref];
+    }
+}
+
+//
+- (void) savePrefs
+{
+    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+    [prefs setObject:inputs forKey:@"inputs"];
+    [prefs synchronize];
+}
+
+// ----------------------------------------------------------------------------
+// Start
+// ----------------------------------------------------------------------------
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    // get preferences
-    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-    // getting an NSString
-    NSString *myString = [prefs stringForKey:@"keyToLookupString"];
-    NSLog(@"myString: %@",myString);
-    if( myString == nil ) {
-        // saving an NSString
-        [prefs setObject:@"TextToSave" forKey:@"keyToLookupString"];
-    }
-    
-    inputs = [[NSMutableDictionary alloc] init];
+    inputs   = [[NSMutableDictionary alloc] init];
     patterns = [[NSMutableDictionary alloc] init];
-    
-    NSString* iname = @"myTodInput";
-    NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-    [input setObject:iname forKey:@"iname"];
-    [input setObject:@"todftt" forKey:@"type"];
-    [input setObject:@"blargh" forKey:@"value"];
-    [inputs setObject:input forKey:iname];
-    
-    [self setupHttpServer];
-    
+
     // set up json parser
     _jsonparser = [[SBJsonParser alloc] init];
     _jsonwriter = [[SBJsonWriter alloc] init];
     _jsonwriter.humanReadable = YES;
     _jsonwriter.sortKeys = YES;
 
+    [self loadPrefs];
+    
+    [self setupHttpServer];
+    
     // set up file watcher
     myVDKQ = [[VDKQueue alloc] init];
     [myVDKQ setDelegate:self];
-    [self updateFileWatcher:@"/Users/tod/tmp/blink1-colors.txt"];
+    [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];
     
     // set up url watcher
-    float timersecs = 5.0;
+    float timersecs = 10.0;
     iftttWatchTimer = [NSTimer scheduledTimerWithTimeInterval:timersecs
                                                        target:self
-                                                     selector:@selector(iftttWatch)
+                                                     selector:@selector(watchIfttt)
                                                      userInfo:nil
                                                       repeats:YES];
     urlWatchTimer = [NSTimer scheduledTimerWithTimeInterval:timersecs
                                                        target:self
-                                                     selector:@selector(urlWatch)
+                                                     selector:@selector(watchUrl)
                                                      userInfo:nil
                                                       repeats:YES];
-    enableIftttWatch = false;    
-    enableUrlWatch = false;
+    patternTimer = [NSTimer scheduledTimerWithTimeInterval:0.1
+                                                    target:self
+                                                  selector:@selector(updatePattern)
+                                                  userInfo:nil
+                                                   repeats:YES];
+
+    enableIftttWatch = false;
+    //enableUrlWatch = false;
 
     // set up cpu use measurement tool
     cpuuse = [[CPUuse alloc] init];
@@ -217,7 +306,9 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 }
 
-//------- set up routes -------------------------------------
+//-----------------------------------------------------------------------------
+// set up routes
+// ----------------------------------------------------------------------------
 - (void)setupHttpRoutes
 {
 	[http get:@"/blink1" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -227,7 +318,6 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         [respdict setObject:@"blink1" forKey:@"status"];
         
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
-
 	}];
     
     [http get:@"/blink1/enumerate" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -246,7 +336,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         NSString* timestr = [request param:@"time"];
         if( rgbstr==nil ) rgbstr = @"";
         if( timestr==nil ) timestr = @"";
-        NSColor * colr = [blink1 colorFromHexRGB: rgbstr];
+        NSColor * colr = [Blink1 colorFromHexRGB: rgbstr];
         float secs = 0.1;
         [[NSScanner scannerWithString:timestr] scanFloat:&secs];
 
@@ -260,11 +350,89 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
 	}];
+    
+    // color patterns
+    
+    [http get:@"/blink1/pattern" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* statusstr = @"pattern results";
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:statusstr forKey:@"status"];
+        [respdict setObject:[patterns allValues] forKey:@"patterns"];
+		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+    
+    [http get:@"/blink1/pattern/add" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* pname      = [request param:@"pname"];
+        NSString* patternstr = [request param:@"pattern"];
+        Blink1Pattern* pattern = nil;
+        
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
 
+        if( pname != nil && patternstr != nil ) {
+            //[blink1controller addPattern:patternstr name:pname];
+            //[self addPattern:patternstr name:pname];
+            pattern = [[Blink1Pattern alloc] initWithPatternString:patternstr name:pname];
+            [patterns setObject:pattern forKey:pname];
+
+            [respdict setObject:pattern forKey:@"pattern"];
+        }
+        
+        [respdict setObject:@"pattern add" forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+    
+    [http get:@"/blink1/pattern/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* pname   = [request param:@"pname"];
+        NSString* statusstr = @"no such input";
+        if( pname != nil ) {
+            Blink1Pattern* pattern = [patterns objectForKey:pname];
+            if( pattern != nil ) {
+                //[blink1controller removePatternWithName:pname];
+                [patterns removeObjectForKey:pname];
+                statusstr = [NSString stringWithFormat:@"pattern %@ removed", pname];
+            } else {
+                statusstr = @"no such pattern";
+            }
+        }
+        
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:statusstr forKey:@"status"];
+		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+
+    [http get:@"/blink1/pattern/play" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* pname   = [request param:@"pname"];
+        if( pname != nil ) {
+            Blink1Pattern* pattern = [patterns objectForKey:pname];
+            if( pattern != nil ) {
+                [pattern play];
+            }
+        }
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:@"play" forKey:@"status"];
+		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+
+    [http get:@"/blink1/pattern/stop" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* pname   = [request param:@"pname"];
+        if( pname != nil ) {
+            Blink1Pattern* pattern = [patterns objectForKey:pname];
+            if( pattern != nil ) {
+                [pattern stop];
+            }
+        }
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:@"stop" forKey:@"status"];
+		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+
+    
+    // inputs
     
     [http get:@"/blink1/input" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* statusstr = @"input results";
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        //[[blink1controller inputs] allValues];
         [respdict setObject:[inputs allValues] forKey:@"inputs"];
         [respdict setObject:statusstr forKey:@"status"];
         
@@ -273,7 +441,6 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     
     [http get:@"/blink1/input/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSLog(@"input: del:%@",iname);
         
         NSString* statusstr = @"no such input";
         if( iname != nil ) {
@@ -314,7 +481,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
             [input setObject:pname forKey:@"pname"];
             [inputs setObject:input forKey:iname];
             
-            [self performSelectorOnMainThread:@selector(updateFileWatcher:)
+            [self performSelectorOnMainThread:@selector(updateWatchFile:)
                                    withObject:fpath
                                 waitUntilDone:NO];
 
@@ -346,7 +513,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         
         if( iname != nil && url != nil ) {
-            if( pname != nil ) pname = iname;
+            if( pname == nil ) pname = iname;
             [input setObject:iname forKey:@"iname"];
             [input setObject:@"url" forKey:@"type"];
             [input setObject:url forKey:@"value"];
@@ -357,7 +524,6 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         [input setObject:@"watchurl" forKey:@"status"];
         
         [response respondWithString: [_jsonwriter stringWithObject:input]];
-
     }];
     
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -369,7 +535,6 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:enable forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
-
     }];
     
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -390,7 +555,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         [respdict setObject:@"not implemented" forKey:@"error"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
-        
+
 }
 
 // unused
@@ -398,7 +563,6 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 {
 	[response respondWithString:@"Handled through selector"];
 }
-
 
 //
 - (void) awakeFromNib
@@ -492,6 +656,24 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 
 @end
+
+
+/*
+ NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+ NSString *myString = [prefs stringForKey:@"keyToLookupString"];      // getting an NSString
+ if( myString == nil ) {
+ // saving an NSString
+ [prefs setObject:@"TextToSave" forKey:@"keyToLookupString"];
+ }
+ */
+/*
+ NSString* iname = @"myTodInput";
+ NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+ [input setObject:iname forKey:@"iname"];
+ [input setObject:@"todftt" forKey:@"type"];
+ [input setObject:@"blargh" forKey:@"value"];
+ [inputs setObject:input forKey:iname];
+ */
 
 
 

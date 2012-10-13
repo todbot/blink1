@@ -116,6 +116,9 @@ There can be at most 5 tracked URLs.
 These URLs contain RGB hex strings or color pattern names in simple text files.
 URLs are scanned for changes every 30 seconds.
 
+### Script Executer ###
+
+
 ### Color Pattern Player ###
 Color patterns are updated on the blink(1) device at a maximum rate of 100msec.
 Multiple color patterns may be active simultaneously.

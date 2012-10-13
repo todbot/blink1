@@ -16,6 +16,7 @@
 #import "CPUuse.h"
 
 #import "Blink1.h"
+#import "Blink1Pattern.h"
 
 
 @class RoutingHTTPServer;
@@ -33,11 +34,11 @@
     //NSString* watchPath;
     Boolean watchFileChanged;
 
+    NSTimer * patternTimer;
     NSTimer * iftttWatchTimer;
-    Boolean enableIftttWatch;
-    
     NSTimer * urlWatchTimer;
-    Boolean enableUrlWatch;
+    Boolean enableIftttWatch;
+    //Boolean enableUrlWatch;
     
     NSMutableDictionary *inputs;
     NSMutableDictionary *patterns;
