@@ -40,30 +40,49 @@
     return serialnums;
 }
 
-/*
- NSColor: Instantiate from Web-like Hex RRGGBB string
- Original Source: <http://cocoa.karelia.com/Foundation_Categories/NSColor__Instantiat.m>
- (See copyright notice at <http://cocoa.karelia.com>)
- */
-- (NSColor *) colorFromHexRGB:(NSString *) inColorString
+//
++ (NSColor *) colorFromInt: (unsigned int)colorCode
 {
-    NSString* hexNum = [inColorString substringFromIndex:1];
-	NSColor *result = nil;
-	unsigned int colorCode = 0;
+    NSColor *result = nil;
 	unsigned char red, green, blue;
-    
-	if (nil != hexNum) {
-		NSScanner *scanner = [NSScanner scannerWithString:hexNum];
-		(void) [scanner scanHexInt:&colorCode];	// ignore error
-	}
-	red		= (unsigned char) (colorCode >> 16);
+
+    red		= (unsigned char) (colorCode >> 16);
 	green	= (unsigned char) (colorCode >> 8);
 	blue	= (unsigned char) (colorCode);	// masks off high bits
     
 	result = [NSColor colorWithCalibratedRed:(float)red/0xff
                                        green:(float)green/0xff
-                                        blue:(float)blue/0xff alpha:1.0];
+                                        blue:(float)blue/0xff
+                                       alpha:1.0];
 	return result;
+}
+
+/*
+ NSColor: Instantiate from Web-like Hex RRGGBB string
+ Original Source: <http://cocoa.karelia.com/Foundation_Categories/NSColor__Instantiat.m>
+ (See copyright notice at <http://cocoa.karelia.com>)
+ */
++ (NSColor *) colorFromHexRGB:(NSString *) inColorString
+{
+    NSString* hexNum = [inColorString substringFromIndex:1];
+    unsigned int colorCode;
+    NSColor *result = nil;
+    
+	if (hexNum != nil) {
+		NSScanner *scanner = [NSScanner scannerWithString:hexNum];
+		(void) [scanner scanHexInt:&colorCode];	// ignore error
+        result = [Blink1 colorFromInt: colorCode];
+	}
+    
+    return result;
+}
+
++ (NSString*) toHexColorString: (NSColor*)colr
+{
+    return [NSString stringWithFormat:@"#%0.2X%0.2X%0.2X",
+            (int)(255 * [colr redComponent]),
+            (int)(255 * [colr blueComponent]),
+            (int)(255 * [colr greenComponent])];
 }
 
 
