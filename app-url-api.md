@@ -139,6 +139,12 @@ Base URL: `http://localhost:8080/blink1`
 * `/blink1/fadeToRGB` 
 -- Send fadeToRGB command to blink(1) with hex color & fade time
 
+* `/blink1/on` 
+-- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
+
+* `/blink1/off` 
+-- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
+
 ### Input Selection ###
 
 * `/blink1/input/` 
@@ -148,16 +154,19 @@ Base URL: `http://localhost:8080/blink1`
 -- Remove a configured input
 
 * `/blink1/input/file` 
--- Start file watcher on given filepath
+-- Add and Start file watcher on given filepath
 
 * `/blink1/input/url` 
--- Start URL watcher on given URL
+-- Add and Start URL watcher on given URL
 
-* `/blink1/input/script` -- Start command-line script executer
+* `/blink1/input/script` 
+-- Add and Start command-line script executer
 
-* `/blink1/input/ifttt` -- Start watching messages from IFTTT webservice
+* `/blink1/input/ifttt` 
+-- Add and Start watching messages from IFTTT webservice
 
-* `/blink1/input/cpuload` -- Start CPU load watching input
+* `/blink1/input/cpuload` 
+-- Add and Start CPU load watching input
 
 * `/blink1/input/netload`
 -- Start network load watching input
