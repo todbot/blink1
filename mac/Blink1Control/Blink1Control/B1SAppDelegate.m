@@ -43,17 +43,31 @@ NSString* confURL =  @"http://127.0.0.1:8080/bootstrap/blink1.html";
 NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 
-// called every 100ms
+//
 - (void) playPattern: (NSString*)pname
 {
-    //if( pname != nil ) {
-    //}
-    NSString* key;
-    for( key in patterns) {
-        Blink1Pattern* pattern = [patterns objectForKey:key];
-        [pattern update];
+    if( pname == nil ) return;
+    Blink1Pattern* pattern = [patterns objectForKey:pname];
+    if( pattern != nil ) {
+        [pattern setBlink1:blink1];  // just in case
+        [pattern play];
     }
-    
+}
+
+//
+- (void) stopPattern: (NSString*)pname
+{
+    if( pname == nil ) return;
+    if( [pname isEqualToString:@"all"] ) {
+        for( Blink1Pattern* pattern in [patterns allValues] ) {
+            [pattern stop];
+        }
+    }
+    else {
+        Blink1Pattern* pattern = [patterns objectForKey:pname];
+        if( pattern != nil )
+            [pattern stop];
+    }
 }
 
 //
@@ -193,13 +207,15 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 {
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     NSDictionary *inputspref = [prefs dictionaryForKey:@"inputs"];
-    NSDictionary *patternspref = [prefs dictionaryForKey:@"patterns"];
-    
-    if( inputspref != nil ) {    NSLog(@"inputspref: %@", [_jsonwriter stringWithObject:inputspref]);
+    NSData *patternspref = [prefs objectForKey:@"patterns"];
+
+    if( inputspref != nil ) {
+        NSLog(@"inputspref: %@", [_jsonwriter stringWithObject:inputspref]);
         [inputs addEntriesFromDictionary:inputspref];
     }
-    if( patternspref != nil ) {  NSLog(@"patternspref: %@", [_jsonwriter stringWithObject:patternspref]);
-        [patterns addEntriesFromDictionary:patternspref];
+    if( patternspref != nil ) {
+        //NSLog(@"patternspref: %@", [_jsonwriter stringWithObject:patternspref]);
+        patterns = [NSKeyedUnarchiver unarchiveObjectWithData:patternspref];
     }
 }
 
@@ -208,6 +224,8 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 {
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     [prefs setObject:inputs forKey:@"inputs"];
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:patterns];
+    [prefs setObject:data forKey:@"patterns"];
     [prefs synchronize];
 }
 
@@ -350,6 +368,16 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
 	}];
+
+    [http get:@"/blink1/off" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        [self stopPattern:@"all"];
+        [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
+    }];
+
+    [http get:@"/blink1/on" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        [self stopPattern:@"all"];
+        [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#FFFFFF"] atTime:0.1];
+    }];
     
     // color patterns
     
@@ -372,11 +400,13 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
             //[blink1controller addPattern:patternstr name:pname];
             //[self addPattern:patternstr name:pname];
             pattern = [[Blink1Pattern alloc] initWithPatternString:patternstr name:pname];
+            [pattern setBlink1:blink1];
             [patterns setObject:pattern forKey:pname];
 
             [respdict setObject:pattern forKey:@"pattern"];
         }
         
+        [self savePrefs];
         [respdict setObject:@"pattern add" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
@@ -394,7 +424,8 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
                 statusstr = @"no such pattern";
             }
         }
-        
+
+        [self savePrefs];
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:statusstr forKey:@"status"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
@@ -402,12 +433,9 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
     [http get:@"/blink1/pattern/play" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* pname   = [request param:@"pname"];
-        if( pname != nil ) {
-            Blink1Pattern* pattern = [patterns objectForKey:pname];
-            if( pattern != nil ) {
-                [pattern play];
-            }
-        }
+        [self playPattern: pname];
+        //if( pname != nil ) {
+        //}
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:@"play" forKey:@"status"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
@@ -415,12 +443,13 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
     [http get:@"/blink1/pattern/stop" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* pname   = [request param:@"pname"];
-        if( pname != nil ) {
+        [self stopPattern:pname];
+/*        if( pname != nil ) {
             Blink1Pattern* pattern = [patterns objectForKey:pname];
             if( pattern != nil ) {
                 [pattern stop];
             }
-        }
+        }*/
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:@"stop" forKey:@"status"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];

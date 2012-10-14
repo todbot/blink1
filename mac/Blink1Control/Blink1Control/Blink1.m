@@ -20,22 +20,25 @@
     [c getRed:&r green:&g blue:&b alpha:NULL];
     r *= 255; g *= 255; b*=255;
     NSLog(@"blink1fadeToRGB: rgb:%d,%d,%d t:%2.3f", (int)r,(int)g,(int)b,t);
-    
-    hid_device *dev = blink1_openById(0);
-    blink1_fadeToRGB(dev, (int)(t*1000), (int)r,(int)g,(int)b );
-    blink1_close(dev);
+    @synchronized(self) {
+        hid_device *dev = blink1_openById(0);
+        blink1_fadeToRGB(dev, (int)(t*1000), (int)r,(int)g,(int)b );
+        blink1_close(dev);
+    }
 }
 
 //
 - (NSMutableArray*) enumerate
 {
     NSMutableArray* serialnums = [[NSMutableArray alloc] init];
-    int count = blink1_enumerate();
-    for( int i=0; i< count; i++ ) {
-        NSString * serstr = [[NSString alloc] initWithBytes:blink1_getCachedSerial(i)
+    @synchronized(self) {
+        int count = blink1_enumerate();
+        for( int i=0; i< count; i++ ) {
+            NSString * serstr = [[NSString alloc] initWithBytes:blink1_getCachedSerial(i)
                                                      length:8*4
-                                                   encoding:NSUTF32LittleEndianStringEncoding];
-        [serialnums addObject: serstr];
+                                                       encoding:NSUTF32LittleEndianStringEncoding];
+            [serialnums addObject: serstr];
+        }
     }
     return serialnums;
 }

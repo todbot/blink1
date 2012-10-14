@@ -10,11 +10,6 @@
 
 #import "Blink1.h"
 
-typedef enum {
-    PatternStart,
-    PatternChange,
-    PatternStop,
-} modetype;
 
 @interface Blink1Pattern : NSObject {
     NSTimer * timer;
@@ -29,9 +24,10 @@ typedef enum {
 @property int playpos;
 @property int playcount;
 @property int mode;
-
+@property Boolean playing;
 
 - (id)initWithPatternString:(NSString *)patternstr name:(NSString*)namestr;
+- (Boolean) setupFromPatternString:(NSString*)patternstr;
 
 - (void) update;
 - (void) play;
@@ -40,6 +36,9 @@ typedef enum {
 - (NSString*)patternString;
 - (NSString*)description;
 - (NSDictionary*) proxyForJson;
+
+- (void) encodeWithCoder:(NSCoder *)encoder;
+- (id) initWithCoder:(NSCoder *)decoder;
 
 
 @end
