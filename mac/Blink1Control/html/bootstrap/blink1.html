@@ -53,36 +53,22 @@
 
 <div class="tabbable"> <!-- Only required for left/right tabs -->
   <ul class="nav nav-tabs">
-    <li class="active"><a href="#tab1" data-toggle="tab">Control</a></li>
-    <li><a href="#tab5" data-toggle="tab">Colorpicker</a></li>
-    <li><a href="#tab2" data-toggle="tab">Twitter</a></li>
-    <li><a href="#tab3" data-toggle="tab">Gmail</a></li>
-    <li><a href="#tab4" data-toggle="tab">Email</a></li>
+    <li class="active"><a href="#tab1" data-toggle="tab">Colorpicker</a></li>
+    <li><a href="#tab2" data-toggle="tab">Inputs</a></li>
+    <li><a href="#tab3" data-toggle="tab">Patterns</a></li>
+    <li><a href="#tab4" data-toggle="tab">Twitter</a></li>
+    <li><a href="#tab5" data-toggle="tab">Gmail</a></li>
   </ul>
-  <div class="tab-content">
-    <div class="tab-pane active" id="tab1">
-      <h1>blink(1) main control</h1>
-      <p> Check on the general status of your blink(1) <br> </p>
 
-      <h3> Make a Color Pattern </h3>
-<!--
-      <p>choose a color: <span class="tod">
-          <input type="text" class="span1" value="#8fff00" id="cp1" >
-          </span>
-      </p>
--->
-<p> Choose a pattern of colors to play on your blink(1). 
-</p>
+  <div class="tab-content">
+<!-- --------------------------------------------------------------------- -->
+
+    <div class="tab-pane active" id="tab1">
+      <h1> Colorpicker </h1>
+      <p> zzpick a color </p>
 
   <form class="form-horizontal" id="pattern-form">
   <fieldset>
-
-    <div class="control-group">
-      <label class="control-label" for="pattern-name">Pattern name:</label>
-      <div class="controls">
-        <input type="text" class="span2" value="my pattern" id="pattern-name">
-      </div>
-    </div>
 
     <div class="control-group">
       <label class="control-label" for="pattern-name">Color:</label>
@@ -90,36 +76,33 @@
         <span class="input-prepend color" data-color="rgb(255,0,0)" data-color-format="hex" id="cpclone1">
           <span class="add-on"><i style="background-color: rgb(255,0,0)"></i></span><input class="btn" type="button" value="#ff0000" id="cpclonev1"  style="font-family:monospace">
         </span>
-        duration: <input type="text" class="span1" value="100" id="cpclonet1"> msecs
+        <span> duration: <input type="text" class="span1" value="0.1" id="cpclonet1"> secs</span>
       </div>
     </div>
 
-    <div class="control-group">
-      <div class="controls">
-        <button class="btn-mini" id="AddLine"><i class="icon-plus"></i> Add</button>
-      </div>
+  </fieldset>
+  </form>
     </div>
 
-<div>
-<button class="btn offset2" id="TryPattern">Try Pattern</button>
-<button class="btn" id="SavePattern">Save Pattern</button>
-</div>
-
-</fieldset>
-</form>
-
-
-    </div> <!-- end of tab1 -->
-
-
-    <div class="tab-pane" id="tab5">
-      <h1> Colorpicker </h1>
-      <p> pick a color </p>
-
-
-    </div>
-
+<!-- --------------------------------------------------------------------- -->
     <div class="tab-pane" id="tab2">
+      <h1> Inputs </h1>
+      <p> pick an input </p>
+
+
+    </div>
+
+<!-- --------------------------------------------------------------------- -->
+
+    <div class="tab-pane" id="tab3">
+      <h1> Patterns </h1>
+      <p> pick a pattern </p>
+
+
+    </div>
+
+<!-- --------------------------------------------------------------------- -->
+    <div class="tab-pane" id="tab4">
 
       <h1> Twitter </h1>
       <p>Enter a Twitter string to watch for and pick a color pattern to play on match.</p>
@@ -163,14 +146,16 @@
   </fieldset>
   </form>
 
+<!-- --------------------------------------------------------------------- -->
     </div>
-    <div class="tab-pane" id="tab3">
+    <div class="tab-pane" id="tab5">
 
      <h1> Gmail </h1>
 
     </div>
 
-    <div class="tab-pane" id="tab4">
+<!-- --------------------------------------------------------------------- -->
+    <div class="tab-pane" id="tab6">
       <p>
 <a href="#" class="btn btn-success btn-large"><i class="icon-white icon-heart"></i> Get My Monkey</a></p>
     </div>
@@ -203,9 +188,10 @@
   var showingColorPicker = false;
   function updateColor(ev,id,idt) {
       colr = ev.color.toHex();
+      secs = $('cpclonet1').val;
       $(idt).val(colr);
       $(idt).text(colr);
-      var fadeurl = "/blink1/fadeToRGB/?rgb=" + encodeURIComponent(colr);
+      var fadeurl = "/blink1/fadeToRGB/?rgb=" + encodeURIComponent(colr) + "&time=" + secs;
       console.log("fadeurl="+fadeurl);
       jQuery.ajax(fadeurl);
   }
@@ -260,3 +246,47 @@
 
   </body>
 </html>
+<!--
+      <h1>blink(1) main control</h1>
+      <p> Check on the general status of your blink(1) <br> </p>
+
+      <h3> Make a Color Pattern </h3>
+<p> Choose a pattern of colors to play on your blink(1). 
+</p>
+
+  <form class="form-horizontal" id="pattern-form">
+  <fieldset>
+
+    <div class="control-group">
+      <label class="control-label" for="pattern-name">Pattern name:</label>
+      <div class="controls">
+        <input type="text" class="span2" value="my pattern" id="pattern-name">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="pattern-name">Color:</label>
+      <div class="controls cpinput1">
+        <span class="input-prepend color" data-color="rgb(255,0,0)" data-color-format="hex" id="cpclone1">
+          <span class="add-on"><i style="background-color: rgb(255,0,0)"></i></span><input class="btn" type="button" value="#ff0000" id="cpclonev1"  style="font-family:monospace">
+        </span>
+        duration: <input type="text" class="span1" value="100" id="cpclonet1"> msecs
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="controls">
+        <button class="btn-mini" id="AddLine"><i class="icon-plus"></i> Add</button>
+      </div>
+    </div>
+
+<div>
+<button class="btn offset2" id="TryPattern">Try Pattern</button>
+<button class="btn" id="SavePattern">Save Pattern</button>
+</div>
+
+</fieldset>
+</form>
+
+    </div> 
+-->

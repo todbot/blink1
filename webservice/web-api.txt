@@ -9,42 +9,47 @@ The blink(1) event web service lives at:
 Events
 ------
 Events are comprised of the attributes:
+
 - blink1_id -- UID of user's blink1 + computer, as 16-digit hex string
 - source    -- data source of event (e.g. "gmail","twitter"), as string
 - name      -- name of event, (e.g. "flash_red", or "timerdone"), as string
 - date      -- date event occurred, as secs since unix epoch, as string
 
 Two kinds of event submission are supported: 
+
 - single event, real-time
 - event bundle, of recent past events (e.g. last 15 minutes)
 
 
 Single Event Submission
 ------------------------
-base URL: http://api.thingm.com/blink1/sendevent/{blink1_id}
+base URL: `http://api.thingm.com/blink1/sendevent/{blink1_id}`
 
 method: GET 
 
 Query argument parameters:
+
 - name - Name of color pattern to trigger on blink(1)
 - source - IFTTT event source designator (e.g. Gmail, Twitter)
 
 Example GET: 
-   /blink1/sendevent/23049309b33ab3cd/?name=flash_red&source=gmail
+
+   `/blink1/sendevent/23049309b33ab3cd/?name=flash_red&source=gmail`
 
 Example result:
-{
-  "blink1_id":"23049309b33ab3cd",
-  "name":"flash_red",
-  "source":"gmail",
-  "date":"1348610490",
-  "status":"success: event saved"
-}
+
+    {
+      "blink1_id":"23049309b33ab3cd",
+      "name":"flash_red",
+      "source":"gmail",
+      "date":"1348610490",
+      "status":"success: event saved"
+    }
 
 
 Multilple Event Submission
 --------------------------
-base URL: http://api.thingm.com/blink1/sendevents/{blink1_id}
+base URL: `http://api.thingm.com/blink1/sendevents/{blink1_id}`
 
 method: POST  
 
@@ -53,31 +58,34 @@ Query arguments: none
 POST body format: JSON array of events named "events".
 
 Example POST:
+
     /blink1/sendevents/23049309b33ab3cd
+
 POST body:
-{
- "events": [ 
-  { 
-    "blink1_uid": "23049309b33ab3cd",
-    "date": 1348547434,
-    "name": "ladygagatweet",
-    "source": "twitter",
-   },
-   { 
-    "blink1_uid": "23049309b33ab3cd",
-    "date": 1348547454
-    "name": "msg-orange-red",
-    "source": "gmail",
-   }
-  ]
-}
+
+    {
+     "events": [ 
+      { 
+        "blink1_uid": "23049309b33ab3cd",
+        "date": 1348547434,
+        "name": "ladygagatweet",
+        "source": "twitter",
+       },
+       { 
+        "blink1_uid": "23049309b33ab3cd",
+        "date": 1348547454
+        "name": "msg-orange-red",
+        "source": "gmail",
+       }
+      ]
+    }
 
 Example result:
-{ 
-  "status": "events received",
-  "event_count": 2,
-  "blink1_uid": "23049309b33ab3cdef"
-}
+    { 
+      "status": "events received",
+      "event_count": 2,
+      "blink1_uid": "23049309b33ab3cdef"
+    }
 
 
 

@@ -24,7 +24,7 @@
 
 @interface B1SAppDelegate : NSObject <NSApplicationDelegate,VDKQueueDelegate> {
     
-    NSMutableArray* serialnums;
+    //NSMutableArray* serialnums;
     CPUuse* cpuuse;
     
     SBJsonWriter *_jsonwriter;
@@ -32,13 +32,10 @@
     
     VDKQueue * myVDKQ;
     //NSString* watchPath;
-    Boolean watchFileChanged;
+    BOOL watchFileChanged;
 
-    NSTimer * patternTimer;
-    NSTimer * iftttWatchTimer;
-    NSTimer * urlWatchTimer;
-    Boolean enableIftttWatch;
-    //Boolean enableUrlWatch;
+    NSTimer * inputsTimer;
+    BOOL inputsEnable;
     
     NSMutableDictionary *inputs;
     NSMutableDictionary *patterns;
@@ -55,6 +52,8 @@
 
 @property (assign) IBOutlet NSMenu *statusMenu;
 @property (retain) NSStatusItem * statusItem;
+@property (retain) NSImage *statusImage;
+@property (retain) NSImage *statusHighlightImage;
 
 
 

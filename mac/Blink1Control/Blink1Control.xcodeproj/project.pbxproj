@@ -14,7 +14,6 @@
 		DE1D05B2160BC69700B97943 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DE1D05A8160BC69700B97943 /* InfoPlist.strings */; };
 		DE1D05B3160BC69700B97943 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DE1D05AA160BC69700B97943 /* MainMenu.xib */; };
 		DE1D05B4160BC69700B97943 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DE1D05AC160BC69700B97943 /* main.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE1D05B7160C018400B97943 /* Blink1Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = DE1D05B6160C018400B97943 /* Blink1Controller.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3097CC15F1CACB00B84287 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE3097CB15F1CACB00B84287 /* Cocoa.framework */; };
 		DE3097E915F1CBC100B84287 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE3097E815F1CBC100B84287 /* Security.framework */; };
 		DE30983115F1CCD300B84287 /* DDData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3097ED15F1CCD300B84287 /* DDData.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -59,8 +58,9 @@
 		DE3098A115F285A400B84287 /* SBJsonTokeniser.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30989315F285A400B84287 /* SBJsonTokeniser.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3098A215F285A400B84287 /* SBJsonUTF8Stream.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30989515F285A400B84287 /* SBJsonUTF8Stream.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3098A315F285A400B84287 /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30989715F285A400B84287 /* SBJsonWriter.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE3C79DA161E1C4D00104F4D /* DataInput.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3C79D9161E1C4D00104F4D /* DataInput.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3C79DE1626787000104F4D /* Blink1Pattern.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3C79DD1626787000104F4D /* Blink1Pattern.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		DE3C79E5162B799000104F4D /* blink1iconA1i.png in Resources */ = {isa = PBXBuildFile; fileRef = DE3C79E3162B798F00104F4D /* blink1iconA1i.png */; };
+		DE3C79E6162B799000104F4D /* blink1iconA1.png in Resources */ = {isa = PBXBuildFile; fileRef = DE3C79E4162B799000104F4D /* blink1iconA1.png */; };
 		DE9CDD7315F5A454003F584C /* html in Resources */ = {isa = PBXBuildFile; fileRef = DE9CDD7215F5A454003F584C /* html */; };
 		DE9CDD8215F86D36003F584C /* PLWeakCompatibilityStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDD8515F886C9003F584C /* Task.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8415F886C9003F584C /* Task.m */; };
@@ -68,6 +68,7 @@
 		DE9CDD9215F9290E003F584C /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE9CDD9115F9290D003F584C /* QTKit.framework */; };
 		DE9CDD9515F92F5B003F584C /* AudioListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD9415F92F5B003F584C /* AudioListener.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDDCA15F9CA3C003F584C /* VDKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDDC815F9CA3C003F584C /* VDKQueue.m */; };
+		DEAFC809162D08E500EA0FAF /* blink1-icon-set.icns in Resources */ = {isa = PBXBuildFile; fileRef = DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */; };
 		DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEFABAE015F47F59006E4BB7 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -83,8 +84,6 @@
 		DE1D05A9160BC69700B97943 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DE1D05AB160BC69700B97943 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		DE1D05AC160BC69700B97943 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		DE1D05B5160C018400B97943 /* Blink1Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1Controller.h; sourceTree = "<group>"; };
-		DE1D05B6160C018400B97943 /* Blink1Controller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Controller.m; sourceTree = "<group>"; };
 		DE3097C715F1CACB00B84287 /* Blink1Control.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blink1Control.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE3097CB15F1CACB00B84287 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		DE3097CE15F1CACB00B84287 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -178,10 +177,10 @@
 		DE30989515F285A400B84287 /* SBJsonUTF8Stream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonUTF8Stream.m; sourceTree = "<group>"; };
 		DE30989615F285A400B84287 /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonWriter.h; sourceTree = "<group>"; };
 		DE30989715F285A400B84287 /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonWriter.m; sourceTree = "<group>"; };
-		DE3C79D8161E1C4D00104F4D /* DataInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataInput.h; sourceTree = "<group>"; };
-		DE3C79D9161E1C4D00104F4D /* DataInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataInput.m; sourceTree = "<group>"; };
 		DE3C79DC1626786F00104F4D /* Blink1Pattern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1Pattern.h; sourceTree = "<group>"; };
 		DE3C79DD1626787000104F4D /* Blink1Pattern.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Pattern.m; sourceTree = "<group>"; };
+		DE3C79E3162B798F00104F4D /* blink1iconA1i.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blink1iconA1i.png; path = Blink1Control/blink1iconA1i.png; sourceTree = "<group>"; };
+		DE3C79E4162B799000104F4D /* blink1iconA1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blink1iconA1.png; path = Blink1Control/blink1iconA1.png; sourceTree = "<group>"; };
 		DE9CDD7215F5A454003F584C /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
 		DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PLWeakCompatibilityStubs.m; path = PLWeakCompatibility/PLWeakCompatibility/PLWeakCompatibilityStubs.m; sourceTree = "<group>"; };
 		DE9CDD8315F886C9003F584C /* Task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Task.h; path = PolKit/Task.h; sourceTree = "<group>"; };
@@ -193,6 +192,7 @@
 		DE9CDD9415F92F5B003F584C /* AudioListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioListener.m; sourceTree = "<group>"; };
 		DE9CDDC715F9CA3C003F584C /* VDKQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VDKQueue.h; sourceTree = "<group>"; };
 		DE9CDDC815F9CA3C003F584C /* VDKQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VDKQueue.m; sourceTree = "<group>"; };
+		DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "blink1-icon-set.icns"; sourceTree = "<group>"; };
 		DEFABAE015F47F59006E4BB7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -221,10 +221,6 @@
 				DE1D05A2160BC69700B97943 /* Blink1.m */,
 				DE3C79DC1626786F00104F4D /* Blink1Pattern.h */,
 				DE3C79DD1626787000104F4D /* Blink1Pattern.m */,
-				DE1D05B5160C018400B97943 /* Blink1Controller.h */,
-				DE1D05B6160C018400B97943 /* Blink1Controller.m */,
-				DE3C79D8161E1C4D00104F4D /* DataInput.h */,
-				DE3C79D9161E1C4D00104F4D /* DataInput.m */,
 				DE1D05AC160BC69700B97943 /* main.m */,
 				DE1D05AA160BC69700B97943 /* MainMenu.xib */,
 				DE1D05B8160C02B100B97943 /* misc bits */,
@@ -247,6 +243,7 @@
 		DE3097BC15F1CACB00B84287 = {
 			isa = PBXGroup;
 			children = (
+				DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */,
 				DE1D059E160BC69700B97943 /* Blink1Control */,
 				DE9CDD7115F5A428003F584C /* Resources */,
 				DE9CDD7915F862FE003F584C /* Utility Code */,
@@ -463,6 +460,8 @@
 		DE9CDD7115F5A428003F584C /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DE3C79E3162B798F00104F4D /* blink1iconA1i.png */,
+				DE3C79E4162B799000104F4D /* blink1iconA1.png */,
 				DE9CDD7215F5A454003F584C /* html */,
 			);
 			name = Resources;
@@ -560,6 +559,9 @@
 				DE1D05B1160BC69700B97943 /* Credits.rtf in Resources */,
 				DE1D05B2160BC69700B97943 /* InfoPlist.strings in Resources */,
 				DE1D05B3160BC69700B97943 /* MainMenu.xib in Resources */,
+				DE3C79E5162B799000104F4D /* blink1iconA1i.png in Resources */,
+				DE3C79E6162B799000104F4D /* blink1iconA1.png in Resources */,
+				DEAFC809162D08E500EA0FAF /* blink1-icon-set.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -619,8 +621,6 @@
 				DE1D05AD160BC69700B97943 /* B1SAppDelegate.m in Sources */,
 				DE1D05AE160BC69700B97943 /* Blink1.m in Sources */,
 				DE1D05B4160BC69700B97943 /* main.m in Sources */,
-				DE1D05B7160C018400B97943 /* Blink1Controller.m in Sources */,
-				DE3C79DA161E1C4D00104F4D /* DataInput.m in Sources */,
 				DE3C79DE1626787000104F4D /* Blink1Pattern.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
