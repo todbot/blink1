@@ -13,6 +13,7 @@
 // - network real-time load input
 // - file watcher input (for dropbox)
 // - ifttt input
+//
 
 #import "B1SAppDelegate.h"
 #import "RoutingHTTPServer.h"
@@ -33,28 +34,37 @@
 
 @synthesize statusItem;
 @synthesize statusMenu;
+@synthesize statusImage;
+@synthesize statusHighlightImage;
 
 @synthesize http;
 @synthesize blink1;
 
 
 //FIXME: what to do with these URLs?
-NSString* confURL =  @"http://127.0.0.1:8080/bootstrap/blink1.html";
-NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
+NSString* confURL =  @"http://127.0.0.1:8080/blink_1/";
+NSString* playURL =  @"http://127.0.0.1:8080/bootstrap/blink1.html";
 
 
 //
 - (void) playPattern: (NSString*)pname
 {
+    [self playPattern:pname restart:true];
+}
+
+// play a pattern
+- (void) playPattern: (NSString*)pname restart:(Boolean)restart
+{
     if( pname == nil ) return;
     Blink1Pattern* pattern = [patterns objectForKey:pname];
     if( pattern != nil ) {
         [pattern setBlink1:blink1];  // just in case
-        [pattern play];
+        if( ![pattern playing] || ([pattern playing] && restart) )
+            [pattern play];
     }
 }
 
-//
+// stop a currently playing pattern, or "all" to stop all patterns
 - (void) stopPattern: (NSString*)pname
 {
     if( pname == nil ) return;
@@ -70,7 +80,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     }
 }
 
-//
+// 
 - (NSString*) getContentsOfUrl: (NSString*) urlstr
 {
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlstr]];
@@ -88,7 +98,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 {
     NSString* str = nil;
     NSScanner *scanner = [NSScanner scannerWithString:contentStr];
-    Boolean isPattern = [scanner scanUpToString:@"pattern" intoString:&str];
+    BOOL isPattern = [scanner scanUpToString:@"pattern" intoString:&str];
     if( isPattern || (!isPattern && str==nil) ) { // match or at begining of string
         [scanner scanString:@"pattern" intoString:NULL]; // consume 'pattern'
         [scanner scanUpToString:@":" intoString:NULL];   // read colon
@@ -101,8 +111,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 }
 
 
-
-// for "watchfile" functionality
+// for "watchfile" functionality, should be put in its own class
 - (void)updateWatchFile:(NSString*)wPath
 {
     NSLog(@"updateWatchFile %@",wPath);
@@ -120,7 +129,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     watchFileChanged = true;
 }
 
-// for "watchfile" functionality
+// for "watchfile" functionality, should be put in its own class
 -(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
 {
     NSLog(@"watch file: %@ %@", noteName, fpath);
@@ -135,41 +144,61 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     }
 }
 
-
 //
-- (void) watchUrl
+// the main deal for triggering color patterns
+//
+- (void) updateInputs
 {
-    NSLog(@"watchUrl!");
+    NSLog(@"updateInputs");
+    if( !inputsEnable ) return;
+    
+    int cpuload = [cpuuse getCPUuse];
+    
     NSString* key;
     for( key in inputs) {
         NSMutableDictionary* input = [inputs objectForKey:key];
-        NSString* type = [input valueForKey:@"type"];
-        NSString* val  = [input valueForKey:@"value"];
+        NSString* type  = [input valueForKey:@"type"];
+        NSString* val   = [input valueForKey:@"value"];
         if( [type isEqualToString:@"url"]) {
-            NSString *urlstr = val;
+            NSString* urlstr = val;
             NSString* respstr = [self getContentsOfUrl:urlstr];
             NSString* patternstr = [self readColorPattern:respstr];
             if( patternstr ) {  // pattern detected
-                [self playPattern: patternstr];                
-            }
-            else { // is rgb hex string? convert to fake pattern
-                //NSString* colorstr = [self readColorString:respstr];
-                //if( colorstr )
-                //[self playColor: colorstr];
-                // else no pattern or rgb hex string detected
+                [self playPattern: patternstr];
+            } else  {
+                NSColor* colr = [Blink1 colorFromHexRGB:respstr];
+                if( colr != nil ) {
+                    NSLog(@"hex color: %@", [Blink1 toHexColorString:colr]);
+                }
             }
         }
-        //else if( [type isEqualToString:@"file"] ) {
-        //}
-    }
+        else if( [type isEqualToString:@"file"] ) {
+            // this is done using FSEvents
+        }
+        else if( [type isEqualToString:@"ifttt"] ) {
+            
+        }
+        else if( [type isEqualToString:@"cpuload"] ) {
+            int level = [val intValue];
+            NSLog(@"cpuload:%d%% - level:%d",cpuload,level);
+            if( cpuload >= level ) {
+                [self playPattern: [input valueForKey:@"pname"] restart:NO];
+            }
+        }
+        else if( [type isEqualToString:@"netload"] ) {
+            
+        }
+    } //for(key)
 }
 
+
 //
+// unused, but will be put inside "updateInputs" soon
 // a special case of watchUrl really
 //
 - (void) watchIfttt
 {   
-    if( !enableIftttWatch ) { return; }
+    //if( !enableIftttWatch ) { return; }
     NSLog(@"iftttWatch!");
     NSString* blink1_uid = @"2023abcdf";
     NSString* baseEventUrl = @"http://api.thingm.com/blink1/events";
@@ -188,35 +217,41 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     }
 }
 
-//
-// trigger color patterns when they need to be
-//
-- (void) updatePattern
-{
-    //NSLog(@"updatePattern");
-    NSString* key;
-    for( key in patterns) {
-        
-    }
-}
-
 
 
 //
 - (void) loadPrefs
 {
-    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-    NSDictionary *inputspref = [prefs dictionaryForKey:@"inputs"];
-    NSData *patternspref = [prefs objectForKey:@"patterns"];
+    inputs   = [[NSMutableDictionary alloc] init];
+    patterns = [[NSMutableDictionary alloc] init];
 
+    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+    NSDictionary *inputspref  = [prefs dictionaryForKey:@"inputs"];
+    NSData *patternspref      = [prefs objectForKey:@"patterns"];
+    NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
+    NSString* host_id_prefs   = [prefs stringForKey:@"host_id"];
+    //BOOL first_run            = [prefs boolForKey:@"first_run"];
+    
     if( inputspref != nil ) {
-        NSLog(@"inputspref: %@", [_jsonwriter stringWithObject:inputspref]);
         [inputs addEntriesFromDictionary:inputspref];
     }
     if( patternspref != nil ) {
-        //NSLog(@"patternspref: %@", [_jsonwriter stringWithObject:patternspref]);
         patterns = [NSKeyedUnarchiver unarchiveObjectWithData:patternspref];
+        //for( Blink1Pattern* pattern in [patterns allValues] ) {
+        //    [pattern setBlink1:blink1];
+        //}
     }
+
+    [blink1 setHost_id:host_id_prefs]; // accepts nil
+    if( blink1_id_prefs != nil ) {
+        [blink1 setBlink1_id:blink1_id_prefs];
+    } else {
+        [blink1 regenerateBlink1Id];
+    }
+    NSLog(@"blink1_id:%@",[blink1 blink1_id]);
+    
+    //if( !first_run ) {
+    //}
 }
 
 //
@@ -226,6 +261,8 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     [prefs setObject:inputs forKey:@"inputs"];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:patterns];
     [prefs setObject:data forKey:@"patterns"];
+    [prefs setObject:[blink1 blink1_id] forKey:@"blink1_id"];
+    [prefs setObject:[blink1 host_id]   forKey:@"host_id"];
     [prefs synchronize];
 }
 
@@ -234,9 +271,16 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 // ----------------------------------------------------------------------------
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    inputs   = [[NSMutableDictionary alloc] init];
-    patterns = [[NSMutableDictionary alloc] init];
+    srand([[NSDate date]  timeIntervalSince1970]);
 
+    blink1 = [[Blink1 alloc] init];      // set up blink(1) library
+    [blink1 enumerate];
+    __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
+    blink1.updateHandler = ^(NSColor *lastColor, float lastTime) {
+        NSString* lastcolorstr = [Blink1 toHexColorString:lastColor];
+        [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
+    };
+     
     // set up json parser
     _jsonparser = [[SBJsonParser alloc] init];
     _jsonwriter = [[SBJsonWriter alloc] init];
@@ -250,46 +294,32 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     // set up file watcher
     myVDKQ = [[VDKQueue alloc] init];
     [myVDKQ setDelegate:self];
-    [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];
+    [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];  //FIXME: test
     
-    // set up url watcher
-    float timersecs = 10.0;
-    iftttWatchTimer = [NSTimer scheduledTimerWithTimeInterval:timersecs
-                                                       target:self
-                                                     selector:@selector(watchIfttt)
-                                                     userInfo:nil
-                                                      repeats:YES];
-    urlWatchTimer = [NSTimer scheduledTimerWithTimeInterval:timersecs
-                                                       target:self
-                                                     selector:@selector(watchUrl)
-                                                     userInfo:nil
-                                                      repeats:YES];
-    patternTimer = [NSTimer scheduledTimerWithTimeInterval:0.1
-                                                    target:self
-                                                  selector:@selector(updatePattern)
-                                                  userInfo:nil
-                                                   repeats:YES];
+    // set up input watcher
+    float timersecs = 5.0;
+    inputsTimer = [NSTimer timerWithTimeInterval:timersecs target:self selector:@selector(updateInputs) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:inputsTimer forMode:NSRunLoopCommonModes];
 
-    enableIftttWatch = false;
-    //enableUrlWatch = false;
-
+    inputsEnable = true;
+    
     // set up cpu use measurement tool
     cpuuse = [[CPUuse alloc] init];
     [cpuuse setup]; // FIXME: how to put stuff in init
 
-    // set up blink(1) library
-    blink1 = [[Blink1 alloc] init];
-    serialnums = [blink1 enumerate]; 
-    [self updateUI];  //FIXME: right way to do this?
+    [self updateUI];  // FIXME: right way to do this?
 
-
-    // test Task
+/*
+    // testing Task
 	NSString*	result;
     result = [Task runWithToolPath:@"/usr/bin/grep" arguments:[NSArray arrayWithObject:@"france"] inputString:@"bonjour!\nvive la france!\nau revoir!" timeOut:0.0];
     NSLog(@"result: %@", result);
 	
 	result = [Task runWithToolPath:@"/bin/sleep" arguments:[NSArray arrayWithObject:@"2"] inputString:nil timeOut:1.0];
     NSLog(@"result: %@", result);
+  */  
+    //
+    [self openConfig:nil];
     
 }
 
@@ -330,22 +360,39 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 - (void)setupHttpRoutes
 {
 	[http get:@"/blink1" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:serialnums forKey:@"blink1_serialnums"];
+        [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
+        [respdict setObject:[blink1 blink1_id] forKey:@"blink1_id"];
         [respdict setObject:@"blink1" forKey:@"status"];
-        
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
 	}];
     
+    [http get:@"/blink1/id" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
+        [respdict setObject:[blink1 blink1_id] forKey:@"blink1_id"];
+        [respdict setObject:@"id" forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+
+    [http get:@"/blink1/regenerateblink1id" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* blink1_id_old = [blink1 blink1_id];
+        [blink1 setHost_id:nil];
+        NSString* blink1_id = [blink1 regenerateBlink1Id];
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:blink1_id_old forKey:@"blink1_id_old"];
+        [respdict setObject:blink1_id     forKey:@"blink1_id"];
+        [respdict setObject:@"regenerateblink1id" forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+    }];
+    
     [http get:@"/blink1/enumerate" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        
-        serialnums = [blink1 enumerate];
+        //serialnums = [blink1 enumerate];
+        [blink1 enumerate];
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:serialnums forKey:@"blink1_serialnums"];
-        [respdict setObject:@"linkBlink1s" forKey:@"status"];
-        
+        [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
+        [respdict setObject:@"enumerate" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
@@ -365,27 +412,34 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         [respdict setObject:rgbstr forKey:@"rgb"];
         [respdict setObject:[NSString stringWithFormat:@"%2.3f",secs] forKey:@"time"];
         [respdict setObject:statusstr forKey:@"status"];
-
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
 	}];
 
     [http get:@"/blink1/off" withBlock:^(RouteRequest *request, RouteResponse *response) {
         [self stopPattern:@"all"];
         [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
+
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:@"off" forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
     [http get:@"/blink1/on" withBlock:^(RouteRequest *request, RouteResponse *response) {
         [self stopPattern:@"all"];
         [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#FFFFFF"] atTime:0.1];
+
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:@"on" forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
+    
     
     // color patterns
     
     [http get:@"/blink1/pattern" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* statusstr = @"pattern results";
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:statusstr forKey:@"status"];
-        [respdict setObject:[patterns allValues] forKey:@"patterns"];
+        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:patterns];
+        [respdict setObject:@"pattern results" forKey:@"status"];
+        //[respdict setObject:[patterns allValues] forKey:@"patterns"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
     
@@ -394,21 +448,20 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         NSString* patternstr = [request param:@"pattern"];
         Blink1Pattern* pattern = nil;
         
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-
         if( pname != nil && patternstr != nil ) {
             //[blink1controller addPattern:patternstr name:pname];
             //[self addPattern:patternstr name:pname];
             pattern = [[Blink1Pattern alloc] initWithPatternString:patternstr name:pname];
             [pattern setBlink1:blink1];
             [patterns setObject:pattern forKey:pname];
-
-            [respdict setObject:pattern forKey:@"pattern"];
+            //[respdict setObject:pattern forKey:@"pattern"];
         }
-        
-        [self savePrefs];
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:pname forKey:@"pname"];
+        [respdict setObject:[pattern patternString] forKey:@"pattern"];
         [respdict setObject:@"pattern add" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
     }];
     
     [http get:@"/blink1/pattern/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -425,10 +478,10 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
             }
         }
 
-        [self savePrefs];
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:statusstr forKey:@"status"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
     }];
 
     [http get:@"/blink1/pattern/play" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -437,14 +490,14 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         //if( pname != nil ) {
         //}
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:@"play" forKey:@"status"];
+        [respdict setObject:@"pattern play" forKey:@"status"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
     [http get:@"/blink1/pattern/stop" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* pname   = [request param:@"pname"];
         [self stopPattern:pname];
-/*        if( pname != nil ) {
+         /* if( pname != nil ) {
             Blink1Pattern* pattern = [patterns objectForKey:pname];
             if( pattern != nil ) {
                 [pattern stop];
@@ -459,12 +512,14 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     // inputs
     
     [http get:@"/blink1/input" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* enable = [request param:@"enable"];
+        inputsEnable = [enable isEqualToString:@"on"];
+
         NSString* statusstr = @"input results";
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         //[[blink1controller inputs] allValues];
         [respdict setObject:[inputs allValues] forKey:@"inputs"];
         [respdict setObject:statusstr forKey:@"status"];
-        
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
     
@@ -490,8 +545,8 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:statusstr forKey:@"status"];
-        
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
     }];
     
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -520,9 +575,8 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
             //path = watchPath;
         }
         
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:@"watchfile" forKey:@"status"];
-        [respdict setObject:input forKey:@"input"];
+        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:input];
+        [respdict setObject:@"input file" forKey:@"status"];
 
         if( watchFileChanged ) {
             NSString* filecontents = [NSString stringWithContentsOfFile:path
@@ -532,6 +586,7 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         }
 
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
     }];
     
     [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -540,7 +595,6 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
         NSString* pname = [request param:@"pname"];
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        
         if( iname != nil && url != nil ) {
             if( pname == nil ) pname = iname;
             [input setObject:iname forKey:@"iname"];
@@ -550,41 +604,61 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
             [inputs setObject:input forKey:iname];
         }
         
-        [input setObject:@"watchurl" forKey:@"status"];
-        
+        [input setObject:@"input url" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:input]];
+        [self savePrefs];
     }];
     
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* enable = [request param:@"enable"];
         if( enable != nil ) {
-            enableIftttWatch = [enable isEqualToString:@"on"];
+            //enableIftttWatch = [enable isEqualToString:@"on"];
         }
-        enable = [NSString stringWithFormat:@"%s",((enableIftttWatch)?"on":"off")];
+        //enable = [NSString stringWithFormat:@"%s",((enableIftttWatch)?"on":"off")];
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:enable forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
     }];
     
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* iname = [request param:@"iname"];
+        NSString* level = [request param:@"level"];
+        NSString* pname = [request param:@"pname"];
         
-        int cpuload = [cpuuse getCPUuse];
-        NSLog(@"cpu use:%d%%",cpuload);
+        //int cpuload = [cpuuse getCPUuse];
+        //NSLog(@"cpu use:%d%%",cpuload);
+        
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        if( iname != nil && level != nil ) {
+            if( pname == nil ) pname = iname;
+            [input setObject:iname      forKey:@"iname"];
+            [input setObject:@"cpuload" forKey:@"type"];
+            [input setObject:level      forKey:@"value"];
+            [input setObject:pname      forKey:@"pname"];
+            [inputs setObject:input forKey:iname];
+        }
 
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:[NSNumber numberWithInt:cpuload] forKey:@"cpuload"];
+        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:input];
+        //[respdict setObject:[NSNumber numberWithInt:cpuload] forKey:@"cpuload"];
         [respdict setObject:@"cpuload" forKey:@"status"];
-        
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
     }];
 
     [http get:@"/blink1/input/netload" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:@"netload" forKey:@"status"];
-        [respdict setObject:@"not implemented" forKey:@"error"];
-        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
-    }];
+        NSString* iname = [request param:@"iname"];
+        NSString* level = [request param:@"level"];
+        NSString* pname = [request param:@"pname"];
 
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:iname forKey:@"iname"];
+        [respdict setObject:level forKey:@"level"];
+        [respdict setObject:pname forKey:@"pname"];
+        [respdict setObject:@"netload not implemented yet" forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
+    }];
 }
 
 // unused
@@ -600,10 +674,25 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 }
 
 //
+// Put status bar icon up on the screen
+// Two icon files, one for the "normal" state and one for the "highlight" state.
+// These icons should be 18x18 pixels in size, and should be done as PNGs
+// so you can get the transparency you need.
+// (http://www.sonsothunder.com/devres/revolution/tutorials/StatusMenu.html)
+//
 - (void) activateStatusMenu
 {
     statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    [statusItem setTitle: NSLocalizedString(@"blink(1)",@"")];
+
+    //Allocates and loads the images into the application which will be used for our NSStatusItem
+    NSBundle *bundle = [NSBundle mainBundle];    
+    statusImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1" ofType:@"png"]];
+    statusHighlightImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1i" ofType:@"png"]];
+    //Sets the images in our NSStatusItem
+    [statusItem setImage:statusImage];
+    //[statusItem setAlternateImage:statusHighlightImage];
+    
+    //[statusItem setTitle: NSLocalizedString(@"blink(1)",@"")];
     [statusItem setHighlightMode:YES];
     [statusItem setMenu:statusMenu];  // instead, we'll do it by hand
     
@@ -614,8 +703,8 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 //FIXME: what's the better way of doing this?
 - (void) updateUI
 {
-    if( [serialnums count] ) {
-        NSString* serstr = [serialnums objectAtIndex:0];
+    if( [[blink1 serialnums] count] ) {
+        NSString* serstr = [[blink1 serialnums] objectAtIndex:0];
         [_blink1serial setTitle: [NSString stringWithFormat:@"serial:%@",serstr]];
         [_blink1status setTitle: @"blink(1) found"];
     }
@@ -626,10 +715,10 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
 
 }
 
-//
+// GUI action:
 - (IBAction) openStatusMenu: (id) sender
 {
-    serialnums = [blink1 enumerate];
+    [blink1 enumerate];
     [self updateUI];
     
     //[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(showMenu) userInfo:nil repeats:NO];
@@ -637,23 +726,22 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     [statusItem popUpStatusItemMenu:statusMenu];
 }
 
-//
+// GUI action: open up main config page
 - (IBAction) openConfig: (id) sender
 {
     NSLog(@"Config!");
-    serialnums = [blink1 enumerate];
+    [blink1 enumerate];
     [self updateUI];
     
     // Load the HTML content.
     //[[[_webView mainFrame] frameView] setAllowsScrolling:NO];
-
     [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:confURL]]];
-    [NSApp activateIgnoringOtherApps:YES];
     [_window display];
     [_window setIsVisible:YES];
+    [NSApp activateIgnoringOtherApps:YES];
 }
 
-//
+// GUI action: open up 'play' page (currently used for testing alternate interface)
 - (IBAction) playIt: (id) sender
 {
     NSLog(@"Play!");
@@ -661,12 +749,21 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:playURL]]];
     [_window display];
     [_window setIsVisible:YES];
+    [NSApp activateIgnoringOtherApps:YES];
 }
 
-//
+// GUI action: turn off blink1
+- (IBAction) allOff: (id) sender
+{
+    NSLog(@"allOff");
+    [self stopPattern:@"all"];
+    [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
+}
+
+// GUI action: unused, rescan is done on config open now
 - (IBAction) reScan: (id) sender
 {
-    serialnums = [blink1 enumerate];
+    [blink1 enumerate];
     [self updateUI];
     
     //[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(showMenu) userInfo:nil repeats:NO];
@@ -675,10 +772,11 @@ NSString* playURL =  @"http://127.0.0.1:8080/colorpicker/index.html";
     
 }
 
-//
+// GUI action: quit the app
 - (IBAction) quit: (id) sender
 {
     NSLog(@"Quit!");
+    [self savePrefs];
     [NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0.0];
 }
 

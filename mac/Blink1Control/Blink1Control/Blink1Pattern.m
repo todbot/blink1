@@ -111,6 +111,8 @@
         [blink1 fadeToRGB:color atTime:nextTime/2];
         timer = [NSTimer timerWithTimeInterval:nextTime target:self selector:@selector(update) userInfo:nil repeats:NO];
         [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    } else {
+        playing = false;
     }
     
 }
@@ -140,9 +142,15 @@
 // used by SBJson
 - (NSDictionary*) proxyForJson
 {
+    NSColor* lastcolr = (playing) ? [colors objectAtIndex: playpos] : nil;
+
     return [NSDictionary dictionaryWithObjectsAndKeys:
             self.name, @"name",
             [self patternString], @"pattern",
+            [NSNumber numberWithBool:playing], @"playing",
+            [NSNumber numberWithInt:playpos], @"playpos",
+            [NSNumber numberWithInt:playcount], @"playcount",
+            [Blink1 toHexColorString:lastcolr], @"last_color",
             nil];
 }
 

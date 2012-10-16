@@ -1,7 +1,7 @@
  
 URL API for blink(1) Applications
 =================================
-version 0.3 -- 20121001 -- Tod E. Kurt
+version 0.4 -- 20121013 -- Tod E. Kurt
 
 The application that controls a blink(1) device is comprised of an HTML5 GUI 
 running on an embedded webserver.  The GUI communicates to the application
@@ -52,7 +52,7 @@ One exception to the JSON rule, is the simple "RGB hex string" for files and URL
 
 ### File Format Examples ###
 
-__Standard JSON response for `/blink1/fadeToRGB?rgb=#0000FF&time=5.0`:__
+__Standard JSON response for `/blink1/fadeToRGB?rgb=$230000FF&time=5.0`:__
 
     {
       "rgb": "#0000ff",
@@ -133,6 +133,12 @@ Base URL: `http://localhost:8080/blink1`
 
 ### Direct blink(1) control ###
 
+* `/blink1/id`
+-- Display blink1_id and blink1 serial numbers (if any)
+
+* `/blink1/regenerateblinkid`
+-- Generate, save, and return new blink1_id
+
 * `/blink1/enumerate` 
 -- Re-enumerate and List available blink(1) devices
 
@@ -148,7 +154,7 @@ Base URL: `http://localhost:8080/blink1`
 ### Input Selection ###
 
 * `/blink1/input/` 
--- List configured inputs
+-- List configured inputs, enable or disable input watching
 
 * `/blink1/input/del` 
 -- Remove a configured input
@@ -231,7 +237,7 @@ Standard JSON 'status' response
 --------------
 __Description:__ List configured inputs
 
-__Query args:__ -none-
+__Query args:__ 'enable' : "on" == enable all configured inputs, "off" == off
 
 __Example:__ 
 `/blink1/input`
