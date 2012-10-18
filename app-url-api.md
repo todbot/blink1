@@ -151,7 +151,7 @@ Base URL: `http://localhost:8080/blink1`
 * `/blink1/off` 
 -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
 
--- `/blink1/lastColor`
+* `/blink1/lastColor`
 -- Return the last color command sent to blink(1)
 
 
