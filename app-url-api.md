@@ -151,6 +151,10 @@ Base URL: `http://localhost:8080/blink1`
 * `/blink1/off` 
 -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
 
+-- `/blink1/lastColor`
+-- Return the last color command sent to blink(1)
+
+
 ### Input Selection ###
 
 * `/blink1/input/` 
@@ -158,6 +162,9 @@ Base URL: `http://localhost:8080/blink1`
 
 * `/blink1/input/del` 
 -- Remove a configured input
+
+* `/blink1/input/delall` 
+-- Remove all configured inputs
 
 * `/blink1/input/file` 
 -- Add and Start file watcher on given filepath
@@ -188,6 +195,9 @@ Base URL: `http://localhost:8080/blink1`
 
 * `/blink1/pattern/del`
 -- Remove color pattern from color pattern list
+
+* `/blink1/pattern/delall`
+-- Remove all color patterns from color pattern list
 
 * `/blink1/pattern/play`
 -- Play/test a specific color pattern

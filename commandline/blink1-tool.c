@@ -432,16 +432,16 @@ int main(int argc, char** argv)
             uint8_t id = rand() % blink1_getCachedCount();
 
             printf("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
-		   i, id, blink1_getCachedCount(), r,g,b);
+                   i, id, blink1_getCachedCount(), r,g,b);
 
             hid_device* mydev = dev;
-            if( cnt > 1 ) blink1_openById( id );
+            if( cnt > 1 ) mydev = blink1_openById( id );
             rc = blink1_fadeToRGB(mydev, millis,r,g,b);
             if( rc == -1 ) { // on error, do something, anything. come on.
 	        printf("error during random\n");
                 //break;
             }
-            if( cnt > 1 ) blink1_close(mydev);
+            if( cnt > 1 ) blink1_close( mydev );
             
             blink1_sleep(delayMillis);
         }
