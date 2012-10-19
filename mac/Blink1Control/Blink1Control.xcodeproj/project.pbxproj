@@ -685,6 +685,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "";
 				SDKROOT = macosx10.7;
 			};
 			name = Debug;
@@ -707,6 +708,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = "";
 				SDKROOT = macosx10.7;
 			};
 			name = Release;
@@ -724,6 +726,7 @@
 				OTHER_CFLAGS = (
 					"-Xclang",
 					"-fobjc-runtime-has-weak",
+					"-DDEBUGLOG=1",
 				);
 				PRODUCT_NAME = Blink1Control;
 				WRAPPER_EXTENSION = app;
@@ -743,6 +746,7 @@
 				OTHER_CFLAGS = (
 					"-Xclang",
 					"-fobjc-runtime-has-weak",
+					"-DDEBUGLOG=1",
 				);
 				PRODUCT_NAME = Blink1Control;
 				WRAPPER_EXTENSION = app;

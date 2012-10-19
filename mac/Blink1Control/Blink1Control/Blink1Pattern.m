@@ -72,17 +72,20 @@
     playpos = 0;
     playcount = 0;
     playing = true;
-    NSLog(@"%@ play p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 toHexColorString:color],nextTime);
-    //NSLog(@"play: p:%d c:%d color: %@ nextTime:%f",playpos,playcount,[Blink1 toHexColorString:color],nextTime);
-    [blink1 fadeToRGB:color atTime:nextTime/2];
-    timer = [NSTimer timerWithTimeInterval:nextTime target:self selector:@selector(update) userInfo:nil repeats:NO];
-    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    DLog(@"%@ play p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 hexStringFromColor:color],nextTime);
+
+    [blink1 fadeToRGB:color atTime:nextTime/2];  // FIXME: time between colors != time to fade
+    
+    if( repeats >= 0 ) { // FIXME: hack for temporary patterns
+        timer = [NSTimer timerWithTimeInterval:nextTime target:self selector:@selector(update) userInfo:nil repeats:NO];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+    }
 }
 
 //
 - (void) stop
 {
-    NSLog(@"stop! %@",name);
+    DLog(@"stop! %@",name);
     //[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(update) object:nil];
     //[[NSRunLoop mainRunLoop] cancelPerformSelector:@selector(update) target:self argument:nil];
     playing = false;
@@ -107,7 +110,7 @@
     if( scheduleNext ) {
         NSTimeInterval nextTime = [[times objectAtIndex:playpos] doubleValue];
         NSColor* color = [colors objectAtIndex:playpos];
-        NSLog(@"%@ updt p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 toHexColorString:color],nextTime);
+        DLog(@"%@ updt p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 hexStringFromColor:color],nextTime);
         [blink1 fadeToRGB:color atTime:nextTime/2];
         timer = [NSTimer timerWithTimeInterval:nextTime target:self selector:@selector(update) userInfo:nil repeats:NO];
         [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
@@ -123,7 +126,7 @@
     NSMutableArray* pattern = [NSMutableArray array];
     [pattern addObject:[NSNumber numberWithInt:repeats]];
     for( int i=0; i< [colors count]; i++) {
-        [pattern addObject:[Blink1 toHexColorString: [colors objectAtIndex:i]]];
+        [pattern addObject:[Blink1 hexStringFromColor:[colors objectAtIndex:i]]];
         [pattern addObject:[[times  objectAtIndex:i] stringValue]];
     }
     NSString* patternstr = [pattern componentsJoinedByString:@","];
@@ -142,7 +145,7 @@
 // used by SBJson
 - (NSDictionary*) proxyForJson
 {
-    NSColor* lastcolr = (playing) ? [colors objectAtIndex: playpos] : nil;
+    NSColor* playedcolr = (playing) ? [colors objectAtIndex: playpos] : nil;
 
     return [NSDictionary dictionaryWithObjectsAndKeys:
             self.name, @"name",
@@ -150,11 +153,11 @@
             [NSNumber numberWithBool:playing], @"playing",
             [NSNumber numberWithInt:playpos], @"playpos",
             [NSNumber numberWithInt:playcount], @"playcount",
-            [Blink1 toHexColorString:lastcolr], @"last_color",
+            [Blink1 hexStringFromColor:playedcolr], @"playedColor",
             nil];
 }
 
-
+// for use with NSUserDefaults
 - (void) encodeWithCoder:(NSCoder *)encoder
 {
     //Encode properties, other class variables, etc
@@ -162,6 +165,7 @@
     [encoder encodeObject:[self patternString] forKey:@"pattern"];
 }
 
+// for use with NSUserDefaults
 - (id) initWithCoder:(NSCoder *)decoder
 {
     if((self = [super init])) {

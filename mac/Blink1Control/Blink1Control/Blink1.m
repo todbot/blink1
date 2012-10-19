@@ -69,7 +69,7 @@
     CGFloat r,g,b;
     [c getRed:&r green:&g blue:&b alpha:NULL];
     r *= 255; g *= 255; b*=255;
-    NSLog(@"blink1fadeToRGB: rgb:%d,%d,%d t:%2.3f", (int)r,(int)g,(int)b,t);
+    DLog(@"rgb:%d,%d,%d t:%2.3f", (int)r,(int)g,(int)b,t);
     lastColor = c;
     if( updateHandler ) { updateHandler(c,t); }
     if( [serialnums count] == 0 ) return;
@@ -101,9 +101,11 @@
 //
 - (NSString*) lastColorHexString
 {
-    return [Blink1 toHexColorString:lastColor];
+    //return [Blink1 toHexColorString:lastColor];
+    return [Blink1 hexStringFromColor:lastColor];
 }
 
+//
 + (NSColor *) colorFromHexRGB:(NSString *) hexStr
 {
     unsigned int colorInt;
@@ -122,12 +124,13 @@
 }
 
 //
-+ (NSString*) toHexColorString: (NSColor*)colr
+//+ (NSString*) toHexColorString: (NSColor*)colr
++ (NSString*) hexStringFromColor: (NSColor*)colr;
 {
     return [NSString stringWithFormat:@"#%0.2X%0.2X%0.2X",
             (int)(255 * [colr redComponent]),
-            (int)(255 * [colr blueComponent]),
-            (int)(255 * [colr greenComponent])];
+            (int)(255 * [colr greenComponent]),
+            (int)(255 * [colr blueComponent])];
 }
 
 
