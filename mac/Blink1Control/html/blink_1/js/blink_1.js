@@ -1,5 +1,11 @@
 $(document).ready(function(){
 
+	if( !Modernizr.inputtypes.range ){  
+/* 	    initSlider();  */
+		$('#darkness-range').hide();
+		$('#picker .instructions').hide();		 
+	};  
+
 	var triggerObjects = [];
 	var swatchId = '';
 	var swatchColor = '';
@@ -209,7 +215,7 @@ $(document).ready(function(){
 		compiledSettings.inputSettings.state.type = $('#state-selector select').val();	
 		compiledSettings.inputSettings.state.min = $('#min-value').val();						
 		compiledSettings.inputSettings.state.max = $('#max-value').val();						
-		if($('#popup-title > input').val() == '') {
+		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == 'Click to Edit Title') {
 			compiledSettings.title = "Untitled";
 		}
 		else {
@@ -302,6 +308,7 @@ $(document).ready(function(){
 		
 		$('body').css('background-color', "#F0F0F0");		
 		$('#configuration-popup input[type="text"]').val('');
+		$('#popup-title input').val('Click to Edit Title');		
 		// reset radio button inputs to first option
 		$('#configuration-popup #source-selector #source-option-network-load').attr('checked', 'checked');		
 		$('#configuration-popup #transition-options #fade').attr('checked', 'checked');		
@@ -389,4 +396,24 @@ $(document).ready(function(){
 		$('#configuration-popup').fadeOut('fast');
 	}
 	
+	
+	
+	function initSlider() {  
+	    $('input[type=range]').each(function() {  
+	        var $input = $(this);  
+	        var $slider = $('<div id="' + $input.attr('id') + '" class="' + $input.attr('class') + '"></div>');  
+	        var step = $input.attr('step');  
+	        $input.after($slider).hide();  
+	        $slider.slider({  
+	            min: $input.attr('min'),  
+	            max: $input.attr('max'),  
+	            step: $input.attr('step'),  
+	            change: function(e, ui) {  
+	                $(this).val(ui.value);  
+	            }  
+	        });  
+	    });  
+	};  
+
+
 });

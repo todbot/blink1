@@ -17,7 +17,7 @@ function m(d){
 	a.font="2em bold arial";
 	color = 'rgb(' + parseInt(A((d+u)/B,C(t)/g,j.value/D)[0]) + ', ' + parseInt(A((d+u)/B,C(t)/g,j.value/D)[1]) + ', ' + parseInt(A((d+u)/B,C(t)/g,j.value/D)[2]) + ')';
 	a.fillStyle = color;
-	z.textContent=doneColor.style.borderColor=color;
+	z.textContent/* =doneColor.style.backgroundColor */=color;
 	
 	if($('#picker').css('display') != 'none') {
 		$('body').css('background-color', color);
@@ -56,7 +56,8 @@ B=2*u;
 C=Math.sqrt;
 s=Math.atan2;
 z.style.font='1em "Helvetica Neue", Helvetica, Arial, sans-serif';
-j.type="range";
+/* j.type="range"; */
+j.id="darkness-range";
 
 for(y=j.min=0;y<p;y++)for(x=0;x<p;x++){
 	i=x-g;

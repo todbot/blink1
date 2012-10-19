@@ -1338,7 +1338,6 @@
 								<dictionary class="NSMutableDictionary" key="Values">
 									<integer value="12" key="WebKitDefaultFixedFontSize"/>
 									<integer value="12" key="WebKitDefaultFontSize"/>
-									<boolean value="YES" key="WebKitJavaEnabled"/>
 									<integer value="1" key="WebKitMinimumFontSize"/>
 								</dictionary>
 							</object>
@@ -3310,7 +3309,7 @@
 				<string key="351.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="354.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="YES" key="371.IBNSWindowAutoPositionCentersHorizontal"/>
-				<boolean value="NO" key="371.IBNSWindowAutoPositionCentersVertical"/>
+				<boolean value="YES" key="371.IBNSWindowAutoPositionCentersVertical"/>
 				<string key="371.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="371.IBWindowTemplateEditedContentRect">{{380, 496}, {480, 360}}</string>
 				<boolean value="NO" key="371.NSWindowTemplate.visibleAtLaunch"/>
@@ -3430,7 +3429,6 @@
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="blink1serial">NSMenuItem</string>
 						<string key="blink1status">NSMenuItem</string>
-						<string key="lastcolor">NSMenuItem</string>
 						<string key="statusMenu">NSMenu</string>
 						<string key="webView">WebView</string>
 						<string key="window">NSWindow</string>
@@ -3442,10 +3440,6 @@
 						</object>
 						<object class="IBToOneOutletInfo" key="blink1status">
 							<string key="name">blink1status</string>
-							<string key="candidateClassName">NSMenuItem</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lastcolor">
-							<string key="name">lastcolor</string>
 							<string key="candidateClassName">NSMenuItem</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="statusMenu">
