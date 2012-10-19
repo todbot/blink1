@@ -60,6 +60,7 @@ Get the last color sent to blink(1)
 
 - lastColor can change on each request if a pattern is running
 
+-----------------------------------------------------------------------------
 
 Color Patterns!
 ===============
