@@ -52,6 +52,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 
 
 // play pattern with restart
+// pname might also be just a hex color, e.g. "#FF0033"
 - (void) playPattern: (NSString*)pname
 {
     [self playPattern:pname restart:true];
@@ -62,11 +63,17 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 - (void) playPattern: (NSString*)pname restart:(Boolean)restart
 {
     if( pname == nil ) return;
+    if( [pname hasPrefix:@"#"] ) { // a hex color, not a proper pattern
+        [blink1 fadeToRGB:[Blink1 colorFromHexRGB:pname] atTime:0.1];
+        return;
+    }
+
     Blink1Pattern* pattern = [patterns objectForKey:pname];
     if( pattern != nil ) {
-        [pattern setBlink1:blink1];  // just in case
-        if( ![pattern playing] || ([pattern playing] && restart) )
+        [pattern setBlink1:blink1];  // FIXME: just in case
+        if( ![pattern playing] || ([pattern playing] && restart) ) {
             [pattern play];
+        }
     }
 }
 
@@ -88,32 +95,30 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //
 // Given a string (contents of file or url),
 // analyze it for a pattern name or rgb hex string
-// returns pattern played, or nil if nothing to play
+// returns pattern to play, or nil if nothing to play
 //
-- (NSString*) playPatternOrColorInString: (NSString*) str
+- (NSString*) parsePatternOrColorInString: (NSString*) str
 {
-    NSLog(@"playPatternOrColorInString: %@",str);
+    DLog(@"parsePatternOrColorInString: %@",str);
     NSString* patternstr = [self readColorPattern:str];
     NSString* patt = nil;
-    
+
     if( patternstr ) {  // pattern detected
-        NSLog(@"found color pattern: %@",patternstr);
-        [self playPattern: patternstr];
+        DLog(@"found color pattern: %@",patternstr);
         patt = patternstr;
     }
     else  {
         NSColor* colr = [Blink1 colorFromHexRGB:str];
         if( colr ) {
             // TODO: create and play pattern from hex color, like "1,#FF33CC,0.1"
-            // BUT: maybe make a 'temp' pattern?
-            // or a special class of pattern?
-            // a parameterized meta-pattern?
-            // let's try:
-            patt = [NSString stringWithFormat:@"1,%@,0.1",[Blink1 toHexColorString:colr]];
-            NSLog(@"hex color patt: %@",patt);
+            // BUT: maybe make a 'temp' pattern? or a special class of pattern? or a parameterized meta-pattern?
+            // let's try: FIXME: hack using "-1" to mean "temporary pattern"
+            //patt = [NSString stringWithFormat:@"-1,%@,0.1",[Blink1 hexStringFromColor:colr]];
+            patt = [Blink1 hexStringFromColor:colr];
+            DLog(@"hex color patt: %@",patt);
         }
         else {
-            NSLog(@"no color found");
+            DLog(@"no color found");
         }
     }
     return patt;
@@ -129,7 +134,6 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     NSString* str = nil;
     NSScanner *scanner = [NSScanner scannerWithString:contentStr];
     BOOL isPattern = [scanner scanUpToString:@"pattern" intoString:NULL];
-    NSLog(@"isPattern:%d : %@",isPattern,str);
     if( isPattern || (!isPattern && str==nil) ) { // match or at begining of string
         [scanner scanString:@"pattern" intoString:NULL]; // consume 'pattern'
         [scanner scanUpToString:@":" intoString:NULL];   // read colon
@@ -153,7 +157,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // for "watchfile" functionality, should be put in its own class
 - (void)updateWatchFile:(NSString*)wPath
 {
-    NSLog(@"updateWatchFile %@",wPath);
+    DLog(@"updateWatchFile %@",wPath);
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:wPath];
     if( !fileExists ) { // if no file, make one to watch, with dummy content
         NSString *content = @"Put this in a file please.";
@@ -171,14 +175,14 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // for "watchfile" functionality, should be put in its own class
 -(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
 {
-    NSLog(@"watch file: %@ %@", noteName, fpath);
+    DLog(@"watch file: %@ %@", noteName, fpath);
     if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
-        NSLog(@"watcher: file written %@ %@", noteName, fpath);
+        DLog(@"watcher: file written %@ %@", noteName, fpath);
         watchFileChanged = true;
     }
     // FIXME: this doesn't work
     if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
-        NSLog(@"re-adding deleted file");
+        DLog(@"re-adding deleted file");
         [self updateWatchFile:fpath];
     }
 }
@@ -193,11 +197,11 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     NSString* type = [input objectForKey:@"type"];
     NSString* arg = [input objectForKey:@"arg"];
     if( [type isEqualToString:@"file"] ) {
-        NSLog(@"remove path %@",arg);
+        DLog(@"remove path %@",arg);
         [myVDKQ removePath:arg];
     }
     else if( [type isEqualToString:@"url"] ) {
-        NSLog(@"remove url %@",arg);
+        DLog(@"remove url %@",arg);
     }
     [inputs removeObjectForKey:iname];
     return true;
@@ -208,7 +212,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // ----------------------------------------------------------------------------
 - (void) updateInputs
 {
-    NSLog(@"updateInputs");
+    DLog(@"updateInputs");
     if( !inputsEnable ) return;
     
     int cpuload = [cpuuse getCPUuse];
@@ -216,16 +220,22 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     NSString* key;
     for( key in inputs) {
         NSMutableDictionary* input = [inputs objectForKey:key];
-        NSString* type  = [input valueForKey:@"type"];
-        NSString* arg   = [input valueForKey:@"arg"];
-
+        NSString* type    = [input valueForKey:@"type"];
+        NSString* arg     = [input valueForKey:@"arg"];
+        NSString* lastVal = [input valueForKey:@"lastVal"];
+        
         if( [type isEqualToString:@"url"])
         {
-            NSString* urlstr = arg;
-            NSString* responsestr = [self getContentsOfUrl:urlstr];
-
-            NSString* playedpattern = [self playPatternOrColorInString: responsestr];
-            [input setObject:playedpattern forKey:@"lastVal"]; // save last val
+            NSString* responsestr = [self getContentsOfUrl: arg];
+            NSString* patternstr  = [self parsePatternOrColorInString: responsestr];
+            
+            if( patternstr!=nil && ![patternstr isEqualToString:lastVal] ){ // different!
+                DLog(@"playing pattern %@",patternstr);
+                [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+                [input setObject:patternstr forKey:@"lastVal"]; // save last val
+            } else {
+                DLog(@"no change");
+            }
         }
         else if( [type isEqualToString:@"file"] )
         {
@@ -236,22 +246,23 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
             NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", iftttEventUrl, [blink1 blink1_id]];
             
             NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
-            NSLog(@"got string: %@",jsonStr);
+            DLog(@"got string: %@",jsonStr);
             id object = [_jsonparser objectWithString:jsonStr];
             NSDictionary* list = [(NSDictionary*)object objectForKey:@"events"];
             for (NSDictionary *event in list) {
                 NSString * bl1_id     = [event objectForKey:@"blink1_id"];
                 NSString * bl1_name   = [event objectForKey:@"name"];
                 NSString * bl1_source = [event objectForKey:@"source"];
-                NSLog(@"bl1_id:%@, name:%@, source:%@", bl1_id, bl1_name, bl1_source);
+                DLog(@"bl1_id:%@, name:%@, source:%@", bl1_id, bl1_name, bl1_source);
 
-                [self playPatternOrColorInString: bl1_name]; //FIXME: source?
+                NSString* patternstr = [self parsePatternOrColorInString: bl1_name]; //FIXME: source?
+                [self playPattern: patternstr];
             }
         }
         else if( [type isEqualToString:@"cpuload"] )
         {
             int level = [arg intValue];
-            NSLog(@"cpuload:%d%% - level:%d",cpuload,level);
+            DLog(@"cpuload:%d%% - level:%d",cpuload,level);
             if( cpuload >= level ) {
                 [self playPattern: [input valueForKey:@"pname"] restart:NO];
             }
@@ -294,7 +305,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     } else {
         [blink1 regenerateBlink1Id];
     }
-    NSLog(@"blink1_id:%@",[blink1 blink1_id]);
+    DLog(@"blink1_id:%@",[blink1 blink1_id]);
     
     //if( !first_run ) {
     //}
@@ -321,9 +332,10 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 
     blink1 = [[Blink1 alloc] init];      // set up blink(1) library
     [blink1 enumerate];
+    
     __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
     blink1.updateHandler = ^(NSColor *lastColor, float lastTime) {
-        NSString* lastcolorstr = [Blink1 toHexColorString:lastColor];
+        NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
         [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
     };
      
@@ -380,11 +392,11 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 	[http setPort:8080];
 	NSString *htmlPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"html"];
 	[http setDocumentRoot:htmlPath];
-    NSLog(@"htmlPath: %@",htmlPath);
+    DLog(@"htmlPath: %@",htmlPath);
     
 	NSError *error;
 	if (![http start:&error]) {
-		NSLog(@"Error starting HTTP server: %@", error);
+		DLog(@"Error starting HTTP server: %@", error);
 	}
 
 }
@@ -397,7 +409,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 	[http get:@"/blink1" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
-        [respdict setObject:[blink1 blink1_id] forKey:@"blink1_id"];
+        [respdict setObject:[blink1 blink1_id]  forKey:@"blink1_id"];
         [respdict setObject:@"blink1" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
 	}];
@@ -405,7 +417,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     [http get:@"/blink1/id" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
-        [respdict setObject:[blink1 blink1_id] forKey:@"blink1_id"];
+        [respdict setObject:[blink1 blink1_id]  forKey:@"blink1_id"];
         [respdict setObject:@"id" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
@@ -415,19 +427,24 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
         [blink1 setHost_id:nil];
         NSString* blink1_id = [blink1 regenerateBlink1Id];
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:blink1_id_old forKey:@"blink1_id_old"];
-        [respdict setObject:blink1_id     forKey:@"blink1_id"];
+        [respdict setObject:blink1_id_old  forKey:@"blink1_id_old"];
+        [respdict setObject:blink1_id      forKey:@"blink1_id"];
         [respdict setObject:@"regenerateblink1id" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
     
     [http get:@"/blink1/enumerate" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        //serialnums = [blink1 enumerate];
+        
+        NSString* blink1_id_old = [blink1 blink1_id];
+        
         [blink1 enumerate];
+        [blink1 regenerateBlink1Id];
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
-        [respdict setObject:@"enumerate" forKey:@"status"];
+        [respdict setObject:[blink1 serialnums]  forKey:@"blink1_serialnums"];
+        [respdict setObject:blink1_id_old        forKey:@"blink1_id_old"];
+        [respdict setObject:[blink1 blink1_id]   forKey:@"blink1_id"];
+        [respdict setObject:@"enumerate"         forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
@@ -443,7 +460,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 
         [blink1 fadeToRGB:colr atTime:secs];
 
-        NSString* statusstr = [NSString stringWithFormat:@"fadeToRGB: %@ t:%2.3f",colr,secs];
+        NSString* statusstr = [NSString stringWithFormat:@"fadeToRGB: %@ t:%2.3f",[Blink1 hexStringFromColor:colr],secs];
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:rgbstr forKey:@"rgb"];
         [respdict setObject:[NSString stringWithFormat:@"%2.3f",secs] forKey:@"time"];
@@ -481,7 +498,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     
     // list patterns
     [http get:@"/blink1/pattern" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:patterns];
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];//[NSMutableDictionary dictionaryWithDictionary:patterns];
         [respdict setObject:@"pattern results" forKey:@"status"];
         [respdict setObject:[patterns allValues] forKey:@"patterns"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
@@ -492,16 +509,20 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
         NSString* pname      = [request param:@"pname"];
         NSString* patternstr = [request param:@"pattern"];
         Blink1Pattern* pattern = nil;
+        NSString* statusstr = @"pattern add";
         
         if( pname != nil && patternstr != nil ) {
             pattern = [[Blink1Pattern alloc] initWithPatternString:patternstr name:pname];
-            [pattern setBlink1:blink1];
             [patterns setObject:pattern forKey:pname];
         }
+        else {
+            statusstr = @"error: need 'pname' and 'pattern' arguments to make pattern";
+        }
+        
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:pname forKey:@"pname"];
-        [respdict setObject:[pattern patternString] forKey:@"pattern"];
-        [respdict setObject:@"pattern add" forKey:@"status"];
+        if( pattern!=nil)
+            [respdict setObject:pattern forKey:@"pattern"];
+        [respdict setObject:statusstr forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -509,7 +530,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     // delete a pattern
     [http get:@"/blink1/pattern/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* pname   = [request param:@"pname"];
-        NSString* statusstr = @"no such input";
+        NSString* statusstr = @"must specify a 'pname' pattern name";
         if( pname != nil ) {
             Blink1Pattern* pattern = [patterns objectForKey:pname];
             if( pattern != nil ) {
@@ -519,8 +540,12 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
                 statusstr = @"no such pattern";
             }
         }
+        else {
+            pname = @"";
+        }
 
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:pname forKey:@"pname"];
         [respdict setObject:statusstr forKey:@"status"];
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
@@ -607,43 +632,41 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
         [self savePrefs];
     }];
         
-    // add a file watching input
+    // add a file watching input -- FIXME: needs work
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
         NSString* path  = [request param:@"path"];
-        NSString* pname = [request param:@"pname"];
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
 
         if( iname != nil && path != nil ) {
             NSString* fpath = [path stringByExpandingTildeInPath];
-            if( pname != nil ) pname = iname;
-            [input setObject:iname forKey:@"iname"];
+            [input setObject:iname   forKey:@"iname"];
             [input setObject:@"file" forKey:@"type"];
-            [input setObject:fpath forKey:@"arg"];
-            [input setObject:pname forKey:@"pname"];
-            [inputs setObject:input forKey:iname];
+            [input setObject:fpath   forKey:@"arg"];
+            [inputs setObject:input  forKey:iname];  // add new input to inputs list
             
             [self performSelectorOnMainThread:@selector(updateWatchFile:)
                                    withObject:fpath
                                 waitUntilDone:NO];
 
-            NSLog(@"watching file %@",fpath);
+            DLog(@"watching file %@",fpath);
         }
         else {
             //path = watchPath;
         }
         
-        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:input];
-        [respdict setObject:@"input file" forKey:@"status"];
-
+        NSString* filecontents = @"";
         if( watchFileChanged ) {
-            NSString* filecontents = [NSString stringWithContentsOfFile:path
-                                                               encoding:NSUTF8StringEncoding error:nil];
-            [respdict setObject:filecontents forKey:@"new_event"];
+            filecontents = [NSString stringWithContentsOfFile:path
+                                                     encoding:NSUTF8StringEncoding error:nil];
             watchFileChanged = false;
         }
 
+        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:input];
+        [respdict setObject:filecontents  forKey:@"new_event"];
+        [respdict setObject:input         forKey:@"input"];
+        [respdict setObject:@"input file" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -652,15 +675,12 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
         NSString* url   = [request param:@"url"];
-        NSString* pname = [request param:@"pname"];
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && url != nil ) { // the minimum requirements for this input type
-            if( pname == nil ) pname = [NSString stringWithString:iname];
             [input setObject:iname  forKey:@"iname"];
             [input setObject:@"url" forKey:@"type"];
             [input setObject:url    forKey:@"arg"];
-            [input setObject:pname  forKey:@"pname"];
             [inputs setObject:input forKey:iname];  // add new input to inputs list
         }
         
@@ -791,7 +811,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // GUI action: open up main config page
 - (IBAction) openConfig: (id) sender
 {
-    NSLog(@"Config!");
+    DLog(@"Config!");
     [blink1 enumerate];
     [self updateUI];
     
@@ -806,7 +826,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // GUI action: open up 'play' page (currently used for testing alternate interface)
 - (IBAction) playIt: (id) sender
 {
-    NSLog(@"Play!");
+    DLog(@"Play!");
 
     [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:playURL]]];
     [_window display];
@@ -817,7 +837,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // GUI action: turn off blink1
 - (IBAction) allOff: (id) sender
 {
-    NSLog(@"allOff");
+    DLog(@"allOff");
     [self stopPattern:@"all"];
     [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
 }
@@ -837,7 +857,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 // GUI action: quit the app
 - (IBAction) quit: (id) sender
 {
-    NSLog(@"Quit!");
+    DLog(@"Quit!");
     [self savePrefs];
     [NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0.0];
 }

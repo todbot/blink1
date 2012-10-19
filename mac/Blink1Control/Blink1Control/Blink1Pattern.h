@@ -35,8 +35,11 @@
 
 - (NSString*)patternString;
 - (NSString*)description;
+
 - (NSDictionary*) proxyForJson;
 
+
+// for use with NSUserDefaults
 - (void) encodeWithCoder:(NSCoder *)encoder;
 - (id) initWithCoder:(NSCoder *)decoder;
 

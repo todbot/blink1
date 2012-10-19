@@ -31,7 +31,8 @@ typedef void (^UpdateHandler)(NSColor* lastColor, float lastTime);
 
 + (NSColor *) colorFromInt: (unsigned int)colorCode;
 + (NSColor *) colorFromHexRGB:(NSString *) inColorString;
-+ (NSString*) toHexColorString: (NSColor*)colr;
+//+ (NSString*) toHexColorString: (NSColor*)colr;
++ (NSString*) hexStringFromColor: (NSColor*)colr;
 
 
 
