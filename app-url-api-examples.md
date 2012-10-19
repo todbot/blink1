@@ -61,6 +61,8 @@ Get the last color sent to blink(1)
 - lastColor can change on each request if a pattern is running
 
 
+----------------------------------------------------------------------------
+
 Color Patterns!
 ===============
 
@@ -169,6 +171,8 @@ Delete a pattern
 - Deleted patterns are stopped.
 - Can use "/blink1/pattern/delall" to remove all patterns
 
+
+----------------------------------------------------------------------------
 
 Data Inputs!
 ============
