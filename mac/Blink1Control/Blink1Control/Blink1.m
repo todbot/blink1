@@ -104,21 +104,18 @@
     return [Blink1 toHexColorString:lastColor];
 }
 
-/*
- NSColor: Instantiate from Web-like Hex RRGGBB string
- Original Source: <http://cocoa.karelia.com/Foundation_Categories/NSColor__Instantiat.m>
- (See copyright notice at <http://cocoa.karelia.com>)
- */
-+ (NSColor *) colorFromHexRGB:(NSString *) inColorString
++ (NSColor *) colorFromHexRGB:(NSString *) hexStr
 {
-    NSString* hexNum = [inColorString substringFromIndex:1];
-    unsigned int colorCode;
+    unsigned int colorInt;
     NSColor *result = nil;
     
-	if (hexNum != nil) {
-		NSScanner *scanner = [NSScanner scannerWithString:hexNum];
-		(void) [scanner scanHexInt:&colorCode];	// ignore error
-        result = [Blink1 colorFromInt: colorCode];
+ 	if (hexStr != nil) {
+		NSScanner *scanner = [NSScanner scannerWithString:hexStr];
+        [scanner scanUpToString:@"#" intoString:NULL];
+        if( [scanner scanString:@"#" intoString:NULL] ) {
+            [scanner scanHexInt:&colorInt];
+            result = [Blink1 colorFromInt: colorInt];
+        }
 	}
     
     return result;

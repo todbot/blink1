@@ -69,6 +69,7 @@
 		DE9CDD9515F92F5B003F584C /* AudioListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD9415F92F5B003F584C /* AudioListener.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDDCA15F9CA3C003F584C /* VDKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDDC815F9CA3C003F584C /* VDKQueue.m */; };
 		DEAFC809162D08E500EA0FAF /* blink1-icon-set.icns in Resources */ = {isa = PBXBuildFile; fileRef = DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */; };
+		DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB261630BA7C008B26D8 /* Blink1Input.m */; };
 		DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEFABAE015F47F59006E4BB7 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -193,6 +194,8 @@
 		DE9CDDC715F9CA3C003F584C /* VDKQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VDKQueue.h; sourceTree = "<group>"; };
 		DE9CDDC815F9CA3C003F584C /* VDKQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VDKQueue.m; sourceTree = "<group>"; };
 		DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "blink1-icon-set.icns"; sourceTree = "<group>"; };
+		DEB0CB251630BA7C008B26D8 /* Blink1Input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1Input.h; sourceTree = "<group>"; };
+		DEB0CB261630BA7C008B26D8 /* Blink1Input.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Input.m; sourceTree = "<group>"; };
 		DEFABAE015F47F59006E4BB7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -219,6 +222,8 @@
 				DE1D05A0160BC69700B97943 /* B1SAppDelegate.m */,
 				DE1D05A1160BC69700B97943 /* Blink1.h */,
 				DE1D05A2160BC69700B97943 /* Blink1.m */,
+				DEB0CB251630BA7C008B26D8 /* Blink1Input.h */,
+				DEB0CB261630BA7C008B26D8 /* Blink1Input.m */,
 				DE3C79DC1626786F00104F4D /* Blink1Pattern.h */,
 				DE3C79DD1626787000104F4D /* Blink1Pattern.m */,
 				DE1D05AC160BC69700B97943 /* main.m */,
@@ -622,6 +627,7 @@
 				DE1D05AE160BC69700B97943 /* Blink1.m in Sources */,
 				DE1D05B4160BC69700B97943 /* main.m in Sources */,
 				DE3C79DE1626787000104F4D /* Blink1Pattern.m in Sources */,
+				DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

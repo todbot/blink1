@@ -53,7 +53,7 @@
 @property (assign) IBOutlet NSMenu *statusMenu;
 @property (retain) NSStatusItem * statusItem;
 @property (retain) NSImage *statusImage;
-@property (retain) NSImage *statusHighlightImage;
+//@property (retain) NSImage *statusHighlightImage;
 
 
 
