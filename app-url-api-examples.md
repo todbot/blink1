@@ -60,7 +60,6 @@ Get the last color sent to blink(1)
 
 - lastColor can change on each request if a pattern is running
 
------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------
 
@@ -224,16 +223,18 @@ Do a test watch of a hex RGB URL input
 Do a test watch of a color pattern URL input
 --------------------------------------------
 
-$ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&url=http://todbot.com/tst/pattern.txt&test=on'
-{
-  "input": {
-    "arg": "http://todbot.com/tst/pattern.txt",
-    "iname": "mypattern",
-    "lastVal": "policeflash",
-    "type": "url"
-  },
-  "status": "input url"
-}
+Watch JSON URL "http://todbot.com/tst/pattern.txt" for "pattern" entry:
+
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&url=http://todbot.com/tst/pattern.txt&test=on'
+    {
+      "input": {
+        "arg": "http://todbot.com/tst/pattern.txt",
+        "iname": "mypattern",
+        "lastVal": "policeflash",
+        "type": "url"
+      },
+      "status": "input url"
+    }
 
 - "lastVal" is a pattern for this URL.
 
