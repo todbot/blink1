@@ -1,10 +1,16 @@
 Examples of the blink(1) application URL API
 ============================================
 
+Below is a series of command-line "curl" commands you can use to 
+play with the underlying URL API that the blink(1) control application
+uses. ("curl" is a command-line program installed on many operating systems
+to let you fetch the contents of URLs from the command-line)
+
+
 Is there a blink(1)?
 --------------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/'
+    $ curl 'http://localhost:8080/blink1/'
 
     {
       "blink1_id": "3D52B69200000000",
@@ -32,8 +38,11 @@ Plug blink(1) in and check again.  Now is there a blink(1)?
     }
 
 - Yup, there it is. 
-- "enumerate" causes a bus rescan.  
+- "/blink1/enumerate" causes a bus rescan.  
 - New serial number means new blink1_id.
+- blink1_id is persistent across application restarts for a given blink(1).
+- blink1_id can be regenerated with '/blink1/regenerateid'.
+
 
 Set the blink(1)'s color to #FFCC33
 -----------------------------------
@@ -45,8 +54,8 @@ Set the blink(1)'s color to #FFCC33
       "time": "0.100"
     }
 
-- Must escape the '#' in hex color codes in query arg
-- If "time" is not specified, defaults to "0.1"
+- Must escape the '#' in hex color codes in query arg.
+- If "time" is not specified, defaults to "0.1".
 
 
 Get the last color sent to blink(1)
@@ -58,10 +67,10 @@ Get the last color sent to blink(1)
       "status": "lastColor"
     }
 
-- lastColor can change on each request if a pattern is running
+- "lastColor" can change on each request if a pattern is running.
 
 
-----------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 Color Patterns!
 ===============
@@ -69,7 +78,7 @@ Color Patterns!
 Add some color patterns
 -----------------------
 
-blink3green = "blink green 3 times, 1.5 secs on, 0.5 secs off"
+Let's create "blink3green" = "blink green 3 times, 1.5 secs on, 0.5 secs off".
 
     $ curl 'http://localhost:8080/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,%23000000,0.5'
     {
@@ -84,7 +93,7 @@ blink3green = "blink green 3 times, 1.5 secs on, 0.5 secs off"
       "status": "pattern add"
     }
 
-policeflash = "alternate between red & blue, every second, repeat forever"
+And create "policeflash" = "alternate between red & blue, every second, repeat forever".
 
     $ curl 'http://localhost:8080/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,%230000ff,0.5'
     {
@@ -100,7 +109,7 @@ policeflash = "alternate between red & blue, every second, repeat forever"
       "status": "pattern add"
     }
 
-- Parsed pattern is returned in "pattern" array for verification
+- Parsed pattern is returned in "pattern" array for verification.
 
 
 List color patterns
@@ -145,7 +154,7 @@ Play a pattern
       "status": "pattern 'policeflash' playing"
     }
 
-- Short-lived patterns (with only a few repeats), will finish and stop.
+- Short-lived patterns (repeats>0), will finish and stop themselves.
 - Infinite patterns (repeats=0) will repeat forever.
 
 
@@ -157,7 +166,7 @@ Stop a pattern
       "status": "pattern 'policeflash' stopped"
     }
 
-- Can use "/blink1/pattern/stopall" to stop all patterns
+- Can use "/blink1/pattern/stopall" to stop all patterns.
 
 
 Delete a pattern
@@ -172,7 +181,7 @@ Delete a pattern
 - Can use "/blink1/pattern/delall" to remove all patterns
 
 
-----------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 Data Inputs!
 ============

@@ -22,6 +22,12 @@ The following directories exist:
 - windows -- Windows and GUI control application
 - linux -- Linux details 
 
+Some docs that might be useful
+------------------------------
+
+- [app-url-api-examples](https://github.com/todbot/blink1/blob/master/app-url-api-examples.md)
+- [app-url-api](https://github.com/todbot/blink1/blob/master/app-url-api.md)
+
 
 More Info
 ---------
