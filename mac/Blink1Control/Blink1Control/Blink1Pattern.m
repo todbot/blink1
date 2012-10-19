@@ -74,12 +74,8 @@
     playing = true;
     DLog(@"%@ play p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 hexStringFromColor:color],nextTime);
 
-    [blink1 fadeToRGB:color atTime:nextTime/2];  // FIXME: time between colors != time to fade
-    
-    if( repeats >= 0 ) { // FIXME: hack for temporary patterns
-        timer = [NSTimer timerWithTimeInterval:nextTime target:self selector:@selector(update) userInfo:nil repeats:NO];
-        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-    }
+    float fadeTime = nextTime/2;     // FIXME: time between colors != time to fade
+    [blink1 fadeToRGB:color atTime:fadeTime];
 }
 
 //
@@ -153,6 +149,7 @@
             [NSNumber numberWithBool:playing], @"playing",
             [NSNumber numberWithInt:playpos], @"playpos",
             [NSNumber numberWithInt:playcount], @"playcount",
+            [NSNumber numberWithInt:repeats], @"repeats",
             [Blink1 hexStringFromColor:playedcolr], @"playedColor",
             nil];
 }

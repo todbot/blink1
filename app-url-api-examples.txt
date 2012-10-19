@@ -21,7 +21,7 @@ Is there a blink(1)?
 Plug blink(1) in and check again.  Now is there a blink(1)?
 ----------------------------------------------------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/enumerate'
+    $ curl 'http://localhost:8080/blink1/enumerate'
     {
       "blink1_id": "3D52B69201AA1A23",
       "blink1_id_old": "3D52B69200000000",
@@ -38,7 +38,7 @@ Plug blink(1) in and check again.  Now is there a blink(1)?
 Set the blink(1)'s color to #FFCC33
 -----------------------------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/fadeToRGB?rgb=%23ffcc00'
+    $ curl 'http://localhost:8080/blink1/fadeToRGB?rgb=%23ffcc00'
     {
       "rgb": "#ffcc00",
       "status": "fadeToRGB: #FFCC00 t:0.100",
@@ -52,7 +52,7 @@ Set the blink(1)'s color to #FFCC33
 Get the last color sent to blink(1)
 -----------------------------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/lastColor'
+    $ curl 'http://localhost:8080/blink1/lastColor'
     {
       "lastColor": "#FFCC00",
       "status": "lastColor"
@@ -69,7 +69,7 @@ Add some color patterns
 
 blink3green = "blink green 3 times, 1.5 secs on, 0.5 secs off"
 
-    $ curl 'http://127.0.0.1:8080/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,%23000000,0.5'
+    $ curl 'http://localhost:8080/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,%23000000,0.5'
     {
       "pattern": {
         "name": "blink3green",
@@ -84,7 +84,7 @@ blink3green = "blink green 3 times, 1.5 secs on, 0.5 secs off"
 
 policeflash = "alternate between red & blue, every second, repeat forever"
 
-    $ curl 'http://127.0.0.1:8080/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,%230000ff,0.5'
+    $ curl 'http://localhost:8080/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,%230000ff,0.5'
     {
       "pattern": {
         "name": "policeflash",
@@ -104,7 +104,7 @@ policeflash = "alternate between red & blue, every second, repeat forever"
 List color patterns
 -------------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/pattern' 
+    $ curl 'http://localhost:8080/blink1/pattern' 
     {
       "patterns": [
         {
@@ -138,7 +138,7 @@ List color patterns
 Play a pattern
 --------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/pattern/play?pname=policeflash'
+    $ curl 'http://localhost:8080/blink1/pattern/play?pname=policeflash'
     {
       "status": "pattern 'policeflash' playing"
     }
@@ -150,7 +150,7 @@ Play a pattern
 Stop a pattern
 --------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/pattern/stop?pname=policeflash'
+    $ curl 'http://localhost:8080/blink1/pattern/stop?pname=policeflash'
     {
       "status": "pattern 'policeflash' stopped"
     }
@@ -161,7 +161,7 @@ Stop a pattern
 Delete a pattern
 ----------------
 
-    $ curl 'http://127.0.0.1:8080/blink1/pattern/del?pname=policeflash'
+    $ curl 'http://localhost:8080/blink1/pattern/del?pname=policeflash'
     {
       "status": "pattern 'policeflash' removed"
     }
@@ -179,24 +179,7 @@ Add an URL watching input
 Start watching URL "http://todbot.com/tst/color.txt".
 I'll call it "mycolorfile".
 
-    $ curl 'http://127.0.0.1:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt'
-    {
-      "input": {
-        "arg": "http://todbot.com/tst/color.txt",
-        "iname": "mycolorfile",
-        "type": "url"
-      },
-      "status": "input url"
-    }
-
-- Parsed input is returned in array called "input".
-- Input watching is will start on next update cycle (every 30 seconds).
-- To watch immediately, use "test=on" query arg, which doesn't add it.
-
-Do a test watch of a URL input
-------------------------------
-
-    $ curl 'http://127.0.0.1:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt&test=true'
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt'
     {
       "input": {
         "arg": "http://todbot.com/tst/color.txt",
@@ -207,15 +190,94 @@ Do a test watch of a URL input
       "status": "input url"
     }
 
-- Now input's "lastVal" is set to parsed value.
+- Parsed input is returned in array called "input".
+- On a bad URL, "lastVal" is set to "bad url".
+- For this URL, data returned is an RGB hex color code, sent to blink(1) 
+- Other URLs can receive pattern names.
+- "iname" can be any user-desirable string.
+- Input watching happens once on add.
+- Input watching continue on next update cycle (every 30 seconds).
+
+
+Do a test watch of a hex RGB URL input
+---------------------------------------
+
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt&test=true'
+    {
+      "input": {
+        "arg": "http://todbot.com/tst/color.txt",
+        "iname": "mycolorfile",
+        "lastVal": "#9970FF",
+        "type": "url"
+      },
+      "status": "input url"
+    }
+
+- A test watch of an input does not add it to the input scheduler
+
+
+Do a test watch of a color pattern URL input
+--------------------------------------------
+
+$ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&url=http://todbot.com/tst/pattern.txt&test=on'
+{
+  "input": {
+    "arg": "http://todbot.com/tst/pattern.txt",
+    "iname": "mypattern",
+    "lastVal": "policeflash",
+    "type": "url"
+  },
+  "status": "input url"
+}
+
+- "lastVal" is a pattern for this URL.
 
 
 List all inputs
 ---------------
 
+First let's add a view inputs, same as before:
+
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt' 
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&url=http://todbot.com/tst/pattern.txt'
+
+Now look at the list:
+
+    $ curl 'http://localhost:8080/blink1/input/'
+    {
+      "enabled": true,
+      "inputs": [
+        {
+          "arg": "http://todbot.com/tst/color.txt",
+          "iname": "mycolorfile",
+          "lastVal": "#9970FF",
+          "type": "url"
+        },
+        {
+          "arg": "http://todbot.com/tst/pattern.txt",
+          "iname": "mypattern",
+          "lastVal": "policeflash",
+          "type": "url"
+        }
+      ],
+      "status": "input results"
+    }
+
+- Inputs are returned in "inputs" array.
+- Inputs will have a "lastVal" 
+- Use "enabled=false" queryarg to turn off running of all inputs
+
 
 Delete the input
 ----------------
+
+    $ curl 'http://localhost:8080/blink1/input/del?iname=mycolorfile'
+    {
+      "status": "input 'mycolorfile' removed"
+    }
+
+- can use "/blink1/input/delall" to remove all inputs at once
+
 
 
 -eof-
