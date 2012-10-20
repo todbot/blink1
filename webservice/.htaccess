@@ -4,10 +4,10 @@ RewriteEngine On
 # If you need to use the `RewriteBase` directive, it should be the
 # absolute physical path to the directory that contains this htaccess file.
 #
-# RewriteBase /
-#RewriteBase /Users/tod/Sites/blink1
-RewriteBase /~tod/blink1
+
+# this is for tod local debugging, don't use in production!
+#RewriteBase /~tod/blink1
+
 
 RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteRule ^ index.php [QSA,L]
 RewriteRule ^ index.php [QSA,L]
