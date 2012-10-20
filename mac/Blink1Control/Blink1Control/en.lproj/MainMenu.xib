@@ -1294,7 +1294,7 @@
 			<object class="NSWindowTemplate" id="972006081">
 				<int key="NSWindowStyleMask">7</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{335, 390}, {850, 630}}</string>
+				<string key="NSWindowRect">{{335, 325}, {850, 630}}</string>
 				<int key="NSWTFlags">1954021376</int>
 				<string key="NSWindowTitle">blink(1) control</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -3309,7 +3309,7 @@
 				<string key="351.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="354.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="YES" key="371.IBNSWindowAutoPositionCentersHorizontal"/>
-				<boolean value="YES" key="371.IBNSWindowAutoPositionCentersVertical"/>
+				<boolean value="NO" key="371.IBNSWindowAutoPositionCentersVertical"/>
 				<string key="371.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="371.IBWindowTemplateEditedContentRect">{{380, 496}, {480, 360}}</string>
 				<boolean value="NO" key="371.NSWindowTemplate.visibleAtLaunch"/>
@@ -3426,6 +3426,30 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">B1SAppDelegate</string>
 					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="allOff:">id</string>
+						<string key="openConfig:">id</string>
+						<string key="openStatusMenu:">id</string>
+						<string key="reScan:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="allOff:">
+							<string key="name">allOff:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openConfig:">
+							<string key="name">openConfig:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openStatusMenu:">
+							<string key="name">openStatusMenu:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="reScan:">
+							<string key="name">reScan:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="blink1serial">NSMenuItem</string>
 						<string key="blink1status">NSMenuItem</string>
