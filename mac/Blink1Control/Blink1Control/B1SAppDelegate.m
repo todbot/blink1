@@ -23,7 +23,7 @@
 #import "B1SAppDelegate.h"
 #import "RoutingHTTPServer.h"
 
-#import <QuartzCore/QuartzCore.h>
+#import <QuartzCore/QuartzCore.h>  // for CoreImage-based colored statusbar 
 
 
 @interface B1SAppDelegate ()
@@ -51,8 +51,8 @@
 // solution: put them in the prefs, duh
 NSString* confURL =  @"http://localhost:8080/blink_1/";
 NSString* playURL =  @"http://localhost:8080/bootstrap/blink1.html";
-//NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
-NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
+NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
+//NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 
 
 // play pattern with restart
@@ -168,51 +168,6 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     return [[NSString alloc] initWithData:response encoding:NSUTF8StringEncoding];
 }
 
-// for "watchfile" functionality, should be put in its own class
--(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
-{
-    DLog(@"watch file: %@ %@", noteName, fpath);
-    if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
-        DLog(@"watcher: file written %@ %@", noteName, fpath);
-        watchFileChanged = true;
-    }
-    // FIXME: this doesn't work
-    if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
-        DLog(@"re-adding deleted file");
-        [self updateWatchFile:fpath];
-    }
-}
-
-// for "watchfile" functionality, should be put in its own class
-- (void)updateWatchFile:(NSString*)wPath
-{
-    DLog(@"updateWatchFile %@",wPath);
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:wPath];
-    if( !fileExists ) { // if no file, make one to watch, with dummy content
-        NSString *content = @"Put this in a file please.";
-        NSData *fileContents = [content dataUsingEncoding:NSUTF8StringEncoding];
-        [[NSFileManager defaultManager] createFileAtPath:wPath
-                                                contents:fileContents
-                                              attributes:nil];
-    }
-
-    if( myVDKQ != nil ) [myVDKQ removePath:wPath];
-    [myVDKQ addPath:wPath];
-    watchFileChanged = true;
-}
-
-//
-- (void) updateFileInput: (NSMutableDictionary*)input
-{
-    DLog(@"updateFileInput");
-    NSString* path = [input objectForKey:@"arg"];
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:path];
-    if( fileExists ) {
-        // do something
-    }
-    
-}
-
 
 //
 - (Boolean) deleteInput: (NSString*)iname
@@ -234,6 +189,26 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 }
 
 //
+- (void) updateFileInput: (NSMutableDictionary*)input
+{
+    DLog(@"updateFileInput");
+    NSString* filepath = [input objectForKey:@"arg"];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    if( fileExists ) {
+        //NSString* contentstr = [NSString stringWithContentsOfFile:filepath];
+        NSString* contentstr = [NSString stringWithContentsOfFile:filepath encoding:NSUTF8StringEncoding error:NULL];
+        DLog(@"file contents='%@'",contentstr);
+        NSString* patternstr  = [self parsePatternOrColorInString: contentstr];
+        DLog(@"patternstr='%@'",patternstr);
+        [input setObject:patternstr forKey:@"lastVal"];
+        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+    }
+    else {
+        [input setObject:@"no such file" forKey:@"lastVal"];
+    }
+}
+
+//
 - (void) updateUrlInput: (NSMutableDictionary*) input
 {
     NSString* arg     = [input valueForKey:@"arg"];
@@ -247,8 +222,8 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     
     if( patternstr!=nil && ![patternstr isEqualToString:lastVal] ){ // different!
         DLog(@"url: playing pattern %@",patternstr);
-        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
         [input setObject:patternstr forKey:@"lastVal"]; // save last val
+        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
     } else {
         DLog(@"url: no change");
     }
@@ -285,6 +260,30 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     }
 }
 
+- (void) updateCpuloadInput: (NSMutableDictionary*) input
+{
+    NSString* arg     = [input valueForKey:@"arg"];
+    int level = [arg intValue];
+    int cpuload = [cpuuse getCPUuse];
+    DLog(@"cpuload:%d%% - level:%d",cpuload,level);
+    if( cpuload >= level ) {
+        [self playPattern: [input valueForKey:@"pname"] restart:NO];
+    }
+    [input setObject:[NSNumber numberWithInt:cpuload] forKey:@"lastVal"]; // save last val
+}
+
+- (void) updateNetloadInput: (NSMutableDictionary*) input
+{
+    NSString* arg     = [input valueForKey:@"arg"];
+    int level = [arg intValue];
+    int netload = [cpuuse getCPUuse];
+    DLog(@"netload:%d%% - level:%d",netload,level);
+    if( netload >= level ) {
+        [self playPattern: [input valueForKey:@"pname"] restart:NO];
+    }
+    [input setObject:[NSNumber numberWithInt:netload] forKey:@"lastVal"]; // save last val
+}
+
 // ----------------------------------------------------------------------------
 // the main deal for triggering color patterns
 // ----------------------------------------------------------------------------
@@ -292,9 +291,7 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 {
     DLog(@"updateInputs");
     if( !inputsEnable ) return;
-    
-    int cpuload = [cpuuse getCPUuse];
-    
+        
     NSString* key;
     for( key in inputs) {
         NSMutableDictionary* input = [inputs objectForKey:key];
@@ -311,21 +308,15 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
         }
         else if( [type isEqualToString:@"file"] )
         {
-            // FIXME: this is partially done using FSEvents
+            [self updateFileInput:input];
         }
         else if( [type isEqualToString:@"cpuload"] )
         {
-            NSString* arg     = [input valueForKey:@"arg"];
-            int level = [arg intValue];
-            DLog(@"cpuload:%d%% - level:%d",cpuload,level);
-            if( cpuload >= level ) {
-                [self playPattern: [input valueForKey:@"pname"] restart:NO];
-            }
-            [input setObject:[NSNumber numberWithInt:level] forKey:@"lastVal"]; // save last val
+            [self updateCpuloadInput:input];
         }
         else if( [type isEqualToString:@"netload"] )
         {
-            
+            [self updateNetloadInput:input];
         }
     } //for(key)
 }
@@ -406,11 +397,6 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     [self loadPrefs];
     
     [self setupHttpServer];
-    
-    // set up file watcher
-    myVDKQ = [[VDKQueue alloc] init];
-    [myVDKQ setDelegate:self];
-    [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];  //FIXME: test
     
     // set up input watcher
     float timersecs = 5.0;
@@ -702,37 +688,28 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
         NSString* path  = [request param:@"path"];
-        
-        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        NSString* test  = [request param:@"test"];
 
+        NSString* statusstr = @"must specifiy 'iname' and 'path'";
+
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && path != nil ) {
             NSString* fpath = [path stringByExpandingTildeInPath];
             [input setObject:iname   forKey:@"iname"];
             [input setObject:@"file" forKey:@"type"];
             [input setObject:fpath   forKey:@"arg"];
-            [inputs setObject:input  forKey:iname];  // add new input to inputs list
             
-            [self performSelectorOnMainThread:@selector(updateWatchFile:)
-                                   withObject:fpath
-                                waitUntilDone:NO];
-
-            DLog(@"watching file %@",fpath);
-        }
-        else {
-            //path = watchPath;
-        }
-        
-        NSString* filecontents = @"";
-        if( watchFileChanged ) {
-            filecontents = [NSString stringWithContentsOfFile:path
-                                                     encoding:NSUTF8StringEncoding error:nil];
-            watchFileChanged = false;
+            [self updateFileInput:input];
+                        
+            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"input file";
         }
 
-        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:input];
-        [respdict setObject:filecontents  forKey:@"new_event"];
-        [respdict setObject:input         forKey:@"input"];
-        [respdict setObject:@"input file" forKey:@"status"];
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init]; //[NSMutableDictionary dictionaryWithDictionary:input];
+        [respdict setObject:input     forKey:@"input"];
+        [respdict setObject:statusstr forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -743,22 +720,25 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
         NSString* url   = [request param:@"url"];
         NSString* test  = [request param:@"test"];
 
+        NSString* statusstr = @"must specifiy 'iname' and 'url'";
+        
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && url != nil ) { // the minimum requirements for this input type
             [input setObject:iname  forKey:@"iname"];
             [input setObject:@"url" forKey:@"type"];
             [input setObject:url    forKey:@"arg"];
-        }
         
-        [self updateUrlInput: input];
+            [self updateUrlInput: input];
 
-        if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
-            [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"input url";
         }
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init]; //[NSMutableDictionary dictionaryWithDictionary:input];
         [respdict setObject:input forKey:@"input"];
-        [respdict setObject:@"input url" forKey:@"status"];
+        [respdict setObject:statusstr forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -767,6 +747,8 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* test  = [request param:@"test"];
         NSString* iname = @"ifttt";
+        
+        NSString* statusstr = @"must specifiy 'iname' and 'url'";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         [input setObject:iname    forKey:@"iname"];
@@ -780,8 +762,8 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
         }
 
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:@"ifttt testing" forKey:@"status"];
-        [respdict setObject:input forKey:@"input"];
+        [respdict setObject:statusstr forKey:@"status"];
+        [respdict setObject:input     forKey:@"input"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -791,23 +773,29 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
         NSString* iname = [request param:@"iname"];
         NSString* level = [request param:@"level"];
         NSString* pname = [request param:@"pname"];
+        NSString* test  = [request param:@"test"];
         
-        //int cpuload = [cpuuse getCPUuse];
-        //NSLog(@"cpu use:%d%%",cpuload);
+        NSString* statusstr = @"must specifiy 'iname' and 'level'";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && level != nil ) {
-            if( pname == nil ) pname = iname;
+            if( pname == nil ) pname = [iname copy];
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"cpuload" forKey:@"type"];
             [input setObject:level      forKey:@"arg"];
             [input setObject:pname      forKey:@"pname"];
-            [inputs setObject:input forKey:iname];
+            
+            [self updateCpuloadInput:input];
+
+            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"cpuload input";
         }
 
-        NSMutableDictionary *respdict = [NSMutableDictionary dictionaryWithDictionary:input];
-        //[respdict setObject:[NSNumber numberWithInt:cpuload] forKey:@"cpuload"];
-        [respdict setObject:@"cpuload" forKey:@"status"];
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:statusstr forKey:@"status"];
+        [respdict setObject:input     forKey:@"input"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -817,12 +805,27 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
         NSString* iname = [request param:@"iname"];
         NSString* level = [request param:@"level"];
         NSString* pname = [request param:@"pname"];
+        NSString* test  = [request param:@"test"];
 
+        NSString* statusstr = @"must specifiy 'iname' and 'level'";
+        
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        if( iname != nil && level != nil ) {
+            if( pname == nil ) pname = [iname copy];
+            
+            [self updateNetloadInput:input];
+            
+            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"netload input";
+        }
+        
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:iname forKey:@"iname"];
         [respdict setObject:level forKey:@"level"];
         [respdict setObject:pname forKey:@"pname"];
-        [respdict setObject:@"netload not implemented yet" forKey:@"status"];
+        [respdict setObject:statusstr forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -860,6 +863,7 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
     [statusItem setMenu:statusMenu];
 }
 
+//
 - (void) updateStatusImageHue:(NSColor*)tint
 {
     statusImage = [self tintImage:statusImageBase withColor:tint];
@@ -995,7 +999,65 @@ NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 
 @end
 
+/*
 
+ //[self performSelectorOnMainThread:@selector(updateWatchFile:)
+ //                       withObject:fpath
+ //                    waitUntilDone:NO];
+ //DLog(@"watching file %@",fpath);
+ //}
+ //else {
+ //path = watchPath;
+ //}
+ 
+ *
+ NSString* filecontents = @"";
+ if( watchFileChanged ) {
+ filecontents = [NSString stringWithContentsOfFile:path
+ encoding:NSUTF8StringEncoding error:nil];
+ watchFileChanged = false;
+ }
+ 
+ // set up file watcher
+ myVDKQ = [[VDKQueue alloc] init];
+ [myVDKQ setDelegate:self];
+ [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];  //FIXME: test
+ 
+
+ // for "watchfile" functionality, should be put in its own class
+ -(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
+ {
+ DLog(@"watch file: %@ %@", noteName, fpath);
+ if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
+ DLog(@"watcher: file written %@ %@", noteName, fpath);
+ watchFileChanged = true;
+ }
+ // FIXME: this doesn't work
+ if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
+ DLog(@"re-adding deleted file");
+ [self updateWatchFile:fpath];
+ }
+ }
+ 
+ // for "watchfile" functionality, should be put in its own class
+ - (void)updateWatchFile:(NSString*)wPath
+ {
+ DLog(@"updateWatchFile %@",wPath);
+ BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:wPath];
+ if( !fileExists ) { // if no file, make one to watch, with dummy content
+ NSString *content = @"Put this in a file please.";
+ NSData *fileContents = [content dataUsingEncoding:NSUTF8StringEncoding];
+ [[NSFileManager defaultManager] createFileAtPath:wPath
+ contents:fileContents
+ attributes:nil];
+ }
+ 
+ if( myVDKQ != nil ) [myVDKQ removePath:wPath];
+ [myVDKQ addPath:wPath];
+ watchFileChanged = true;
+ }
+ 
+*/
 
 
 /*

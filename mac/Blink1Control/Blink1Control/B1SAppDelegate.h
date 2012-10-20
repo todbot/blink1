@@ -22,7 +22,8 @@
 @class RoutingHTTPServer;
 
 
-@interface B1SAppDelegate : NSObject <NSApplicationDelegate,VDKQueueDelegate> {
+//@interface B1SAppDelegate : NSObject <NSApplicationDelegate,VDKQueueDelegate> {
+@interface B1SAppDelegate : NSObject <NSApplicationDelegate> {
     
     //NSMutableArray* serialnums;
     CPUuse* cpuuse;
