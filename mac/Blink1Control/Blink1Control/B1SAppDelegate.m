@@ -23,6 +23,8 @@
 #import "B1SAppDelegate.h"
 #import "RoutingHTTPServer.h"
 
+#import <QuartzCore/QuartzCore.h>
+
 
 @interface B1SAppDelegate ()
 
@@ -49,7 +51,8 @@
 // solution: put them in the prefs, duh
 NSString* confURL =  @"http://localhost:8080/blink_1/";
 NSString* playURL =  @"http://localhost:8080/bootstrap/blink1.html";
-NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
+//NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
+NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 
 
 // play pattern with restart
@@ -61,12 +64,13 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 
 // play a pattern
 // can restart if already playing, or just leave be an already playing pattern
-// returns true if pattern exists, false if not
+// returns true if pattern was played, false if not
 - (Boolean) playPattern: (NSString*)pname restart:(Boolean)restart
 {
     if( pname == nil ) return false;
     
-    if( [pname hasPrefix:@"#"] ) { // a hex color, not a proper pattern
+    // a hex color, not a proper pattern, send hex color immediately
+    if( [pname hasPrefix:@"#"] ) {
         [blink1 fadeToRGB:[Blink1 colorFromHexRGB:pname] atTime:0.1];
         return true;
     }
@@ -92,6 +96,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     return (pattern!=nil);
 }
 
+//
 - (void) stopAllPatterns
 {
     for( Blink1Pattern* pattern in [patterns allValues] ) {
@@ -164,6 +169,21 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 }
 
 // for "watchfile" functionality, should be put in its own class
+-(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
+{
+    DLog(@"watch file: %@ %@", noteName, fpath);
+    if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
+        DLog(@"watcher: file written %@ %@", noteName, fpath);
+        watchFileChanged = true;
+    }
+    // FIXME: this doesn't work
+    if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
+        DLog(@"re-adding deleted file");
+        [self updateWatchFile:fpath];
+    }
+}
+
+// for "watchfile" functionality, should be put in its own class
 - (void)updateWatchFile:(NSString*)wPath
 {
     DLog(@"updateWatchFile %@",wPath);
@@ -181,19 +201,16 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     watchFileChanged = true;
 }
 
-// for "watchfile" functionality, should be put in its own class
--(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
+//
+- (void) updateFileInput: (NSMutableDictionary*)input
 {
-    DLog(@"watch file: %@ %@", noteName, fpath);
-    if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
-        DLog(@"watcher: file written %@ %@", noteName, fpath);
-        watchFileChanged = true;
+    DLog(@"updateFileInput");
+    NSString* path = [input objectForKey:@"arg"];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:path];
+    if( fileExists ) {
+        // do something
     }
-    // FIXME: this doesn't work
-    if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
-        DLog(@"re-adding deleted file");
-        [self updateWatchFile:fpath];
-    }
+    
 }
 
 
@@ -243,17 +260,28 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", iftttEventUrl, [blink1 blink1_id]];
     
     NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
-    DLog(@"got string: %@", jsonStr);
-    id object = [_jsonparser objectWithString:jsonStr];
-    NSDictionary* list = [(NSDictionary*)object objectForKey:@"events"];
+    DLog(@"url:%@ = '%@'", eventUrlStr,jsonStr);
+
+    NSDictionary* jsonResponse = [_jsonparser objectWithString:jsonStr];
+    NSString* status = [jsonResponse objectForKey:@"status"];
+    if( !jsonResponse || !status ) { // badly formated JSON
+        [input setObject:@"error: badly formed JSON response" forKey:@"lastVal"];
+    }
+
+    if( [status hasPrefix:@"error"] ) { // uh oh, error
+        [input setObject:status forKey:@"lastVal"];
+        return;
+    }
+    NSDictionary* list = [jsonResponse objectForKey:@"events"];
     for (NSDictionary *event in list) {
         NSString * bl1_id     = [event objectForKey:@"blink1_id"];
         NSString * bl1_name   = [event objectForKey:@"name"];
         NSString * bl1_source = [event objectForKey:@"source"];
         DLog(@"bl1_id:%@, name:%@, source:%@", bl1_id, bl1_name, bl1_source);
         
-        NSString* patternstr = [self parsePatternOrColorInString: bl1_name]; //FIXME: source?
-        [self playPattern: patternstr];
+        //FIXME: source?
+        [self playPattern: bl1_name];
+        [input setObject:bl1_name forKey:@"lastVal"];
     }
 }
 
@@ -279,7 +307,6 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
         }
         else if( [type isEqualToString:@"ifttt"] )
         {
-            // FIXME: this code is stale
             [self updateIftttInput: input];
         }
         else if( [type isEqualToString:@"file"] )
@@ -363,9 +390,11 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     [blink1 enumerate];
     
     __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
-    blink1.updateHandler = ^(NSColor *lastColor, float lastTime) {
+    blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
+    {
         NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
         [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
+        [weakSelf updateStatusImageHue:lastColor];
     };
      
     // set up json parser
@@ -622,7 +651,9 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 		[response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
     
+    //
     // inputs
+    //
     
     // list all inputs
     [http get:@"/blink1/input" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -734,11 +765,23 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     
     // add the ifttt watching input
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        //NSString* enable = [request param:@"enable"];
-        // FIXME: handle enable
+        NSString* test  = [request param:@"test"];
+        NSString* iname = @"ifttt";
+        
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        [input setObject:iname    forKey:@"iname"];
+        [input setObject:@"ifttt" forKey:@"type"];
+        //[input setObject:url    forKey:@"arg"];
+
+        [self updateIftttInput: input];
+        
+        if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+            [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+        }
 
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:@"not implemented yet" forKey:@"status"];
+        [respdict setObject:@"ifttt testing" forKey:@"status"];
+        [respdict setObject:input forKey:@"input"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
@@ -809,19 +852,64 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 
     //Allocates and loads the images into the application which will be used for our NSStatusItem
     NSBundle *bundle = [NSBundle mainBundle];    
-    statusImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1" ofType:@"png"]];
-    //statusHighlightImage = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1i" ofType:@"png"]];
-    //Sets the images in our NSStatusItem
-    [statusItem setImage:statusImage];
-    //[statusItem setAlternateImage:statusHighlightImage];
+    statusImageBase = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1" ofType:@"png"]];
     
-    //[statusItem setTitle: NSLocalizedString(@"blink(1)",@"")];
+    [statusItem setImage:statusImageBase];
+        
     [statusItem setHighlightMode:YES];
-    [statusItem setMenu:statusMenu];  // instead, we'll do it by hand
-    
-    //[statusItem setAction:@selector(openStatusMenu:)];
-    //[statusItem setTarget:self];
+    [statusItem setMenu:statusMenu];
 }
+
+- (void) updateStatusImageHue:(NSColor*)tint
+{
+    statusImage = [self tintImage:statusImageBase withColor:tint];
+    [statusItem setImage:statusImage];
+}
+
+// from: http://stackoverflow.com/questions/1413135/tinting-a-grayscale-nsimage-or-ciimage
+- (NSImage *)tintImage:(NSImage*)srcImage withColor:(NSColor *)tint
+{
+    if (tint != nil) {
+        NSSize size = [srcImage size];
+        NSRect bounds = { NSZeroPoint, size };
+        NSImage *tintedImage = [[NSImage alloc] initWithSize:size];
+        
+        [tintedImage lockFocus];
+        
+        CIFilter *colorGenerator = [CIFilter filterWithName:@"CIConstantColorGenerator"];
+        CIColor *color = [[CIColor alloc] initWithColor:tint];
+
+        [colorGenerator setValue:color forKey:@"inputColor"];
+        
+        CIFilter *monochromeFilter = [CIFilter filterWithName:@"CIColorMonochrome"];
+        CIImage *baseImage = [CIImage imageWithData:[srcImage TIFFRepresentation]];
+        
+        [monochromeFilter setValue:baseImage forKey:@"inputImage"];
+        [monochromeFilter setValue:[CIColor colorWithRed:0.75 green:0.75 blue:0.75] forKey:@"inputColor"];
+        [monochromeFilter setValue:[NSNumber numberWithFloat:1.0] forKey:@"inputIntensity"];
+        
+        CIFilter *compositingFilter = [CIFilter filterWithName:@"CISourceAtopCompositing"];//CIMultiplyCompositing"];
+        
+        [compositingFilter setValue:[colorGenerator valueForKey:@"outputImage"] forKey:@"inputImage"];
+        [compositingFilter setValue:[monochromeFilter valueForKey:@"outputImage"] forKey:@"inputBackgroundImage"];
+        
+        CIImage *outputImage = [compositingFilter valueForKey:@"outputImage"];
+        
+        [outputImage drawAtPoint:NSZeroPoint
+                        fromRect:bounds
+                       operation:NSCompositeCopy
+                        fraction:1.0];
+        
+        [tintedImage unlockFocus];
+        
+        return tintedImage;
+    }
+    else {
+        DLog(@"tint is nil");
+        return [srcImage copy];
+    }
+}
+
 
 //FIXME: what's the better way of doing this?
 - (void) updateUI
@@ -908,6 +996,8 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 @end
 
 
+
+
 /*
  // testing Task
  NSString*	result;
@@ -919,59 +1009,3 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
  */
 
 
-/*
- NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
- NSString *myString = [prefs stringForKey:@"keyToLookupString"];      // getting an NSString
- if( myString == nil ) {
- // saving an NSString
- [prefs setObject:@"TextToSave" forKey:@"keyToLookupString"];
- }
- */
-/*
- NSString* iname = @"myTodInput";
- NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
- [input setObject:iname forKey:@"iname"];
- [input setObject:@"todftt" forKey:@"type"];
- [input setObject:@"blargh" forKey:@"arg"];
- [inputs setObject:input forKey:iname];
- */
-
-
-
-
-/*
- [http get:@"/hello/:name" withBlock:^(RouteRequest *request, RouteResponse *response) {
- [response respondWithString:[NSString stringWithFormat:@"Hello %@!", [request param:@"name"]]];
- }];
- 
- [http get:@"{^/page/(\\d+)}" withBlock:^(RouteRequest *request, RouteResponse *response) {
- [response respondWithString:[NSString stringWithFormat:@"You requested page %@",
- [[request param:@"captures"] objectAtIndex:0]]];
- }];
- 
- [http post:@"/widgets" withBlock:^(RouteRequest *request, RouteResponse *response) {
- // Create a new widget, [request body] contains the POST body data.
- // For this example we're just going to echo it back.
- [response respondWithData:[request body]];
- }];
- 
- // Routes can also be handled through selectors
- [http handleMethod:@"GET" withPath:@"/selector" target:self     selector:@selector(handleSelectorRequest:withResponse:)];
- */
-
-
-/*
- NSString *jsonString = @"{\"tod\":1, \"bar\":2, \"garb\":\"gobble\", \"arrr\":[ 3,6,89] }";
- 
- id object = [_jsonparser objectWithString:jsonString];
- //if (object) {
- NSLog(@"val:%@",[_jsonwriter stringWithObject:object]);
- //} else {
- NSLog(@"error:%@",[NSString stringWithFormat:@"An error occurred: %@", _jsonparser.error]);
- //}
- 
- NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
- [dictionary setObject:@"tod kurt" forKey:@"todbot"];
- [dictionary setObject:@"carlyn maw" forKey:@"carlynorama"];
- NSLog(@"dict:%@",[_jsonwriter stringWithObject:dictionary]);
- */
