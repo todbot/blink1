@@ -6,6 +6,9 @@
  *
  */
 
+// yeah we're going to be as strict as we can 
+error_reporting( E_ALL );
+
 require 'Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 $app = new \Slim\Slim();
@@ -19,22 +22,25 @@ $app->error(function (\Exception $e) use ($app) {
 $app->notFound(function () use ($app) {
         send_json_response("error: not found",NULL);
 });
-
 //$log->setEnabled(true);  // for debugging
 
+$eventsDir = getcwd() . "/eventscache";
 
-$eventDir = getcwd() . "/events";
 
-//
+// ----------------------------------------------------------------------------
+
+// Given a blink1_id and a list of events
+// write those events out
+// return result of write attempt as string
 function writeEvents($blink1_id,$events)
 {
-    global $eventDir;
+    global $eventsDir;
     global $log;
 
     $retstr = "";
 
     //$blink1_id = $event['blink1_id'];
-    $fname = "$eventDir/" . $blink1_id; // . ".txt";
+    $fname = "$eventsDir/" . $blink1_id; // . ".txt";
 
     if (!$handle = fopen($fname, 'w')) {
         $log->error("Cannot open file ($filename)");
@@ -57,7 +63,8 @@ function writeEvents($blink1_id,$events)
     return $retstr;
 }
 
-//
+// Determine if passed-in blink1 id is good or not
+// returns TRUE if so, otherwise FALSE
 function isValidBlink1Id($blink1_id)
 {
     if( empty($blink1_id) ) {
@@ -66,10 +73,19 @@ function isValidBlink1Id($blink1_id)
     if( $blink1_id == 0 ) {
         return FALSE;
     }
+    if( strlen($blink1_id) != 16 ) { 
+        return FALSE;
+    }
+    if( !ctype_xdigit($blink1_id)  ) {
+        return FALSE;
+    }
     
     return TRUE;
 }
 
+// add a "status" entry to passed in data struct 
+// convert to JSON string
+// and spit it out to client
 function send_json_response($status_str, $data)
 {
     $data['status'] = $status_str;
@@ -79,39 +95,30 @@ function send_json_response($status_str, $data)
     echo $str;
 }
 
-// -------------------------------------------
+// ----------------------------------------------------------------------------
 
 //
 $app->get('/', function () {
         $str = <<<EOT
-Welcome to the blink1 api service.  valid paths are GETS to /blink1/sendevent and POSTs to /blink1/sendevents.  Details are in the 'web-api.txt' document.
+Welcome to the blink1 api service.  valid paths are GETS to /blink1/sendevent and POSTs to /blink1/sendevents.  Details in the 'web-api.txt' document.
 EOT;
         send_json_response($str, NULL);
     });
 
-//
-$app->get('/hello/:name', function ($name) {
-        echo "Hello, $name";
+// simple test to make sure .htaccess works
+$app->get('/ping/(:name)', function ($name = "anon") {
+        echo "Ping yourself, $name";
     });
 
-//
-/*
-$app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) { 
-        echo "bah!";
-        $app->render("events/$blink1_id"); // FIXME:
-    });
-*/
-//
+// Send an event to a blink1_id
 $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) { 
-        //blink1_id  = $req->get('blink1_id');
         $name       = $req->get('name');
         $source     = $req->get('source');
 
         if( !isValidBlink1Id( $blink1_id ) ) { 
-            send_json_response( "error: invalid blink1_id", NULL);
+            send_json_response( "error: invalid blink1_id '$blink1_id'", NULL);
             return;
         }
-        //echo "blink1_id: '$blink1_id'";
 
         if( empty($name) ) { $name = 'default'; } 
         if( empty($source) ) { $source = 'default'; } 
@@ -125,7 +132,6 @@ $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) {
         $str = writeEvents( $blink1_id, $events );
 
         send_json_response( "success: $str", $events);
-
     });
 
 //
@@ -142,7 +148,6 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
         }
         
         $events = $jsondata->{'events'};
-        //$events = $jsondata{'events'};
         if( empty($events) ) { 
             $status_str = "error: no 'events' datastruct found in POST body";
             send_json_response($status_str, NULL);
@@ -155,7 +160,6 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
             $date = $event->{'date'};
             if( empty($date) ) {
                 $event->{'date'} = "".time(); // FIXME: convert to string
-                //$event{'date'} = "".time(); // FIXME: convert to string
             }
                                
             if( !isValidBlink1Id( $bl_id ) ) { 
@@ -172,9 +176,22 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
         $status_str = "success: $result";
  
         send_json_response($status_str, $events_to_save);
-
-        return true;
     });
+
+//
+$app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) { 
+        global $eventsDir;
+
+        if( !isValidBlink1Id( $blink1_id ) ) { 
+            send_json_response( "error: invalid blink1_id '$blink1_id'", NULL);
+            return;
+        }
+        $fname = "$eventsDir/" . $blink1_id; // . ".txt";
+        if( file_exists( $fname ) ) {
+          readfile($fname);
+        }
+    });
+
 
 // run it!
 $app->run();
@@ -182,6 +199,7 @@ $app->run();
 
 
 // ------------------------------------------------------------------------
+// found here: https://gist.github.com/906036
 //
 function json_pretty($json) 
 {
@@ -225,3 +243,5 @@ function json_pretty($json)
     }
     return $result;
 }
+
+// notice lack of ending php tag because we're doing it like the cool kids
