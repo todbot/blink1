@@ -76,6 +76,10 @@
 
     float fadeTime = nextTime/2;     // FIXME: time between colors != time to fade
     [blink1 fadeToRGB:color atTime:fadeTime];
+    
+    // schedule for next color
+    timer = [NSTimer timerWithTimeInterval:nextTime target:self selector:@selector(update) userInfo:nil repeats:NO];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
 }
 
 //

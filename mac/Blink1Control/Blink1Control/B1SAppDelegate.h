@@ -39,6 +39,8 @@
     
     NSMutableDictionary *inputs;
     NSMutableDictionary *patterns;
+    
+    NSImage* statusImageBase;
 }
 
 @property (strong) RoutingHTTPServer *http;
