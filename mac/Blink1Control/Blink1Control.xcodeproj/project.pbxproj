@@ -70,6 +70,7 @@
 		DE9CDDCA15F9CA3C003F584C /* VDKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDDC815F9CA3C003F584C /* VDKQueue.m */; };
 		DEAFC809162D08E500EA0FAF /* blink1-icon-set.icns in Resources */ = {isa = PBXBuildFile; fileRef = DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */; };
 		DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB261630BA7C008B26D8 /* Blink1Input.m */; };
+		DEB0CB2A16328E29008B26D8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEB0CB2916328E29008B26D8 /* QuartzCore.framework */; };
 		DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEFABAE015F47F59006E4BB7 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -196,6 +197,7 @@
 		DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "blink1-icon-set.icns"; sourceTree = "<group>"; };
 		DEB0CB251630BA7C008B26D8 /* Blink1Input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1Input.h; sourceTree = "<group>"; };
 		DEB0CB261630BA7C008B26D8 /* Blink1Input.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Input.m; sourceTree = "<group>"; };
+		DEB0CB2916328E29008B26D8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		DEFABAE015F47F59006E4BB7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -204,6 +206,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEB0CB2A16328E29008B26D8 /* QuartzCore.framework in Frameworks */,
 				DE9CDD9215F9290E003F584C /* QTKit.framework in Frameworks */,
 				DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */,
 				DE30986E15F1DF8A00B84287 /* IOKit.framework in Frameworks */,
@@ -269,6 +272,7 @@
 		DE3097CA15F1CACB00B84287 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DEB0CB2916328E29008B26D8 /* QuartzCore.framework */,
 				DE9CDD9115F9290D003F584C /* QTKit.framework */,
 				DEFABAE015F47F59006E4BB7 /* WebKit.framework */,
 				DE30986D15F1DF8A00B84287 /* IOKit.framework */,

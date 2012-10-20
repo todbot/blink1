@@ -98,4 +98,35 @@ Example result:
 
 
 
+Retrieving events
+-----------------
+To retrieve events you must have a valid blink1_id that has had events
+sent to it already.
+
+base URL: `http://api.thingm.com/blink1/events/{blink1_id}`
+
+method: GET
+
+Query arguments: none
+
+Example GET:
+
+    http://api.thingm.com/blink1/events/4428808301AA1A23
+
+Example result:
+
+    {
+      "events":[
+        {
+          "blink1_id":"4428808301AA1A23",
+          "name":"todpoliceflash",
+          "date":"1348631098"
+        },
+      ],
+      "event_count":1,
+      "status" : "ok"
+    }
+
+
+
 -eof-
