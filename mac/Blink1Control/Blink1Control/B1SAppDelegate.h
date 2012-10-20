@@ -14,6 +14,7 @@
 #import "VDKQueue.h"
 
 #import "CPUuse.h"
+#import "Netuse.h"
 
 #import "Blink1.h"
 #import "Blink1Pattern.h"
@@ -25,16 +26,12 @@
 //@interface B1SAppDelegate : NSObject <NSApplicationDelegate,VDKQueueDelegate> {
 @interface B1SAppDelegate : NSObject <NSApplicationDelegate> {
     
-    //NSMutableArray* serialnums;
     CPUuse* cpuuse;
+    Netuse* netuse;
     
     SBJsonWriter *_jsonwriter;
     SBJsonParser *_jsonparser;
     
-    VDKQueue * myVDKQ;
-    //NSString* watchPath;
-    BOOL watchFileChanged;
-
     NSTimer * inputsTimer;
     BOOL inputsEnable;
     

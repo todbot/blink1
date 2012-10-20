@@ -2,6 +2,8 @@
 //  CPUuse.m
 //  Blink1Control
 //
+// from: http://stackoverflow.com/questions/6785069/get-cpu-percent-usage
+//
 //  Created by Tod E. Kurt on 9/6/12.
 //  Copyright (c) 2012 ThingM. All rights reserved.
 //
@@ -40,6 +42,9 @@
     
 }
 
+// from:
+// http://stackoverflow.com/questions/6785069/get-cpu-percent-usage
+//
 - (int) getCPUuse
 {
     float total_use = 0;

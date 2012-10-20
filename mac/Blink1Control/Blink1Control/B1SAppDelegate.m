@@ -54,6 +54,9 @@ NSString* playURL =  @"http://localhost:8080/bootstrap/blink1.html";
 NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 
+float inputInterval = 10.0f;  // in seconds
+
+
 
 // play pattern with restart
 // pname might also be just a hex color, e.g. "#FF0033"
@@ -179,7 +182,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     NSString* arg = [input objectForKey:@"arg"];
     if( [type isEqualToString:@"file"] ) {
         DLog(@"remove path %@",arg);
-        [myVDKQ removePath:arg];
+        //[myVDKQ removePath:arg];
     }
     else if( [type isEqualToString:@"url"] ) {
         DLog(@"remove url %@",arg);
@@ -276,13 +279,14 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 {
     NSString* arg     = [input valueForKey:@"arg"];
     int level = [arg intValue];
-    int netload = [cpuuse getCPUuse];
-    DLog(@"netload:%d%% - level:%d",netload,level);
+    int netload = [netuse getNetuse];
+    DLog(@"netload:%d - level:%d",netload,level);
     if( netload >= level ) {
         [self playPattern: [input valueForKey:@"pname"] restart:NO];
     }
     [input setObject:[NSNumber numberWithInt:netload] forKey:@"lastVal"]; // save last val
 }
+
 
 // ----------------------------------------------------------------------------
 // the main deal for triggering color patterns
@@ -399,8 +403,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     [self setupHttpServer];
     
     // set up input watcher
-    float timersecs = 5.0;
-    inputsTimer = [NSTimer timerWithTimeInterval:timersecs target:self selector:@selector(updateInputs) userInfo:nil repeats:YES];
+    inputsTimer = [NSTimer timerWithTimeInterval:inputInterval target:self selector:@selector(updateInputs) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:inputsTimer forMode:NSRunLoopCommonModes];
 
     inputsEnable = true;
@@ -408,6 +411,8 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
     // set up cpu use measurement tool
     cpuuse = [[CPUuse alloc] init];
     [cpuuse setup]; // FIXME: how to put stuff in init
+
+    netuse = [[Netuse alloc] init];
 
     [self updateUI];  // FIXME: right way to do this?
 
@@ -822,9 +827,7 @@ NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
         }
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
-        [respdict setObject:iname forKey:@"iname"];
-        [respdict setObject:level forKey:@"level"];
-        [respdict setObject:pname forKey:@"pname"];
+        [respdict setObject:input     forKey:@"input"];
         [respdict setObject:statusstr forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
