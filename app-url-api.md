@@ -63,19 +63,24 @@ __Standard JSON response for `/blink1/fadeToRGB?rgb=$230000FF&time=5.0`:__
 __File with color pattern name:__
 
     { 
-      "color_pattern":"blink3_red"
+      "pattern":"blink3_red"
     }
 
 __IFTTT response:__
 
     {
-      "blink1_id":"323abcd3f",
-      "name":"default",
-      "source":"default",
-      "date":"1348604132"
+      "events":[
+        {
+          "blink1_id":"4428808301AA1A23",
+          "name":"todpoliceflash",
+          "date":"1348631098"
+        },
+      ],
+      "event_count":1,
+      "status" : "ok"
     }
 
-__IFTTT response:__
+__IFTTT response: (OLD) __
 
     {
       "blink1_id":"7890abcd12",

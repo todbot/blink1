@@ -17,7 +17,7 @@ $app->error(function (\Exception $e) use ($app) {
         send_json_response("error: $e",NULL);
 });
 $app->notFound(function () use ($app) {
-        send_json_response("url not found",NULL);
+        send_json_response("error: not found",NULL);
 });
 
 //$log->setEnabled(true);  // for debugging
@@ -108,7 +108,7 @@ $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) {
         $source     = $req->get('source');
 
         if( !isValidBlink1Id( $blink1_id ) ) { 
-            send_json_response( "invalid blink1_id", NULL);
+            send_json_response( "error: invalid blink1_id", NULL);
             return;
         }
         //echo "blink1_id: '$blink1_id'";
@@ -136,7 +136,7 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
         $status_str = "";
 
         if( !isValidBlink1Id( $blink1_id ) ) { 
-            $status_str = "invalid blink1_id";
+            $status_str = "error: invalid blink1_id";
             send_json_response($status_str, NULL);
             return;
         }
@@ -144,7 +144,7 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
         $events = $jsondata->{'events'};
         //$events = $jsondata{'events'};
         if( empty($events) ) { 
-            $status_str = "no 'events' datastruct found in POST body";
+            $status_str = "error: no 'events' datastruct found in POST body";
             send_json_response($status_str, NULL);
             return;
         }
