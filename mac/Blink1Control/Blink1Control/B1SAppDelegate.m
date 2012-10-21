@@ -49,12 +49,13 @@
 
 //FIXME: what to do with these URLs?
 // solution: put them in the prefs, duh
-NSString* confURL =  @"http://localhost:8080/blink_1/";
+NSString* confURL =  @"http://127.0.0.1:8080/blink_1/";
 NSString* playURL =  @"http://localhost:8080/bootstrap/blink1.html";
 NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
+NSString* scriptsPath = @"~/Documents/blink1-scripts";
 
-float inputInterval = 10.0f;  // in seconds
+NSTimeInterval inputInterval = 5.0f;  // in seconds
 
 
 
@@ -181,7 +182,7 @@ float inputInterval = 10.0f;  // in seconds
     NSString* type = [input objectForKey:@"type"];
     NSString* arg = [input objectForKey:@"arg"];
     if( [type isEqualToString:@"file"] ) {
-        DLog(@"remove path %@",arg);
+        DLog(@"remove file %@",arg);
         //[myVDKQ removePath:arg];
     }
     else if( [type isEqualToString:@"url"] ) {
@@ -195,28 +196,38 @@ float inputInterval = 10.0f;  // in seconds
 - (void) updateFileInput: (NSMutableDictionary*)input
 {
     DLog(@"updateFileInput");
-    NSString* filepath = [input objectForKey:@"arg"];
+    NSString* path = [input objectForKey:@"arg"];
+    NSString* filepath = [path stringByStandardizingPath];
+    //NSString* fpath = [path stringByExpandingTildeInPath];
+
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
     if( fileExists ) {
-        //NSString* contentstr = [NSString stringWithContentsOfFile:filepath];
         NSString* contentstr = [NSString stringWithContentsOfFile:filepath encoding:NSUTF8StringEncoding error:NULL];
-        DLog(@"file contents='%@'",contentstr);
+        DLog(@"file '%@' contents='%@'",filepath,contentstr);
         NSString* patternstr  = [self parsePatternOrColorInString: contentstr];
         DLog(@"patternstr='%@'",patternstr);
         [input setObject:patternstr forKey:@"lastVal"];
         [self playPattern: patternstr]; // FIXME: need to check for no pattern?
     }
     else {
-        [input setObject:@"no such file" forKey:@"lastVal"];
+        NSString* errstr = [NSString stringWithFormat:@"no such file '%@'",filepath];
+        [input setObject:errstr forKey:@"lastVal"];
     }
 }
 
 //
 - (void) updateUrlInput: (NSMutableDictionary*) input
 {
-    NSString* arg     = [input valueForKey:@"arg"];
-    NSString* lastVal = [input valueForKey:@"lastVal"];
-    NSString* responsestr = [self getContentsOfUrl: arg];
+    NSString* urlstr         = [input valueForKey:@"arg"];
+    NSString* lastVal        = [input valueForKey:@"lastVal"];
+    NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    if( (now - lastTime) < 30 ) {   // only update URLs every 30 secs
+        return;
+    }
+    [input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
+    
+    NSString* responsestr = [self getContentsOfUrl: urlstr];
     if( !responsestr ) {
         [input setObject:@"bad url" forKey:@"lastVal"];
         return;
@@ -226,7 +237,7 @@ float inputInterval = 10.0f;  // in seconds
     if( patternstr!=nil && ![patternstr isEqualToString:lastVal] ){ // different!
         DLog(@"url: playing pattern %@",patternstr);
         [input setObject:patternstr forKey:@"lastVal"]; // save last val
-        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+        [self playPattern: patternstr]; // FIXME: need to check for no pattern? or already running pattern?
     } else {
         DLog(@"url: no change");
     }
@@ -235,6 +246,13 @@ float inputInterval = 10.0f;  // in seconds
 //
 - (void) updateIftttInput: (NSMutableDictionary*) input
 {
+    NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    if( (now - lastTime) < 30 ) {     // only update URLs every 30 secs
+        return;
+    }
+    [input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
+
     NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", iftttEventUrl, [blink1 blink1_id]];
     
     NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
@@ -257,12 +275,49 @@ float inputInterval = 10.0f;  // in seconds
         NSString * bl1_source = [event objectForKey:@"source"];
         DLog(@"bl1_id:%@, name:%@, source:%@", bl1_id, bl1_name, bl1_source);
         
-        //FIXME: source?
+        // FIXME: source?
+        // FIXME: double-check bl1_id?
         [self playPattern: bl1_name];
         [input setObject:bl1_name forKey:@"lastVal"];
     }
 }
 
+//
+- (void) updateScriptInput: (NSMutableDictionary*)input
+{
+    DLog(@"updateScriptInput");
+    //NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
+    //NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    //if( (now - lastTime) < 30 ) {     // only update URLs every 30 secs
+    //    return;
+    //}
+    //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
+
+    
+    NSString* path = [input objectForKey:@"arg"];
+    NSString* fpath = [NSString stringWithFormat:@"%@/%@",scriptsPath,path];
+    NSString* filepath = [fpath stringByStandardizingPath];
+
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    if( fileExists ) {
+        NSString* contentstr = @"";
+        contentstr = [Task runWithToolPath:filepath
+                                 arguments:NULL
+                               inputString:NULL
+                                   timeOut:0.0];
+        DLog(@"script results='%@'",contentstr);
+        NSString* patternstr  = [self parsePatternOrColorInString: contentstr];
+        DLog(@"patternstr='%@'",patternstr);
+        [input setObject:patternstr forKey:@"lastVal"];
+        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+    }
+    else {
+        NSString* errstr = [NSString stringWithFormat:@"no such file '%@'",filepath];
+        [input setObject:errstr forKey:@"lastVal"];
+    }
+}
+
+//
 - (void) updateCpuloadInput: (NSMutableDictionary*) input
 {
     NSString* arg     = [input valueForKey:@"arg"];
@@ -275,6 +330,7 @@ float inputInterval = 10.0f;  // in seconds
     [input setObject:[NSNumber numberWithInt:cpuload] forKey:@"lastVal"]; // save last val
 }
 
+//
 - (void) updateNetloadInput: (NSMutableDictionary*) input
 {
     NSString* arg     = [input valueForKey:@"arg"];
@@ -291,6 +347,7 @@ float inputInterval = 10.0f;  // in seconds
 // ----------------------------------------------------------------------------
 // the main deal for triggering color patterns
 // ----------------------------------------------------------------------------
+// this is called every 10 secs via an NSTimer
 - (void) updateInputs
 {
     DLog(@"updateInputs");
@@ -300,7 +357,6 @@ float inputInterval = 10.0f;  // in seconds
     for( key in inputs) {
         NSMutableDictionary* input = [inputs objectForKey:key];
         NSString* type    = [input valueForKey:@"type"];
-        //NSString* lastVal = [input valueForKey:@"lastVal"];
         
         if( [type isEqualToString:@"url"])
         {
@@ -313,6 +369,10 @@ float inputInterval = 10.0f;  // in seconds
         else if( [type isEqualToString:@"file"] )
         {
             [self updateFileInput:input];
+        }
+        else if( [type isEqualToString:@"script"] )
+        {
+            [self updateScriptInput:input];
         }
         else if( [type isEqualToString:@"cpuload"] )
         {
@@ -405,17 +465,14 @@ float inputInterval = 10.0f;  // in seconds
     // set up input watcher
     inputsTimer = [NSTimer timerWithTimeInterval:inputInterval target:self selector:@selector(updateInputs) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:inputsTimer forMode:NSRunLoopCommonModes];
-
     inputsEnable = true;
     
     // set up cpu use measurement tool
+    netuse = [[Netuse alloc] init];  // FIXME: what about updateInterval?
     cpuuse = [[CPUuse alloc] init];
     [cpuuse setup]; // FIXME: how to put stuff in init
 
-    netuse = [[Netuse alloc] init];
-
     [self updateUI];  // FIXME: right way to do this?
-
     [self openConfig:nil]; //
 }
 
@@ -689,7 +746,7 @@ float inputInterval = 10.0f;  // in seconds
         [self savePrefs];
     }];
         
-    // add a file watching input -- FIXME: needs work
+    // add a file watching input
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
         NSString* path  = [request param:@"path"];
@@ -699,10 +756,9 @@ float inputInterval = 10.0f;  // in seconds
 
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && path != nil ) {
-            NSString* fpath = [path stringByExpandingTildeInPath];
             [input setObject:iname   forKey:@"iname"];
             [input setObject:@"file" forKey:@"type"];
-            [input setObject:fpath   forKey:@"arg"];
+            [input setObject:path    forKey:@"arg"];
             
             [self updateFileInput:input];
                         
@@ -773,6 +829,35 @@ float inputInterval = 10.0f;  // in seconds
         [self savePrefs];
     }];
     
+    // add a script execing input
+    [http get:@"/blink1/input/script" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* iname = [request param:@"iname"];
+        NSString* path  = [request param:@"script"];
+        NSString* test  = [request param:@"test"];
+        
+        NSString* statusstr = @"must specifiy 'iname' and 'script'";
+        
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        if( iname != nil && path != nil ) {
+            [input setObject:iname     forKey:@"iname"];
+            [input setObject:@"script" forKey:@"type"];
+            [input setObject:path      forKey:@"arg"];
+            
+            [self updateScriptInput:input];
+            
+            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"input script";
+        }
+        
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:input     forKey:@"input"];
+        [respdict setObject:statusstr forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
+    }];
+
     // add a cpu load watching input
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
@@ -817,6 +902,10 @@ float inputInterval = 10.0f;  // in seconds
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && level != nil ) {
             if( pname == nil ) pname = [iname copy];
+            [input setObject:iname      forKey:@"iname"];
+            [input setObject:@"netload" forKey:@"type"];
+            [input setObject:level      forKey:@"arg"];
+            [input setObject:pname      forKey:@"pname"];
             
             [self updateNetloadInput:input];
             

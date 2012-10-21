@@ -345,7 +345,7 @@ __Description:__ Run command-line script, get output as color name or rgb color 
 __Query args:__
 
 * `iname` -- name for this input
-* `script` -- script name (must live in blink1 'scripts' directory)
+* `script` -- script name (must live in "~/Documents/blink1-scripts" directory)
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__

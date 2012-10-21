@@ -281,6 +281,7 @@ Now look at the list:
 - Inputs are returned in "inputs" array.
 - Inputs will have a "lastVal" 
 - Use "enabled=false" queryarg to turn off running of all inputs
+- URL and IFTTT inputs was fetched every 30 seconds
 
 
 Delete the input

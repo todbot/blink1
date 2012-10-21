@@ -25,14 +25,33 @@ function m(d){
 		$('.currently-picking').attr('data-xPos', xPos);
 		$('.currently-picking').attr('data-yPos', yPos);
 		$('#virtual-blink').css('background-color', color);
+
+        var rgbhex = colorToHex(color);
+        var fadeurl = "/blink1/fadeToRGB/?rgb=" + encodeURIComponent(rgbhex) + "&time=" + 0.1;
+        console.log("fadeurl="+fadeurl);
+        jQuery.ajax(fadeurl);
 	}
 	
-
-
 /* 	a.fillText("\u2295",xPos+n-4,yPos+n+4); */
 	a.fillRect(xPos+n-4-11, yPos+n+4-21, 30, 30);
 	a.strokeRect(xPos+n-4-11, yPos+n+4-21, 30, 30);
 }
+
+
+function colorToHex(color) {
+    if (color.substr(0, 1) === '#') {
+        return color;
+    }
+    var digits = /(.*?)rgb\((\d+), (\d+), (\d+)\)/.exec(color);
+    
+    var red = parseInt(digits[2]);
+    var green = parseInt(digits[3]);
+    var blue = parseInt(digits[4]);
+    
+    var rgb = blue | (green << 8) | (red << 16);
+    return digits[1] + '#' + rgb.toString(16);
+};
+
 
 function A(d,yPos,h){
 	var d=6*d,xPos=~~d,g=d-xPos,d=h*(1-yPos),i=h*(1-g*yPos),yPos=h*(1-(1-g)*yPos),j=xPos%6,xPos=[h,i,d,d,yPos,h][j]*o,g=[yPos,h,h,i,d,d][j]*o,h=[d,d,yPos,h,h,i][j]*o;

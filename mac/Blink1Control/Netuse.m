@@ -12,9 +12,11 @@
 
 @implementation Netuse
 
-double sampleInterval = 10.0f;  // FIXME: make this configurable?
+// FIXME: make this configurable?  MUST MATCH timerInterval in B1SAppDelegate.m
+NSTimeInterval sampleInterval = 5.0f;
 
-- (id)init {
+- (id)init
+{
     
 	self = [super init];
 	if (!self) {
@@ -27,6 +29,7 @@ double sampleInterval = 10.0f;  // FIXME: make this configurable?
 	return self;
     
 } // init
+
 
 // return a kByte 'netuse' value
 // this is a sum of delta in & out of all network interfaces
