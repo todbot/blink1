@@ -118,7 +118,7 @@ static void usage(char *myName)
 "\n"
 "Examples \n"
 "  blink1-tool -m 100 --rgb 255,0,255   # fade to #FF00FF in 0.1 seconds \n"
-"  blink1-tool -random 100              # fade to 100 random colors \n"
+"  blink1-tool -t 2000 --random 100     # every 2 seconds fade a random color\n"
 "\n"
             ,myName);
 }
