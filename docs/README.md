@@ -1,4 +1,3 @@
-
 Device API Documentation for blink(1)
 =====================================
 
@@ -16,9 +15,9 @@ Raw HID SetFeature & GetFeature reports
 
 C API
 -----
-For the C API, check out the "blink1-lib.h" and "blink1-lib.c" files.  
+For the C API, check out the [blink1-lib.h](../commandline/blink1-lib.h) and [blink1-lib.c](../commandline/blink1-lib.c) files.  
 
-For an example of them in use, see the command-line tool "blink1-tool.c".
+For an example of them in use, see the command-line tool [blink1-tool.c](../commandline/blink1-tool.c).
 
 
 Java / Processing API
