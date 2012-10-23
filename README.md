@@ -26,6 +26,7 @@ The following directories exist:
 Some docs that might be useful
 ------------------------------
 
+- [blink1-tool](https://github.com/todbot/blink1/blob/master/docs/blink1-tool.md)
 - [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
 - [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 
