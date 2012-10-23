@@ -158,7 +158,9 @@ processinglib: jar
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
 
 javadoc:
-	cd doc && javadoc -sourcepath .. thingm.blink1 && cd ..
+#	cd doc && javadoc -sourcepath .. thingm.blink1 && cd ..
+#	mkdir -p ../docs/javadoc
+	cd ../docs/javadoc && javadoc -sourcepath ../../java thingm.blink1 && cd ../../java
 
 clean:
 	rm -f thingm/blink1/*.class $(OBJS)

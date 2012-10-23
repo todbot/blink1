@@ -84,7 +84,7 @@ public class Blink1
 
   /**
    * Constructor.  
-   * Searches for plugged in blink(1) devices and populates internal caches
+   * Searches for plugged in blink(1) devices and populates internal caches.
    */
   public Blink1() 
   {
@@ -93,7 +93,7 @@ public class Blink1
 
 
   /**
-   * (re)Enumerate the bus and return a count of blink(1) device found
+   * (re)Enumerate the bus and return a count of blink(1) device found.
    * @returns blink1_command response code, -1 == fail 
    */
   public native int enumerate();
@@ -104,12 +104,12 @@ public class Blink1
   public native int getCount();
 
   /**
-   * Return the list of blink(1) device paths found by enumerate
+   * Return the list of blink(1) device paths found by enumerate.
    */
   public native String[] getDevicePaths();
 
   /**
-   * Return the list of blink(1) device serials found by enumerate
+   * Return the list of blink(1) device serials found by enumerate.
    */
   public native String[] getDeviceSerials();
 
@@ -129,33 +129,33 @@ public class Blink1
   public native void close();  
 
   /**
-   * Open blink(1) device by USB path, may be different for each insertion
+   * Open blink(1) device by USB path, may be different for each insertion.
    * @returns blink1_command response code, -1 == fail 
    *
    */
   public native int openByPath( String devicepath );
   
   /**
-   * Open blink(1) device by blink(1) serial number
+   * Open blink(1) device by blink(1) serial number.
    * @returns blink1_command response code, -1 == fail 
    */
   public native int openBySerial( String serialnumber );
   
   /**
-   * Open blink(1) device by blink(1) numerical id (0-getCount())
+   * Open blink(1) device by blink(1) numerical id (0-getCount()).
    * Id list is ordered by serial number.
    * @returns blink1_command response code, -1 == fail 
    */
   public native int openById( int id );
   
   /**
-   * FIXME: this does not work
-   * Do a transaction with the Blink1
+   * Do a transaction with the Blink1.
    * length of both byte arrays determines amount of data sent or received
    * @param cmd the blink1 command code
    * @param buf_send is byte array of command to send, may be null
    * @param buf_recv is byte array of any receive data, may be null
    * @returns blink1_command response code, -1 == fail 
+   * FIXME: this does not work correctly.  Use higher-level functions instead.
    */
   public native synchronized int command(int cmd, 
                                          byte[] buf_send, 
@@ -215,7 +215,7 @@ public class Blink1
   //-------------------------------------------------------------------------
 
   /**
-   * one attempt at a degamma curve
+   * one attempt at a degamma curve.
    * //FIXME: this is now in blink1-lib
    */
   static final public int log2lin( int n )  

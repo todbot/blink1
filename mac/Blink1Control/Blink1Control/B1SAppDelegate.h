@@ -34,6 +34,8 @@
     
     NSTimer * inputsTimer;
     BOOL inputsEnable;
+    int cpuload;
+    int netload;
     
     NSMutableDictionary *inputs;
     NSMutableDictionary *patterns;

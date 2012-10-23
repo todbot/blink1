@@ -246,6 +246,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (void) updateIftttInput: (NSMutableDictionary*) input
 {
+    NSString* pname          = [input valueForKey:@"pname"];
     NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     if( (now - lastTime) < 30 ) {     // only update URLs every 30 secs
@@ -277,8 +278,9 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         
         // FIXME: source?
         // FIXME: double-check bl1_id?
-        [self playPattern: bl1_name];
-        [input setObject:bl1_name forKey:@"lastVal"];
+        pname = (pname) ? pname : bl1_name;
+        [self playPattern: pname];
+        [input setObject:pname forKey:@"lastVal"];
     }
 }
 
@@ -320,11 +322,11 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (void) updateCpuloadInput: (NSMutableDictionary*) input
 {
-    NSString* arg     = [input valueForKey:@"arg"];
-    int level = [arg intValue];
-    int cpuload = [cpuuse getCPUuse];
-    DLog(@"cpuload:%d%% - level:%d",cpuload,level);
-    if( cpuload >= level ) {
+    int min     = [[input valueForKey:@"min"] intValue];
+    int max     = [[input valueForKey:@"max"] intValue];
+    if( max==0 ) max=INT16_MAX;
+    DLog(@"cpuload:%d%% - min/max:%d/%d",cpuload,min,max);
+    if( cpuload >= min && cpuload < max ) {
         [self playPattern: [input valueForKey:@"pname"] restart:NO];
     }
     [input setObject:[NSNumber numberWithInt:cpuload] forKey:@"lastVal"]; // save last val
@@ -335,7 +337,6 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 {
     NSString* arg     = [input valueForKey:@"arg"];
     int level = [arg intValue];
-    int netload = [netuse getNetuse];
     DLog(@"netload:%d - level:%d",netload,level);
     if( netload >= level ) {
         [self playPattern: [input valueForKey:@"pname"] restart:NO];
@@ -352,7 +353,11 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 {
     DLog(@"updateInputs");
     if( !inputsEnable ) return;
-        
+
+    // these must be updated periodically for statistics on them to work
+    cpuload = [cpuuse getCPUuse];
+    netload = [netuse getNetuse];
+
     NSString* key;
     for( key in inputs) {
         NSMutableDictionary* input = [inputs objectForKey:key];
@@ -808,13 +813,15 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* test  = [request param:@"test"];
         NSString* iname = @"ifttt";
+        NSString* pname = [request param:@"test"];
         
         NSString* statusstr = @"must specifiy 'iname' and 'url'";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         [input setObject:iname    forKey:@"iname"];
         [input setObject:@"ifttt" forKey:@"type"];
-        //[input setObject:url    forKey:@"arg"];
+        if( pname )
+            [input setObject:pname forKey:@"pname"];
 
         [self updateIftttInput: input];
         
@@ -858,21 +865,39 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         [self savePrefs];
     }];
 
+    // add a script execing input
+    [http get:@"/blink1/input/scriptlist" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* statusstr = @"scriptlist not implemented yet";
+        //NSMutableDictionary* scripts = [[NSMutableDictionary alloc] init];
+        
+        NSArray* dirlist = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[scriptsPath stringByStandardizingPath] error:nil];
+        if( ! dirlist )
+            dirlist = [[NSArray alloc] init];
+        
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:dirlist   forKey:@"scripts"];
+        [respdict setObject:statusstr forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
+    }];
+
     // add a cpu load watching input
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSString* level = [request param:@"level"];
+        NSString* min   = [request param:@"min"];
+        NSString* max   = [request param:@"max"];
         NSString* pname = [request param:@"pname"];
         NSString* test  = [request param:@"test"];
         
-        NSString* statusstr = @"must specifiy 'iname' and 'level'";
+        NSString* statusstr = @"must specifiy 'iname' and 'min'";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        if( iname != nil && level != nil ) {
+        if( iname != nil && min != nil ) {
             if( pname == nil ) pname = [iname copy];
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"cpuload" forKey:@"type"];
-            [input setObject:level      forKey:@"arg"];
+            [input setObject:min        forKey:@"min"];
+            if( max ) [input setObject:max        forKey:@"max"];
             [input setObject:pname      forKey:@"pname"];
             
             [self updateCpuloadInput:input];
@@ -1150,16 +1175,5 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
  }
  
 */
-
-
-/*
- // testing Task
- NSString*	result;
- result = [Task runWithToolPath:@"/usr/bin/grep" arguments:[NSArray arrayWithObject:@"france"] inputString:@"bonjour!\nvive la france!\nau revoir!" timeOut:0.0];
- NSLog(@"result: %@", result);
- 
- result = [Task runWithToolPath:@"/bin/sleep" arguments:[NSArray arrayWithObject:@"2"] inputString:nil timeOut:1.0];
- NSLog(@"result: %@", result);
- */
 
 

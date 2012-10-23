@@ -180,6 +180,9 @@ Base URL: `http://localhost:8080/blink1`
 * `/blink1/input/script` 
 -- Add and Start command-line script executer
 
+* `/blink1/input/scriptlist` 
+-- List available scripts to run
+
 * `/blink1/input/ifttt` 
 -- Add and Start watching messages from IFTTT webservice
 
@@ -222,7 +225,7 @@ __Description:__ Re-enumerate and List available blink(1) devices
 __Query args:__ -none-
 
 __Example:__
-`/blink1/enumerate`
+`http://localhost:8080/blink1/enumerate`
 
 __Response:__ 
 
@@ -242,11 +245,27 @@ __Query args:__
 * `time` : time in seconds to complete fade (e.g. "0.8")
 
 __Example:__
-`/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
+`http://localhost:8080/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
 
 __Response:__ 
 Standard JSON 'status' response
 
+/blink1/lastColor
+-----------------
+__Description:__ Return last fadeToRGB color sent to blink(1).
+
+__Query args:__ -none-
+
+__Example:__
+`http://localhost:8080/blink1/lastColor`
+
+__Response:__
+
+    {
+      "lastColor": "#000000",
+      "status": "lastColor"
+    }
+    
 
 /blink1/input/
 --------------
@@ -255,7 +274,7 @@ __Description:__ List configured inputs
 __Query args:__ 'enable' : "on" == enable all configured inputs, "off" == off
 
 __Example:__ 
-`/blink1/input`
+`http://localhost:8080/blink1/input`
 
 __Response:__ 
 (example with several inputs configured)
@@ -299,7 +318,7 @@ __Query args:__
 * `iname` -- input name
 
 __Example:__
-`/blink1/input/del?iname=mysqllog`
+`http://localhost:8080/blink1/input/del?iname=mysqllog`
 
 __Response:__ Standard JSON 'status' response
 
@@ -316,7 +335,7 @@ __Query args:__
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
-`/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
+`http://localhost:8080/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
 
 __Response:__ Standard JSON 'status' response
 
@@ -333,7 +352,7 @@ __Query args:__
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
-`/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
+`http://localhost:8080/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
 
 __Response:__ Standard JSON 'status' response
 
@@ -349,7 +368,7 @@ __Query args:__
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
-`/blink1/input/script?iname=checkService&script=CheckServ.bat`
+`http://localhost:8080/blink1/input/script?iname=checkService&script=CheckServ.bat`
 
 __Response:__  Standard JSON 'status' response
 
@@ -361,7 +380,7 @@ __Description:__ Start watching for messages from IFTTT webservice
 __Query args:__ -none-
 
 __Example:__
-`/blink1/input/ifttt`
+`http://localhost:8080/blink1/input/ifttt`
 
 __Response:__  Standard JSON 'status' response
 
@@ -378,7 +397,7 @@ ____Query args:____
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
-`/blink1/input/cpuload?iname=cpu99&level=99`
+`http://localhost:8080/blink1/input/cpuload?iname=cpu99&level=99`
 
 __Response:__  Standard JSON 'status' response
 
@@ -395,7 +414,7 @@ ____Query args:____
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
-`/blink1/input/cpuload?iname=net95&level=95`
+`http://localhost:8080/blink1/input/cpuload?iname=net95&level=95`
 
 __Response:__  Standard JSON 'status' response
 
@@ -408,7 +427,7 @@ List saved color patterns
 __Query args:__ -none-
 
 __Example:__
-`/blink1/pattern/`
+`http://localhost:8080/blink1/pattern/`
 
 __Response:__ 
 
@@ -440,7 +459,7 @@ __Query args:__
     format: "repeats,color1,color1time,color2,color2time,..."
 
 __Example:__
-`/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
+`http://localhost:8080/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
 
 __Response:__ Standard JSON 'status' response
 
@@ -455,7 +474,7 @@ __Query args:__
 * `pname` -- name of color pattern to delete
 
 __Example:__
-`/blink1/pattern/del?pname=blink3_red`
+`http://localhost:8080/blink1/pattern/del?pname=blink3_red`
 
 __Response:__ Standard JSON 'status' response
 
@@ -470,7 +489,7 @@ __Query args:__
 * `pname` -- name of color pattern to play
 
 __Example:__
-`/blink1/pattern/play?pname=blink3_red`
+`http://localhost:8080/blink1/pattern/play?pname=blink3_red`
 
 __Response:__ Standard JSON 'status' response
 
@@ -485,7 +504,7 @@ __Query args:__
 * `pname` -- pattern name string
 
 __Example:__
-`/blink1/pattern/stop?pname=blink3_red`
+`http://localhost:8080/blink1/pattern/stop?pname=blink3_red`
 
 __Response:__ Standard 'status' JSON response
 
