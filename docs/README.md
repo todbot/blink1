@@ -12,11 +12,13 @@ There are multiple ways to communicate with a blink(1) device.
 
 Raw HID SetFeature & GetFeature reports
 ---------------------------------------
+If you like doing down-to-the-metal SetFeature and GetFeature USB HID reports,
+blink(1) speaks a simple 8-byte report for both.  See the C API for details.
+
 
 C API
 -----
 For the C API, check out the [blink1-lib.h](../commandline/blink1-lib.h) and [blink1-lib.c](../commandline/blink1-lib.c) files.  
-
 
 
 Java / Processing API
@@ -39,8 +41,8 @@ Local Web API
 The local Web API is a REST API with JSON responses that comes with
 the Mac OS X and Windows control applications.
 
-It is documented in "app-url-api".
-And has a set of step-by-step examples in "app-url-api-examples".
+It is documented in [app-url-api](app-url-api.md).
+And has a set of step-by-step examples in [app-url-api-examples](app-url-api-examples).
 
 
 IFTTT API
