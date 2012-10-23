@@ -15,8 +15,7 @@
 # Platform-specific notes:
 #
 # Mac OS X 
-#   - Install Xcode with Unix Dev Support and Command-line tools
-#   - Install 'make' from macports (or similar)
+#   - Install Xcode with "Unix Dev Support" and "Command-line tools"
 #   - make
 #
 # Windows XP/7  
@@ -43,7 +42,7 @@
 #   - exit
 #   
 # Raspberry Pi
-#   - apt-get install libusb-1.0-dev
+#   - apt-get install libusb-1.0.0-dev
 #   - make
 #
 # BeagleBone / BeagleBoard (on Angstrom Linux)

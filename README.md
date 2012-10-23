@@ -13,20 +13,21 @@ What is in this repo
 --------------------
 The following directories exist:
 
-- hardware  -- all hardware-related info (firmware & schematic)
+- docs        -- documentation about APIs and such
 - commandline -- C library and command-line tools
-- java -- Java / Processing library
-- processing -- Processing applications  (http://processing.org)
-- libraries -- libraries common to all systems
-- mac -- Mac OS X details and GUI control application
-- windows -- Windows and GUI control application
-- linux -- Linux details 
+- java        -- Java / Processing library
+- processing  -- Processing applications  (http://processing.org)
+- libraries   -- compiled libraries common to all systems
+- mac         -- Mac OS X details and GUI control application
+- windows     -- Windows details and GUI control application
+- linux       -- Linux details 
+- hardware    -- all hardware-related info (firmware & schematic)
 
 Some docs that might be useful
 ------------------------------
 
-- [app-url-api-examples](https://github.com/todbot/blink1/blob/master/app-url-api-examples.md)
-- [app-url-api](https://github.com/todbot/blink1/blob/master/app-url-api.md)
+- [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
+- [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 
 
 More Info
