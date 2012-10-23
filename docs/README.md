@@ -23,7 +23,7 @@ For an example of them in use, see the command-line tool "blink1-tool.c".
 
 Java / Processing API
 ---------------------
-
+Check out the 
 
 Command-line API
 ----------------
@@ -32,7 +32,7 @@ one or more blink(1) devices.  You can use this program inside of
 shell scripts or batch files, or in a pinch, call them from within PHP
 web pages.
 
-It is documented in [blink1-tool.md].
+It is documented in [blink1-tool](blink1-tool.md).
 
 
 Local Web API
