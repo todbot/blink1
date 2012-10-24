@@ -17,7 +17,7 @@ The following directories exist:
 - commandline -- C library and command-line tools
 - java        -- Java / Processing library
 - processing  -- Processing applications  (http://processing.org)
-- libraries   -- compiled libraries common to all systems
+- libraries   -- libraries common to all systems (including HTML app code)
 - mac         -- Mac OS X details and GUI control application
 - windows     -- Windows details and GUI control application
 - linux       -- Linux details 
