@@ -218,9 +218,60 @@ Base URL: `http://localhost:8080/blink1`
 
 ## URL Command Reference  ###################################################
 
-/blink1/enumerate
+/blink1/id
+----------
+__Description:__ List blink(1) devices.
+Also show "blink1_id" used as identifier with IFTTT web service.
+
+__Query args:__ -none-
+
+__Example:__
+`http://localhost:8080/blink1/id`
+
+__Response:__ 
+
+With no blink(1):
+
+    {
+      "blink1_id": "3D52B69200000000",
+      "blink1_serialnums": [
+      ],
+      "status": "blink1 id"
+    }
+
+With blink(1) plugged in:
+
+    {
+      "blink1_id": "3D52B69201AA1A23",
+      "blink1_serialnums": [
+        "01AA1A23"
+      ],
+      "status": "blink1 id"
+    }
+
+
+/blink1/regenerateblink1id
+----------
+__Description:__ Regenerate the blink1_id based on current blink(1) device.
+
+__Example:__
+`http://localhost:8080/blink1/regenerateblink1id`
+
+__Response:__ 
+
+    {
+      "blink1_id": "3D52B69201AA1A23",
+      "blink1_id_old": "3D52B69200000000",
+      "blink1_serialnums": [
+        "01AA1A23"
+      ],
+      "status": "regenerateid"
+    }
+
+
+`/blink1/enumerate`
 -----------------
-__Description:__ Re-enumerate and List available blink(1) devices
+__Description:__ Re-enumerate and List available blink(1) devices.
 
 __Query args:__ -none-
 
@@ -229,10 +280,14 @@ __Example:__
 
 __Response:__ 
 
-    { 
-      "status": "blink(1) devices detected",
-      "blink1_serialnums" : [ "01A12345", "01A12346", "01A12347" ]
-    } 
+    {
+      "blink1_id": "3D52B69201AA1A23",
+      "blink1_id_old": "3D52B69200000000",
+      "blink1_serialnums": [
+        "01AA1A23"
+      ],
+      "status": "enumerate"
+    }
 
 
 /blink1/fadeToRGB
@@ -248,7 +303,13 @@ __Example:__
 `http://localhost:8080/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
 
 __Response:__ 
-Standard JSON 'status' response
+
+    {
+      "rgb": "#ff00ff",
+      "status": "fadeToRGB: #FF00FF t:2.70",
+      "time": "2.700"
+    }
+
 
 /blink1/lastColor
 -----------------
@@ -262,12 +323,12 @@ __Example:__
 __Response:__
 
     {
-      "lastColor": "#000000",
+      "lastColor": "#FF00FF",
       "status": "lastColor"
     }
     
 
-/blink1/input/
+/blink1/input
 --------------
 __Description:__ List configured inputs
 
