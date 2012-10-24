@@ -1,106 +1,87 @@
-function m(d){
 
-/*
-	if() {
-	
-	}
-	else {
-*/
-		xPos=d.pageX-canvas.offsetLeft-container.offsetLeft-picker.offsetLeft-n-12||xPos;
-		yPos=d.pageY-canvas.offsetTop-container.offsetTop-n-8||yPos;
-		d=s(yPos,xPos);
-		t=xPos*xPos+yPos*yPos;
-		t>w&&(xPos=g*Math.cos(d),yPos=g*Math.sin(d),d=s(yPos,xPos),t=xPos*xPos+yPos*yPos);
-/* 	}	 */
-	
-	a.putImageData(E,0,0);
-	a.font="2em bold arial";
-	color = 'rgb(' + parseInt(A((d+u)/B,C(t)/g,j.value/D)[0]) + ', ' + parseInt(A((d+u)/B,C(t)/g,j.value/D)[1]) + ', ' + parseInt(A((d+u)/B,C(t)/g,j.value/D)[2]) + ')';
-	a.fillStyle = color;
-	z.textContent/* =doneColor.style.backgroundColor */=color;
-	
-	if($('#picker').css('display') != 'none') {
-		$('body').css('background-color', color);
-		$('.currently-picking').css('background-color', color);
-		$('.currently-picking').attr('data-xPos', xPos);
-		$('.currently-picking').attr('data-yPos', yPos);
-		$('#virtual-blink').css('background-color', color);
-
-        var rgbhex = colorToHex(color);
-        var fadeurl = "/blink1/fadeToRGB/?rgb=" + encodeURIComponent(rgbhex) + "&time=" + 0.1;
-        console.log("fadeurl="+fadeurl);
-        jQuery.ajax(fadeurl);
-	}
-	
-/* 	a.fillText("\u2295",xPos+n-4,yPos+n+4); */
-	a.fillRect(xPos+n-4-11, yPos+n+4-21, 30, 30);
-	a.strokeRect(xPos+n-4-11, yPos+n+4-21, 30, 30);
-}
-
-
-function colorToHex(color) {
-    if (color.substr(0, 1) === '#') {
-        return color;
-    }
-    var digits = /(.*?)rgb\((\d+), (\d+), (\d+)\)/.exec(color);
-    
-    var red = parseInt(digits[2]);
-    var green = parseInt(digits[3]);
-    var blue = parseInt(digits[4]);
-    
-    var rgb = blue | (green << 8) | (red << 16);
-    return digits[1] + '#' + rgb.toString(16);
-};
-
-
-function A(d,yPos,h){
-	var d=6*d,xPos=~~d,g=d-xPos,d=h*(1-yPos),i=h*(1-g*yPos),yPos=h*(1-(1-g)*yPos),j=xPos%6,xPos=[h,i,d,d,yPos,h][j]*o,g=[yPos,h,h,i,d,d][j]*o,h=[d,d,yPos,h,h,i][j]*o;
-	return[xPos,g,h,"rgb ("+~~xPos+", "+~~g+", "+~~h+")", "rgba ("+~~xPos+", "+~~g+", "+~~h+", 1)"];
-}
-	
-
-document.c=document.createElement;
-display.a=display.appendChild;
-p=canvas.width=canvas.height=320;
-z=display.appendChild(document.c("p"));
-j=display.appendChild(document.c("input"));
-E=a.createImageData(p,p);
-q=E.data,D=j.value=j.max=60,g=150,n=160;
-w=g*g,o=255;
+z=display.appendChild(document.createElement("p"));
+rangeSlider=display.appendChild(document.createElement("input"));
+D=rangeSlider.value=rangeSlider.max=60;
+g=150;
+n=160;
+w=g*g;
+o=255;
 yPos=D;
 xPos=-yPos;
 r=12832;
-u=Math.PI;
-B=2*u;
-C=Math.sqrt;
-s=Math.atan2;
-z.style.font='1em "Helvetica Neue", Helvetica, Arial, sans-serif';
-/* j.type="range"; */
-j.id="darkness-range";
+B=2*Math.PI;
+rangeSlider.id="darkness-range";
 
-for(y=j.min=0;y<p;y++)for(x=0;x<p;x++){
-	i=x-g;
-	v=y-g;
-	F=i*i+v*v;
-	i=A((s(v,i)+u)/B,C(F)/g,1);
-	q[r++]=i[0];
-	q[r++]=i[1];
-	q[r++]=i[2];
-	q[r++]=F>w?0:o
+
+/*
+gradient.onmousedown=function(e){
+	e.preventDefault();
+//	$('#color-zoom').css('background-color', 'transparent');
+	document.onmousemove=draw;
+};
+
+
+document.onmouseup=function(e){
+	document.onmousemove=draw(e);
+//	$('#color-zoom').css('background-color', color);
+};
+
+*/
+
+gradient.onmousedown=function(e){
+	e.preventDefault();
+	document.onmousemove=
+	/p/.test(e.type)?0:(draw(e),draw)};
+	draw(0)
+
+
+
+
+document.onmouseup=function(e){
+	document.onmousemove=
+	/p/.test(e.type)?0:(draw(e),draw)};
+	draw(0)
+
+
+function draw(e){
+
+	xPos=e.pageX-circle.offsetLeft-container.offsetLeft-picker.offsetLeft-n-12;
+	yPos=e.pageY-circle.offsetTop-container.offsetTop-n-8;
+	angle=Math.atan2(yPos,xPos);
+	t = xPos*xPos + yPos*yPos;
+	// if outside the circle, constrain x and y
+	t > w && (xPos = g*Math.cos(angle), yPos=g*Math.sin(angle), angle = Math.atan2(yPos,xPos), t = xPos*xPos + yPos*yPos);
+	var rVal = String(getRGBValues((angle+Math.PI)/B,Math.sqrt(t)/g,rangeSlider.value/D)[0]).split('.')[0];
+	var gVal = String(getRGBValues((angle+Math.PI)/B,Math.sqrt(t)/g,rangeSlider.value/D)[1]).split('.')[0];
+	var bVal = String(getRGBValues((angle+Math.PI)/B,Math.sqrt(t)/g,rangeSlider.value/D)[2]).split('.')[0];
+	color = 'rgb(' + rVal + ', ' + gVal + ', ' + bVal + ')';
+
+	
+	if($('#picker').css('display') != 'none') {
+		$('body').css('background-color', color);
+		$('#color-zoom').css('left', xPos + 60);
+		$('#color-zoom').css('top', yPos - 194);	
+		$('#color-zoom').css('background-color', color);
+		$('.currently-picking').css('background', color);
+		$('.currently-picking').attr('data-yPos', $('#color-zoom').css('top'));
+		$('.currently-picking').attr('data-xPos', $('#color-zoom').css('left'));
+		$('#virtual-blink').css('background-color', color);
+		$('#r').val(rVal);
+		$('#g').val(gVal);
+		$('#b').val(bVal);
+		
+		// logging the color for you to use with the hardware settings here :o)
+		console.log(color);
+	}
 }
 
-j.onchange=m;
-canvas.onmousedown=function(d){
-	d.preventDefault();
-	document.onmousemove=
-	/p/.test(d.type)?0:(m(d),m)};
-	m(0)
 
-
-
-
-document.onmouseup=function(d){
-	document.onmousemove=
-	/p/.test(d.type)?0:(m(d),m)};
-	m(0)
-
+function getRGBValues(angle,yPos,h){
+	var angle=6*angle,xPos=~~angle,g=angle-xPos,angle=h*(1-yPos),i=h*(1-g*yPos),yPos=h*(1-(1-g)*yPos),rangeSlider=xPos%6,xPos=[h,i,angle,angle,yPos,h][rangeSlider]*o,g=[yPos,h,h,i,angle,angle][rangeSlider]*o,h=[angle,angle,yPos,h,h,i][rangeSlider]*o;
+	return[xPos,g,h,"rgb ("+~~xPos+", "+~~g+", "+~~h+")", "rgba ("+~~xPos+", "+~~g+", "+~~h+", 1)"];
+}
+	
+	
+	
+	
+	

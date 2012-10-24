@@ -32,8 +32,9 @@
 					<div id="tab-1">
 						<div id="trigger-list">
 							<ul id="trigger-headers">
-								<li>TRIGGER</li>
-								<li>BEHAVIOR</li>
+								<li>NAME</li>
+								<li>SOURCE</li>
+								<li>PATTERN</li>								
 							</ul>
 						</div><!-- #trigger-list --> 	
 						<div id="welcome-message">
@@ -45,11 +46,8 @@
 						
 						
 						<div class="trigger-options" id="trigger-options-to-clone">
-							<select>
-								<option>CPU Load</option>
-								<option>IFTTT</option>
-								<option>Processor Overload</option>										
-							</select>
+							<p class="trigger-name"></li>
+							<p class="trigger-source"></p>		
 							<div class="trigger-behavior">
 								<ul id="color-behavior-1" class="color-behavior-swatches clearfix">
 									<li class="summary-color-swatch active"></li>
@@ -59,11 +57,11 @@
 									<li class="summary-color-swatch"></li>
 									<li class="summary-color-swatch"></li>
 									<li class="summary-color-swatch"></li>									
-									<li class="looping-option"></li>			
-									<li class="number-of-repetitions-option"></li>			
+									<li class="number-of-repetitions-option"><p>x <span class="number-of-repetitions"></span></p></li>			
+									<li class="repeat-option true"></li>			
 								</ul>											
 							</div>	
-							<input type="button" value="Test Now" />
+							<input type="button" value="Edit" class="edit-trigger-button" />
 							<a class="delete-trigger" title="delete trigger">&nbsp;</a>							
 						</div>
 					</div>			
@@ -82,32 +80,35 @@
 							<h4>Source</h4>
 							<div class="options-group">
 								<input type="radio" name="source-options" value="ifttt" id="source-option-ifttt"><label for="source-option-ifttt">IFTTT</label><br />
-								<input type="radio" name="source-options" value="url" id="source-option-url" checked="checked"><label for="source-option-url">Web page URL</label><br />
-								<input type="radio" name="source-options" value="cpu-load" id="source-option-cpu-load"><label for="source-option-cpu-load">CPU Load</label><br />
-								<input type="radio" name="source-options" value="network-load" id="source-option-network-load"><label for="source-option-network-load">Network Load</label><br />
-								<input type="radio" name="source-options" value="disk-availabilty" id="source-option-disk-availability"><label for="source-option-disk-availability">Disk Availability</label><br />
-								<input type="radio" name="source-options" value="external-script" id="source-option-external-script"><label for="source-option-external-script">External Script</label>
+								<input type="radio" name="source-options" value="url" id="source-option-url"><label for="source-option-url">Web Page URL</label><br />	
+								<input type="radio" name="source-options" value="file" id="source-option-file"><label for="source-option-file">File</label>
 							</div> <!-- .options-group -->	
 						</div> <!-- #source-selector -->		
-						<div id="virtual-blink"></div>						
+						<div id="virtual-blink"></div>
+						<div id="virtual-blink-overlay"></div>						
 					</div> <!-- .column-1 -->		
 					<div class="column column-2">
-						<div id="state-selector">
-							<h4>State</h4>	
-							<select>
-								<option value="numerical-range">Numerical Range</option>
-								<option value="option-2">Another Option</option>
-							</select>
+						<div id="ifttt-options-selector" class="ifttt">
+							<h4>Channel</h4>
+							<input id="ifttt-channel" type="text" class="path" placeholder="enter channel here" />
+							<p>Add both Channel name and Color Pattern name to your reciple of IFTTT.com</p>
 						</div>
-						<div id="value-selector">
-							<h4>Value</h4>	
-							<label for="min-value">Min.</label>
-							<input type="text" id="min-value" placeholder="enter a min value" />
-							<label for="max-value">Max.</label>
-							<input type="text" id="max-value" placeholder="enter a max value" />
-							<label for="current-value">Current Value:</label>
-							<p id="current-value">125</p>
-						</div>											
+						<div id="url-options-selector" class="url">
+							<h4>URL</h4>
+								<input id="web-page-url" class="path" type="text" placeholder="enter url here" />
+							<p>
+								<input type="radio" name="url-color-options" value="url-specified" id="url-color-options-url-specified"/><label for="url-color-options-url-specified">Use color pattern in URL</label><br />
+								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/><label for="url-color-options-user-specified">Specify color pattern</label>							
+							</p>
+							<p>
+								<label for"value-retrieved-text-box">Value Retrieved</label>
+								<input id="value-retrieved-text-box" type="text" value="color value retrieved…"/>
+							</p>
+						</div>
+						<div id="file-options-selector" class="file">
+							<h4>FILE</h4>
+							<input type="text" id="file-path" class="path" placeholder="enter file path here" />
+						</div>
 					</div>	<!-- .column-2 -->				
 					<div class="column column-3">
 						<div id="behavior-selector">
@@ -134,33 +135,37 @@
 							<label for="color-swatches" title="drag and drop swatches to reorder">State Color</label>		
 							<div id="color-swatches" class="clearfix">
 								<ul id="color-swatches-container" class="clearfix">
-									<li id="color-1" class="color-swatch active"></li>
-									<li id="color-2" class="color-swatch"></li>
-									<li id="color-3" class="color-swatch"></li>
-									<li id="color-4" class="color-swatch"></li>
-									<li id="color-5" class="color-swatch"></li>
-									<li id="color-6" class="color-swatch"></li>
-									<li id="color-7" class="color-swatch"></li>				
+									<li id="color-1" class="color-swatch active" data-xPos="61px" data-yPos="-190px"></li>
+									<li id="color-2" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
+									<li id="color-3" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
+									<li id="color-4" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
+									<li id="color-5" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
+									<li id="color-6" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
+									<li id="color-7" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>				
 								</ul>																	
-							</div>		
+							</div>				
+							<div id="repeat-options">
+								<label for="repeat-options-group">Run Pattern</label>
+								<select id="repeat-options-group">
+									<option value="1">1 time only</option>
+									<option value="2">2 times</option>
+									<option value="3">3 times</option>
+									<option value="4">4 times</option>
+									<option value="5">5 times</option>
+									<option value="6">6 times</option>
+									<option value="7">7 times</option>
+									<option value="8">8 times</option>
+									<option value="9">9 times</option>
+									<option value="10">10 times</option>								
+								</select>
+							</div>	
 							<div id="transition-options">
 								<input type="radio" name="flash-or-fade" id="fade" value="fade" checked="checked" />
 								<label for="fade">Fade</label>	
 								<input type="radio" name="flash-or-fade" id="flash" value="flash" />
 								<label for="flash">Flash</label>
-							</div>									
-							
-							<label for="duration-group">Duration</label>
-							<select id="duration-group">
-								<option value="1">1 second</option>
-								<option value="2">2 seconds</option>
-								<option value="3">3 seconds</option>
-								<option value="4">4 seconds</option>
-								<option value="5">5 seconds</option>
-								<option value="6">6 seconds</option>									
-								<option value="7">7 seconds</option>
-								<option value="8">8 seconds</option>									
-							</select>	
+							</div>						
+	
 							
 						</div>	<!-- #color-selector -->
 					</div>	<!-- .column-3 -->		
@@ -191,10 +196,16 @@
 			</div> <!-- #settings-popup -->
 			<div id="picker">
 				<div id="fade-out"></div>
-				<canvas id="c"></canvas>	
+				<div id="gradient-circle-container">
+					<div id="gradient-circle"></div>	
+				</div>	
 				<div id="color-display">
-	<!-- 				<p></p> -->
+					<div id="color-zoom"></div>
+					<div id="bright-white" class="picker-swatch"><p>white light</p></div>
+					<div id="light-off" class="picker-swatch"><p>light off</p></div>					
+					<p id="rgb">R: <input type="text" id="r" value="255"/> G: <input type="text" id="g" value="255"/> B: <input type="text" id="b" value="255"/></p>
 				</div>
+
 				<!-- <p class="instructions">user slider to control darkness</p> -->
 				<a class="done" id="done-color">Done</a>
 				<a class="cancel">Cancel</a>
@@ -204,8 +215,9 @@
 			
 		<script>
 			var b = document.body;
-			var canvas = document.getElementsByTagName('canvas')[0];
-			var a = canvas.getContext('2d');
+			var circle = document.getElementById('gradient-circle-container');
+			var gradient = document.getElementById('gradient-circle');
+			<!-- var a = circle.getContext('2d'); -->
 			var container = document.getElementById('container');
 			var picker = document.getElementById('picker');
 			var display = document.getElementById('color-display');

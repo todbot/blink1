@@ -74,6 +74,7 @@ a {
 	
 p {
 	font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+	font-stretch: normal;
 	font-size: 13px;
 	font-weight: normal;
 	line-height: 14px;
@@ -83,6 +84,12 @@ p {
 h2 {
 	margin-bottom: 20px;
 }
+
+p span.light {
+		font-weight: normal;
+		color: #999;
+		font-size: 12px;
+	}
 
 /****************************************
 
@@ -95,7 +102,7 @@ h2 {
 	background: white;
 	width: 800px;
 	min-height: 570px;
-	margin: 20px auto;
+	margin: 20px auto; 
 	border: 1px solid #555;
 	position: relative;
 	box-shadow: 0px 1px 3px #aaa;	
@@ -276,12 +283,29 @@ display: block;
 			#main-content .trigger-options#trigger-options-to-clone {
 				display: none;
 			}
-		
-			#main-content #trigger-list .trigger-options .trigger-behavior {
-				width: 250px;
+
+			#main-content #trigger-list .trigger-options .trigger-name, #main-content #trigger-list .trigger-options .trigger-source {
 				display: block;
 				float: left;
-				margin-right: 26px;
+				width: 166px;
+				height: 32px;
+				line-height: 30px;
+				font-size: 14px;
+				padding-right: 10px;
+				font-weight: bold;		
+			}
+			
+			#main-content #trigger-list .trigger-options .trigger-source {
+				font-weight: normal;
+				width: 174px;
+				font-size: 12px;
+			}
+		
+			#main-content #trigger-list .trigger-options .trigger-behavior {
+				width: 192px;
+				display: block;
+				float: left;
+				margin-right: 22px;
 				height: 32px;
 				margin-bottom: 0px;
 				margin-left: 4px;
@@ -295,15 +319,16 @@ display: block;
 
 				#main-content #trigger-list .trigger-options .color-behavior-swatches li {
 					display: inline-block;
-					width: 22px;
+					width: 15px;
 					height: 22px;
 					margin-right: 1px;
-					margin-left: 0;
+					margin-left: 0px;
 					background: #999;
 				}
 				
 				#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch {
 					display: none;
+					border: 1px solid #999;
 				}
 				
 					#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch.active {
@@ -325,6 +350,14 @@ display: block;
 			border-bottom: 1px solid #EEE;
 			padding-bottom: 20px;
 		}
+	
+			#main-content #trigger-list #trigger-headers li:nth-of-type(2) {
+				width: 169px;
+			}
+			
+			#main-content #trigger-list #trigger-headers li:nth-of-type(3) {
+				width: 160px;
+			}
 		
 			#main-content #trigger-list #trigger-headers li {
 				opacity: .2;
@@ -359,7 +392,7 @@ display: block;
 				display: inline-block;
 				margin-right: 16px;
 				font-size: 22px;
-				width: 248px;
+				width: 156px;
 				height: 20px;
 			}
 		
@@ -369,7 +402,7 @@ display: block;
 			width: 34px;
 		}
 		
-		#main-content a#add-new-trigger:hover img {
+		#main-content a#add-new-trigger:hover img, .highlighted {
 			box-shadow: 0px 0px 3px 2px orange;
 			-moz-box-shadow: 0px 0px 3px 2px orange;
 			-webkit-box-shadow: 0px 0px 3px 2px orange;
@@ -392,8 +425,35 @@ display: block;
 			display: block;
 		}
 
+		#main-content #trigger-list .trigger-options .color-behavior-swatches li.repeat-option, #main-content #trigger-list .trigger-options .color-behavior-swatches li.number-of-repetitions-option {
+			width: 18px;
+			float: right;
+			color: #555;
+		}
+		
+		#main-content #trigger-list .trigger-options .color-behavior-swatches li.number-of-repetitions-option {
+			width: 28px;
+		}
+				
+		#main-content #trigger-list .trigger-options .color-behavior-swatches li.number-of-repetitions-option p {
+			line-height: 22px;
+			font-weight: bold;
+			font-size: 13px;
+		}
+		
+		#main-content #trigger-list .trigger-options .color-behavior-swatches li.repeat-option {
+			background: transparent url('../images/repeat-arrow.png') no-repeat 0px 0px;			
+		}
+		
+		#main-content #trigger-list .trigger-options .color-behavior-swatches li.repeat-option.true {
+			opacity: 1;	
+		}
 
-			
+
+		#main-content #trigger-list .trigger-options .color-behavior-swatches li.repeat-option.false {
+			background-image: url('../images/play-arrow.png');
+		}
+					
 /****************************************
 
 	POPUP SCREEN COMMON STYLES
@@ -568,7 +628,11 @@ display: block;
     	#configuration-popup .column-2 {
     		width: 166px;
     	}
-    	
+
+	    	#configuration-popup .column-2 div {    	
+	    		display: none;
+	    	}
+	    	
     	#configuration-popup .column-3 {
     		width: 200px;
     	}
@@ -625,12 +689,40 @@ display: block;
 		background: white url('../images/dropdown-arrows-sprite_26_tall.png') no-repeat;	
 		cursor: pointer;		
 	}
+
+
+	#configuration-popup .column-2 input[type="text"] {	
+		padding: 5px 8px;
+		border: 1px solid #999;
+		-webkit-appearance: none;
+		font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+    	font-size: 12px;
+    	font-weight: normal;
+    	width: 146px;
+	}
 	
-/*
-		#configuration-popup select option {
-			padding: 12px 8px 0px;
-		}	
-*/
+	#configuration-popup .column-2 p {	
+		margin-top: 24px;
+		color: #999;
+		width: 152px;
+		font-size: 12px;
+		font-weight: bold;
+		padding: 2px;
+		line-height: 17px;
+	}
+	
+	
+	
+	#configuration-popup .column-2 label {	
+		font-size: 12px;
+		margin-top: 0;
+		font-weight: bold;
+	}
+	
+		#configuration-popup .column-2 input[type="radio"] + label {	
+			padding: 2px 0 0 6px;
+			font-weight: normal;
+		}
 	
 		.no-flexbox	#configuration-popup select {	
 			padding: 0px 0px 0px 4px;
@@ -664,12 +756,23 @@ display: block;
 /** virtual blink **/
 
 #virtual-blink {
-	width: 172px;
-	height: 112px;
-	background: #eee url('../images/virtual_blink1.png') no-repeat;
+	width: 170px;
+	height: 110px;
+	background: #eee;
 	position: absolute;
-	bottom: 16px;
-	left: -30px;
+	bottom: 18px;
+	left: -34px;
+	z-index: 98;
+}
+
+
+#virtual-blink-overlay {
+	width: 170px;
+	height: 110px;
+	background: transparent url('../images/virtual_blink1.png') no-repeat;
+	position: absolute;
+	bottom: 18px;
+	left: -34px;
 	z-index: 99;
 }
 
@@ -817,6 +920,14 @@ display: block;
 		}
 
 
+		#repeat-options {
+			display: block;
+			clear: both;
+			margin-top: 12px;
+		}
+		
+
+
 /****************************************
 
 	COLOR PICKER POPUP STYLES
@@ -867,31 +978,94 @@ display: block;
 
 	#picker #color-display {
 		position: relative;
-		top: 300px;
-		top: 448px;
-		left: 94px;
+		top: 426px;
+		left: 90px;
 		margin-bottom: 10px;
 		width: 150px;
 	}
 	
+	#picker #color-display p {
+		font-size: 13px;
+	}
+	
 	#picker #color-display input {
 		margin-top: 10px;
-		width: 150px;
-	
+		width: 26px;
+		display: inline;
+		color: #333;
+		font-size: 17px;
 	}
+
+/*
+		#picker #color-display input#r {
+			color: red;
+		}
+
+		#picker #color-display input#g {
+			color: green;
+		}
+
+		#picker #color-display input#b {
+			color: blue;
+		}		
+*/
 
 	#picker #color-display p {
 		text-align: center;
 		margin-bottom: 0;
 	}
 	
-	#picker #darkness-range {
-		/* display: block; */
-		display: none;
-	}
-
+	#picker .picker-swatch {
+		height: 18px;
+		width: 18px;
+		border: 1px solid #999;
+		position: absolute;
+		top: 7px;
 		
+	}		
+		
+		#picker .picker-swatch#bright-white {
+			left: -60px;
+			background: white;
+		}
 	
+
+				#picker .picker-swatch#bright-white p {
+					right: -26px;
+				}	
+				
+		#picker .picker-swatch#light-off {
+			left: 10px;
+			background: #999 url('../images/no-light-bg-scalable.png') no-repeat center center;
+			background-size: 100% 100%;
+		}
+		
+				#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch.active.light-off {
+					background-image: url('../images/no-light-bg-scalable.png');
+					background-position: center center;
+					background-repeat: no-repeat;
+					background-size: 100% 100%;
+				}
+		
+			#picker .picker-swatch#light-off p {
+				right: -26px;
+				text-align: left;				
+			}
+			
+		#picker #color-display .picker-swatch p {
+			position: relative;
+			font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+			font-stretch: normal;
+			font-weight: normal;
+			font-size: 10px;
+			top: -2px;
+			line-height: 11px;
+		}
+	
+			#picker #color-display p#rgb {
+				position: relative;
+				left: 80px;
+			}
 	#picker p.instructions {
 		font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
 		font-size: 11px;
@@ -904,20 +1078,45 @@ display: block;
 		display: none;	
 	}
 
-canvas#c {
+div#gradient-circle-container {
 	box-shadow: 0px 2px 14px 4px #666;
 	border-top-left-radius: 200px;
 	border-top-right-radius: 200px;	
 	position: absolute;
-	top: 100px;
+	top: 80px;
 	left: 0px;
 	background: #fff;
-	height: 320px;
+	height: 340px;
+	width: 320px;
 	padding: 10px 10px 61px;
 	border-bottom: 40px solid transparent;
 	cursor: pointer;
 }
 
+div#gradient-circle-container #gradient-circle {
+	background: transparent url('../images/gradient-circle.png') no-repeat -13px -5px;
+	height: 304px;
+	width: 306px;
+	border-radius: 140px;
+	position: absolute;
+	top: 21px;
+	left: 17px;
+}
+
+#color-zoom {
+	background: #eee;
+	width: 36px;
+	height: 36px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	border: 1px solid #555;
+}
+
+
+	#picker input#darkness-range {
+		display: none;
+	}
 
 /****************************************
 
