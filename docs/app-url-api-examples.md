@@ -10,13 +10,13 @@ to let you fetch the contents of URLs from the command-line)
 Is there a blink(1)?
 --------------------
 
-    $ curl 'http://localhost:8080/blink1/'
+    $ curl 'http://localhost:8080/blink1/id'
 
     {
       "blink1_id": "3D52B69200000000",
       "blink1_serialnums": [
       ],
-      "status": "blink1"
+      "status": "blink1 id"
     }
 
 - Nope, no blink(1)s detected.
