@@ -218,8 +218,8 @@ Base URL: `http://localhost:8080/blink1`
 
 ## URL Command Reference  ###################################################
 
-/blink1/id
-----------
+`/blink1/id`
+------------
 __Description:__ List blink(1) devices.
 Also show "blink1_id" used as identifier with IFTTT web service.
 
@@ -250,7 +250,7 @@ With blink(1) plugged in:
     }
 
 
-/blink1/regenerateblink1id
+`/blink1/regenerateblink1id`
 ----------
 __Description:__ Regenerate the blink1_id based on current blink(1) device.
 
@@ -290,7 +290,7 @@ __Response:__
     }
 
 
-/blink1/fadeToRGB
+`/blink1/fadeToRGB`
 -----------------
 __Description:__ Send fadeToRGB command to blink(1) with hex color & fade time
 
@@ -311,7 +311,7 @@ __Response:__
     }
 
 
-/blink1/lastColor
+`/blink1/lastColor`
 -----------------
 __Description:__ Return last fadeToRGB color sent to blink(1).
 
@@ -328,7 +328,7 @@ __Response:__
     }
     
 
-/blink1/input
+`/blink1/input`
 --------------
 __Description:__ List configured inputs
 
@@ -370,7 +370,7 @@ __Response:__
     }
 
 
-/blink1/input/del
+`/blink1/input/del`
 -----------------
 __Description:__ Remove a configured input
 
@@ -385,7 +385,7 @@ __Response:__ Standard JSON 'status' response
 
 
 
-/blink1/input/file
+`/blink1/input/file`
 ------------------
 __Description:__ Start file watcher on given filepath; file contains color pattern names or hex rgb color
 
@@ -402,7 +402,7 @@ __Response:__ Standard JSON 'status' response
 
 
 
-/blink1/input/url
+`/blink1/input/url`
 -----------------
 __Description:__ Start URL watcher on given URL; URL contains color pattern names
 
@@ -418,7 +418,7 @@ __Example:__
 __Response:__ Standard JSON 'status' response
 
 
-/blink1/input/script
+`/blink1/input/script`
 --------------------
 __Description:__ Run command-line script, get output as color name or rgb color code
 
@@ -434,7 +434,7 @@ __Example:__
 __Response:__  Standard JSON 'status' response
 
 
-/blink1/input/ifttt
+`/blink1/input/ifttt`
 -------------------
 __Description:__ Start watching for messages from IFTTT webservice
 
@@ -446,7 +446,7 @@ __Example:__
 __Response:__  Standard JSON 'status' response
 
 
-/blink1/input/cpuload
+`/blink1/input/cpuload`
 ---------------------
 __Description:__
 Start CPU load watching input.  If no arguments, return network load as 0-100 percentage
@@ -454,7 +454,8 @@ Start CPU load watching input.  If no arguments, return network load as 0-100 pe
 ____Query args:____ 
 
 * `iname` -- name for this input
-* `level` -- level from 1-100 on which to trigger this event
+* `min`   -- minimum level on which to trigger this event
+* `max`   -- maximum level on which to trigger this event
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
@@ -463,7 +464,7 @@ __Example:__
 __Response:__  Standard JSON 'status' response
 
 
-/blink1/input/netload
+`/blink1/input/netload`
 ---------------------
 __Description:__
 Start network load watching input.  If no arguments, return network load as 0-100 percentage.
@@ -471,7 +472,8 @@ Start network load watching input.  If no arguments, return network load as 0-10
 ____Query args:____ 
 
 * `iname` -- name for this input
-* `level` -- level from 1-100 on which to trigger this event
+* `min`   -- minimum level on which to trigger this event
+* `max`   -- maximum level on which to trigger this event
 * `pname` -- (optional) color pattern name to trigger
 
 __Example:__
@@ -480,7 +482,8 @@ __Example:__
 __Response:__  Standard JSON 'status' response
 
 
-/blink1/pattern/
+
+`/blink1/pattern`
 ----------------
 __Description:__
 List saved color patterns
@@ -507,8 +510,8 @@ __Response:__
 
 
 
-/blink1/pattern/add
--------------------
+`/blink1/pattern/add`
+---------------------
 __Description:__
 Add color pattern to color pattern list
 
@@ -525,8 +528,8 @@ __Example:__
 __Response:__ Standard JSON 'status' response
 
 
-/blink1/pattern/del
--------------------
+`/blink1/pattern/del`
+---------------------
 __Description:__
 Remove color pattern from color pattern list
 
@@ -540,8 +543,8 @@ __Example:__
 __Response:__ Standard JSON 'status' response
 
 
-/blink1/pattern/play
---------------------
+`/blink1/pattern/play`
+----------------------
 __Description:__
 Play/test a specific color pattern
 
@@ -555,8 +558,8 @@ __Example:__
 __Response:__ Standard JSON 'status' response
 
 
-/blink1/pattern/stop
---------------------
+`/blink1/pattern/stop`
+----------------------
 __Description:__
 Stop a pattern playback, for a given pattern or all patterns
 
