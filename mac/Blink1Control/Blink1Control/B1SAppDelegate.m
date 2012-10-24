@@ -531,15 +531,19 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:[blink1 serialnums] forKey:@"blink1_serialnums"];
         [respdict setObject:[blink1 blink1_id]  forKey:@"blink1_id"];
-        [respdict setObject:@"id" forKey:@"status"];
+        [respdict setObject:@"blink1 id" forKey:@"status"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
     [http get:@"/blink1/regenerateblink1id" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* blink1_id_old = [blink1 blink1_id];
+
         [blink1 setHost_id:nil];
+        [blink1 enumerate];
         NSString* blink1_id = [blink1 regenerateBlink1Id];
+
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
+        [respdict setObject:[blink1 serialnums]  forKey:@"blink1_serialnums"];
         [respdict setObject:blink1_id_old  forKey:@"blink1_id_old"];
         [respdict setObject:blink1_id      forKey:@"blink1_id"];
         [respdict setObject:@"regenerateblink1id" forKey:@"status"];
