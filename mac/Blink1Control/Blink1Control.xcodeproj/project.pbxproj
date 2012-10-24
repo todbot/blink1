@@ -184,7 +184,7 @@
 		DE3C79DD1626787000104F4D /* Blink1Pattern.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Pattern.m; sourceTree = "<group>"; };
 		DE3C79E3162B798F00104F4D /* blink1iconA1i.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blink1iconA1i.png; path = Blink1Control/blink1iconA1i.png; sourceTree = "<group>"; };
 		DE3C79E4162B799000104F4D /* blink1iconA1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blink1iconA1.png; path = Blink1Control/blink1iconA1.png; sourceTree = "<group>"; };
-		DE9CDD7215F5A454003F584C /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
+		DE9CDD7215F5A454003F584C /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; name = html; path = ../../libraries/html; sourceTree = "<group>"; };
 		DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PLWeakCompatibilityStubs.m; path = PLWeakCompatibility/PLWeakCompatibility/PLWeakCompatibilityStubs.m; sourceTree = "<group>"; };
 		DE9CDD8315F886C9003F584C /* Task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Task.h; path = PolKit/Task.h; sourceTree = "<group>"; };
 		DE9CDD8415F886C9003F584C /* Task.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Task.m; path = PolKit/Task.m; sourceTree = "<group>"; };
