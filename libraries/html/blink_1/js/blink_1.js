@@ -1,9 +1,6 @@
 $(document).ready(function(){
 
-	if( !Modernizr.inputtypes.range ){  
-		$('#darkness-range').hide();
-		$('#picker .instructions').hide();		 
-	};  
+
 
 	var triggerObjects = [];
 	var swatchId = '';
@@ -292,10 +289,17 @@ $(document).ready(function(){
 			if($(e.target).attr('id') != "light-off") {
 				console.log($(e.target).css('background-color'));
 				$('#color-display #rgb input').val('255');
+				$('#color-zoom').css('background-color', '#ffffff');
+				$('.currently-picking').css('background-color', '#ffffff');	
+				$('#color-zoom').css('background-image', 'none');											
+				$('.currently-picking').css('background-image', 'none');															
 			}
 			else {
 				console.log('rgb(0, 0, 0)');
 				$('#color-display #rgb input').val('0');
+				$('#color-zoom').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
+				$('.currently-picking').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
+				$('.currently-picking').css('background-size', '100% 100%');
 			}
 			
 		
@@ -540,36 +544,6 @@ $(document).ready(function(){
 			}
 		}
 	}
-	
-	
-/*
-	
-	function resizeSwatches(numberOfColors) {
-		var currentNum = $('.color-swatch.active').length;		
-		var numColors = numberOfColors;
-		var margin = 4;
-		var boxWidth = parseInt(  (127 - ((margin + 2)*(numColors-1)) ) / numColors  );
-		$('.color-swatch').css('width', boxWidth);
-		$('.color-swatch').css('margin-left', margin);
-		
-		if(numColors > 1) {
-			$('#color-selector label[for="color-swatches"] ').html('State Colors');	
-		} else {
-			$('#color-selector label[for="color-swatches"] ').html('State Color');	
-		}
-	
-		if(numColors < currentNum) {
-			for(var i = numColors; i < currentNum; i++) {
-				$($('.color-swatch')[i]).removeClass('active').hide();
-			}
-		} else if(numColors > currentNum) {
-			for(var i = currentNum; i < numColors; i++) {
-				$($('.color-swatch')[i]).addClass('active').show();
-			}
-		}
-	}
-*/
-
 
 	
 	function recolorSwatches(colors) {

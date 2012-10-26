@@ -25,7 +25,6 @@ body {
 	color: #444;
 /* 	background: #f0f0f0  url('../images/stripe_bg-light.png'); */
 	background: #f0f0f0;
-
 }
 
 input {
@@ -574,7 +573,7 @@ display: block;
 		height: 33px;
 	}
 
-		.no-flexbox #configuration-popup input.save-button {
+		.ie8 #configuration-popup input.save-button {
 			padding-bottom: 4px;
 		}
 
@@ -952,6 +951,11 @@ display: block;
 		top: 40px;
 	}
 
+		.ie8 #picker #fade-out {
+			background: transparent;
+		}
+				
+		
 	#picker a {
 		position: absolute;
 		top: 488px;
@@ -1093,6 +1097,12 @@ div#gradient-circle-container {
 	cursor: pointer;
 }
 
+	.ie8 div#gradient-circle-container {
+		border: 1px solid #555;
+		padding-bottom: 100px;
+	}
+
+
 div#gradient-circle-container #gradient-circle {
 	background: transparent url('../images/gradient-circle.png') no-repeat -13px -5px;
 	height: 304px;
@@ -1111,6 +1121,7 @@ div#gradient-circle-container #gradient-circle {
 	top: 0;
 	left: 0;
 	border: 1px solid #555;
+	cursor: pointer;
 }
 
 
@@ -1260,7 +1271,7 @@ a#thingm-logo {
 
 **************************************************/
 
-.no-flexbox #configuration-popup select {	
+.ie8 #configuration-popup select {	
 	background-image: none;
 }
 	
