@@ -663,6 +663,16 @@ display: block;
     	border: 4px solid transparent;
     }
     
+    	.ie8 #source-selector label { 
+    		width: 138px;
+    	}
+    	
+    	.ie8 #source-selector input[type="radio"] {
+	    	display: inline;
+	    	padding-left: 6px;
+	    	padding-right: 0px;
+	    }
+    	
     	#source-selector input:checked + label {
     		border: 4px solid #F7931E;
     		position: relative;
@@ -721,7 +731,9 @@ display: block;
 		line-height: 17px;
 	}
 	
-	
+		.ie8 #configuration-popup .column-2 p {	
+			width: 160px;
+		}	
 	
 	#configuration-popup .column-2 label {	
 		font-size: 12px;
@@ -992,6 +1004,10 @@ display: block;
 			top: 496px;
 		}
 		
+		.ie #picker a.cancel {
+			left: 202px;
+		}
+		
 		#picker a.done {
 			color: #444;
 			top: 484px;
@@ -1009,7 +1025,10 @@ display: block;
 				background: #F7931E;
 			}
 		
-				
+			.ie #picker a.done {
+				font-size: 16px;
+				top: 488px;
+			}	
 
 
 	#picker #color-display {
