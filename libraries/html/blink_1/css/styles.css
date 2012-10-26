@@ -328,7 +328,18 @@ display: block;
 				#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch {
 					display: none;
 					border: 1px solid #999;
+					font-size: 10px;
+					font-weight: normal;
+					text-align: center;
+					line-height: 62px;
+					font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+					color: #ccc;
 				}
+				
+					#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch:hover {
+						color: #666;
+						font-size: 10px;
+					}
 				
 					#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch.active {
 						display: inline-block;
@@ -856,23 +867,37 @@ display: block;
 			margin-bottom: 0;
 		}
 		
-		#color-selector label[for="duration-group"] {
-			margin-top: 33px;
-			float: left;
-		}
+		
 	
 		#color-selector .color-swatch {
 			width: 16px;
 			height: 22px;
 			background: #eee;
 			border: 1px solid #999;
+			color: #999;
 			display: list-item;
 			float: left;
 			margin-left: 2px;
 			display: none;
 			cursor: pointer;
 			position: relative;
+			font-size: 10px;
+			font-weight: normal;
+			text-align: center;
+			line-height: 62px;
+			font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+			color: #999;
 		}
+		
+			#color-selector .color-swatch:hover {
+				color: #666;
+			}
+
+		/*
+	#color-selector .color-swatch:hover:after {
+				content: 's';
+			}
+*/
 		
 			#color-selector .color-swatch.active {
 				display: list-item;
@@ -883,7 +908,8 @@ display: block;
 				border-color: #555;
 				box-shadow: 0px 1px 5px 1px #999;
 				-webkit-box-shadow: 0px 1px 5px 1px #999;
-				-moz-	box-shadow: 0px 1px 5px 1px #999;								
+				-moz-	box-shadow: 0px 1px 5px 1px #999;	
+				color: #444;							
 			}
 
 
@@ -922,7 +948,7 @@ display: block;
 		#repeat-options {
 			display: block;
 			clear: both;
-			margin-top: 12px;
+			margin-top: 25px;
 		}
 		
 
@@ -962,22 +988,28 @@ display: block;
 	}
 	
 		#picker a.cancel {
-			left: 16px;
-			top: 492px;
+			left: 211px;
+			top: 496px;
 		}
 		
 		#picker a.done {
-			color:#666;
-			top: 485px;
-			right: -180px;
+			color: #444;
+			top: 484px;
+			right: -17px;
 			text-transform: uppercase;
-			font-size: 24px;
+			font-size: 18px;
 			display: block;
-			height: 30px;
 			width: auto;
-			padding: 2px 6px;	
-			border: 2px solid #eee;
+			padding: 4px 9px;
+			border: 1px solid #4D4D4D;
+			background: #E6E6E6;		
 		}
+		
+			#picker a.done:hover {
+				background: #F7931E;
+			}
+		
+				
 
 
 	#picker #color-display {
@@ -985,7 +1017,7 @@ display: block;
 		top: 426px;
 		left: 90px;
 		margin-bottom: 10px;
-		width: 150px;
+		width: 306px;
 	}
 	
 	#picker #color-display p {
@@ -993,14 +1025,15 @@ display: block;
 	}
 	
 	#picker #color-display input {
-		margin-top: 10px;
-		width: 30px;
-		display: inline;
-		color: #333;
-		font-size: 17px;
+	margin-top: 0px;
+	width: 66px;
+	display: inline;
+	color: #333;
+	font-size: 29px;
+	letter-spacing: 0px;
+	text-align: left;
 	}
 
-/*
 		#picker #color-display input#r {
 			color: red;
 		}
@@ -1011,9 +1044,36 @@ display: block;
 
 		#picker #color-display input#b {
 			color: blue;
+		}
+		
+		#picker #color-display input#duration-setting {
+			font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+			font-stretch: normal;
+			font-size: 13px;
+			width: 46px;
+			position: relative;
+			left: -138px;
+			top: 17px;
+			border: 1px solid #EEE;
+			padding: 5px 3px;
+			color: #444;
+			font-weight: normal;
+			text-align: center;
 		}		
-*/
 
+	#picker #color-display label[for="duration-setting"]  {
+		font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+		font-stretch: normal;
+		font-size: 11px;
+		color: #999;
+		font-weight: normal;
+		position: relative;
+		left: -73px;
+		top: -5px;
+		display: inline-block;
+		width: 60px;
+	}
+	
 	#picker #color-display p {
 		text-align: center;
 		margin-bottom: 0;
@@ -1029,19 +1089,21 @@ display: block;
 	}		
 		
 		#picker .picker-swatch#bright-white {
-			left: -60px;
+			left: -70px;
 			background: white;
+			top: -63px;
 		}
 	
 
 				#picker .picker-swatch#bright-white p {
-					right: -26px;
+					right: 4px;
 				}	
 				
 		#picker .picker-swatch#light-off {
-			left: 10px;
+			left: 211px;
 			background: #999 url('../images/no-light-bg-scalable.png') no-repeat center center;
 			background-size: 100% 100%;
+			top: -63px;
 		}
 		
 				#main-content #trigger-list .trigger-options .color-behavior-swatches li.summary-color-swatch.active.light-off {
@@ -1052,7 +1114,7 @@ display: block;
 				}
 		
 			#picker .picker-swatch#light-off p {
-				right: -26px;
+				right: 15px;
 				text-align: left;				
 			}
 			
@@ -1062,13 +1124,18 @@ display: block;
 			font-stretch: normal;
 			font-weight: normal;
 			font-size: 10px;
-			top: -2px;
+			top: 24px;
 			line-height: 11px;
+			width: 50px;
 		}
 	
 			#picker #color-display p#rgb {
 				position: relative;
-				left: 80px;
+				left: -73px;
+				top: -9px;
+				font-size: 16px;
+				border: 1px solid #EEE;
+				padding: 7px 14px;
 			}
 	#picker p.instructions {
 		font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
@@ -1109,7 +1176,7 @@ div#gradient-circle-container #gradient-circle {
 	width: 306px;
 	border-radius: 140px;
 	position: absolute;
-	top: 21px;
+	top: 17px;
 	left: 17px;
 }
 

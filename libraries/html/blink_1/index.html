@@ -135,13 +135,13 @@
 							<label for="color-swatches" title="drag and drop swatches to reorder">State Color</label>		
 							<div id="color-swatches" class="clearfix">
 								<ul id="color-swatches-container" class="clearfix">
-									<li id="color-1" class="color-swatch active" data-xPos="61px" data-yPos="-190px"></li>
-									<li id="color-2" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
-									<li id="color-3" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
-									<li id="color-4" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
-									<li id="color-5" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
-									<li id="color-6" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>
-									<li id="color-7" class="color-swatch" data-xPos="61px" data-yPos="-190px"></li>				
+									<li id="color-1" class="color-swatch active" data-xPos="61px" data-yPos="-190px">0.5</li>
+									<li id="color-2" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
+									<li id="color-3" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
+									<li id="color-4" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
+									<li id="color-5" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
+									<li id="color-6" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
+									<li id="color-7" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>				
 								</ul>																	
 							</div>				
 							<div id="repeat-options">
@@ -203,8 +203,9 @@
 					<div id="color-zoom"></div>
 					<div id="bright-white" class="picker-swatch"><p>white light</p></div>
 					<div id="light-off" class="picker-swatch"><p>light off</p></div>					
-					<p id="rgb">R: <input type="text" id="r" value="255"/> G: <input type="text" id="g" value="255"/> B: <input type="text" id="b" value="255"/></p>
+					<p id="rgb">R: <input type="number" max="255" min="0" id="r" value="255"/> G: <input type="number" max="255" min="0" id="g" value="255"/> B: <input type="number" max="255" min="0" id="b" value="255"/></p>
 					<input type="range" id="darkness-range" max="60" value="60" />
+					<label for="duration-setting">Seconds:</label> <input id="duration-setting" type="number" min="0" value="0.2" step="0.1"/>
 				</div>
 
 				<!-- <p class="instructions">user slider to control darkness</p> -->
