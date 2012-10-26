@@ -160,9 +160,9 @@ $(document).ready(function(){
 			resizeSwatches(settings.colorSettings.colors.length, '#trigger-' + currentID + ' .summary-color-swatch', 120);
 			$(settings.colorSettings.colors).each(function(index){
 				if(this == 'rgb(0, 0, 0)') {
-					$($('#trigger-list .trigger-options').last().find('.summary-color-swatch')[index]).css('background-color', '#999').addClass('light-off');
+					$($('#trigger-list .trigger-options').last().find('.summary-color-swatch')[index]).css('background-color', '#999').addClass('light-off').html(settings.colorSettings.durations[index]);
 				} else {
-					$($('#trigger-list .trigger-options').last().find('.summary-color-swatch')[index]).css('background-color', this).removeClass('light-off');
+					$($('#trigger-list .trigger-options').last().find('.summary-color-swatch')[index]).css('background-color', this).removeClass('light-off').html(settings.colorSettings.durations[index]);
 				}
 			});
 			// and print out the text settings
@@ -207,9 +207,9 @@ $(document).ready(function(){
 			resizeSwatches(settings.colorSettings.colors.length, '#trigger-list .trigger-options#trigger-' + idToReplace + ' .summary-color-swatch', 120);
 			$(settings.colorSettings.colors).each(function(index){
 				if(this == 'rgb(0, 0, 0)') {
-					$($('#trigger-list .trigger-options#trigger-' + idToReplace).find('.summary-color-swatch')[index]).css('background-color',  '#999').addClass('light-off');
+					$($('#trigger-list .trigger-options#trigger-' + idToReplace).find('.summary-color-swatch')[index]).css('background-color',  '#999').addClass('light-off').html(settings.colorSettings.durations[index]);
 				} else {
-					$($('#trigger-list .trigger-options#trigger-' + idToReplace).find('.summary-color-swatch')[index]).css('background-color', this).removeClass('light-off');
+					$($('#trigger-list .trigger-options#trigger-' + idToReplace).find('.summary-color-swatch')[index]).css('background-color', this).removeClass('light-off').html(settings.colorSettings.durations[index]);
 				}
 			});
 			// and change out the text settings to reflect new inputs
@@ -271,6 +271,8 @@ $(document).ready(function(){
 		$('.currently-picking').removeClass('currently-picking');
 		// and assign class to current swatch to allow styling/targeting
 		$(this).addClass('currently-picking');
+		// put the duration in the duration spinner
+		$('#duration-setting').val($(this).html());
 		swatchId = $(this).attr('id');
 		// color the virtual blink and body background with the same color
 		$('#virtual-blink').css('background-color', currentColor);
@@ -306,7 +308,23 @@ $(document).ready(function(){
 		});
 
 
+		// manually set RGB values
 		
+		$('#r').change(function(e) {
+			colorWhilePicking('rgb(' + $('#r').val() + ', ' + $('#g').val() + ', ' + $('#b').val() + ')');
+		});
+		$('#g').change(function(e) {
+			colorWhilePicking('rgb(' + $('#r').val() + ', ' + $('#g').val() + ', ' + $('#b').val() + ')');
+		});
+		$('#b').change(function(e) {
+			colorWhilePicking('rgb(' + $('#r').val() + ', ' + $('#g').val() + ', ' + $('#b').val() + ')');
+		});
+		
+		// change corresponding swatch while picking duration
+		$('#duration-setting').change(function(e) {
+			$('.currently-picking').html($(this).val());
+		});
+
 		// cancel the selection
 		$('#picker a.cancel').live('click', function(e) {
 			$('#picker').fadeOut('fast');
@@ -318,6 +336,7 @@ $(document).ready(function(){
 		
 		// save the current selection
 		$('#picker a.done').live('click', function(e) {
+			$('.currently-picking').html($('#duration-setting').val());
 			$('.currently-picking').removeClass('currently-picking');
 			$('#picker').fadeOut('fast');
 			$('body').css('background-color', "#F0F0F0");
@@ -422,10 +441,12 @@ $(document).ready(function(){
 	
 	function resetConfigurationPanel() {
 		// reset the color swatches, input selections and classes to neutral/unassigned status
-		$('.color-swatch').removeClass('active').removeClass('.light-off').css('background-image', 'none');
+		$('.color-swatch').removeClass('active').removeClass('.light-off').css('background-image', 'none').html('0.5');
 		$('#color-zoom').css({'top': '-190px', 'left': '61px', 'background-color' : '#eee'});
 					
 		$('#rgb input').val('255');
+		$('#duration-setting').val('0.5');
+		
 		
 		
 		$('#number-of-colors-group').val('1');
@@ -506,11 +527,12 @@ $(document).ready(function(){
 		
 		$('#behavior-selector > select').val(triggerObj.colorSettings.behavior); // color selector
 		$('#transition-options > input[value="' + triggerObj.colorSettings.transition + '"] ').attr('checked', 'checked'); // color transition
-		$('#repeat-options-group').val(triggerObj.colorSettings.repeatTimes); // color duration
+		$('#repeat-options-group').val(triggerObj.colorSettings.repeatTimes); // color repeat
 		
 		$('#number-of-colors-group').val(triggerObj.colorSettings.colors.length); // number of colors
 		resizeSwatches(triggerObj.colorSettings.colors.length, '.color-swatch', 127); // resize to appropriate number
 		recolorSwatches(triggerObj.colorSettings.colors); // set colors
+		reassignSwatchDurations(triggerObj.colorSettings.durations); // set durations		
 	}
 
 	
@@ -556,6 +578,19 @@ $(document).ready(function(){
 		}
 	}
 	
+	function reassignSwatchDurations(durations) {
+		for(var i = 0; i < durations.length; i++) {
+			$('#color-' + (i + 1)).html(durations[i]);
+		}
+	} 
+	
+	
+	function colorWhilePicking(color) {
+		$('.currently-picking').css('background-color', color);
+		$('#color-zoom').css('background-color', color);
+		$('body').css('background-color', color);
+		$('#virtual-blink').css('background-color', color);
+	}
 	
 	/*-------------------------
 		SAVE/CLOSE FUNCTIONS
@@ -570,13 +605,14 @@ $(document).ready(function(){
 		//collect all settings in one object
 		compiledSettings.colorSettings = new Object();
 		compiledSettings.colorSettings.colors = [];
+		compiledSettings.colorSettings.durations = [];		
 		compiledSettings.source = new Object();
 
 		
 		compiledSettings.colorSettings.behavior = $('#behavior-selector select').val();
 		compiledSettings.colorSettings.transition = $('#transition-options > input:checked').val();
 		compiledSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
-		compiledSettings.colorSettings.duration = $('#duration-group > option:checked').val();		
+/* 		compiledSettings.colorSettings.duration = $('#duration-setting').val();		 */
 		compiledSettings.source.type = $('#source-selector .options-group > input:checked').val();	
 		
 		if($('.column-2').hasClass('ifttt')) {
@@ -604,9 +640,10 @@ $(document).ready(function(){
 		for(var i = 0; i < numberOfSwatches; i++){
 			if($('#' + activeSwatches[i]).css('background-color') == 'rgb(153, 153, 153)') {
 				compiledSettings.colorSettings.colors.push('rgb(0, 0, 0)');
+				compiledSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
 			} else {
 			    compiledSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
-		
+				compiledSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
 			}
 		}
 		return(compiledSettings);
