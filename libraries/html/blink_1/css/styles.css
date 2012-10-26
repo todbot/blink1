@@ -994,7 +994,7 @@ display: block;
 	
 	#picker #color-display input {
 		margin-top: 10px;
-		width: 26px;
+		width: 30px;
 		display: inline;
 		color: #333;
 		font-size: 17px;
@@ -1271,7 +1271,7 @@ a#thingm-logo {
 
 **************************************************/
 
-.ie8 #configuration-popup select {	
+.ie #configuration-popup select {	
 	background-image: none;
 }
 	
