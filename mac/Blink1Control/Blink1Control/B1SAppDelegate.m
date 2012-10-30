@@ -796,7 +796,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         if( iname != nil && url != nil ) { // the minimum requirements for this input type
             [input setObject:iname  forKey:@"iname"];
             [input setObject:@"url" forKey:@"type"];
-            [input setObject:url    forKey:@"arg"];
+            [input setObject:url    forKey:@"url"];
         
             [self updateUrlInput: input];
 
@@ -816,10 +816,10 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add the ifttt watching input
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* test  = [request param:@"test"];
-        NSString* iname = @"ifttt";
-        NSString* pname = [request param:@"test"];
+        NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         
-        NSString* statusstr = @"must specifiy 'iname' and 'url'";
+        NSString* statusstr = @"must specifiy 'iname'";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         [input setObject:iname    forKey:@"iname"];
@@ -852,7 +852,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         if( iname != nil && path != nil ) {
             [input setObject:iname     forKey:@"iname"];
             [input setObject:@"script" forKey:@"type"];
-            [input setObject:path      forKey:@"arg"];
+            [input setObject:path      forKey:@"file"];
             
             [self updateScriptInput:input];
             
@@ -901,7 +901,8 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"cpuload" forKey:@"type"];
             [input setObject:min        forKey:@"min"];
-            if( max ) [input setObject:max        forKey:@"max"];
+            if( max )
+                [input setObject:max    forKey:@"max"];
             [input setObject:pname      forKey:@"pname"];
             
             [self updateCpuloadInput:input];

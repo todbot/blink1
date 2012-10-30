@@ -39,7 +39,7 @@ NSTimeInterval sampleInterval = 5.0f;
     double deltasum = 0;
     for( NSString* ifname in [netdict allKeys]) {
         NSDictionary* ifdict = [netdict objectForKey:ifname];
-        DLog(@"%@: i:%@ o:%@", ifname, [ifdict objectForKey:@"deltain"], [ifdict objectForKey:@"deltaout"]);
+        //DLog(@"%@: i:%@ o:%@", ifname, [ifdict objectForKey:@"deltain"], [ifdict objectForKey:@"deltaout"]);
         double deltai = [[ifdict objectForKey:@"deltain"] doubleValue];
         double deltao = [[ifdict objectForKey:@"deltaout"] doubleValue];
         deltasum += (deltai+deltao);
