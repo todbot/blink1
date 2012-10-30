@@ -384,6 +384,17 @@ __Example:__
 __Response:__ Standard JSON 'status' response
 
 
+`/blink1/input/delall`
+-----------------
+__Description:__ Remove all configured inputs
+
+__Query args:__  -none-
+
+__Example:__
+`http://localhost:8080/blink1/input/delall`
+
+__Response:__ Standard JSON 'status' response
+
 
 `/blink1/input/file`
 ------------------
