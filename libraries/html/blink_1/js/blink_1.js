@@ -6,6 +6,7 @@ $(document).ready(function(){
 	var swatchId = '';
 
 	// load previously-saved triggerObjects from back-end 
+    // FIXME: how to get this to actually work?
     getTriggerObjectsFromBlink1();
 
 	
@@ -663,9 +664,8 @@ $(document).ready(function(){
 		BLINK1 BACK-END FUNCTIONS
 	--------------------------------*/
 
-    // Send the new configuration to blink1 back-end server
-    // by traversing the 'triggerObects' array and constructing
-    // appropriate Ajax commands for the back-end
+    $.ajaxSetup({ cache: false, async: false  });
+
     //
     // 'triggerObjects' is an array with the form:
     //   obj.title                     = human readable name of trigger
@@ -684,16 +684,24 @@ $(document).ready(function(){
     //   obj.source.colorOption = 'url-specified'
     //   obj.source.colorRetrieved = ''  // FIXME
     //
+
+
+    // Send the new configuration to blink1 back-end server
+    // by traversing the 'triggerObects' array and constructing
+    // appropriate Ajax commands for the back-end
+    //
     function updateBlink1InputsAndPatterns(triggerObjects) {
+        console.log("updateBlink1InputsAndPatterns");
         for( var i=0; i<triggerObjects.length; i++ ) {
             var trigObj = triggerObjects[i];
             var source = trigObj.source;
             var type = source.type;
 
             // first lets do inputs
-            var iparms = new Object;
+            var iparms = {}; 
             iparms.iname = trigObj.title;
             iparms.pname = trigObj.title;
+            iparms.type  = type;
             if( type == 'ifttt' ) {
                 iparms.path = source.path;  // FIXME: what to do here
             }
@@ -706,48 +714,97 @@ $(document).ready(function(){
             else {
                 console.log("unknown trigger type "+type);
             }
-            var iurl = 'http://localhost:8080/blink1/input/' + type;
-            $.ajax( { url: iurl, data: iparms } ); // FIXME: check return status
+
+            if( type != "undefined" ) { 
+                var iurl = '/blink1/input/' + type;
+                $.getJSON( iurl, iparms, function(result) { 
+                        console.log("input add status '"+ result.status+"'");  // FIXME: parse status
+                        //console.log(result);
+                    } );
+            }
 
             // now do color patterns
-            var pparms = [];
+            var pparms = {};
             pparms.pname = trigObj.title;
-            var colorSettings = trigObj.colorSettings;
-            var colorString = colorSettings.repeatTimes;
+            var colorSettings = trigObj.colorSettings; 
+            var colorString = colorSettings.repeatTimes; // to start, then add to it
             for( var j=0; j< colorSettings.colors.length; j++ ) {
                 var c = colorToHex( colorSettings.colors[j] );
                 var d = colorSettings.durations[j];
                 colorString += "," + c + "," + d ;
             }
-            console.log("colorString:"+colorString);
-            var purl = 'http://localhost/blink1/pattern/add';
-        }
+            pparms.pattern = colorString;
+
+            var purl = '/blink1/pattern/add';
+            $.getJSON( purl, pparms, function(result) { 
+                    console.log("pattern add status '"+result.status+"'"); // FIXME: parse status
+                    //console.log(result);
+                } );
+        } // for each triggerObject
     }
 
     // Retrieve input and pattern settings from the Blink1 backend server
     // parses JSON output from back-end and turns it into an array of triggerObjects
+    //
     function getTriggerObjectsFromBlink1() {
         console.log("getTriggerObjects");
         var newTriggerObjects = [];
         
-        $.ajax({ url: 'http://localhost:8080/blink1/input', dataType: 'json', success: function(result) { 
-                    console.log("input data '"+ result.status);
-                    console.log(result);
-                    var objs = result.inputs;
-                    for( var i=0; i< objs.length; i++ ) {
-                        var obj = objs[i]; 
-                        var trigger = new Object();
-                        trigger.title = obj.iname;
-                        trigger.source = new Object();
-                        trigger.source.type = obj.type;
-                        trigger.source.path = "http://nope.txt/";
-                        newTriggerObjects.push( trigger );
-                    }
-                    console.log("newTriggerObjects");
-                    console.log(newTriggerObjects);
+        // first, load up the info from the input side of things
+        $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
+                console.log("input data status '"+ result.status+"'");
+                console.log(result);
+                var inputs = result.inputs;
+                for( var i=0; i< inputs.length; i++ ) {
+                    var inp = inputs[i]; 
+                    var trigger = new Object();
+                    trigger.title = inp.iname;
+                    trigger.source = new Object();
+                    trigger.source.type = inp.type;
+                    trigger.source.path = inp.url;
+                    newTriggerObjects.push( trigger );
                 }
+                //console.log("newTriggerObjects");
+                //console.log(newTriggerObjects);
             });
-        return(newTriggerObjects);  // FIXME this will not work
+
+        // then add in the color patterns for each input
+        $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
+                console.log("pattern data status '"+ result.status+"'");
+                console.log(result);
+                var patterns = result.patterns;
+                for( var i=0; i< patterns.length; i++ ) {
+                    var patt = patterns[i]; 
+                    var pattparts = patt.pattern.split(',');
+                    var name = patt.name;
+                    var colors = [];
+                    var durations = [];
+                    for( var j=1; j< pattparts.length; j+=2 ) { 
+                        colors.push( hexToColor(pattparts[j+0]) );
+                        durations.push(         pattparts[j+1] );
+                    }
+
+                    var colorSettings = new Object();
+                    colorSettings.behavior    = 'exact-color';
+                    colorSettings.transition  = 'fade';
+                    colorSettings.repeatTimes = patt.repeats;
+                    colorSettings.colors      = colors;
+                    colorSettings.durations   = durations;
+
+                    // add pattern to correct newTriggerObject
+                    for( var j=0; j<newTriggerObjects.length; j++ ) {
+                        var triggerObj = newTriggerObjects[i];
+                        if( triggerObj.title == name ) { 
+                            triggerObj.colorSettings = colorSettings;
+                        }
+                    }
+                }
+                console.log("newTriggerObjects:");
+                console.log(newTriggerObjects);
+            });
+
+        triggerObjects = newTriggerObjects; // FIXME: don't think this works
+
     }
 
     // convert things like "rgb(255,128,0)" to "#FF8000"
@@ -764,5 +821,14 @@ $(document).ready(function(){
         var rgb = 0x1000000 + (blue | (green << 8) | (red << 16));
         return digits[1] + '#' + rgb.toString(16).substr(1);
     };
+
+    // convert things like "#FF0000" to "rgb(255,128,0)"
+    function hexToColor(hexstring) { 
+        var hex = (hexstring.charAt(0)=="#") ? hexstring.substring(1,7) : hexstring;  
+        var r = parseInt(hex.substring(0,2),16);
+        var g = parseInt(hex.substring(2,4),16);
+        var b = parseInt(hex.substring(4,6),16);
+        return("rgb(" + r + ", "+g+", "+b+")");
+    }
 
 });

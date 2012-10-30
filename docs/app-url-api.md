@@ -449,7 +449,9 @@ __Response:__  Standard JSON 'status' response
 -------------------
 __Description:__ Start watching for messages from IFTTT webservice
 
-__Query args:__ -none-
+__Query args:__ 
+
+* `pname` -- color pattern name to trigger
 
 __Example:__
 `http://localhost:8080/blink1/input/ifttt`
