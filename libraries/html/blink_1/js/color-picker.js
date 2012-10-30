@@ -47,7 +47,7 @@ function draw(e){
 	var bVal = String(getRGBValues((angle+Math.PI)/B,Math.sqrt(t)/g,rangeSlider.value/D)[2]).split('.')[0];
 	color = 'rgb(' + rVal + ', ' + gVal + ', ' + bVal + ')';
 
-	
+ 	
 	if($('#picker').css('display') != 'none') {
 		$('body').css('background-color', color);
 		$('#color-zoom').css('left', xPos + 60);
