@@ -1,7 +1,7 @@
 $(document).ready(function(){
 
 
-
+    var blink1IdSettings = {};
 	var triggerObjects = [];
 	var swatchId = '';
 
@@ -39,7 +39,12 @@ $(document).ready(function(){
 				$(this).removeClass('active');	
 				$('.ui-state-active').addClass('active');
 			} else {
-			// otherwise, trigger popup/opacity effect
+                // otherwise, get settings & trigger popup/opacity effect
+                loadBlink1IdSettings();
+                $('#blink-status').text( blink1IdSettings.statustext );
+                $('#serial-number').text( blink1IdSettings.serialnum );
+                $('#ifttt-uid').text( blink1IdSettings.blink1_id );
+
 				$('#settings-popup').fadeIn('fast');
 				$('#gray-out').fadeIn('fast');	
 				$('#navbar').css('z-index', 1);	
@@ -666,8 +671,24 @@ $(document).ready(function(){
 
     $.ajaxSetup({ cache: false, async: false  });
 
+    function loadBlink1IdSettings() {
+        var b1url = '../blink1/id';
+        $.getJSON( b1url, function(result) { 
+                //console.log("blink1 id status '"+result.status+"'"); 
+                //console.log(result);
+                blink1IdSettings = result;
+                var serialnums = blink1IdSettings.blink1_serialnums;
+                blink1IdSettings.statustext = "no blink(1) found";
+                blink1IdSettings.serialnum = "-none-";
+                if( serialnums.length > 0 ) { 
+                    blink1IdSettings.statustext = "Connected!";
+                    blink1IdSettings.serialnum = serialnums[0];
+                }
+            });
+    }
+
     //
-    // 'triggerObjects' is an array with the form:
+    // 'triggerObjects' is an array of objects with the form:
     //   obj.title                     = human readable name of trigger
     //   obj.colorSettings.colors      = array of colors
     //   obj.colorSettings.durations   = array of durations
