@@ -351,7 +351,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 // this is called every 10 secs via an NSTimer
 - (void) updateInputs
 {
-    DLog(@"updateInputs");
+    //DLog(@"updateInputs");
     if( !inputsEnable ) return;
 
     // these must be updated periodically for statistics on them to work
