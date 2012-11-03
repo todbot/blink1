@@ -787,8 +787,8 @@ $(document).ready(function(){
 
         // first, load up the info from the input side of things
         $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
-                console.log("input data status '"+ result.status+"'");
-                console.log(result);
+                //console.log("input data status '"+ result.status+"'");
+                //console.log(result);
                 var inputs = result.inputs;
                 for( var i=0; i< inputs.length; i++ ) {
                     var inp = inputs[i]; 
@@ -801,8 +801,6 @@ $(document).ready(function(){
                     trigger.source.arg3 = inp.arg3;
                     newTriggerObjects.push( trigger );
                 }
-                //console.log("newTriggerObjects");
-                //console.log(newTriggerObjects);
             })
             .error(function() { 
                     console.log("error! could not read blink1/input json!"); 
@@ -815,7 +813,6 @@ $(document).ready(function(){
                 var patterns = result.patterns;
                 for( var i=0; i< patterns.length; i++ ) {
                     var patt = patterns[i]; 
-                    console.log("patt.name=" +patt.name);
                     var pattparts = patt.pattern.split(',');
                     var colors = [];
                     var durations = [];
@@ -837,18 +834,7 @@ $(document).ready(function(){
                                 this.colorSettings = colorSettings;
                             }
                         });
-                    /*
-                    for( var j=0; j<newTriggerObjects.length; j++ ) {
-                        var triggerObj = newTriggerObjects[j];
-                        //console.log("triggerObj.title="+triggerObj.title);
-                        if( triggerObj.title == patt.name ) { 
-                            //console.log("Match! "+patt.name);
-                            triggerObj.colorSettings = colorSettings;
-                        }
-                    }
-                    */
-                } 
-
+                }
             })
             .error(function() { 
                     console.log("error! could not read blink1/pattern json!"); 
