@@ -192,10 +192,10 @@ Add an URL watching input
 Start watching URL "http://todbot.com/tst/color.txt".
 I'll call it "mycolorfile".
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt'
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt'
     {
       "input": {
-        "arg": "http://todbot.com/tst/color.txt",
+        "arg1": "http://todbot.com/tst/color.txt",
         "iname": "mycolorfile",
         "lastVal": "#9970FF",
         "type": "url"
@@ -215,10 +215,10 @@ I'll call it "mycolorfile".
 Do a test watch of a hex RGB URL input
 ---------------------------------------
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt&test=true'
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt&test=true'
     {
       "input": {
-        "arg": "http://todbot.com/tst/color.txt",
+        "arg1": "http://todbot.com/tst/color.txt",
         "iname": "mycolorfile",
         "lastVal": "#9970FF",
         "type": "url"
@@ -234,10 +234,10 @@ Do a test watch of a color pattern URL input
 
 Watch JSON URL "http://todbot.com/tst/pattern.txt" for "pattern" entry:
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&url=http://todbot.com/tst/pattern.txt&test=on'
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt&test=on'
     {
       "input": {
-        "arg": "http://todbot.com/tst/pattern.txt",
+        "arg1": "http://todbot.com/tst/pattern.txt",
         "iname": "mypattern",
         "lastVal": "policeflash",
         "type": "url"
@@ -253,8 +253,8 @@ List all inputs
 
 First let's add a view inputs, same as before:
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&url=http://todbot.com/tst/color.txt' 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&url=http://todbot.com/tst/pattern.txt'
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt' 
+    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt'
 
 Now look at the list:
 
@@ -263,13 +263,13 @@ Now look at the list:
       "enabled": true,
       "inputs": [
         {
-          "arg": "http://todbot.com/tst/color.txt",
+          "arg1": "http://todbot.com/tst/color.txt",
           "iname": "mycolorfile",
           "lastVal": "#9970FF",
           "type": "url"
         },
         {
-          "arg": "http://todbot.com/tst/pattern.txt",
+          "arg1": "http://todbot.com/tst/pattern.txt",
           "iname": "mypattern",
           "lastVal": "policeflash",
           "type": "url"

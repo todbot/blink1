@@ -1,13 +1,20 @@
 $(document).ready(function(){
 
+    $.ajaxSetup({ cache: false, async: false  });
+
     var blink1IdSettings = {};
-	var triggerObjects = [];
 	var swatchId = '';
 
-	// load previously-saved triggerObjects from back-end 
-    getTriggerObjectsFromBlink1();
+    var triggerObjects = [];
 
-    showWelcomeMessageIfNeeded();
+	// load previously-saved triggerObjects from back-end 
+    var newTriggerObjects = getTriggerObjectsFromBlink1();
+
+    // add them to the screen
+    $(newTriggerObjects).each(function(index) {
+            addNewTrigger(this);
+            hideWelcomeMessageIfNeeded(); // hack, should only need to do this once
+        });
 
 /*********************************
 
@@ -123,7 +130,7 @@ $(document).ready(function(){
 	
 	
     //
-    function showWelcomeMessageIfNeeded() {
+    function hideWelcomeMessageIfNeeded() {
 		// if it's the first trigger, get rid of the welcome message on the homepage
 		if($('#trigger-list .trigger-options').length < 2) {
 			$('#welcome-message').hide();
@@ -138,6 +145,9 @@ $(document).ready(function(){
 
     function addNewTrigger(settings) { 
 
+			// push this new trigger to the triggerObjects array
+			triggerObjects.push(settings);
+			
 			// if not the first one, then give the next available sequential id number (need to check since some could have been deleted from the middle of the sequence and we don't want duplicates)
             // settings.title = settings.title + " copy"; // FIXME: this doesn't work
 			var currentID;
@@ -153,9 +163,6 @@ $(document).ready(function(){
 				currentID = 1;
 			}	
 
-			// push this new trigger to the triggerObjects array
-			triggerObjects.push(settings);
-			
 			// then color the summary swatches on the main homepage
 			$('#trigger-list .trigger-options').last().find('.summary-color-swatch').removeClass('active');
 			resizeSwatches(settings.colorSettings.colors.length, '#trigger-' + currentID + ' .summary-color-swatch', 120);
@@ -199,7 +206,8 @@ $(document).ready(function(){
 		var settings = compileSettings();
 /* 		resetConfigurationPanel(); */
 		
-        showWelcomeMessageIfNeeded();
+        console.log("IN HERE");
+        hideWelcomeMessageIfNeeded();
 
 		/*------if we're CREATING A NEW TRIGGER------*/
 		
@@ -677,8 +685,6 @@ $(document).ready(function(){
 		BLINK1 BACK-END FUNCTIONS
 	--------------------------------*/
 
-    $.ajaxSetup({ cache: false, async: false  });
-
     function loadBlink1IdSettings() {
         var b1url = '../blink1/id';
         $.getJSON( b1url, function(result) { 
@@ -777,7 +783,7 @@ $(document).ready(function(){
     //
     function getTriggerObjectsFromBlink1() {
         console.log("getTriggerObjects");
-        var newTriggerObjects = [];
+        var newTriggerObjects = []; 
         
         // first, load up the info from the input side of things
         $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
@@ -836,17 +842,12 @@ $(document).ready(function(){
                 console.log("newTriggerObjects:");
                 console.log(newTriggerObjects);
 
-                // add them to the screen
-                $(newTriggerObjects).each(function(index) {
-                        addNewTrigger(this);
-                    });
             })
             .error(function() { 
                     console.log("error! could not read blink1/pattern json!"); 
                 });
-
-        triggerObjects = newTriggerObjects; // FIXME: don't think this works
-
+        
+        return newTriggerObjects;
     }
 
     // convert things like "rgb(255,128,0)" to "#FF8000"
