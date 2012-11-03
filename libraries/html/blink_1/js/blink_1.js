@@ -1,15 +1,14 @@
 $(document).ready(function(){
 
-
     var blink1IdSettings = {};
 	var triggerObjects = [];
 	var swatchId = '';
 
 	// load previously-saved triggerObjects from back-end 
-    // FIXME: how to get this to actually work?
     getTriggerObjectsFromBlink1();
 
-	
+    showWelcomeMessageIfNeeded();
+
 /*********************************
 
 	NAVBAR TABS BEHAVIOR
@@ -123,27 +122,22 @@ $(document).ready(function(){
 	});
 	
 	
-	
-	/*--------------------
-		SAVE SETTINGS
-	---------------------*/
-
-	$('#configuration-popup .save-button').live('click', function(e) {
-		closeConfigurationPanel();
-		
+    //
+    function showWelcomeMessageIfNeeded() {
 		// if it's the first trigger, get rid of the welcome message on the homepage
 		if($('#trigger-list .trigger-options').length < 2) {
 			$('#welcome-message').hide();
 			$('#trigger-headers li').css('opacity', 1);
 		}
-		// get all the settings we just configured wrapped into a nice little object
-		var settings = compileSettings();
-/* 		resetConfigurationPanel(); */
-		
-		
-		/*------if we're CREATING A NEW TRIGGER------*/
-		
-		if($(this).hasClass('save-as-new')) {
+    }
+
+	/*--------------------
+		SAVE SETTINGS
+	---------------------*/
+
+
+    function addNewTrigger(settings) { 
+
 			// if not the first one, then give the next available sequential id number (need to check since some could have been deleted from the middle of the sequence and we don't want duplicates)
             // settings.title = settings.title + " copy"; // FIXME: this doesn't work
 			var currentID;
@@ -158,7 +152,6 @@ $(document).ready(function(){
 				$('#trigger-list .trigger-options').last().attr('id', 'trigger-1');
 				currentID = 1;
 			}	
-
 
 			// push this new trigger to the triggerObjects array
 			triggerObjects.push(settings);
@@ -183,11 +176,11 @@ $(document).ready(function(){
 				$('#trigger-list .trigger-options').last().find('.repeat-option').removeClass('false').addClass('true');	
 			}
 
-			if(settings.source.path) {
-				if(settings.source.path.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options').last().find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.path.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
+			if(settings.source.arg1) {
+				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
+					$('#trigger-list .trigger-options').last().find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
 				} else {
-					$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.path.replace('http://', '').replace('www.', ''));
+					$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 				}
 			}
 			else if (settings.source.type) {
@@ -196,11 +189,26 @@ $(document).ready(function(){
 			else {
 				$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type + ']</span> ');
 			}
+    }
 
 
-		}
+	$('#configuration-popup .save-button').live('click', function(e) {
+		closeConfigurationPanel();
+        
+		// get all the settings we just configured wrapped into a nice little object
+		var settings = compileSettings();
+/* 		resetConfigurationPanel(); */
 		
+        showWelcomeMessageIfNeeded();
+
+		/*------if we're CREATING A NEW TRIGGER------*/
 		
+		if($(this).hasClass('save-as-new')) {
+
+            addNewTrigger(settings);
+
+        }
+
 		/*-------otherwise if we're SAVING AN EXISTING TRIGGER----*/
 		
 		else if($(this).hasClass('save-changes')) {
@@ -230,11 +238,11 @@ $(document).ready(function(){
 			}
 		
 
-			if(settings.source.path) {				
-				if(settings.source.path.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.path.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
+			if(settings.source.arg1) {				
+				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
+					$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
 				} else {
-					$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.path.replace('http://', '').replace('www.', ''));
+					$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 				}
 			}
 			else if (settings.source.type) {
@@ -525,7 +533,7 @@ $(document).ready(function(){
 		
 		$('#source-selector .options-group > input[value="' + triggerObj.source.type + '"] ').attr('checked', 'checked'); // input source
 
-		$('.column-2 div.' + triggerObj.source.type + ' .path').val(triggerObj.source.path); // input source path
+		$('.column-2 div.' + triggerObj.source.type + ' .arg1').val(triggerObj.source.arg1); // input source path
 		if(triggerObj.source.colorOption) {
 			$('.column-2.url #url-options-selector input[value="' + triggerObj.source.colorOption + '"] ').attr('checked', 'checked');
 		}
@@ -625,13 +633,13 @@ $(document).ready(function(){
 		compiledSettings.source.type = $('#source-selector .options-group > input:checked').val();	
 		
 		if($('.column-2').hasClass('ifttt')) {
-			compiledSettings.source.path = $('#ifttt-channel').val();			
+			compiledSettings.source.arg1 = $('#ifttt-channel').val();			
 		} else if ($('.column-2').hasClass('url')) {
-			compiledSettings.source.path = $('.column-2.url #web-page-url').val();			
+			compiledSettings.source.arg1 = $('.column-2.url #web-page-url').val();			
 			compiledSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
 			compiledSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();					
 		} else if ($('.column-2').hasClass('file')) {
-			compiledSettings.source.path = $('#file-path').val();			
+			compiledSettings.source.arg1 = $('#file-path').val();			
 		}	
 
 		
@@ -697,11 +705,11 @@ $(document).ready(function(){
     //   obj.colorSettings.behavior    = {'exact-color',...}
     //   obj.source.type = {'file','ifttt','url',...}
     // IF type == 'ifttt':
-    //   obj.source.path = ifttt channel
+    //   obj.source.arg1 = ifttt channel
     // IF type == 'file':
-    //   obj.source.path = filepath
+    //   obj.source.arg1 = filepath
     // IF type == 'url':
-    //   obj.source.path = url
+    //   obj.source.arg1 = url
     //   obj.source.colorOption = 'url-specified'
     //   obj.source.colorRetrieved = ''  // FIXME
     //
@@ -724,13 +732,13 @@ $(document).ready(function(){
             iparms.pname = trigObj.title;
             iparms.type  = type;
             if( type == 'ifttt' ) {
-                iparms.path = source.path;  // FIXME: what to do here
+                iparms.arg1 = source.arg1;  // FIXME: what to do here
             }
             else if( type == 'url' ) { 
-                iparms.url = source.path;
+                iparms.arg1 = source.arg1;
             }
             else if( type == 'file' ) {
-                iparms.file = source.path;
+                iparms.arg1 = source.arg1;
             }
             else {
                 console.log("unknown trigger type "+type);
@@ -773,8 +781,8 @@ $(document).ready(function(){
         
         // first, load up the info from the input side of things
         $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
-                console.log("input data status '"+ result.status+"'");
-                console.log(result);
+                //console.log("input data status '"+ result.status+"'");
+                //console.log(result);
                 var inputs = result.inputs;
                 for( var i=0; i< inputs.length; i++ ) {
                     var inp = inputs[i]; 
@@ -782,17 +790,22 @@ $(document).ready(function(){
                     trigger.title = inp.iname;
                     trigger.source = new Object();
                     trigger.source.type = inp.type;
-                    trigger.source.path = inp.url;
+                    trigger.source.arg1 = inp.arg1;
+                    trigger.source.arg2 = inp.arg2;
+                    trigger.source.arg3 = inp.arg3;
                     newTriggerObjects.push( trigger );
                 }
                 //console.log("newTriggerObjects");
                 //console.log(newTriggerObjects);
-            });
+            })
+            .error(function() { 
+                    console.log("error! could not read blink1/input json!"); 
+                });
 
         // then add in the color patterns for each input
         $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
-                console.log("pattern data status '"+ result.status+"'");
-                console.log(result);
+                //console.log("pattern data status '"+ result.status+"'");
+                //console.log(result);
                 var patterns = result.patterns;
                 for( var i=0; i< patterns.length; i++ ) {
                     var patt = patterns[i]; 
@@ -822,7 +835,15 @@ $(document).ready(function(){
                 }
                 console.log("newTriggerObjects:");
                 console.log(newTriggerObjects);
-            });
+
+                // add them to the screen
+                $(newTriggerObjects).each(function(index) {
+                        addNewTrigger(this);
+                    });
+            })
+            .error(function() { 
+                    console.log("error! could not read blink1/pattern json!"); 
+                });
 
         triggerObjects = newTriggerObjects; // FIXME: don't think this works
 
