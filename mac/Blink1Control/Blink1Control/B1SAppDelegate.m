@@ -758,7 +758,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a file watching input
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSString* path  = [request param:@"path"];
+        NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
         NSString* statusstr = @"must specifiy 'iname' and 'path'";
@@ -767,7 +767,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         if( iname != nil && path != nil ) {
             [input setObject:iname   forKey:@"iname"];
             [input setObject:@"file" forKey:@"type"];
-            [input setObject:path    forKey:@"arg"];
+            [input setObject:path    forKey:@"arg1"];
             
             [self updateFileInput:input];
                         
@@ -787,7 +787,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a URL watching input
     [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSString* url   = [request param:@"url"];
+        NSString* url   = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
         NSString* statusstr = @"must specifiy 'iname' and 'url'";
@@ -796,7 +796,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         if( iname != nil && url != nil ) { // the minimum requirements for this input type
             [input setObject:iname  forKey:@"iname"];
             [input setObject:@"url" forKey:@"type"];
-            [input setObject:url    forKey:@"url"];
+            [input setObject:url    forKey:@"arg1"];
         
             [self updateUrlInput: input];
 
@@ -843,16 +843,16 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a script execing input
     [http get:@"/blink1/input/script" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSString* path  = [request param:@"script"];
+        NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
         
-        NSString* statusstr = @"must specifiy 'iname' and 'script'";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' for scriptname";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && path != nil ) {
             [input setObject:iname     forKey:@"iname"];
             [input setObject:@"script" forKey:@"type"];
-            [input setObject:path      forKey:@"file"];
+            [input setObject:path      forKey:@"arg1"];
             
             [self updateScriptInput:input];
             
@@ -888,21 +888,21 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a cpu load watching input
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSString* min   = [request param:@"min"];
-        NSString* max   = [request param:@"max"];
+        NSString* min   = [request param:@"arg1"];
+        NSString* max   = [request param:@"arg2"];
         NSString* pname = [request param:@"pname"];
         NSString* test  = [request param:@"test"];
         
-        NSString* statusstr = @"must specifiy 'iname' and 'min'";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' for min";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && min != nil ) {
             if( pname == nil ) pname = [iname copy];
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"cpuload" forKey:@"type"];
-            [input setObject:min        forKey:@"min"];
+            [input setObject:min        forKey:@"arg1"];
             if( max )
-                [input setObject:max    forKey:@"max"];
+                [input setObject:max    forKey:@"arg2"];
             [input setObject:pname      forKey:@"pname"];
             
             [self updateCpuloadInput:input];
@@ -923,18 +923,21 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a network load watching input
     [http get:@"/blink1/input/netload" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
-        NSString* level = [request param:@"level"];
+        NSString* min   = [request param:@"arg1"];
+        NSString* max   = [request param:@"arg2"];
         NSString* pname = [request param:@"pname"];
         NSString* test  = [request param:@"test"];
 
         NSString* statusstr = @"must specifiy 'iname' and 'level'";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        if( iname != nil && level != nil ) {
+        if( iname != nil && min != nil ) {
             if( pname == nil ) pname = [iname copy];
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"netload" forKey:@"type"];
-            [input setObject:level      forKey:@"arg"];
+            [input setObject:min        forKey:@"arg1"];
+            if( max )
+                [input setObject:max    forKey:@"arg2"];
             [input setObject:pname      forKey:@"pname"];
             
             [self updateNetloadInput:input];

@@ -345,22 +345,22 @@ __Response:__
        { 
          "iname":"mysqllog",
          "type":"file",
-         "path":"/usr/local/mysqlout.txt"
+         "arg1":"/usr/local/mysqlout.txt"
        },
        { 
          "iname":"myarduino",
          "type":"url",
-         "url":"http://todbot.com/tst/color.txt",
+         "arg1":"http://todbot.com/tst/color.txt",
        },
        { 
          "iname":"cpu99",
          "type":"cpuload",
-         "level":"99"
+         "arg1":"99"
        },
        { 
          "iname":"net95",
          "type":"netload",
-         "level":"95"
+         "arg1":"95"
        },
        {
          "iname":"ifttt",
@@ -403,8 +403,8 @@ __Description:__ Start file watcher on given filepath; file contains color patte
 __Query args:__
 
 * `iname` -- name for this input
-* `file` -- fully-qualified filepath to text file to parse
 * `pname` -- (optional) color pattern name to trigger
+* `arg1`  -- filename, fully-qualified filepath to text file to parse
 
 __Example:__
 `http://localhost:8080/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
@@ -420,8 +420,8 @@ __Description:__ Start URL watcher on given URL; URL contains color pattern name
 __Query args:__ 
 
 * `iname` -- name for this input
-* `url`  -- URL path to text file to watch, properly escaped
 * `pname` -- (optional) color pattern name to trigger
+* `arg1`  -- URL path to text file to watch, properly escaped
 
 __Example:__
 `http://localhost:8080/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
@@ -436,11 +436,11 @@ __Description:__ Run command-line script, get output as color name or rgb color 
 __Query args:__
 
 * `iname` -- name for this input
-* `script` -- script name (must live in "~/Documents/blink1-scripts" directory)
 * `pname` -- (optional) color pattern name to trigger
+* `arg1`  -- script name (must live in "~/Documents/blink1-scripts" directory)
 
 __Example:__
-`http://localhost:8080/blink1/input/script?iname=checkService&script=CheckServ.bat`
+`http://localhost:8080/blink1/input/script?iname=checkService&arg1=CheckServ.bat`
 
 __Response:__  Standard JSON 'status' response
 
@@ -462,17 +462,17 @@ __Response:__  Standard JSON 'status' response
 `/blink1/input/cpuload`
 ---------------------
 __Description:__
-Start CPU load watching input.  If no arguments, return network load as 0-100 percentage
+Start CPU load watching input.  If no arguments, returns load
 
 ____Query args:____ 
 
 * `iname` -- name for this input
-* `min`   -- minimum level on which to trigger this event
-* `max`   -- maximum level on which to trigger this event
 * `pname` -- (optional) color pattern name to trigger
+* `arg1`  -- min, minimum level on which to trigger this event
+* `arg2`  -- max, (optional) maximum level on which to trigger this event
 
 __Example:__
-`http://localhost:8080/blink1/input/cpuload?iname=cpu99&level=99`
+`http://localhost:8080/blink1/input/cpuload?iname=cpu99&arg1=90`
 
 __Response:__  Standard JSON 'status' response
 
@@ -485,12 +485,12 @@ Start network load watching input.  If no arguments, return network load as 0-10
 ____Query args:____ 
 
 * `iname` -- name for this input
-* `min`   -- minimum level on which to trigger this event
-* `max`   -- maximum level on which to trigger this event
 * `pname` -- (optional) color pattern name to trigger
+* `arg1`  -- min, minimum level on which to trigger this event
+* `arg2`  -- max, (optional) maximum level on which to trigger this event
 
 __Example:__
-`http://localhost:8080/blink1/input/cpuload?iname=net95&level=95`
+`http://localhost:8080/blink1/input/cpuload?iname=net95&arg1=95&arg2=100`
 
 __Response:__  Standard JSON 'status' response
 
