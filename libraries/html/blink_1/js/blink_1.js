@@ -1,7 +1,5 @@
 $(document).ready(function(){
 
-    $.ajaxSetup({ cache: false, async: false  });
-
     var blink1IdSettings = {};
 	var swatchId = '';
 
@@ -785,10 +783,12 @@ $(document).ready(function(){
         console.log("getTriggerObjects");
         var newTriggerObjects = []; 
         
+        $.ajaxSetup({ cache: false, async: false  });
+
         // first, load up the info from the input side of things
         $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
-                //console.log("input data status '"+ result.status+"'");
-                //console.log(result);
+                console.log("input data status '"+ result.status+"'");
+                console.log(result);
                 var inputs = result.inputs;
                 for( var i=0; i< inputs.length; i++ ) {
                     var inp = inputs[i]; 
@@ -810,13 +810,13 @@ $(document).ready(function(){
 
         // then add in the color patterns for each input
         $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
-                //console.log("pattern data status '"+ result.status+"'");
-                //console.log(result);
+                console.log("pattern data status '"+ result.status+"'");
+                console.log(result);
                 var patterns = result.patterns;
                 for( var i=0; i< patterns.length; i++ ) {
                     var patt = patterns[i]; 
+                    console.log("patt.name=" +patt.name);
                     var pattparts = patt.pattern.split(',');
-                    var name = patt.name;
                     var colors = [];
                     var durations = [];
                     for( var j=1; j< pattparts.length; j+=2 ) { 
@@ -832,21 +832,33 @@ $(document).ready(function(){
                     colorSettings.durations   = durations;
 
                     // add pattern to correct newTriggerObject
+                    $(newTriggerObjects).each( function() { 
+                            if( this.title == patt.name ) { 
+                                this.colorSettings = colorSettings;
+                            }
+                        });
+                    /*
                     for( var j=0; j<newTriggerObjects.length; j++ ) {
-                        var triggerObj = newTriggerObjects[i];
-                        if( triggerObj.title == name ) { 
+                        var triggerObj = newTriggerObjects[j];
+                        //console.log("triggerObj.title="+triggerObj.title);
+                        if( triggerObj.title == patt.name ) { 
+                            //console.log("Match! "+patt.name);
                             triggerObj.colorSettings = colorSettings;
                         }
                     }
-                }
-                console.log("newTriggerObjects:");
-                console.log(newTriggerObjects);
+                    */
+                } 
 
             })
             .error(function() { 
                     console.log("error! could not read blink1/pattern json!"); 
                 });
         
+        console.log("newTriggerObjects:");
+        console.log(newTriggerObjects);
+
+        $.ajaxSetup({ cache: true, async: true  });
+
         return newTriggerObjects;
     }
 
