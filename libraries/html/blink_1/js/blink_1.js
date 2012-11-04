@@ -95,6 +95,7 @@ $(document).ready(function(){
 	$('.delete-trigger').live('click', function(e) {
 		var $triggerObject = $(this).parents('.trigger-options');
 		var index = $(this).closest('.trigger-options').index();
+
 		// hide the deleted trigger from the view
 		$triggerObject.slideUp('normal', function() {
 			$triggerObject.remove();
@@ -103,10 +104,11 @@ $(document).ready(function(){
 			$('#trigger-headers li').css('opacity', .2);
 		}
 		});
+
 		// and then delete that trigger's object from the triggers array
+        backendDeleteInput( triggerObjects[index-1] );        
 		triggerObjects.splice((index-1), 1);
 		console.log(triggerObjects);
-		
 	});
 	
 /*********************************
@@ -204,7 +206,6 @@ $(document).ready(function(){
 		var settings = compileSettings();
 /* 		resetConfigurationPanel(); */
 		
-        console.log("IN HERE");
         hideWelcomeMessageIfNeeded();
 
 		/*------if we're CREATING A NEW TRIGGER------*/
@@ -257,6 +258,7 @@ $(document).ready(function(){
 			
 				
 		}
+
 		console.log(triggerObjects);
         updateBlink1InputsAndPatterns(triggerObjects); 
 	});
@@ -638,16 +640,19 @@ $(document).ready(function(){
 /* 		compiledSettings.colorSettings.duration = $('#duration-setting').val();		 */
 		compiledSettings.source.type = $('#source-selector .options-group > input:checked').val();	
 		
+        console.log( $('.column-2') );
+
 		if($('.column-2').hasClass('ifttt')) {
-			compiledSettings.source.arg1 = $('#ifttt-channel').val();			
+			compiledSettings.source.arg1 = $('#ifttt-channel').val();
 		} else if ($('.column-2').hasClass('url')) {
-			compiledSettings.source.arg1 = $('.column-2.url #web-page-url').val();			
+			compiledSettings.source.arg1 = $('#web-page-url').val(); 
 			compiledSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
 			compiledSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();					
 		} else if ($('.column-2').hasClass('file')) {
-			compiledSettings.source.arg1 = $('#file-path').val();			
+			compiledSettings.source.arg1 = $('#file-path').val();
 		}	
 
+        console.log("compiledSettings:"); console.log(compiledSettings);
 		
 		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
             var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
@@ -708,6 +713,9 @@ $(document).ready(function(){
     //   obj.colorSettings.transition  = {'fade','flash'}
     //   obj.colorSettings.behavior    = {'exact-color',...}
     //   obj.source.type = {'file','ifttt','url',...}
+    //   obj.source.arg1 = 1st argument for type 
+    //   obj.source.arg2 = 2nd argument for type 
+    //   obj.source.arg3 = 3rd argument for type 
     // IF type == 'ifttt':
     //   obj.source.arg1 = ifttt channel
     // IF type == 'file':
@@ -717,7 +725,36 @@ $(document).ready(function(){
     //   obj.source.colorOption = 'url-specified'
     //   obj.source.colorRetrieved = ''  // FIXME
     //
+    //
+    // $.getJSON( url, data, function() ) is equal to:
+    //    $.ajax(    { url: url,
+    //            dataType: 'json',
+    //                data: data,
+    //                success: fuction() 
+    //                });        
+    //
+    function backendDeleteInput(triggerObject) { 
+        var parms = {};
+        parms.iname = triggerObject.title;
+        parms.pname = triggerObject.title;
+        var iurl = '../blink1/input/del';
+        var purl = '../blink1/pattern/del';
 
+        // delete input
+        $.getJSON( iurl, parms, function(result) { 
+                   console.log("input del status:"+result.status+"'");
+            })
+            .error( function() { 
+                    console.log("error on input delete");
+                }); 
+        // delete pattern
+        $.getJSON( purl, parms, function(result) { 
+                   console.log("pattern del status:"+result.status+"'");
+            })
+            .error( function() { 
+                    console.log("error on pattern delete");                    
+                }); 
+    }
 
     // Send the new configuration to blink1 back-end server
     // by traversing the 'triggerObects' array and constructing
@@ -734,26 +771,20 @@ $(document).ready(function(){
             var iparms = {}; 
             iparms.iname = trigObj.title;
             iparms.pname = trigObj.title;
-            iparms.type  = type;
-            if( type == 'ifttt' ) {
-                iparms.arg1 = source.arg1;  // FIXME: what to do here
-            }
-            else if( type == 'url' ) { 
-                iparms.arg1 = source.arg1;
-            }
-            else if( type == 'file' ) {
-                iparms.arg1 = source.arg1;
-            }
-            else {
-                console.log("unknown trigger type "+type);
-            }
+            iparms.type  = source.type;
+            iparms.arg1  = source.arg1;
+            iparms.arg2  = source.arg2;
+            iparms.arg3  = source.arg3;
 
-            if( type != "undefined" ) { 
+            if( trigObj.type != "undefined" ) {   
                 var iurl = '/blink1/input/' + type;
                 $.getJSON( iurl, iparms, function(result) { 
                         console.log("input add status '"+ result.status+"'");  // FIXME: parse status
                         //console.log(result);
-                    } );
+                    } )
+                    .error( function() { 
+                            console.log("error on input upate!");
+                        });
             }
 
             // now do color patterns

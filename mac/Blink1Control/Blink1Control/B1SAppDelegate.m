@@ -13,7 +13,9 @@
 // - enabled  -- boolean,
 // - iname    -- string, name of input
 // - type     -- string, type of input ("url","file","ifttt")
-// - arg      -- string, argument for type of input (url, filepath)
+// - arg1     -- string, argument for type of input (url, filepath)
+// - arg2     -- string, argument for type of input (url, filepath)
+// - arg3     -- string, argument for type of input (url, filepath)
 // - pname    -- string, name of pattern to play (if none specified in content of input, like file)
 // - status   -- string, last status of input
 // - lastVal  -- string, last value when input was parsed
@@ -115,7 +117,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (NSString*) parsePatternOrColorInString: (NSString*) str
 {
-    DLog(@"parsePatternOrColorInString: %@",str);
+    //DLog(@"parsePatternOrColorInString: %@",str);
     NSString* patternstr = [self readColorPattern:str];
     NSString* patt = nil;
 
@@ -218,7 +220,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (void) updateUrlInput: (NSMutableDictionary*) input
 {
-    NSString* urlstr         = [input valueForKey:@"arg"];
+    NSString* urlstr         = [input valueForKey:@"arg1"];
     NSString* lastVal        = [input valueForKey:@"lastVal"];
     NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
@@ -296,7 +298,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
 
     
-    NSString* path = [input objectForKey:@"arg"];
+    NSString* path = [input objectForKey:@"arg1"];
     NSString* fpath = [NSString stringWithFormat:@"%@/%@",scriptsPath,path];
     NSString* filepath = [fpath stringByStandardizingPath];
 
@@ -322,8 +324,8 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (void) updateCpuloadInput: (NSMutableDictionary*) input
 {
-    int min     = [[input valueForKey:@"min"] intValue];
-    int max     = [[input valueForKey:@"max"] intValue];
+    int min     = [[input valueForKey:@"arg1"] intValue];
+    int max     = [[input valueForKey:@"arg2"] intValue];
     if( max==0 ) max=INT16_MAX;
     DLog(@"cpuload:%d%% - min/max:%d/%d",cpuload,min,max);
     if( cpuload >= min && cpuload < max ) {
@@ -335,10 +337,12 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (void) updateNetloadInput: (NSMutableDictionary*) input
 {
-    NSString* arg     = [input valueForKey:@"arg"];
-    int level = [arg intValue];
-    DLog(@"netload:%d - level:%d",netload,level);
-    if( netload >= level ) {
+    int min     = [[input valueForKey:@"arg1"] intValue];
+    int max     = [[input valueForKey:@"arg2"] intValue];
+    if( max==0 ) max=INT16_MAX;
+    DLog(@"netload:%d%% - min/max:%d/%d",netload,min,max);
+
+    if( netload >= min && netload < max ) {
         [self playPattern: [input valueForKey:@"pname"] restart:NO];
     }
     [input setObject:[NSNumber numberWithInt:netload] forKey:@"lastVal"]; // save last val
