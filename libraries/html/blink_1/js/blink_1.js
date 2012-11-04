@@ -245,15 +245,15 @@ $(document).ready(function(){
 			}
 		
 
-			if(settings.source.arg1) {				
+			if(settings.source.arg1) {	// FIXME: this is basically dupe of code in addNewTrigger()			 
 				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
+					$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
 				} else {
-					$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
+					$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 				}
 			}
 			else if (settings.source.type) {
-				$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
+				$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
 			}
 			
 				
@@ -640,8 +640,6 @@ $(document).ready(function(){
 /* 		compiledSettings.colorSettings.duration = $('#duration-setting').val();		 */
 		compiledSettings.source.type = $('#source-selector .options-group > input:checked').val();	
 		
-        console.log( $('.column-2') );
-
 		if($('.column-2').hasClass('ifttt')) {
 			compiledSettings.source.arg1 = $('#ifttt-channel').val();
 		} else if ($('.column-2').hasClass('url')) {
@@ -652,8 +650,6 @@ $(document).ready(function(){
 			compiledSettings.source.arg1 = $('#file-path').val();
 		}	
 
-        console.log("compiledSettings:"); console.log(compiledSettings);
-		
 		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
             var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
 			compiledSettings.title = 'Untitled'+ randid +'';
