@@ -88,7 +88,7 @@ $(document).ready(function(){
 	$('.edit-trigger-button').live('click', function(e) {
 		var index = $(this).closest('.trigger-options').index();
 		var id = $(this).closest('.trigger-options').attr('id').split('-')[1];
-		openConfigurationPanel(triggerObjects[index-1], id, index);
+		openConfigurationPanel(triggerObjects[index], id, index);
 	});
 
 	// delete a trigger from the homepage
@@ -544,7 +544,7 @@ $(document).ready(function(){
 		$('#configuration-popup').addClass('existing');
 		// fill in all the values from that object
 		
-		$('#popup-title').attr('data-id', id).attr('data-array-index', index-1);
+		$('#popup-title').attr('data-id', id).attr('data-array-index', index);
 		
 		$('#popup-title > input').val(triggerObj.title); // set title
 		
@@ -831,12 +831,10 @@ $(document).ready(function(){
                     var trigger = new Object();
                     trigger.title = inp.iname;
                     trigger.source = new Object();
-                    trigger.source.type = inp.type;
-                    trigger.source.arg1 = inp.arg1;
-                    trigger.source.arg2 = inp.arg2;
-                    trigger.source.arg3 = inp.arg3;
+					trigger.source = inp;
                     newTriggerObjects.push( trigger );
                 }
+/*                 newTriggerObjects.reverse(); */
             })
             .error(function() { 
                     console.log("error! could not read blink1/input json!"); 
@@ -881,6 +879,10 @@ $(document).ready(function(){
 
         $.ajaxSetup({ cache: true, async: true  });
 
+		$(newTriggerObjects).each( function() {
+			this.title = this.title.replace(/\+/g, ' ');	
+		});
+		
         return newTriggerObjects;
     }
 
