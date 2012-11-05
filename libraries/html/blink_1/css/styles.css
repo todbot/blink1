@@ -1006,9 +1006,10 @@ display: block;
 
 #picker {
 	position: absolute;
-	left: 232px;
-	top: 0px;
+	left: 252px;
+	top: 10px;
 	display: none;
+	z-index: 12;
 }
 
 	#picker #fade-out {
