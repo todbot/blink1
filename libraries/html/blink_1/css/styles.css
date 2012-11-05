@@ -99,14 +99,17 @@ p span.light {
 
 #container {
 	background: white;
-	width: 800px;
-	min-height: 570px;
-	margin: 20px auto; 
-	border: 1px solid #555;
+	width: 838px;
+	height: 618px;
+	margin: 0px auto; 
+	border: none;
+	border: 1px solid #666;	
 	position: relative;
+/*
 	box-shadow: 0px 1px 3px #aaa;	
 	-webkit-box-shadow: 0px 1px 3px #aaa;		
 	-moz-box-shadow: 0px 1px 3px #aaa;		
+*/
 }
 
 .ie7 #container, .ie8 #container {
@@ -115,11 +118,11 @@ p span.light {
 
 
 #header {
-	width: 740px;
+	width: 778px;
 	height: 72px;
 	background: #E6E6E6;
 	padding: 10px 30px;
-	border-bottom: 1px solid #aaa;
+	border-bottom: 1px solid #999;
 }
 
 	#header h1 {
@@ -219,8 +222,8 @@ p span.light {
 		}
 	
 #main-content {
-	padding: 50px 70px;
-	width: 660px;
+	padding: 60px 60px 50px 70px;
+	width: 704px;
 	min-height: 375px;
 }	
 
@@ -270,7 +273,9 @@ display: block;
 	
 	#main-content #trigger-list {
 		position: relative;
-		min-height: 300px;
+		height: 350px;
+		overflow: scroll;
+		padding-right: 0px;
 	}
 
 		#main-content #trigger-list .trigger-options {
@@ -286,7 +291,7 @@ display: block;
 			#main-content #trigger-list .trigger-options .trigger-name, #main-content #trigger-list .trigger-options .trigger-source {
 				display: block;
 				float: left;
-				width: 166px;
+				width: 180px;
 				height: 32px;
 				line-height: 30px;
 				font-size: 14px;
@@ -296,7 +301,7 @@ display: block;
 			
 			#main-content #trigger-list .trigger-options .trigger-source {
 				font-weight: normal;
-				width: 174px;
+				width: 195px;
 				font-size: 12px;
 			}
 		
@@ -304,7 +309,7 @@ display: block;
 				width: 192px;
 				display: block;
 				float: left;
-				margin-right: 22px;
+				margin-right: 28px;
 				height: 32px;
 				margin-bottom: 0px;
 				margin-left: 4px;
@@ -313,7 +318,7 @@ display: block;
 			#main-content #trigger-list .trigger-options .color-behavior-swatches {
 				display: block;	
 				position: relative;
-				top: 4px;
+				top: 2px;
 			}
 
 				#main-content #trigger-list .trigger-options .color-behavior-swatches li {
@@ -362,7 +367,7 @@ display: block;
 		}
 	
 			#main-content #trigger-list #trigger-headers li:nth-of-type(2) {
-				width: 169px;
+				width: 190px;
 			}
 			
 			#main-content #trigger-list #trigger-headers li:nth-of-type(3) {
@@ -402,7 +407,7 @@ display: block;
 				display: inline-block;
 				margin-right: 16px;
 				font-size: 22px;
-				width: 156px;
+				width: 170px;
 				height: 20px;
 			}
 		
@@ -410,7 +415,31 @@ display: block;
 			margin-top: 20px;
 			display: block;
 			width: 34px;
+			z-index: 1;
+			position: relative;
 		}
+		
+		
+		#main-content #scroll-for-more {
+			position: relative;
+			text-align: center;
+			top: -54px;
+			color: #444;	
+			line-height: 19px;
+			width: 710px;
+			margin: 0 auto;
+			display: none;	
+			font-family: "HelveticaNeue-CondensedBold", "Helvetica Neue", "HelveticaNeue", sans-serif;
+			font-size: 17px;
+			padding-top: 32px;
+			box-shadow: 1px -8px 13px -6px #EEE;
+		}
+		
+			#main-content #scroll-for-more span {
+				font-size: 12px;
+				font-family:"Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+				color: #999;
+			}
 		
 		#main-content a#add-new-trigger:hover img, .highlighted {
 			box-shadow: 0px 0px 3px 2px orange;
@@ -421,10 +450,12 @@ display: block;
 		#main-content a.delete-trigger {
 			background: transparent url('../images/close-x-sprite.png') no-repeat 5px 4px;
 			display: block;
-			float: right;
 			height: 30px;
 			width: 32px;
 			display: none;
+			position: absolute;
+			right: 4px;
+			top: 15px;
 		}
 
 			#main-content a.delete-trigger:hover {
@@ -476,6 +507,7 @@ display: block;
 	-moz-box-shadow:  0px 0px 24px 4px #555;
 	border: 1px solid #555;
 	background: white;
+	z-index: 10;
 }
 
 	.popup-window .popup-header {
@@ -521,7 +553,7 @@ display: block;
 	top: 0;
 	bottom: 0;
 	background: #333 url('../images/gray-out-stripe.png');
-	
+	z-index: 1;
 }
 		
 /****************************************
@@ -535,8 +567,8 @@ display: block;
 	width: 720px;
 	height: 490px;
 	position: absolute;
-	top: 40px;
-	left: 40px;
+	top: 50px;
+	left: 60px;
 	background: white;
 	
 }

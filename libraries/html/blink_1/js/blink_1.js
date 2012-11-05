@@ -51,7 +51,7 @@ $(document).ready(function(){
 
 				$('#settings-popup').fadeIn('fast');
 				$('#gray-out').fadeIn('fast');	
-				$('#navbar').css('z-index', 1);	
+				$('#navbar').css('z-index', 5);	
 				$('#navbar li.active').removeClass('active');
 				$(this).addClass('active');	
 			}	
@@ -100,9 +100,13 @@ $(document).ready(function(){
 		$triggerObject.slideUp('normal', function() {
 			$triggerObject.remove();
 			if($('#trigger-list .trigger-options').length < 1) {
-			$('#welcome-message').fadeIn('slow');
-			$('#trigger-headers li').css('opacity', .2);
-		}
+				$('#welcome-message').fadeIn('slow');
+				$('#trigger-headers li').css('opacity', .2);
+				
+			}
+			else if($('#trigger-list .trigger-options').length < 6) {
+				$('#scroll-for-more').fadeOut('fast');
+			}
 		});
 
 		// and then delete that trigger's object from the triggers array
@@ -181,6 +185,11 @@ $(document).ready(function(){
 				$('#trigger-list .trigger-options').last().find('.repeat-option').removeClass('true').addClass('false');
 			} else {
 				$('#trigger-list .trigger-options').last().find('.repeat-option').removeClass('false').addClass('true');	
+			}
+			// and check for scroll reminder
+			console.log($('#trigger-list .trigger-options').length);
+			if($('#trigger-list .trigger-options').length > 5) {
+				$('#scroll-for-more').fadeIn('slow');
 			}
 
 			if(settings.source.arg1) {
