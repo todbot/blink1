@@ -26,15 +26,6 @@ $('#gradient-circle').bind('mousedown', function(e){
 		}
 		
 	});
-	$('#color-zoom').bind('mousemove', function(e){
-		if(drawMe) {
-			draw(e);
-		}
-		else {
-		
-		}
-		
-	});	
 });
 
 
