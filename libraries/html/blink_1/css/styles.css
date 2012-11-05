@@ -415,24 +415,25 @@ display: block;
 			margin-top: 20px;
 			display: block;
 			width: 34px;
-			z-index: 1;
-			position: relative;
+			position: absolute;
+			bottom: 50px;
 		}
 		
 		
 		#main-content #scroll-for-more {
 			position: relative;
 			text-align: center;
-			top: -54px;
-			color: #444;	
+			top: 0px;
+			color: #444;
 			line-height: 19px;
-			width: 710px;
+			width: 718px;
 			margin: 0 auto;
-			display: none;	
+			display: none;
 			font-family: "HelveticaNeue-CondensedBold", "Helvetica Neue", "HelveticaNeue", sans-serif;
 			font-size: 17px;
 			padding-top: 32px;
 			box-shadow: 1px -8px 13px -6px #EEE;
+			left: -8px;
 		}
 		
 			#main-content #scroll-for-more span {
@@ -507,7 +508,6 @@ display: block;
 	-moz-box-shadow:  0px 0px 24px 4px #555;
 	border: 1px solid #555;
 	background: white;
-	z-index: 10;
 }
 
 	.popup-window .popup-header {
@@ -553,7 +553,7 @@ display: block;
 	top: 0;
 	bottom: 0;
 	background: #333 url('../images/gray-out-stripe.png');
-	z-index: 1;
+/* 	z-index: 1; */
 }
 		
 /****************************************
@@ -1009,7 +1009,7 @@ display: block;
 	left: 252px;
 	top: 10px;
 	display: none;
-	z-index: 12;
+/* 	z-index: 12; */
 }
 
 	#picker #fade-out {
