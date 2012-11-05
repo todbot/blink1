@@ -110,7 +110,7 @@ $(document).ready(function(){
 		});
 
 		// and then delete that trigger's object from the triggers array
-        backendDeleteInput( triggerObjects[index-1] );        
+        backendDeleteInput( triggerObjects[index] );        
 		triggerObjects.splice((index-1), 1);
 		console.log(triggerObjects);
 	});
@@ -193,6 +193,7 @@ $(document).ready(function(){
 			}
 
 			if(settings.source.arg1) {
+			console.log(settings.source.arg1);
 				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
 					$('#trigger-list .trigger-options').last().find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
 				} else {
@@ -658,6 +659,7 @@ $(document).ready(function(){
 		} else if ($('.column-2').hasClass('file')) {
 			compiledSettings.source.arg1 = $('#file-path').val();
 		}	
+		
 
 		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
             var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
