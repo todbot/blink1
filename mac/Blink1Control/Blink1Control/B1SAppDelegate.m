@@ -49,10 +49,12 @@
 @synthesize blink1;
 
 
+const NSInteger http_port_default = 8934;
+
 //FIXME: what to do with these URLs?
 // solution: put them in the prefs, duh
-NSString* confURL =  @"http://127.0.0.1:8080/blink_1/";
-NSString* playURL =  @"http://localhost:8080/bootstrap/blink1.html";
+NSString* confURLbase =  @"http://localhost:%ld/blink_1/";
+NSString* playURLbase =  @"http://localhost:%ld/bootstrap/blink1.html";
 NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
 NSString* scriptsPath = @"~/Documents/blink1-scripts";
@@ -407,7 +409,12 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     NSData *patternspref      = [prefs objectForKey:@"patterns"];
     NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
     NSString* host_id_prefs   = [prefs stringForKey:@"host_id"];
+    http_port                 = [prefs integerForKey:@"http_port"];
     //BOOL first_run            = [prefs boolForKey:@"first_run"];
+
+    if( http_port == 0 ) {
+        http_port = http_port_default;
+    }
     
     if( inputspref != nil ) {
         [inputs addEntriesFromDictionary:inputspref];
@@ -440,6 +447,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     [prefs setObject:data forKey:@"patterns"];
     [prefs setObject:[blink1 blink1_id] forKey:@"blink1_id"];
     [prefs setObject:[blink1 host_id]   forKey:@"host_id"];
+    [prefs setInteger:http_port         forKey:@"http_port"];
     [prefs synchronize];
 }
 
@@ -503,14 +511,14 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     
     [self setupHttpRoutes];
     
-	// Server on localhost:8080, serving files from our embedded Web folder
-	[http setPort:8080];
+	// Server on localhost:http_port, serving files from our embedded Web folder
+	[http setPort:http_port];
     
     [http setInterface:@"localhost"]; // restrict to local computer, maybe make this a pref?
     
 	NSString *htmlPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"html"];
 	[http setDocumentRoot:htmlPath];
-    DLog(@"htmlPath: %@",htmlPath);
+    DLog(@"port: %ld\nhtmlPath: %@",http_port,htmlPath);
     
 	NSError *error;
 	if (![http start:&error]) {
@@ -1076,6 +1084,8 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     [blink1 enumerate];
     [self updateUI];
     
+    NSString* confURL = [NSString stringWithFormat: confURLbase, http_port];
+    
     // Load the HTML content.
     //[[[_webView mainFrame] frameView] setAllowsScrolling:NO];
     [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:confURL]]];
@@ -1088,6 +1098,8 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 - (IBAction) playIt: (id) sender
 {
     DLog(@"Play!");
+
+    NSString* playURL = [NSString stringWithFormat: playURLbase, http_port];
 
     [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:playURL]]];
     [_window display];

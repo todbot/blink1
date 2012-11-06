@@ -41,6 +41,9 @@
     NSMutableDictionary *patterns;
     
     NSImage* statusImageBase;
+    
+    NSInteger http_port;
+    
 }
 
 @property (strong) RoutingHTTPServer *http;

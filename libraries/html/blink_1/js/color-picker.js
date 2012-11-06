@@ -75,6 +75,7 @@ function draw(e){
 		
 		// logging the color for you to use with the hardware settings here :o)
 		console.log(color);
+        backendSetColor(color);
 	}
 }
 
