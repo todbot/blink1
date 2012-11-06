@@ -6,13 +6,16 @@ $(document).ready(function(){
     var triggerObjects = [];
 
 	// load previously-saved triggerObjects from back-end 
-    var newTriggerObjects = getTriggerObjectsFromBlink1();
+    var newTriggerObjects = backendLoadTriggerObjects();
 
     // add them to the screen
     $(newTriggerObjects).each(function(index) {
             addNewTrigger(this);
             hideWelcomeMessageIfNeeded(); // hack, should only need to do this once
         });
+
+    // load up the blink1_id info
+    backendLoadBlink1IdSettings(blink1IdSettings);
 
 /*********************************
 
@@ -44,7 +47,7 @@ $(document).ready(function(){
 				$('.ui-state-active').addClass('active');
 			} else {
                 // otherwise, get settings & trigger popup/opacity effect
-                loadBlink1IdSettings();
+                backendLoadBlink1IdSettings( blink1IdSettings );
                 $('#blink-status').text( blink1IdSettings.statustext );
                 $('#serial-number').text( blink1IdSettings.serialnum );
                 $('#ifttt-uid').text( blink1IdSettings.blink1_id );
@@ -270,7 +273,7 @@ $(document).ready(function(){
 		}
 
 		console.log(triggerObjects);
-        updateBlink1InputsAndPatterns(triggerObjects); 
+        backendUpdateInputsAndPatterns(triggerObjects); 
 	});
 	
 	
@@ -567,7 +570,9 @@ $(document).ready(function(){
 		$('#number-of-colors-group').val(triggerObj.colorSettings.colors.length); // number of colors
 		resizeSwatches(triggerObj.colorSettings.colors.length, '.color-swatch', 127); // resize to appropriate number
 		recolorSwatches(triggerObj.colorSettings.colors); // set colors
-		reassignSwatchDurations(triggerObj.colorSettings.durations); // set durations		
+		reassignSwatchDurations(triggerObj.colorSettings.durations); // set durations	
+        
+        $('#ifttt-uid2').val( blink1IdSettings.blink1_id );
 	}
 
 	
@@ -691,225 +696,235 @@ $(document).ready(function(){
 		$('#configuration-popup').fadeOut('fast');
 	}
 
-	/*------------------------------
-		BLINK1 BACK-END FUNCTIONS
-	--------------------------------*/
+}); // document.ready
 
-    function loadBlink1IdSettings() {
-        var b1url = '../blink1/id';
-        $.getJSON( b1url, function(result) { 
-                //console.log("blink1 id status '"+result.status+"'"); 
-                //console.log(result);
-                blink1IdSettings = result;
-                var serialnums = blink1IdSettings.blink1_serialnums;
-                blink1IdSettings.statustext = "no blink(1) found";
-                blink1IdSettings.serialnum = "-none-";
-                if( serialnums.length > 0 ) { 
-                    blink1IdSettings.statustext = "Connected!";
-                    blink1IdSettings.serialnum = serialnums[0];
-                }
-            });
-    }
 
-    //
-    // 'triggerObjects' is an array of objects with the form:
-    //   obj.title                     = human readable name of trigger
-    //   obj.colorSettings.colors      = array of colors
-    //   obj.colorSettings.durations   = array of durations
-    //   obj.colorSettings.repeatTimes = 1,2,3,
-    //   obj.colorSettings.transition  = {'fade','flash'}
-    //   obj.colorSettings.behavior    = {'exact-color',...}
-    //   obj.source.type = {'file','ifttt','url',...}
-    //   obj.source.arg1 = 1st argument for type 
-    //   obj.source.arg2 = 2nd argument for type 
-    //   obj.source.arg3 = 3rd argument for type 
-    // IF type == 'ifttt':
-    //   obj.source.arg1 = ifttt channel
-    // IF type == 'file':
-    //   obj.source.arg1 = filepath
-    // IF type == 'url':
-    //   obj.source.arg1 = url
-    //   obj.source.colorOption = 'url-specified'
-    //   obj.source.colorRetrieved = ''  // FIXME
-    //
-    //
-    // $.getJSON( url, data, function() ) is equal to:
-    //    $.ajax(    { url: url,
-    //            dataType: 'json',
-    //                data: data,
-    //                success: fuction() 
-    //                });        
-    //
-    function backendDeleteInput(triggerObject) { 
-        var parms = {};
-        parms.iname = triggerObject.title;
-        parms.pname = triggerObject.title;
-        var iurl = '../blink1/input/del';
-        var purl = '../blink1/pattern/del';
+/*------------------------------
+  BLINK1 BACK-END FUNCTIONS
+  (note: these are declared outside of document.ready so they can be used
+  in other .js files. This also means they can't use any of the 'globals' above)
+  --------------------------------*/
 
-        // delete input
-        $.getJSON( iurl, parms, function(result) { 
-                   console.log("input del status:"+result.status+"'");
-            })
-            .error( function() { 
-                    console.log("error on input delete");
-                }); 
-        // delete pattern
-        $.getJSON( purl, parms, function(result) { 
-                   console.log("pattern del status:"+result.status+"'");
-            })
-            .error( function() { 
-                    console.log("error on pattern delete");                    
-                }); 
-    }
-
-    // Send the new configuration to blink1 back-end server
-    // by traversing the 'triggerObects' array and constructing
-    // appropriate Ajax commands for the back-end
-    //
-    function updateBlink1InputsAndPatterns(triggerObjects) {
-        console.log("updateBlink1InputsAndPatterns");
-        for( var i=0; i<triggerObjects.length; i++ ) {
-            var trigObj = triggerObjects[i];
-            var source = trigObj.source;
-            var type = source.type;
-
-            // first lets do inputs
-            var iparms = {}; 
-            iparms.iname = trigObj.title;
-            iparms.pname = trigObj.title;
-            iparms.type  = source.type;
-            iparms.arg1  = source.arg1;
-            iparms.arg2  = source.arg2;
-            iparms.arg3  = source.arg3;
-
-            if( trigObj.type != "undefined" ) {   
-                var iurl = '/blink1/input/' + type;
-                $.getJSON( iurl, iparms, function(result) { 
-                        console.log("input add status '"+ result.status+"'");  // FIXME: parse status
-                        //console.log(result);
-                    } )
-                    .error( function() { 
-                            console.log("error on input upate!");
-                        });
+function backendLoadBlink1IdSettings(myBlink1IdSettings) {
+    var b1url = '../blink1/id';
+    $.getJSON( b1url, function(result) { 
+            //myBlink1IdSettings = result; //no, replaces the passed in value
+            var serialnums = result.blink1_serialnums;
+            myBlink1IdSettings.statustext = "no blink(1) found";
+            myBlink1IdSettings.serialnum = "-none-";
+            myBlink1IdSettings.blink1_id = result.blink1_id;
+            if( serialnums.length > 0 ) { 
+                myBlink1IdSettings.statustext = "Connected!";
+                myBlink1IdSettings.serialnum = serialnums[0];
             }
+        });
+}
 
-            // now do color patterns
-            var pparms = {};
-            pparms.pname = trigObj.title;
-            var colorSettings = trigObj.colorSettings; 
-            var colorString = colorSettings.repeatTimes; // to start, then add to it
-            for( var j=0; j< colorSettings.colors.length; j++ ) {
-                var c = colorToHex( colorSettings.colors[j] );
-                var d = colorSettings.durations[j];
-                colorString += "," + c + "," + d ;
-            }
-            pparms.pattern = colorString;
+//
+// 'triggerObjects' is an array of objects with the form:
+//   obj.title                     = human readable name of trigger
+//   obj.colorSettings.colors      = array of colors
+//   obj.colorSettings.durations   = array of durations
+//   obj.colorSettings.repeatTimes = 1,2,3,
+//   obj.colorSettings.transition  = {'fade','flash'}
+//   obj.colorSettings.behavior    = {'exact-color',...}
+//   obj.source.type = {'file','ifttt','url',...}
+//   obj.source.arg1 = 1st argument for type 
+//   obj.source.arg2 = 2nd argument for type 
+//   obj.source.arg3 = 3rd argument for type 
+// IF type == 'ifttt':
+//   obj.source.arg1 = ifttt channel
+// IF type == 'file':
+//   obj.source.arg1 = filepath
+// IF type == 'url':
+//   obj.source.arg1 = url
+//   obj.source.colorOption = 'url-specified'
+//   obj.source.colorRetrieved = ''  // FIXME
+//
+//
+// $.getJSON( url, data, function() ) is equal to:
+//    $.ajax(    { url: url,
+//            dataType: 'json',
+//                data: data,
+//                success: fuction() 
+//                });        
+//
+function backendDeleteInput(triggerObject) { 
+    var parms = {};
+    parms.iname = triggerObject.title;
+    parms.pname = triggerObject.title;
+    var iurl = '../blink1/input/del';
+    var purl = '../blink1/pattern/del';
+    
+    // delete input
+    $.getJSON( iurl, parms, function(result) { 
+            console.log("input del status:"+result.status+"'");
+        })
+        .error( function() { 
+                console.log("error on input delete");
+            }); 
+    // delete pattern
+    $.getJSON( purl, parms, function(result) { 
+            console.log("pattern del status:"+result.status+"'");
+        })
+        .error( function() { 
+                console.log("error on pattern delete");                    
+            }); 
+}
 
-            var purl = '/blink1/pattern/add';
-            $.getJSON( purl, pparms, function(result) { 
-                    console.log("pattern add status '"+result.status+"'"); // FIXME: parse status
+// Send the new configuration to blink1 back-end server
+// by traversing the 'triggerObects' array and constructing
+// appropriate Ajax commands for the back-end
+//
+function backendUpdateInputsAndPatterns(triggerObjects) {
+    console.log("updateBlink1InputsAndPatterns");
+    for( var i=0; i<triggerObjects.length; i++ ) {
+        var trigObj = triggerObjects[i];
+        var source = trigObj.source;
+        var type = source.type;
+        
+        // first lets do inputs
+        var iparms = {}; 
+        iparms.iname = trigObj.title;
+        iparms.pname = trigObj.title;
+        iparms.type  = source.type;
+        iparms.arg1  = source.arg1;
+        iparms.arg2  = source.arg2;
+        iparms.arg3  = source.arg3;
+        
+        if( trigObj.type != "undefined" ) {   
+            var iurl = '/blink1/input/' + type;
+            $.getJSON( iurl, iparms, function(result) { 
+                    console.log("input add status '"+ result.status+"'");  // FIXME: parse status
                     //console.log(result);
-                } );
-        } // for each triggerObject
-    }
-
-    // Retrieve input and pattern settings from the Blink1 backend server
-    // parses JSON output from back-end and turns it into an array of triggerObjects
-    //
-    function getTriggerObjectsFromBlink1() {
-        console.log("getTriggerObjects");
-        var newTriggerObjects = []; 
+                } )
+                .error( function() { 
+                        console.log("error on input upate!");
+                    });
+        }
         
-        $.ajaxSetup({ cache: false, async: false  });
-
-        // first, load up the info from the input side of things
-        $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
-                //console.log("input data status '"+ result.status+"'");
+        // now do color patterns
+        var pparms = {};
+        pparms.pname = trigObj.title;
+        var colorSettings = trigObj.colorSettings; 
+        var colorString = colorSettings.repeatTimes; // to start, then add to it
+        for( var j=0; j< colorSettings.colors.length; j++ ) {
+            var c = colorToHex( colorSettings.colors[j] );
+            var d = colorSettings.durations[j];
+            colorString += "," + c + "," + d ;
+        }
+        pparms.pattern = colorString;
+        
+        var purl = '/blink1/pattern/add';
+        $.getJSON( purl, pparms, function(result) { 
+                console.log("pattern add status '"+result.status+"'"); // FIXME: parse status
                 //console.log(result);
-                var inputs = result.inputs;
-                for( var i=0; i< inputs.length; i++ ) {
-                    var inp = inputs[i]; 
-                    var trigger = new Object();
-                    trigger.title = inp.iname;
-                    trigger.source = new Object();
-					trigger.source = inp;
-                    newTriggerObjects.push( trigger );
+            } );
+    } // for each triggerObject
+}
+
+// Retrieve input and pattern settings from the Blink1 backend server
+// parses JSON output from back-end and turns it into an array of triggerObjects
+//
+function backendLoadTriggerObjects() {
+    console.log("backendLoadTriggerObjects");
+    var newTriggerObjects = []; 
+    
+    $.ajaxSetup({ cache: false, async: false  });
+    
+    // first, load up the info from the input side of things
+    $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
+            //console.log("input data status '"+ result.status+"'");
+            //console.log(result);
+            var inputs = result.inputs;
+            for( var i=0; i< inputs.length; i++ ) {
+                var inp = inputs[i]; 
+                var trigger = new Object();
+                trigger.title = inp.iname;
+                trigger.source = new Object();
+                trigger.source = inp;
+                newTriggerObjects.push( trigger );
+            }
+            /*                 newTriggerObjects.reverse(); */
+        })
+        .error(function() { 
+                console.log("error! could not read blink1/input json!"); 
+            });
+    
+    // then add in the color patterns for each input
+    $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
+            console.log("pattern data status '"+ result.status+"'");
+            console.log(result);
+            var patterns = result.patterns;
+            for( var i=0; i< patterns.length; i++ ) {
+                var patt = patterns[i]; 
+                var pattparts = patt.pattern.split(',');
+                var colors = [];
+                var durations = [];
+                for( var j=1; j< pattparts.length; j+=2 ) { 
+                    colors.push( hexToColor(pattparts[j+0]) );
+                    durations.push(         pattparts[j+1] );
                 }
-/*                 newTriggerObjects.reverse(); */
-            })
-            .error(function() { 
-                    console.log("error! could not read blink1/input json!"); 
-                });
-
-        // then add in the color patterns for each input
-        $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
-                console.log("pattern data status '"+ result.status+"'");
-                console.log(result);
-                var patterns = result.patterns;
-                for( var i=0; i< patterns.length; i++ ) {
-                    var patt = patterns[i]; 
-                    var pattparts = patt.pattern.split(',');
-                    var colors = [];
-                    var durations = [];
-                    for( var j=1; j< pattparts.length; j+=2 ) { 
-                        colors.push( hexToColor(pattparts[j+0]) );
-                        durations.push(         pattparts[j+1] );
-                    }
-
-                    var colorSettings = new Object();
-                    colorSettings.behavior    = 'exact-color';
-                    colorSettings.transition  = 'fade';
-                    colorSettings.repeatTimes = patt.repeats;
-                    colorSettings.colors      = colors;
-                    colorSettings.durations   = durations;
-
-                    // add pattern to correct newTriggerObject
-                    $(newTriggerObjects).each( function() { 
-                            if( this.title == patt.name ) { 
-                                this.colorSettings = colorSettings;
-                            }
-                        });
-                }
-            })
-            .error(function() { 
-                    console.log("error! could not read blink1/pattern json!"); 
-                });
-        
-        console.log("newTriggerObjects:");
-        console.log(newTriggerObjects);
-
-        $.ajaxSetup({ cache: true, async: true  });
-
-		$(newTriggerObjects).each( function() {
+                
+                var colorSettings = new Object();
+                colorSettings.behavior    = 'exact-color';
+                colorSettings.transition  = 'fade';
+                colorSettings.repeatTimes = patt.repeats;
+                colorSettings.colors      = colors;
+                colorSettings.durations   = durations;
+                
+                // add pattern to correct newTriggerObject
+                $(newTriggerObjects).each( function() { 
+                        if( this.title == patt.name ) { 
+                            this.colorSettings = colorSettings;
+                        }
+                    });
+            }
+        })
+        .error(function() { 
+                console.log("error! could not read blink1/pattern json!"); 
+            });
+    
+    console.log("newTriggerObjects:");
+    console.log(newTriggerObjects);
+    
+    $.ajaxSetup({ cache: true, async: true  });
+    
+    $(newTriggerObjects).each( function() {
 			this.title = this.title.replace(/\+/g, ' ');	
 		});
-		
-        return newTriggerObjects;
+    
+    return newTriggerObjects;
+}
+
+// 
+function backendSetColor(color) {
+    var colr = colorToHex(color); // convert to hex color if not
+    var parms = { rgb : colr, 
+                  time : 0.1 };
+    $.getJSON( '../blink1/fadeToRGB', parms );
+}
+
+// convert things like "rgb(255,128,0)" to "#FF8000"
+function colorToHex(color) {
+    if (color.substr(0, 1) === '#') {
+        return color;
     }
+    var digits = /(.*?)rgb\((\d+), (\d+), (\d+)\)/.exec(color);
+    
+    var red   = parseInt(digits[2]);
+    var green = parseInt(digits[3]);
+    var blue  = parseInt(digits[4]);
+    
+    var rgb = 0x1000000 + (blue | (green << 8) | (red << 16));
+    return digits[1] + '#' + rgb.toString(16).substr(1);
+};
 
-    // convert things like "rgb(255,128,0)" to "#FF8000"
-    function colorToHex(color) {
-        if (color.substr(0, 1) === '#') {
-            return color;
-        }
-        var digits = /(.*?)rgb\((\d+), (\d+), (\d+)\)/.exec(color);
-        
-        var red   = parseInt(digits[2]);
-        var green = parseInt(digits[3]);
-        var blue  = parseInt(digits[4]);
-        
-        var rgb = 0x1000000 + (blue | (green << 8) | (red << 16));
-        return digits[1] + '#' + rgb.toString(16).substr(1);
-    };
-
-    // convert things like "#FF0000" to "rgb(255,128,0)"
-    function hexToColor(hexstring) { 
-        var hex = (hexstring.charAt(0)=="#") ? hexstring.substring(1,7) : hexstring;  
-        var r = parseInt(hex.substring(0,2),16);
-        var g = parseInt(hex.substring(2,4),16);
-        var b = parseInt(hex.substring(4,6),16);
-        return("rgb(" + r + ", "+g+", "+b+")");
-    }
-
-});
+// convert things like "#FF0000" to "rgb(255,128,0)"
+function hexToColor(hexstring) { 
+    var hex = (hexstring.charAt(0)=="#") ? hexstring.substring(1,7) : hexstring;  
+    var r = parseInt(hex.substring(0,2),16);
+    var g = parseInt(hex.substring(2,4),16);
+    var b = parseInt(hex.substring(4,6),16);
+    return("rgb(" + r + ", "+g+", "+b+")");
+}
