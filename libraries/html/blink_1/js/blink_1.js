@@ -572,7 +572,7 @@ $(document).ready(function(){
 		recolorSwatches(triggerObj.colorSettings.colors); // set colors
 		reassignSwatchDurations(triggerObj.colorSettings.durations); // set durations	
         
-        $('#ifttt-uid2').val( blink1IdSettings.blink1_id );
+        $('#ifttt-uid2').val( blink1IdSettings.blink1_id ); 
 	}
 
 	
