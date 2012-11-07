@@ -1080,17 +1080,18 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 // GUI action: open up main config page
 - (IBAction) openConfig: (id) sender
 {
-    DLog(@"Config!");
     [blink1 enumerate];
     [self updateUI];
+
+    if( ![_window isVisible] ) {
+        NSString* confURL = [NSString stringWithFormat: confURLbase, http_port];
     
-    NSString* confURL = [NSString stringWithFormat: confURLbase, http_port];
-    
-    // Load the HTML content.
-    //[[[_webView mainFrame] frameView] setAllowsScrolling:NO];
-    [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:confURL]]];
-    [_window display];
-    [_window setIsVisible:YES];
+        // Load the HTML content.
+        //[[[_webView mainFrame] frameView] setAllowsScrolling:NO];
+        [[_webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:confURL]]];
+        [_window display];
+        [_window setIsVisible:YES];
+    }
     [NSApp activateIgnoringOtherApps:YES];
 }
 
