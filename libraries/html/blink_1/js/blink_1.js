@@ -17,6 +17,10 @@ $(document).ready(function(){
     // load up the blink1_id info
     backendLoadBlink1IdSettings(blink1IdSettings);
 
+    var liveValueTriggerObject = new Object; // FIXME: should be ref to current obj
+    liveValueTriggerObject.source = new Object;
+
+    
 /*********************************
 
 	NAVBAR TABS BEHAVIOR
@@ -190,13 +194,13 @@ $(document).ready(function(){
 				$('#trigger-list .trigger-options').last().find('.repeat-option').removeClass('false').addClass('true');	
 			}
 			// and check for scroll reminder
-			console.log($('#trigger-list .trigger-options').length);
+			//console.log($('#trigger-list .trigger-options').length);
 			if($('#trigger-list .trigger-options').length > 5) {
 				$('#scroll-for-more').fadeIn('slow');
 			}
 
 			if(settings.source.arg1) {
-			console.log(settings.source.arg1);
+                //console.log(settings.source.arg1);
 				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
 					$('#trigger-list .trigger-options').last().find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
 				} else {
@@ -389,18 +393,23 @@ $(document).ready(function(){
 	
 	$('#source-selector .options-group input').change(function(e) {
 		var slug = $(this).attr('id').split('-')[2];
+
 		if($('.column-2').hasClass(slug)) {
 			// do nothing if already selected
 		}
 		else {
 			$('.column-2 > div').hide();
 			
-				$('.column-2').attr('class', 'column column-2');
-				$('.column-2').addClass(slug);
-				$('.column-2 > div.' + slug).fadeIn();
+			$('.column-2').attr('class', 'column column-2');
+			$('.column-2').addClass(slug);
+			$('.column-2 > div.' + slug).fadeIn();
 		}
-		
-		
+        
+        // FIXME: how to get triggerObject in this section?
+        var fakeTriggerObject = new Object;
+        fakeTriggerObject.source = new Object;
+        fakeTriggerObject.source.type = slug;
+        backendLiveValueStart( fakeTriggerObject );
 	});
 	
 	
@@ -528,6 +537,7 @@ $(document).ready(function(){
 			applyConfigurationOptions(existingObject, id, index);
 			$('#configuration-popup').addClass('existing');
 			$('#configuration-popup #submit-options-buttons input.save-as-new').val('save as new');	
+            backendLiveValueStart( existingObject );
 		} 
 		// otherwise, we're creating a new trigger
 		else {
@@ -539,6 +549,7 @@ $(document).ready(function(){
 		// and finally, open the panel
 		$('#gray-out').fadeIn('fast');
 		$('#configuration-popup').fadeIn('fast');
+
 	}
 
 	
@@ -694,7 +705,69 @@ $(document).ready(function(){
 	function closeConfigurationPanel() {
 		$('#gray-out').fadeOut('fast');
 		$('#configuration-popup').fadeOut('fast');
+        backendLiveValueStop();
 	}
+
+
+    //
+    // ---------------------------------------------------------------------------
+    //
+
+    //
+    function backendLiveValueStart( aTriggerObject ) {
+        console.log("backendLiveValueStart:"); 
+        console.log(aTriggerObject);
+
+        liveValueTriggerObject.source.type = aTriggerObject.source.type;
+        liveValueTriggerObject.tsti = 0;
+
+        backendLiveValueStop();
+        backendLiveValue();
+    }
+    //
+    function backendLiveValueStop() {
+        if( liveValueTriggerObject.timer ) {
+            clearTimeout( liveValueTriggerObject.timer );
+        }
+    }
+    //
+    function backendLiveValue() { 
+        var type = liveValueTriggerObject.source.type;
+        console.log("backendLiveValue:"+type);
+        if( type == 'url' ) {
+            backendUrlWatch();
+        } else if( type == 'file' ) {
+            backendFileWatch();
+        } else if( type == 'ifttt' ) {
+            backendIftttWatch();
+        }
+        //setTimeout( function(){ backendLiveValue() }, 2000 );
+        liveValueTriggerObject.timer = setTimeout( backendLiveValue, 2000 );
+    }
+
+    //
+    //
+    function backendIftttWatch() {
+        console.log("backendIftttWatch"+liveValueTriggerObject.tsti);
+        $('.ifttt #value-retrieved-text-box').val( "dummy ifttt val "+liveValueTriggerObject.tsti);
+        liveValueTriggerObject.tsti++;
+    }
+
+    //
+    //
+    function backendFileWatch() {
+        console.log("backendFileWatch"+liveValueTriggerObject.tsti);
+        $('.file #value-retrieved-text-box').val( "dummy file val "+liveValueTriggerObject.tsti);
+        liveValueTriggerObject.tsti++;
+    }
+
+    //
+    //
+    function backendUrlWatch() {
+        console.log("backendUrlWatch"+liveValueTriggerObject.tsti);
+        $('.url #value-retrieved-text-box').val( "dummy url val "+liveValueTriggerObject.tsti);
+        liveValueTriggerObject.tsti++;
+    }
 
 }); // document.ready
 
@@ -853,8 +926,8 @@ function backendLoadTriggerObjects() {
     
     // then add in the color patterns for each input
     $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
-            console.log("pattern data status '"+ result.status+"'");
-            console.log(result);
+            //console.log("pattern data status '"+ result.status+"'");
+            //console.log(result);
             var patterns = result.patterns;
             for( var i=0; i< patterns.length; i++ ) {
                 var patt = patterns[i]; 
@@ -885,8 +958,8 @@ function backendLoadTriggerObjects() {
                 console.log("error! could not read blink1/pattern json!"); 
             });
     
-    console.log("newTriggerObjects:");
-    console.log(newTriggerObjects);
+    //console.log("newTriggerObjects:");
+    //console.log(newTriggerObjects);
     
     $.ajaxSetup({ cache: true, async: true  });
     
