@@ -1,0 +1,11 @@
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\blink1.exe.config
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\blink1.exe
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\blink1.pdb
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\Window1.baml
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\Window1.g.cs
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blinkApp.g.cs
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1_MarkupCompile.cache
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.g.resources
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.exe
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.pdb
+C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.csprojResolveAssemblyReference.cache
