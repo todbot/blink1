@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenWebKitSharp", "OpenWebKitSharp.csproj", "{52027BEA-E2A2-4240-BD7D-B51F3964AE66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Debug_NET2|Any CPU = Debug_NET2|Any CPU
+		Release_NET2|Any CPU = Release_NET2|Any CPU
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+		Debug_NET2|x86 = Debug_NET2|x86
+		Release_NET2|x86 = Release_NET2|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug_NET2|Any CPU.ActiveCfg = Debug_NET2|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug_NET2|Any CPU.Build.0 = Debug_NET2|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug_NET2|x86.ActiveCfg = Debug_NET2|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug_NET2|x86.Build.0 = Debug_NET2|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug|x86.ActiveCfg = Debug|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Debug|x86.Build.0 = Debug|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release_NET2|Any CPU.ActiveCfg = Release_NET2|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release_NET2|Any CPU.Build.0 = Release_NET2|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release_NET2|x86.ActiveCfg = Release_NET2|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release_NET2|x86.Build.0 = Release_NET2|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release|x86.ActiveCfg = Release|x86
+		{52027BEA-E2A2-4240-BD7D-B51F3964AE66}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = OpenWebKitSharp.csproj
+	EndGlobalSection
+EndGlobal

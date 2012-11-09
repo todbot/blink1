@@ -1,0 +1,19 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="WebKitBrowser.cs">
+    <Files>
+      <File FileName="WebKitBrowser.cs" Line="1968" Column="6" />
+      <File FileName="AntiPhish.cs" Line="74" Column="50" />
+      <File FileName="CustomUndoSystem.cs" Line="107" Column="18" />
+      <File FileName="Linux (GTK)\GTKApp.cs" Line="147" Column="21" />
+      <File FileName="Linux (GTK)\LinuxWebKitBrowser.cs" Line="1" Column="1" />
+      <File FileName="c:\OpenWebKitSharp\Source\OpenWebKitSharp\Source Code Control\Place.cs" Line="7" Column="19" />
+      <File FileName="c:\OpenWebKitSharp\Source\OpenWebKitSharp\WebKitDOMCoreClasses.cs" Line="1214" Column="3" />
+      <File FileName="Header.cs" Line="11" Column="23" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

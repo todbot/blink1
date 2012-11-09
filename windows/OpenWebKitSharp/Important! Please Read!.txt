@@ -1,0 +1,16 @@
+﻿Due to the fact that from Version 2.0 OpenWebKitSharp has upgraded to revision WebKit-r97534 you must
+clear every webkit related file from your build directory before building. 
+
+I suggest that you create a new folder, build OpenWebKitSharp to that folder and then use that folder
+as your build location for your main project.
+
+Please note that the working environment of OpenWebKitSharp has changed and it is not recommended that you extract the build you downloaded over
+a previous build of OpenWebKitSharp because you might confront build problems and source confusion
+
+
+Requirements:
+
+Windows XP/Vista/7 32 or 64 Bit
+Microsoft .NET Framework 4.0
+Microsoft C++ 2008 Redistributable(http://www.microsoft.com/downloads/details.aspx?familyid=2051a0c1-c9b5-4b0a-a8f5-770a549fd78c&displaylang=en)
+Apple QuickTime (Optional - for Video and Audio HTML5 Support)

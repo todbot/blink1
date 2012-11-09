@@ -1,0 +1,25 @@
+In order to use OpenWebKitSharp in your application you should follow the following steps:
+
+
+1. Go to the Core folder of the OpenWebKitSharp solution, select all the files and copy them to your build directory. Do the same for the References folder.
+2. Open your project and reference OpenWebKitSharp.dll and WebKit.Interop.dll
+3. Go again to your project and select Choose Items at the Visual Studio toolbox. Then locate OpenWebKitSharp.dll so that you can use the WebKitBrowser object with your application.
+4. You are ready!
+
+Alternative:
+
+If you have Visual Studio 2010 SP1 or above you can open OpenWebKitSharp.csproj, go to the project's properties,
+change the Output path in the "Build" path to the path of your executable's and build the project. All the necessary
+files will be copied to your project's build path and then you must follow steps 2-4 above. The files from 2# will be 
+present in the build folder of your project.
+
+For troubleshooting visit: http://gt-web-software.webs.com/apps/forums/topics/show/5914481-troubleshooting
+
+For forums visit: http://gt-web-software.webs.com/apps/forums/
+
+In order to promote your app visit: http://gt-web-software.webs.com/apps/forums/show/6508813-show-off-your-openwebkitsharp-application-
+
+
+If you want to help with the development of OpenWebKitSharp visit: http://gt-web-software.webs.com/getinvolved.htm
+and at the descprition say that you would like to help with OpenWebKitSharp. You can also submit patches at the Google Code
+page if you want to commit to the development of OpenWebKitSharp.
