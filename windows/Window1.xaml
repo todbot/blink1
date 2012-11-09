@@ -1,0 +1,10 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Custom="http://schemas.awesomium.com/winfx"
+    x:Class="blink1.Window1"
+    Title="blink1" Height="640" Width="860" Icon="blink.ico">
+    <Grid>
+        <Custom:WebControl HorizontalAlignment="Left" Height="593" Margin="10,10,0,0" VerticalAlignment="Top" Width="832" Source="file:///C:/Users/justin/Documents/GitHub/blink1/libraries/html/blink_1/index.html"/>
+    </Grid>
+</Window>

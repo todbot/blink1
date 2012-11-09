@@ -1,0 +1,385 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{52027BEA-E2A2-4240-BD7D-B51F3964AE66}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WebKit</RootNamespace>
+    <AssemblyName>OpenWebKitSharp</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>..\..\build\</OutputPath>
+    <WarningLevel>0</WarningLevel>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <Prefer32Bit>false</Prefer32Bit>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG</DefineConstants>
+    <DebugType>none</DebugType>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>..\..\build\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DefineConstants>RELEASE</DefineConstants>
+    <DebugType>none</DebugType>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_NET2|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug_NET2\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_NET2|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\Build_NET2\</OutputPath>
+    <Optimize>true</Optimize>
+    <WarningLevel>0</WarningLevel>
+    <NoWarn>;2008</NoWarn>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DebugType>full</DebugType>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_NET2|AnyCPU'">
+    <OutputPath>bin\Release_NET2\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_NET2|x86'">
+    <OutputPath>..\..\Build_NET2\</OutputPath>
+    <NoWarn>;2008</NoWarn>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Linux|x86'">
+    <DefineConstants>LINUX</DefineConstants>
+    <OutputPath>..\..\Linux\Debug\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Linux|x86'">
+    <DefineConstants>LINUX</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>..\..\Linux\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files\GtkSharp\2.12\lib\gtk-sharp-2.0\glib-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="JSCore, Version=1.0.1.2, Culture=neutral, PublicKeyToken=d6b823da6d3fa04b, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\JavaScript\bin\Release\JSCore.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\..\References\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="MyDownloader.App">
+      <HintPath>..\..\References\MyDownloader.App.dll</HintPath>
+    </Reference>
+    <Reference Include="MyDownloader.Core">
+      <HintPath>..\..\References\MyDownloader.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MyDownloader.Extension">
+      <HintPath>..\..\References\MyDownloader.Extension.dll</HintPath>
+    </Reference>
+    <Reference Include="MyDownloader.Spider">
+      <HintPath>..\..\References\MyDownloader.Spider.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="TabStrip">
+      <HintPath>..\..\References\TabStrip.dll</HintPath>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="WebKit.Interop, Version=536.0.0.0, Culture=neutral, PublicKeyToken=e78a9a0f333419fa, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\generated\WebKit.Interop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActivationContext.cs" />
+    <Compile Include="AntiPhish.cs" />
+    <Compile Include="AppearanceSettings.cs" />
+    <Compile Include="ContextMenuManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="CustomUndoSystem.cs" />
+    <Compile Include="DOMListener.cs" />
+    <Compile Include="Downloader\App.cs" />
+    <Compile Include="Downloader\Controls\Block.cs" />
+    <Compile Include="Downloader\Controls\BlockedProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Downloader\Controls\BlockedProgressBar.designer.cs">
+      <DependentUpon>BlockedProgressBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Downloader\Controls\BlockList.cs" />
+    <Compile Include="Downloader\Controls\CheckableTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Downloader\SingleInstancing\ISingleInstanceEnforcer.cs" />
+    <Compile Include="Downloader\SingleInstancing\MessageEventArgs.cs" />
+    <Compile Include="Downloader\SingleInstancing\SingleInstanceException.cs" />
+    <Compile Include="Downloader\SingleInstancing\SingleInstanceProxy.cs" />
+    <Compile Include="Downloader\SingleInstancing\SingleInstanceTracker.cs" />
+    <Compile Include="Downloader\UI\NewDownloadDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Downloader\UI\NewDownloadDialog.designer.cs">
+      <DependentUpon>NewDownloadDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Downloader\UI\DownloadList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Downloader\UI\DownloadList.designer.cs">
+      <DependentUpon>DownloadList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Downloader\UI\FileTypeImageList.cs" />
+    <Compile Include="Downloader\UI\IconReader.cs" />
+    <Compile Include="Downloader\UI\MainDownloadForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Downloader\UI\MainDownloadForm.designer.cs">
+      <DependentUpon>MainDownloadForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Downloader\UI\NewDownloadForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Downloader\UI\NewDownloadForm.designer.cs">
+      <DependentUpon>NewDownloadForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GlobalPreferences.cs" />
+    <Compile Include="Header.cs" />
+    <Compile Include="JSManagement.cs" />
+    <Compile Include="LanguageLoader.cs" />
+    <Compile Include="Linux %28GTK%29\GtkWrapperNoThread.cs" />
+    <Compile Include="Linux %28GTK%29\X11.cs" />
+    <Compile Include="NativeMethods.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="ReourcesIntercepter.cs" />
+    <Compile Include="Source Code Control\AutocompleteItem.cs" />
+    <Compile Include="Source Code Control\AutocompleteMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Source Code Control\Char.cs" />
+    <Compile Include="Source Code Control\CommandManager.cs" />
+    <Compile Include="Source Code Control\Commands.cs" />
+    <Compile Include="Source Code Control\Export.cs" />
+    <Compile Include="Source Code Control\FastColoredTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Source Code Control\FindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Source Code Control\FindForm.designer.cs">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Source Code Control\LimitedStack.cs" />
+    <Compile Include="Source Code Control\Line.cs" />
+    <Compile Include="Source Code Control\Place.cs" />
+    <Compile Include="Source Code Control\Range.cs" />
+    <Compile Include="Source Code Control\ReplaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Source Code Control\ReplaceForm.designer.cs">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Source Code Control\Style.cs" />
+    <Compile Include="Source Code Control\SyntaxDescriptor.cs" />
+    <Compile Include="Source Code Control\SyntaxHighlighter.cs" />
+    <Compile Include="Source Code Control\VisualMarker.cs" />
+    <Compile Include="SourceCodeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SourceCodeForm.Designer.cs">
+      <DependentUpon>SourceCodeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WebDownloadDelegate.cs" />
+    <Compile Include="WebEditingDelegate.cs" />
+    <Compile Include="WebFormDelegate.cs" />
+    <Compile Include="WebFrameLoadDelegate.cs" />
+    <Compile Include="WebKitBrowser.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WebKitBrowser.designer.cs">
+      <DependentUpon>WebKitBrowser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WebKitBrowserEvents.cs" />
+    <Compile Include="WebKitCSSClasses.cs" />
+    <Compile Include="WebKitDOMCoreClasses.cs" />
+    <Compile Include="WebKitDOMHTMLClasses.cs" />
+    <Compile Include="WebKitFormData.cs" />
+    <Compile Include="WebNotificationObserver.cs" />
+    <Compile Include="WebPolicyDelegate.cs" />
+    <Compile Include="WebResourceLoadDelegate.cs" />
+    <Compile Include="WebUIDelegate.cs" />
+    <Compile Include="Linux %28GTK%29\GTKApp.cs" />
+    <Compile Include="Linux %28GTK%29\LinuxWebKitBrowser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Downloader\UI\NewDownloadDialog.resx">
+      <DependentUpon>NewDownloadDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Downloader\UI\DownloadList.resx">
+      <DependentUpon>DownloadList.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Downloader\UI\MainDownloadForm.resx">
+      <DependentUpon>MainDownloadForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Downloader\UI\NewDownloadForm.resx">
+      <DependentUpon>NewDownloadForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Source Code Control\FastColoredTextBox.resx">
+      <DependentUpon>FastColoredTextBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Source Code Control\FindForm.resx">
+      <DependentUpon>FindForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Source Code Control\ReplaceForm.resx">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SourceCodeForm.resx">
+      <DependentUpon>SourceCodeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WebKitBrowser.resx">
+      <DependentUpon>WebKitBrowser.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\How to use.txt" />
+    <None Include="Resources\New document.ico" />
+    <None Include="app.config" />
+    <None Include="How to use.txt" />
+    <Content Include="Important! Please Read!.txt" />
+    <Content Include="OpenWebKitSharp.manifest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Properties\Settings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="WebKit.NET.snk" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>echo WebKitBrowser &gt; temp_exclude_files.txt
+echo .tlb &gt;&gt; temp_exclude_files.txt
+echo gitignore &gt;&gt; temp_exclude_files.txt
+xcopy /E /Y /EXCLUDE:temp_exclude_files.txt "$(SolutionDir)Core\*" "$(TargetDir)"
+xcopy /E /Y "$(SolutionDir)References\*" "$(TargetDir)"
+del temp_exclude_files.txt</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug_Linux|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug_Linux</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>LINUX</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release_Linux|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release_Linux</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>LINUX</DefineConstants>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup />
+</Project>
