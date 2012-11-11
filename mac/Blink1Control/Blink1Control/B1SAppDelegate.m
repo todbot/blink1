@@ -152,6 +152,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 - (NSString*) readColorPattern: (NSString*)contentStr
 {
     NSString* str = nil;
+    if( contentStr == nil ) return nil;
     NSScanner *scanner = [NSScanner scannerWithString:contentStr];
     BOOL isPattern = [scanner scanUpToString:@"pattern" intoString:NULL];
     if( isPattern || (!isPattern && str==nil) ) { // match or at begining of string
@@ -200,7 +201,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 - (void) updateFileInput: (NSMutableDictionary*)input
 {
     DLog(@"updateFileInput");
-    NSString* path = [input objectForKey:@"arg"];
+    NSString* path = [input objectForKey:@"arg1"];
     NSString* filepath = [path stringByStandardizingPath];
     //NSString* fpath = [path stringByExpandingTildeInPath];
 
@@ -210,8 +211,10 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         DLog(@"file '%@' contents='%@'",filepath,contentstr);
         NSString* patternstr  = [self parsePatternOrColorInString: contentstr];
         DLog(@"patternstr='%@'",patternstr);
-        [input setObject:patternstr forKey:@"lastVal"];
-        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+        if( patternstr != nil ) {                                        // FIXME: !!!! what about test mode
+            [input setObject:patternstr forKey:@"lastVal"];
+            [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+        }
     }
     else {
         NSString* errstr = [NSString stringWithFormat:@"no such file '%@'",filepath];
@@ -261,10 +264,11 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", iftttEventUrl, [blink1 blink1_id]];
     
     NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
-    DLog(@"url:%@ = '%@'", eventUrlStr,jsonStr);
+    DLog(@"ifttt url:%@ json: '%@'", eventUrlStr,jsonStr);
 
     NSDictionary* jsonResponse = [_jsonparser objectWithString:jsonStr];
     NSString* status = [jsonResponse objectForKey:@"status"];
+    DLog(@"status: %@",status);
     if( !jsonResponse || !status ) { // badly formated JSON
         [input setObject:@"error: badly formed JSON response" forKey:@"lastVal"];
     }
@@ -802,7 +806,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         NSString* url   = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
-        NSString* statusstr = @"must specifiy 'iname' and 'url'";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (url)";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && url != nil ) { // the minimum requirements for this input type
@@ -829,20 +833,22 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* test  = [request param:@"test"];
         NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* chan  = [request param:@"arg1"];
         
-        NSString* statusstr = @"must specifiy 'iname'";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (channel)";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        [input setObject:iname    forKey:@"iname"];
-        [input setObject:@"ifttt" forKey:@"type"];
-        if( pname )
-            [input setObject:pname forKey:@"pname"];
+        if( iname != nil && chan != nil ) { // the minimum requirements for this input type
+            [input setObject:iname    forKey:@"iname"];
+            [input setObject:@"ifttt" forKey:@"type"];
+            [input setObject:chan     forKey:@"arg1"];
 
-        [self updateIftttInput: input];
+            [self updateIftttInput: input];
         
-        if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
-            [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"input ifttt";
         }
 
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
