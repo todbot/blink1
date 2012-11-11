@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-    var blink1IdSettings = {};
+    var blink1Settings = new Object;
 	var swatchId = '';
 
     var triggerObjects = [];
@@ -15,11 +15,11 @@ $(document).ready(function(){
         });
 
     // load up the blink1_id info
-    backendLoadBlink1IdSettings(blink1IdSettings);
+    backendLoadBlink1Settings();
 
     var liveValueTriggerObject = new Object; // FIXME: should be ref to current obj
     liveValueTriggerObject.source = new Object;
-
+    var liveValueTimer = new Object; // holder for setTimeout() stuff
     
 /*********************************
 
@@ -51,10 +51,10 @@ $(document).ready(function(){
 				$('.ui-state-active').addClass('active');
 			} else {
                 // otherwise, get settings & trigger popup/opacity effect
-                backendLoadBlink1IdSettings( blink1IdSettings );
-                $('#blink-status').text( blink1IdSettings.statustext );
-                $('#serial-number').text( blink1IdSettings.serialnum );
-                $('#ifttt-uid').text( blink1IdSettings.blink1_id );
+                backendLoadBlink1Settings();
+                $('#about-status').text( blink1Settings.statustext );
+                $('#about-serial-number').text( blink1Settings.serialnum );
+                $('#about-ifttt-uid').text( blink1Settings.blink1_id );
 
 				$('#settings-popup').fadeIn('fast');
 				$('#gray-out').fadeIn('fast');	
@@ -556,6 +556,10 @@ $(document).ready(function(){
 		
 	function applyConfigurationOptions(triggerObj, id, index) {
 		resetConfigurationPanel();
+
+        console.log("setting ifttt-uid "+ blink1Settings.blink1_id);
+        $('#ifttt-uid').text(    blink1Settings.blink1_id );
+
 		$('#configuration-popup').addClass('existing');
 		// fill in all the values from that object
 		
@@ -582,8 +586,7 @@ $(document).ready(function(){
 		resizeSwatches(triggerObj.colorSettings.colors.length, '.color-swatch', 127); // resize to appropriate number
 		recolorSwatches(triggerObj.colorSettings.colors); // set colors
 		reassignSwatchDurations(triggerObj.colorSettings.durations); // set durations	
-        
-        $('#ifttt-uid2').val( blink1IdSettings.blink1_id ); 
+
 	}
 
 	
@@ -671,7 +674,7 @@ $(document).ready(function(){
 		} else if ($('.column-2').hasClass('url')) {
 			compiledSettings.source.arg1 = $('#web-page-url').val(); 
 			compiledSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
-			compiledSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();					
+			compiledSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
 		} else if ($('.column-2').hasClass('file')) {
 			compiledSettings.source.arg1 = $('#file-path').val();
 		}	
@@ -719,54 +722,62 @@ $(document).ready(function(){
         console.log(aTriggerObject);
 
         liveValueTriggerObject.source.type = aTriggerObject.source.type;
-        liveValueTriggerObject.tsti = 0;
 
         backendLiveValueStop();
         backendLiveValue();
     }
     //
     function backendLiveValueStop() {
-        if( liveValueTriggerObject.timer ) {
-            clearTimeout( liveValueTriggerObject.timer );
+        if( liveValueTimer ) {
+            clearTimeout( liveValueTimer );
         }
     }
     //
-    function backendLiveValue() { 
+    function backendLiveValue() {
         var type = liveValueTriggerObject.source.type;
-        console.log("backendLiveValue:"+type);
-        if( type == 'url' ) {
-            backendUrlWatch();
-        } else if( type == 'file' ) {
-            backendFileWatch();
-        } else if( type == 'ifttt' ) {
-            backendIftttWatch();
-        }
-        //setTimeout( function(){ backendLiveValue() }, 2000 );
-        liveValueTriggerObject.timer = setTimeout( backendLiveValue, 2000 );
+        var arg1 = '';
+        if( type === 'url' ) {        arg1 = $('#web-page-url').val();  }
+        else if( type == 'file' ) {   arg1 = $('#file-path').val();  }
+        else if( type == 'ifttt' ) {  arg1 = $('#ifttt-channel').val();  }
+        
+        console.log("backendLiveValue: "+type+ ", arg1:"+arg1);
+
+        var b1url = "../blink1/input/"+type;
+        
+        var parms = { arg1: arg1,
+                      iname: 'test',
+                      test: 'true' };  // most important, doesn't add input, just runs input logic
+        
+        $.getJSON( b1url, parms, function(result) { 
+                if( type == 'url' ) { 
+                    $('.url #value-retrieved-text-box').val( result.input.lastVal );
+                } else if( type == 'file' ) {
+                    $('.file #value-retrieved-text-box').val( result.input.lastVal );
+                } else if( type == 'ifttt' ) {
+                    $('.ifttt #value-retrieved-text-box').val( result.input.lastVal );
+                }
+            });
+
+    liveValueTimer = setTimeout( backendLiveValue, 2000 );
     }
 
-    //
-    //
-    function backendIftttWatch() {
-        console.log("backendIftttWatch"+liveValueTriggerObject.tsti);
-        $('.ifttt #value-retrieved-text-box').val( "dummy ifttt val "+liveValueTriggerObject.tsti);
-        liveValueTriggerObject.tsti++;
-    }
 
-    //
-    //
-    function backendFileWatch() {
-        console.log("backendFileWatch"+liveValueTriggerObject.tsti);
-        $('.file #value-retrieved-text-box').val( "dummy file val "+liveValueTriggerObject.tsti);
-        liveValueTriggerObject.tsti++;
-    }
-
-    //
-    //
-    function backendUrlWatch() {
-        console.log("backendUrlWatch"+liveValueTriggerObject.tsti);
-        $('.url #value-retrieved-text-box').val( "dummy url val "+liveValueTriggerObject.tsti);
-        liveValueTriggerObject.tsti++;
+    function backendLoadBlink1Settings() {
+        //$.ajaxSetup({ cache: false, async: false  });
+        var b1url = '../blink1/id';
+        $.getJSON( b1url, function(result) { 
+                console.log("result:");
+                console.log(result);
+                var serialnums = result.blink1_serialnums;
+                blink1Settings.statustext = "no blink(1) found";
+                blink1Settings.serialnum = "-none-";
+                blink1Settings.blink1_id = result.blink1_id;
+                if( serialnums.length > 0 ) { 
+                    blink1Settings.statustext = "Connected!";
+                    blink1Settings.serialnum = serialnums[0];
+                }
+            });
+        //$.ajaxSetup({ cache: true, async: true  });
     }
 
 }); // document.ready
@@ -778,20 +789,6 @@ $(document).ready(function(){
   in other .js files. This also means they can't use any of the 'globals' above)
   --------------------------------*/
 
-function backendLoadBlink1IdSettings(myBlink1IdSettings) {
-    var b1url = '../blink1/id';
-    $.getJSON( b1url, function(result) { 
-            //myBlink1IdSettings = result; //no, replaces the passed in value
-            var serialnums = result.blink1_serialnums;
-            myBlink1IdSettings.statustext = "no blink(1) found";
-            myBlink1IdSettings.serialnum = "-none-";
-            myBlink1IdSettings.blink1_id = result.blink1_id;
-            if( serialnums.length > 0 ) { 
-                myBlink1IdSettings.statustext = "Connected!";
-                myBlink1IdSettings.serialnum = serialnums[0];
-            }
-        });
-}
 
 //
 // 'triggerObjects' is an array of objects with the form:
@@ -802,7 +799,7 @@ function backendLoadBlink1IdSettings(myBlink1IdSettings) {
 //   obj.colorSettings.transition  = {'fade','flash'}
 //   obj.colorSettings.behavior    = {'exact-color',...}
 //   obj.source.type = {'file','ifttt','url',...}
-//   obj.source.arg1 = 1st argument for type 
+//   obj.source.arg1 = 1st argument for type , url for 'url' type, filepath for 'file' type, 
 //   obj.source.arg2 = 2nd argument for type 
 //   obj.source.arg3 = 3rd argument for type 
 // IF type == 'ifttt':
