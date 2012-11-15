@@ -26,7 +26,10 @@ $app->notFound(function () use ($app) {
 });
 $log->setEnabled(true);  // for debugging
 
+
 $eventsDir = getcwd() . "/eventscache";
+
+$blink1_id_logfile = getcwd(). "/eventscache/blink1_id_log.txt";
 
 
 // ----------------------------------------------------------------------------
@@ -185,7 +188,7 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
     });
 
 //
-$app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) { 
+$app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app,$blink1_id_logfile ) { 
         global $eventsDir;
 
         $blink1_id = strtoupper($blink1_id);
@@ -194,6 +197,13 @@ $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) {
             send_json_response( "error: invalid blink1_id '$blink1_id': $errorcode", NULL);
             return;
         }
+
+        // log the blink1_ids
+        $logline = time() . "\t" . $blink1_id . "\n";
+        $fhl = fopen( $blink1_id_logfile , 'a'); // append
+        fwrite( $fhl, $logline );
+        fclose( $fhl );
+
         $fname = "$eventsDir/" . $blink1_id; // . ".txt";
         if( file_exists( $fname ) ) {
           readfile($fname);
