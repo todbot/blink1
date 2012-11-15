@@ -10,5 +10,6 @@ RewriteEngine On
 #RewriteBase / 
 
 RewriteRule ^tester/ - [L]
+RewriteRule ^eventscache - [F,L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php [QSA,L]
