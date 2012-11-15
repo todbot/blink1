@@ -94,7 +94,6 @@ DocProject/Help/html
 publish
 
 # Others
-[Bb]in
 sql
 TestResults
 *.Cache
@@ -133,10 +132,8 @@ Desktop.ini
 *.egg
 *.egg-info
 dist
-build
 eggs
 parts
-bin
 var
 sdist
 develop-eggs
