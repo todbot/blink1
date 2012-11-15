@@ -198,16 +198,20 @@ $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app,$blink1_id_
             return;
         }
 
-        // log the blink1_ids
-        $logline = time() . "\t" . $blink1_id . "\n";
+        $events_present = 0;
+        // send out the event data
+        $fname = "$eventsDir/" . $blink1_id; // . ".txt";
+        if( file_exists( $fname ) ) {
+          readfile($fname);
+          $events_present = 1;
+        }
+
+        // log the blink1_id used
+        $logline = time() . "\t" . $blink1_id . "\t" . $events_present . "\n";
         $fhl = fopen( $blink1_id_logfile , 'a'); // append
         fwrite( $fhl, $logline );
         fclose( $fhl );
 
-        $fname = "$eventsDir/" . $blink1_id; // . ".txt";
-        if( file_exists( $fname ) ) {
-          readfile($fname);
-        }
     });
 
 
