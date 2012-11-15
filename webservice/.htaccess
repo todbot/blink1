@@ -6,8 +6,9 @@ RewriteEngine On
 #
 
 # this is for tod local debugging, don't use in production!
-#RewriteBase /~tod/blink1
+#RewriteBase /~tod/blink1/
+#RewriteBase / 
 
-
+RewriteRule ^tester/ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ index.php [QSA,L]
+RewriteRule ^(.*)$ index.php [QSA,L]

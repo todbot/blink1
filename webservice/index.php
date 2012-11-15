@@ -20,9 +20,11 @@ $app->error(function (\Exception $e) use ($app) {
         send_json_response("error: $e",NULL);
 });
 $app->notFound(function () use ($app) {
-        send_json_response("error: not found",NULL);
+        send_json_response("error: url handler not found",NULL);
+        //echo "var dump of app";
+        //var_dump($app);
 });
-//$log->setEnabled(true);  // for debugging
+$log->setEnabled(true);  // for debugging
 
 $eventsDir = getcwd() . "/eventscache";
 
@@ -63,24 +65,24 @@ function writeEvents($blink1_id,$events)
     return $retstr;
 }
 
-// Determine if passed-in blink1 id is good or not
-// returns TRUE if so, otherwise FALSE
-function isValidBlink1Id($blink1_id)
+// Determine if passed-in blink1 id is invalid
+// returns string of error or FALSE
+function isInvalidBlink1Id($blink1_id)
 {
     if( empty($blink1_id) ) {
-        return FALSE;        
+        return "empty blink1_id";
     }
-    if( $blink1_id == 0 ) {
-        return FALSE;
+    if( "0x".$blink1_id == 0 ) {  // "0x" hex hack to test for numericness
+        return "zero blink1_id";
     }
     if( strlen($blink1_id) != 16 ) { 
-        return FALSE;
+        return "blink1_id wrong length";
     }
     if( !ctype_xdigit($blink1_id)  ) {
-        return FALSE;
+        return "blink1_id not hex";
     }
     
-    return TRUE;
+    return FALSE;
 }
 
 // add a "status" entry to passed in data struct 
@@ -115,8 +117,10 @@ $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) {
         $name       = $req->get('name');
         $source     = $req->get('source');
 
-        if( !isValidBlink1Id( $blink1_id ) ) { 
-            send_json_response( "error: invalid blink1_id '$blink1_id'", NULL);
+        $blink1_id = strtoupper($blink1_id);
+
+        if( ($errorcode = isInvalidBlink1Id( $blink1_id )) ) { 
+            send_json_response( "error: invalid blink1_id '$blink1_id': $errorcode", NULL);
             return;
         }
 
@@ -140,6 +144,8 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
         $body = $req->getBody();
         $jsondata = json_decode($body, false);
         $status_str = "";
+
+        $blink1_id = strtoupper($blink1_id);
 
         if( !isValidBlink1Id( $blink1_id ) ) { 
             $status_str = "error: invalid blink1_id";
@@ -181,6 +187,8 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
 //
 $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) { 
         global $eventsDir;
+
+        $blink1_id = strtoupper($blink1_id);
 
         if( !isValidBlink1Id( $blink1_id ) ) { 
             send_json_response( "error: invalid blink1_id '$blink1_id'", NULL);
