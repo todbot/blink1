@@ -23,7 +23,7 @@ Use this to generate fake events as if they come from IFTTT.
     <label class="control-label">blink1_id</label>
     <div class="controls">
       <input class="" type="text" id="blink1_id" name="blink1_id" placeholder="ABCD12341234ABCD" value="{{blink1_id}}">   
-      <span class="help-block">Example block-level help text here.</span>
+      <span class="help-block">blink1_id is required. source and name are optional.</span>
     </div>
   </div>
 
@@ -37,7 +37,7 @@ Use this to generate fake events as if they come from IFTTT.
   <div class="control-group">
     <label class="control-label">IFTTT name</label>
     <div class="controls">
-      <input type="text" id="name" name="name" placeholder="my favorite trigger" value="{{name}}"> 
+      <input type="text" id="name" name="name" placeholder="my favorite" value="{{name}}"> 
     </div>
   </div>
 
@@ -52,14 +52,13 @@ Use this to generate fake events as if they come from IFTTT.
   <div> 
   Query URL:
   <pre id="query-display">
-    -none-
   </pre>
   </div>
 
   <div> 
   Response:
   <pre id="response-display">
-    -none-
+
   </pre>
   </div>
 
@@ -95,10 +94,10 @@ Use this to generate fake events as if they come from IFTTT.
 
         $('#response-display').text('');
 
-        if( blink1_id ) { 
+        //if( blink1_id ) { 
           var display_query_url = generate_query_url( display_query_url_base, blink1_id, source, name );
           $('#query-display').text( display_query_url );
-        }
+        //}
         
       });
       
@@ -108,6 +107,9 @@ Use this to generate fake events as if they come from IFTTT.
         var name      = $('#name').val();
         
         var query_url = generate_query_url( query_url_base, blink1_id, source, name );
+
+        var display_query_url = generate_query_url( display_query_url_base, blink1_id, source, name );
+        $('#query-display').text( display_query_url );
 
         $.getJSON( query_url, null, function(result) { 
           console.log("result:");

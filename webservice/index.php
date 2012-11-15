@@ -72,16 +72,15 @@ function isInvalidBlink1Id($blink1_id)
     if( empty($blink1_id) ) {
         return "empty blink1_id";
     }
-    if( "0x".$blink1_id == 0 ) {  // "0x" hex hack to test for numericness
-        return "zero blink1_id";
+    if( !ctype_xdigit($blink1_id)  ) {
+        return "blink1_id not hex";
     }
     if( strlen($blink1_id) != 16 ) { 
         return "blink1_id wrong length";
     }
-    if( !ctype_xdigit($blink1_id)  ) {
-        return "blink1_id not hex";
+    if( "0x".$blink1_id == 0 ) {  // "0x" hex hack to test for numericness
+        return "zero blink1_id";
     }
-    
     return FALSE;
 }
 
@@ -133,6 +132,7 @@ $app->get('/sendevent/:blink1_id', function($blink1_id) use( &$req ) {
         $event['date']      = "".time(); // FIXME: hack convert to $result
 
         $events['events'][] = $event; // push onto events list
+        $events['event_count'] = 1;
         $str = writeEvents( $blink1_id, $events );
 
         send_json_response( "success: $str", $events);
@@ -168,7 +168,7 @@ $app->post('/sendevents/:blink1_id', function($blink1_id) use( &$req ) {
                 $event->{'date'} = "".time(); // FIXME: convert to string
             }
                                
-            if( !isValidBlink1Id( $bl_id ) ) { 
+            if( isInvalidBlink1Id( $bl_id ) ) { 
                 //echo "{\"status\":\"invalid id\"}"; //FIXME: 
                 next;
             }
@@ -190,8 +190,8 @@ $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app ) {
 
         $blink1_id = strtoupper($blink1_id);
 
-        if( !isValidBlink1Id( $blink1_id ) ) { 
-            send_json_response( "error: invalid blink1_id '$blink1_id'", NULL);
+        if( ($errorcode = isInvalidBlink1Id( $blink1_id )) ) { 
+            send_json_response( "error: invalid blink1_id '$blink1_id': $errorcode", NULL);
             return;
         }
         $fname = "$eventsDir/" . $blink1_id; // . ".txt";
