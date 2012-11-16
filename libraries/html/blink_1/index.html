@@ -37,7 +37,7 @@
 						</ul>
 
 						<div id="trigger-list">
-													</div><!-- #trigger-list --> 	
+											</div><!-- #trigger-list --> 	
 						<div id="welcome-message">
 <!-- 							<div id="welcome-fade"></div> -->
 							<h2>Hi there!</h2>
@@ -105,8 +105,9 @@
 							<h4>URL</h4>
 								<input id="web-page-url" type="text" class="arg1" placeholder="enter url here" />
 							<p>
-								<input type="radio" name="url-color-options" value="url-specified" id="url-color-options-url-specified"/><label for="url-color-options-url-specified">Use color pattern in URL</label><br />
-								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/ checked="checked" ><label for="url-color-options-user-specified">Specify color pattern</label>							
+
+								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/ checked="checked" ><label for="url-color-options-user-specified">Specify color pattern</label> <br />
+								<input type="radio" name="url-color-options" value="url-specified" id="url-color-options-url-specified"/><label for="url-color-options-url-specified">Use value from URL</label>
 							</p>
 							<p>
 								<label for="value-retrieved-text-box">Value Retrieved</label>
@@ -131,9 +132,9 @@
 							<h4>Behavior</h4>						
 							<select>
 								<option value="exact-color">Exact Color</option>
-								<option value="change-brightness">Change Brightness</option>
-								<option value="change-hue">Change Hue</option>
-								<option value="blink-pattern">Blink Pattern</option>
+								<option value="change-brightness" disabled="disabled">Change Brightness</option>
+								<option value="change-hue" disabled="disabled">Change Hue</option>
+								<option value="blink-pattern" disabled="disabled">Blink Pattern</option>
 							</select>
 						</div> 
 						<div id="color-selector">

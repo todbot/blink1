@@ -272,8 +272,8 @@ display: block;
 	
 	#main-content #trigger-list {
 		position: relative;
-		height: 305px;
-		overflow: scroll;
+		height: 325px;
+        overflow:auto;
 		padding-right: 0px;
 	}
 
@@ -454,7 +454,7 @@ display: block;
 			width: 32px;
 			display: none;
 			position: absolute;
-			right: 4px;
+			right: 0px;
 			top: 15px;
 		}
 
