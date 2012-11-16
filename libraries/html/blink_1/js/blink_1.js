@@ -17,9 +17,9 @@ $(document).ready(function(){
     // load up the blink1_id info
     backendLoadBlink1Settings();
 
-    var liveValueTriggerObject = new Object; // FIXME: should be ref to current obj
-    liveValueTriggerObject.source = new Object;
-    var liveValueTimer = new Object; // holder for setTimeout() stuff
+    var liveValue = new Object; // FIXME: should be ref to current obj
+    liveValue.source = new Object;
+
     
 /*********************************
 
@@ -118,7 +118,8 @@ $(document).ready(function(){
 
 		// and then delete that trigger's object from the triggers array
         backendDeleteInput( triggerObjects[index] );        
-		triggerObjects.splice((index-1), 1);
+		triggerObjects.splice( ((index==0)?0:(index-1)), 1);
+        console.log("delete-trigger");
 		console.log(triggerObjects);
 	});
 	
@@ -716,25 +717,31 @@ $(document).ready(function(){
     // ---------------------------------------------------------------------------
     //
 
+    /*------------------------------
+      BLINK1 BACK-END FUNCTIONS
+      (note: if they are declared outside of document.ready they can be used
+      in other .js files. This also means they can't use any of the 'globals' above)
+      --------------------------------*/
+
     //
     function backendLiveValueStart( aTriggerObject ) {
         console.log("backendLiveValueStart:"); 
         console.log(aTriggerObject);
 
-        liveValueTriggerObject.source.type = aTriggerObject.source.type;
+        liveValue.source.type = aTriggerObject.source.type;
 
         backendLiveValueStop();
         backendLiveValue();
     }
     //
     function backendLiveValueStop() {
-        if( liveValueTimer ) {
-            clearTimeout( liveValueTimer );
+        if( liveValue.timer ) {
+            clearTimeout( liveValue.timer );
         }
     }
     //
     function backendLiveValue() {
-        var type = liveValueTriggerObject.source.type;
+        var type = liveValue.source.type;
         var arg1 = '';
         if( type === 'url' ) {        arg1 = $('#web-page-url').val();  }
         else if( type == 'file' ) {   arg1 = $('#file-path').val();  }
@@ -758,16 +765,14 @@ $(document).ready(function(){
                 }
             });
 
-    liveValueTimer = setTimeout( backendLiveValue, 2000 );
+        liveValue.timer = setTimeout( backendLiveValue, 5000 );
     }
 
-
+    //
     function backendLoadBlink1Settings() {
         //$.ajaxSetup({ cache: false, async: false  });
         var b1url = '../blink1/id';
         $.getJSON( b1url, function(result) { 
-                console.log("result:");
-                console.log(result);
                 var serialnums = result.blink1_serialnums;
                 blink1Settings.statustext = "no blink(1) found";
                 blink1Settings.serialnum = "-none-";
@@ -780,14 +785,9 @@ $(document).ready(function(){
         //$.ajaxSetup({ cache: true, async: true  });
     }
 
+
+
 }); // document.ready
-
-
-/*------------------------------
-  BLINK1 BACK-END FUNCTIONS
-  (note: these are declared outside of document.ready so they can be used
-  in other .js files. This also means they can't use any of the 'globals' above)
-  --------------------------------*/
 
 
 //
@@ -966,6 +966,7 @@ function backendLoadTriggerObjects() {
     
     return newTriggerObjects;
 }
+
 
 // 
 function backendSetColor(color) {
