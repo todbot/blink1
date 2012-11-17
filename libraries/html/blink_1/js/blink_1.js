@@ -308,6 +308,9 @@ $(document).ready(function(){
 	var $currentSwatch;
 	
 	$('.color-swatch').click(function(e){
+       console.log("picker click");
+       //draw(e);
+
 		// store current color of the swatch
 		var currentColor = $(this).css('background-color');
 		$currentSwatch = $(this);
@@ -332,7 +335,8 @@ $(document).ready(function(){
 			$('#color-zoom').css('background', $(e.target).css('background')).css({'top': -190, 'left': 61});
 			$('body').css('background-color', $(e.target).css('background-color'));		
 			if($(e.target).attr('id') != "light-off") {
-				console.log($(e.target).css('background-color'));
+				//console.log($(e.target).css('background-color'));
+                backendSetColor("rgb(255, 255, 255)");
 				$('#color-display #rgb input').val('255');
 				$('#color-zoom').css('background-color', '#ffffff');
 				$('.currently-picking').css('background-color', '#ffffff');	
@@ -340,7 +344,8 @@ $(document).ready(function(){
 				$('.currently-picking').css('background-image', 'none');															
 			}
 			else {
-				console.log('rgb(0, 0, 0)');
+				//console.log('rgb(0, 0, 0)');
+                backendSetColor("rgb(0, 0, 0)");
 				$('#color-display #rgb input').val('0');
 				$('#color-zoom').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
 				$('.currently-picking').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
@@ -533,6 +538,9 @@ $(document).ready(function(){
 	--------------------------*/
 
 	function openConfigurationPanel(existingObject, id, index) {
+
+        backendStopInputs();
+
 		// if we passed it an existing trigger object
 		if(existingObject) {
 			applyConfigurationOptions(existingObject, id, index);
@@ -710,8 +718,8 @@ $(document).ready(function(){
 		$('#gray-out').fadeOut('fast');
 		$('#configuration-popup').fadeOut('fast');
         backendLiveValueStop();
+        backendStartInputs();
 	}
-
 
     //
     // ---------------------------------------------------------------------------
@@ -755,13 +763,20 @@ $(document).ready(function(){
                       iname: 'test',
                       test: 'true' };  // most important, doesn't add input, just runs input logic
         
+        $('.ifttt #ifttt-event-received-icon').hide();
         $.getJSON( b1url, parms, function(result) { 
                 if( type == 'url' ) { 
                     $('.url #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'file' ) {
                     $('.file #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'ifttt' ) {
-                    $('.ifttt #value-retrieved-text-box').val( result.input.lastVal );
+                    console.log("lastVal: "+ result.input.lastVal);
+                    var d = new Date( result.input.lastTime * 1000 );
+                    var datestr = d.getHours() +':'+ d.getMinutes() + ":" +d.getSeconds();
+                    console.log("date:"+d);
+                    $('.ifttt #value-retrieved-text-box').text( result.input.lastVal );
+                    $('.ifttt #value-retrieved-timestamp').text( datestr );
+                    
                 }
             });
 
@@ -785,6 +800,21 @@ $(document).ready(function(){
         //$.ajaxSetup({ cache: true, async: true  });
     }
 
+    //
+    function backendStopInputs() {
+        var b1url = '../blink1/input';
+        var parms = { 'enabled' : false };
+        $.getJSON( b1url, parms, function(result) {
+            });
+        backendSetColor("rgb(0, 0, 0)");
+    }
+    //
+    function backendStartInputs() {
+        var b1url = '../blink1/input';
+        var parms = { 'enabled' : true };
+        $.getJSON( b1url, parms, function(result) {
+            });
+    }
 
 
 }); // document.ready
@@ -970,6 +1000,7 @@ function backendLoadTriggerObjects() {
 
 // 
 function backendSetColor(color) {
+    console.log("backendSetColor:"+color);
     var colr = colorToHex(color); // convert to hex color if not
     var parms = { rgb : colr, 
                   time : 0.1 };
