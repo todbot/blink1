@@ -74,7 +74,7 @@ function draw(e){
 		$('#b').val(bVal);
 		
 		// logging the color for you to use with the hardware settings here :o)
-		console.log(color);
+		//console.log(color);
         backendSetColor(color);
 	}
 }
