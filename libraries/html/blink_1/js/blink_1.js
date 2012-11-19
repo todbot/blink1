@@ -161,7 +161,6 @@ $(document).ready(function(){
 			triggerObjects.push(settings);
 			
 			// if not the first one, then give the next available sequential id number (need to check since some could have been deleted from the middle of the sequence and we don't want duplicates)
-            // settings.title = settings.title + " copy"; // FIXME: this doesn't work
 			var currentID;
 			if($('#trigger-list .trigger-options').length > 0) {	
 				var idOfLast = $('#trigger-list .trigger-options').last().attr('id').split('-')[1];
@@ -194,25 +193,17 @@ $(document).ready(function(){
 			} else {
 				$('#trigger-list .trigger-options').last().find('.repeat-option').removeClass('false').addClass('true');	
 			}
-			// and check for scroll reminder
-			//console.log($('#trigger-list .trigger-options').length);
+
+			// and check for scroll reminder  (FIXME: this check belongs elsewhere)
 			if($('#trigger-list .trigger-options').length > 5) {
 				$('#scroll-for-more').fadeIn('slow');
 			}
 
 			if(settings.source.arg1) {
-                //console.log(settings.source.arg1);
-				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options').last().find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
-				} else {
-					$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
-				}
+                $('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 			}
 			else if (settings.source.type) {
 				$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
-			}
-			else {
-				$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type + ']</span> ');
 			}
     }
 
@@ -222,7 +213,6 @@ $(document).ready(function(){
         
 		// get all the settings we just configured wrapped into a nice little object
 		var settings = compileSettings();
-/* 		resetConfigurationPanel(); */
 		
         hideWelcomeMessageIfNeeded();
 
@@ -230,6 +220,9 @@ $(document).ready(function(){
 		
 		if($(this).hasClass('save-as-new')) {
 
+            if( $(this).val() != 'save' ) { // FIXME: super big hack
+                settings.title = settings.title + " copy";
+            }
             addNewTrigger(settings);
 
         }
@@ -253,6 +246,7 @@ $(document).ready(function(){
 					$($('#trigger-list .trigger-options#trigger-' + idToReplace).find('.summary-color-swatch')[index]).css('background-color', this).removeClass('light-off').html(settings.colorSettings.durations[index]);
 				}
 			});
+
 			// and change out the text settings to reflect new inputs
 			$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-name').html(settings.title);
 			$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.number-of-repetitions').html(settings.colorSettings.repeatTimes);
@@ -262,22 +256,16 @@ $(document).ready(function(){
 				$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.repeat-option').removeClass('false').addClass('true');	
 			}
 		
-
-			if(settings.source.arg1) {	// FIXME: this is basically dupe of code in addNewTrigger()			 
-				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
-				} else {
-					$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
-				}
+			if(settings.source.arg1) {	// FIXME: this is basically dupe of code in addNewTrigger()
+                $('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 			}
 			else if (settings.source.type) {
-				$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
+				$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
 			}
-			
-				
+
 		}
 
-		console.log(triggerObjects);
+		//console.log(triggerObjects);
         backendUpdateInputsAndPatterns(triggerObjects); 
 	});
 	
@@ -663,38 +651,43 @@ $(document).ready(function(){
 		// find number of active colors 
 		var numberOfSwatches = parseInt($('#number-of-colors-group').val());
 		var reorderedSwatches = [];
-		var compiledSettings = new Object();
+		var newSettings = new Object();
 		
 		//collect all settings in one object
-		compiledSettings.colorSettings = new Object();
-		compiledSettings.colorSettings.colors = [];
-		compiledSettings.colorSettings.durations = [];		
-		compiledSettings.source = new Object();
+		newSettings.colorSettings = new Object();
+		newSettings.colorSettings.colors = [];
+		newSettings.colorSettings.durations = [];		
+		newSettings.source = new Object();
 
 		
-		compiledSettings.colorSettings.behavior = $('#behavior-selector select').val();
-		compiledSettings.colorSettings.transition = $('#transition-options > input:checked').val();
-		compiledSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
-/* 		compiledSettings.colorSettings.duration = $('#duration-setting').val();		 */
-		compiledSettings.source.type = $('#source-selector .options-group > input:checked').val();	
-		
-		if($('.column-2').hasClass('ifttt')) {
-			compiledSettings.source.arg1 = $('#ifttt-channel').val();
-		} else if ($('.column-2').hasClass('url')) {
-			compiledSettings.source.arg1 = $('#web-page-url').val(); 
-			compiledSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
-			compiledSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
-		} else if ($('.column-2').hasClass('file')) {
-			compiledSettings.source.arg1 = $('#file-path').val();
-		}	
-		
+		newSettings.colorSettings.behavior = $('#behavior-selector select').val();
+		newSettings.colorSettings.transition = $('#transition-options > input:checked').val();
+		newSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
+/* 		newSettings.colorSettings.duration = $('#duration-setting').val();		 */
+		newSettings.source.type = $('#source-selector .options-group > input:checked').val();	
+
+        if( newSettings.source.type == 'ifttt' )  {
+			newSettings.source.arg1 = $('#ifttt-rulename').val();
+        }
+        else if( newSettings.source.type == 'url' )  {
+			newSettings.source.arg1 = $('#web-page-url').val(); 
+			newSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
+			newSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
+        }
+        else if( newSettings.source.type == 'file' )  {
+			newSettings.source.arg1 = $('#file-path').val();
+        }
+        else if( newSettings.source.type == 'script' )  {
+			newSettings.source.arg1 = $('#script-path').val();
+        }
+
 
 		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
             var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
-			compiledSettings.title = 'Untitled'+ randid +'';
+			newSettings.title = 'Untitled'+ randid +'';
 		}
 		else {
-			compiledSettings.title = $('#popup-title > input').val();						
+			newSettings.title = $('#popup-title > input').val();						
 		}			
 		
 		// serialize the sorted color choices into an array
@@ -703,14 +696,14 @@ $(document).ready(function(){
 		// create new array with color values and the correct order
 		for(var i = 0; i < numberOfSwatches; i++){
 			if($('#' + activeSwatches[i]).css('background-color') == 'rgb(153, 153, 153)') {
-				compiledSettings.colorSettings.colors.push('rgb(0, 0, 0)');
-				compiledSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
+				newSettings.colorSettings.colors.push('rgb(0, 0, 0)');
+				newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
 			} else {
-			    compiledSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
-				compiledSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
+			    newSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
+				newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
 			}
 		}
-		return(compiledSettings);
+		return(newSettings);
 	}
 
 
@@ -753,7 +746,8 @@ $(document).ready(function(){
         var arg1 = '';
         if( type === 'url' ) {        arg1 = $('#web-page-url').val();  }
         else if( type == 'file' ) {   arg1 = $('#file-path').val();  }
-        else if( type == 'ifttt' ) {  arg1 = $('#ifttt-channel').val();  }
+        else if( type == 'ifttt' ) {  arg1 = $('#ifttt-rulename').val();  }
+        else if( type == 'script' ) { arg1 = $('#script-path').val(); }
         
         console.log("backendLiveValue: "+type+ ", arg1:"+arg1);
 
@@ -833,7 +827,7 @@ $(document).ready(function(){
 //   obj.source.arg2 = 2nd argument for type 
 //   obj.source.arg3 = 3rd argument for type 
 // IF type == 'ifttt':
-//   obj.source.arg1 = ifttt channel
+//   obj.source.arg1 = ifttt rule name
 // IF type == 'file':
 //   obj.source.arg1 = filepath
 // IF type == 'url':

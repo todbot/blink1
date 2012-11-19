@@ -302,6 +302,9 @@ display: block;
 				font-weight: normal;
 				width: 195px;
 				font-size: 12px;
+                text-overflow: ellipsis;
+	            white-space: nowrap;
+	            overflow: hidden;
 			}
 		
 			#main-content #trigger-list .trigger-options .trigger-behavior {
