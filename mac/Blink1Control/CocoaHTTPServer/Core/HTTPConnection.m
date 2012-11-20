@@ -693,8 +693,11 @@ static NSMutableArray *recentNonces;
 			NSRange range = [component rangeOfString:@"="];
 			if (range.location != NSNotFound)
 			{ 
-				NSString *escapedKey = [component substringToIndex:(range.location + 0)]; 
-				NSString *escapedValue = [component substringFromIndex:(range.location + 1)];
+				NSString *rescapedKey = [component substringToIndex:(range.location + 0)];
+				NSString *rescapedValue = [component substringFromIndex:(range.location + 1)];
+                // NOTE: ADDED BY TOD
+                NSString *escapedKey   = [rescapedKey stringByReplacingOccurrencesOfString:@"+" withString:@"%20"];
+                NSString *escapedValue = [rescapedValue stringByReplacingOccurrencesOfString:@"+" withString:@"%20"];
 				
 				if ([escapedKey length] > 0)
 				{
