@@ -90,6 +90,17 @@ p span.light {
 		font-size: 12px;
 	}
 
+span.light {
+		font-weight: normal;
+		color: #999;
+		font-size: 12px;
+	}
+span.medium {
+		font-weight: normal;
+		color: #666;
+		font-size: 14px;
+	}
+
 /****************************************
 
 	MAIN CONTENT (TAB PAGES) STYLES
