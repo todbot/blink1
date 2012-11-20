@@ -206,7 +206,7 @@ $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app,$blink1_id_
           readfile($fname);
           $events_present = 1;
         }
-        else { 
+        else {
             send_json_response( "no events",null );
         }
 

@@ -37,7 +37,7 @@
 						</ul>
 
 						<div id="trigger-list">
-													</div><!-- #trigger-list --> 	
+											</div><!-- #trigger-list --> 	
 						<div id="welcome-message">
 <!-- 							<div id="welcome-fade"></div> -->
 							<h2>Hi there!</h2>
@@ -83,7 +83,8 @@
 							<div class="options-group">
 								<input type="radio" name="source-options" value="ifttt" id="source-option-ifttt"><label for="source-option-ifttt">IFTTT</label><br />
 								<input type="radio" name="source-options" value="url" id="source-option-url"><label for="source-option-url">Web Page URL</label><br />	
-								<input type="radio" name="source-options" value="file" id="source-option-file"><label for="source-option-file">File</label>
+								<input type="radio" name="source-options" value="file" id="source-option-file"><label for="source-option-file">File</label><br />
+								<input type="radio" name="source-options" value="script" id="source-option-script"><label for="source-option-script">Script</label>
 							</div> <!-- .options-group -->	
 						</div> <!-- #source-selector -->		
 						<div id="virtual-blink"></div>
@@ -91,22 +92,28 @@
 					</div> <!-- .column-1 -->		
 					<div class="column column-2">
 						<div id="ifttt-options-selector" class="ifttt">
-							<h4>Channel</h4>
-							<input id="ifttt-channel" type="text" class="arg1" placeholder="enter channel here" />
-							<p>Add both Channel name and your IFTTT ID <br />
+							<h4>IFTT Rule Name</h4>
+							<input id="ifttt-rulename" type="text" class="arg1" placeholder="enter rule name here" /> 
+                            <br /><br />
+							<label for="value-retrieved-text-box">Event Received:</label>
+                            <span id="value-retrieved-text-box" style="	border: 1px solid #888; padding:2px;">-none-</span>
+                            <br /> <label for="value-retrived-timestamp">at time: </label>
+                            <span id="value-retrieved-timestamp"></span>
+                     <!--<span id="ifttt-event-received-icon" ><img align="center" src="images/icon-ok.png" /></span>-->
+                     <!-- <input id="value-retrieved-text-box" type="text" value="color value retrieved"/>-->
+                             <p>
+Add both rule name and your IFTTT ID <br />
 <span style="font-weight:bold; color:#333;" id="ifttt-uid">DEADBEEF12341234</span><br />
- to your recipe on IFTTT.com</p>
-							<p>
-								<label for="value-retrieved-text-box">Value Retrieved</label>
-								<input id="value-retrieved-text-box" type="text" value="color value retrieved…"/>
+ to your IFTTT.com recipe.
 							</p>
 						</div>
+
 						<div id="url-options-selector" class="url">
 							<h4>URL</h4>
-								<input id="web-page-url" type="text" class="arg1" placeholder="enter url here" />
-							<p>
-								<input type="radio" name="url-color-options" value="url-specified" id="url-color-options-url-specified"/><label for="url-color-options-url-specified">Use color pattern in URL</label><br />
-								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/ checked="checked" ><label for="url-color-options-user-specified">Specify color pattern</label>							
+							<input id="web-page-url" type="text" class="arg1" placeholder="enter url here" />
+                              <p>
+								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/ checked="checked" ><label for="url-color-options-user-specified">Specify color pattern</label> <br />
+								<input type="radio" name="url-color-options" value="url-specified" id="url-color-options-url-specified"/><label for="url-color-options-url-specified">Use value from URL</label>
 							</p>
 							<p>
 								<label for="value-retrieved-text-box">Value Retrieved</label>
@@ -117,8 +124,20 @@
 							<h4>FILE</h4>
 							<input type="text" id="file-path" class="arg1" placeholder="enter file path here" />
 							<p>
-								<input type="radio" name="file-color-options" value="file-specified" id="file-color-options-file-specified"/><label for="file-color-options-file-specified">Use color pattern in file</label><br />
-								<input type="radio" name="file-color-options" value="user-specified" id="file-color-options-user-specified"/ checked="checked" ><label for="file-color-options-user-specified">Specify color pattern</label>							
+								<input type="radio" name="file-color-options" value="user-specified" id="file-color-options-user-specified"/ checked="checked" ><label for="file-color-options-user-specified">Specify color pattern</label><br />
+								<input type="radio" name="file-color-options" value="file-specified" id="file-color-options-file-specified"/><label for="file-color-options-file-specified">Use color pattern in file</label>
+							</p>
+							<p>
+								<label for="value-retrieved-text-box">Value Retrieved</label>
+								<input id="value-retrieved-text-box" type="text" value="color value retrieved…"/>
+							</p>
+						</div>
+						<div id="script-options-selector" class="script">
+							<h4>SCRIPT</h4>
+							<input type="text" id="script-path" class="arg1" placeholder="enter script path here" />
+							<p>
+								<input type="radio" name="script-color-options" value="user-specified" id="script-color-options-user-specified"/ checked="checked" ><label for="script-color-options-user-specified">Specify color pattern</label><br />
+								<input type="radio" name="script-color-options" value="file-specified" id="script-color-options-file-specified"/><label for="script-color-options-file-specified">Use color pattern in file</label>
 							</p>
 							<p>
 								<label for="value-retrieved-text-box">Value Retrieved</label>
@@ -131,9 +150,9 @@
 							<h4>Behavior</h4>						
 							<select>
 								<option value="exact-color">Exact Color</option>
-								<option value="change-brightness">Change Brightness</option>
-								<option value="change-hue">Change Hue</option>
-								<option value="blink-pattern">Blink Pattern</option>
+								<option value="change-brightness" disabled="disabled">Change Brightness</option>
+								<option value="change-hue" disabled="disabled">Change Hue</option>
+								<option value="blink-pattern" disabled="disabled">Blink Pattern</option>
 							</select>
 						</div> 
 						<div id="color-selector">

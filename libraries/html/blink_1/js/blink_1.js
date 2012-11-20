@@ -17,9 +17,9 @@ $(document).ready(function(){
     // load up the blink1_id info
     backendLoadBlink1Settings();
 
-    var liveValueTriggerObject = new Object; // FIXME: should be ref to current obj
-    liveValueTriggerObject.source = new Object;
-    var liveValueTimer = new Object; // holder for setTimeout() stuff
+    var liveValue = new Object; // FIXME: should be ref to current obj
+    liveValue.source = new Object;
+
     
 /*********************************
 
@@ -118,7 +118,8 @@ $(document).ready(function(){
 
 		// and then delete that trigger's object from the triggers array
         backendDeleteInput( triggerObjects[index] );        
-		triggerObjects.splice((index-1), 1);
+		triggerObjects.splice( ((index==0)?0:(index-1)), 1);
+        console.log("delete-trigger");
 		console.log(triggerObjects);
 	});
 	
@@ -160,7 +161,6 @@ $(document).ready(function(){
 			triggerObjects.push(settings);
 			
 			// if not the first one, then give the next available sequential id number (need to check since some could have been deleted from the middle of the sequence and we don't want duplicates)
-            // settings.title = settings.title + " copy"; // FIXME: this doesn't work
 			var currentID;
 			if($('#trigger-list .trigger-options').length > 0) {	
 				var idOfLast = $('#trigger-list .trigger-options').last().attr('id').split('-')[1];
@@ -193,25 +193,17 @@ $(document).ready(function(){
 			} else {
 				$('#trigger-list .trigger-options').last().find('.repeat-option').removeClass('false').addClass('true');	
 			}
-			// and check for scroll reminder
-			//console.log($('#trigger-list .trigger-options').length);
+
+			// and check for scroll reminder  (FIXME: this check belongs elsewhere)
 			if($('#trigger-list .trigger-options').length > 5) {
 				$('#scroll-for-more').fadeIn('slow');
 			}
 
 			if(settings.source.arg1) {
-                //console.log(settings.source.arg1);
-				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options').last().find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
-				} else {
-					$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
-				}
+                $('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 			}
 			else if (settings.source.type) {
 				$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
-			}
-			else {
-				$('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type + ']</span> ');
 			}
     }
 
@@ -221,7 +213,6 @@ $(document).ready(function(){
         
 		// get all the settings we just configured wrapped into a nice little object
 		var settings = compileSettings();
-/* 		resetConfigurationPanel(); */
 		
         hideWelcomeMessageIfNeeded();
 
@@ -229,6 +220,9 @@ $(document).ready(function(){
 		
 		if($(this).hasClass('save-as-new')) {
 
+            if( $(this).val() != 'save' ) { // FIXME: super big hack
+                settings.title = settings.title + " copy";
+            }
             addNewTrigger(settings);
 
         }
@@ -252,6 +246,7 @@ $(document).ready(function(){
 					$($('#trigger-list .trigger-options#trigger-' + idToReplace).find('.summary-color-swatch')[index]).css('background-color', this).removeClass('light-off').html(settings.colorSettings.durations[index]);
 				}
 			});
+
 			// and change out the text settings to reflect new inputs
 			$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-name').html(settings.title);
 			$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.number-of-repetitions').html(settings.colorSettings.repeatTimes);
@@ -261,22 +256,16 @@ $(document).ready(function(){
 				$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.repeat-option').removeClass('false').addClass('true');	
 			}
 		
-
-			if(settings.source.arg1) {	// FIXME: this is basically dupe of code in addNewTrigger()			 
-				if(settings.source.arg1.replace('http://', '').replace('www.', '').length > 22) {
-					$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('[' + settings.source.type.toUpperCase() + '] ' + settings.source.arg1.replace('http://', '').replace('www.', '').substr(0, 22) + '...');
-				} else {
-					$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
-				}
+			if(settings.source.arg1) {	// FIXME: this is basically dupe of code in addNewTrigger()
+                $('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
 			}
 			else if (settings.source.type) {
-				$('#trigger-list .trigger-options' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
+				$('#trigger-list .trigger-options#trigger-' + idToReplace).find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ');
 			}
-			
-				
+
 		}
 
-		console.log(triggerObjects);
+		//console.log(triggerObjects);
         backendUpdateInputsAndPatterns(triggerObjects); 
 	});
 	
@@ -307,6 +296,9 @@ $(document).ready(function(){
 	var $currentSwatch;
 	
 	$('.color-swatch').click(function(e){
+       console.log("picker click");
+       //draw(e);
+
 		// store current color of the swatch
 		var currentColor = $(this).css('background-color');
 		$currentSwatch = $(this);
@@ -331,7 +323,8 @@ $(document).ready(function(){
 			$('#color-zoom').css('background', $(e.target).css('background')).css({'top': -190, 'left': 61});
 			$('body').css('background-color', $(e.target).css('background-color'));		
 			if($(e.target).attr('id') != "light-off") {
-				console.log($(e.target).css('background-color'));
+				//console.log($(e.target).css('background-color'));
+                backendSetColor("rgb(255, 255, 255)");
 				$('#color-display #rgb input').val('255');
 				$('#color-zoom').css('background-color', '#ffffff');
 				$('.currently-picking').css('background-color', '#ffffff');	
@@ -339,7 +332,8 @@ $(document).ready(function(){
 				$('.currently-picking').css('background-image', 'none');															
 			}
 			else {
-				console.log('rgb(0, 0, 0)');
+				//console.log('rgb(0, 0, 0)');
+                backendSetColor("rgb(0, 0, 0)");
 				$('#color-display #rgb input').val('0');
 				$('#color-zoom').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
 				$('.currently-picking').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
@@ -532,6 +526,9 @@ $(document).ready(function(){
 	--------------------------*/
 
 	function openConfigurationPanel(existingObject, id, index) {
+
+        backendStopInputs();
+
 		// if we passed it an existing trigger object
 		if(existingObject) {
 			applyConfigurationOptions(existingObject, id, index);
@@ -654,38 +651,43 @@ $(document).ready(function(){
 		// find number of active colors 
 		var numberOfSwatches = parseInt($('#number-of-colors-group').val());
 		var reorderedSwatches = [];
-		var compiledSettings = new Object();
+		var newSettings = new Object();
 		
 		//collect all settings in one object
-		compiledSettings.colorSettings = new Object();
-		compiledSettings.colorSettings.colors = [];
-		compiledSettings.colorSettings.durations = [];		
-		compiledSettings.source = new Object();
+		newSettings.colorSettings = new Object();
+		newSettings.colorSettings.colors = [];
+		newSettings.colorSettings.durations = [];		
+		newSettings.source = new Object();
 
 		
-		compiledSettings.colorSettings.behavior = $('#behavior-selector select').val();
-		compiledSettings.colorSettings.transition = $('#transition-options > input:checked').val();
-		compiledSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
-/* 		compiledSettings.colorSettings.duration = $('#duration-setting').val();		 */
-		compiledSettings.source.type = $('#source-selector .options-group > input:checked').val();	
-		
-		if($('.column-2').hasClass('ifttt')) {
-			compiledSettings.source.arg1 = $('#ifttt-channel').val();
-		} else if ($('.column-2').hasClass('url')) {
-			compiledSettings.source.arg1 = $('#web-page-url').val(); 
-			compiledSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
-			compiledSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
-		} else if ($('.column-2').hasClass('file')) {
-			compiledSettings.source.arg1 = $('#file-path').val();
-		}	
-		
+		newSettings.colorSettings.behavior = $('#behavior-selector select').val();
+		newSettings.colorSettings.transition = $('#transition-options > input:checked').val();
+		newSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
+/* 		newSettings.colorSettings.duration = $('#duration-setting').val();		 */
+		newSettings.source.type = $('#source-selector .options-group > input:checked').val();	
+
+        if( newSettings.source.type == 'ifttt' )  {
+			newSettings.source.arg1 = $('#ifttt-rulename').val();
+        }
+        else if( newSettings.source.type == 'url' )  {
+			newSettings.source.arg1 = $('#web-page-url').val(); 
+			newSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
+			newSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
+        }
+        else if( newSettings.source.type == 'file' )  {
+			newSettings.source.arg1 = $('#file-path').val();
+        }
+        else if( newSettings.source.type == 'script' )  {
+			newSettings.source.arg1 = $('#script-path').val();
+        }
+
 
 		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
             var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
-			compiledSettings.title = 'Untitled'+ randid +'';
+			newSettings.title = 'Untitled'+ randid +'';
 		}
 		else {
-			compiledSettings.title = $('#popup-title > input').val();						
+			newSettings.title = $('#popup-title > input').val();						
 		}			
 		
 		// serialize the sorted color choices into an array
@@ -694,14 +696,14 @@ $(document).ready(function(){
 		// create new array with color values and the correct order
 		for(var i = 0; i < numberOfSwatches; i++){
 			if($('#' + activeSwatches[i]).css('background-color') == 'rgb(153, 153, 153)') {
-				compiledSettings.colorSettings.colors.push('rgb(0, 0, 0)');
-				compiledSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
+				newSettings.colorSettings.colors.push('rgb(0, 0, 0)');
+				newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
 			} else {
-			    compiledSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
-				compiledSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
+			    newSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
+				newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
 			}
 		}
-		return(compiledSettings);
+		return(newSettings);
 	}
 
 
@@ -709,36 +711,43 @@ $(document).ready(function(){
 		$('#gray-out').fadeOut('fast');
 		$('#configuration-popup').fadeOut('fast');
         backendLiveValueStop();
+        backendStartInputs();
 	}
-
 
     //
     // ---------------------------------------------------------------------------
     //
+
+    /*------------------------------
+      BLINK1 BACK-END FUNCTIONS
+      (note: if they are declared outside of document.ready they can be used
+      in other .js files. This also means they can't use any of the 'globals' above)
+      --------------------------------*/
 
     //
     function backendLiveValueStart( aTriggerObject ) {
         console.log("backendLiveValueStart:"); 
         console.log(aTriggerObject);
 
-        liveValueTriggerObject.source.type = aTriggerObject.source.type;
+        liveValue.source.type = aTriggerObject.source.type;
 
         backendLiveValueStop();
         backendLiveValue();
     }
     //
     function backendLiveValueStop() {
-        if( liveValueTimer ) {
-            clearTimeout( liveValueTimer );
+        if( liveValue.timer ) {
+            clearTimeout( liveValue.timer );
         }
     }
     //
     function backendLiveValue() {
-        var type = liveValueTriggerObject.source.type;
+        var type = liveValue.source.type;
         var arg1 = '';
         if( type === 'url' ) {        arg1 = $('#web-page-url').val();  }
         else if( type == 'file' ) {   arg1 = $('#file-path').val();  }
-        else if( type == 'ifttt' ) {  arg1 = $('#ifttt-channel').val();  }
+        else if( type == 'ifttt' ) {  arg1 = $('#ifttt-rulename').val();  }
+        else if( type == 'script' ) { arg1 = $('#script-path').val(); }
         
         console.log("backendLiveValue: "+type+ ", arg1:"+arg1);
 
@@ -748,26 +757,31 @@ $(document).ready(function(){
                       iname: 'test',
                       test: 'true' };  // most important, doesn't add input, just runs input logic
         
+        $('.ifttt #ifttt-event-received-icon').hide();
         $.getJSON( b1url, parms, function(result) { 
                 if( type == 'url' ) { 
                     $('.url #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'file' ) {
                     $('.file #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'ifttt' ) {
-                    $('.ifttt #value-retrieved-text-box').val( result.input.lastVal );
+                    console.log("lastVal: "+ result.input.lastVal);
+                    var d = new Date( result.input.lastTime * 1000 );
+                    var datestr = d.getHours() +':'+ d.getMinutes() + ":" +d.getSeconds();
+                    console.log("date:"+d);
+                    $('.ifttt #value-retrieved-text-box').text( result.input.lastVal );
+                    $('.ifttt #value-retrieved-timestamp').text( datestr );
+                    
                 }
             });
 
-    liveValueTimer = setTimeout( backendLiveValue, 2000 );
+        liveValue.timer = setTimeout( backendLiveValue, 5000 );
     }
 
-
+    //
     function backendLoadBlink1Settings() {
         //$.ajaxSetup({ cache: false, async: false  });
         var b1url = '../blink1/id';
         $.getJSON( b1url, function(result) { 
-                console.log("result:");
-                console.log(result);
                 var serialnums = result.blink1_serialnums;
                 blink1Settings.statustext = "no blink(1) found";
                 blink1Settings.serialnum = "-none-";
@@ -780,14 +794,24 @@ $(document).ready(function(){
         //$.ajaxSetup({ cache: true, async: true  });
     }
 
+    //
+    function backendStopInputs() {
+        var b1url = '../blink1/input';
+        var parms = { 'enabled' : false };
+        $.getJSON( b1url, parms, function(result) {
+            });
+        backendSetColor("rgb(0, 0, 0)");
+    }
+    //
+    function backendStartInputs() {
+        var b1url = '../blink1/input';
+        var parms = { 'enabled' : true };
+        $.getJSON( b1url, parms, function(result) {
+            });
+    }
+
+
 }); // document.ready
-
-
-/*------------------------------
-  BLINK1 BACK-END FUNCTIONS
-  (note: these are declared outside of document.ready so they can be used
-  in other .js files. This also means they can't use any of the 'globals' above)
-  --------------------------------*/
 
 
 //
@@ -803,7 +827,7 @@ $(document).ready(function(){
 //   obj.source.arg2 = 2nd argument for type 
 //   obj.source.arg3 = 3rd argument for type 
 // IF type == 'ifttt':
-//   obj.source.arg1 = ifttt channel
+//   obj.source.arg1 = ifttt rule name
 // IF type == 'file':
 //   obj.source.arg1 = filepath
 // IF type == 'url':
@@ -967,8 +991,10 @@ function backendLoadTriggerObjects() {
     return newTriggerObjects;
 }
 
+
 // 
 function backendSetColor(color) {
+    console.log("backendSetColor:"+color);
     var colr = colorToHex(color); // convert to hex color if not
     var parms = { rgb : colr, 
                   time : 0.1 };

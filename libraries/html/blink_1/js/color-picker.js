@@ -59,22 +59,23 @@ function draw(e){
 
  	
 	if($('#picker').css('display') != 'none') {
-		$('body').css('background-color', color);
+     // FIXME: these are in colorWhilePicking()
+     $('body').css('background-color', color);
 		$('#color-zoom').css('left', xPos + 60);
 		$('#color-zoom').css('top', yPos - 194);	
 		$('#color-zoom').css('background-image', 'none');			
-		$('#color-zoom').css('background-color', color);
-		$('.currently-picking').css('background', color);
+     $('#color-zoom').css('background-color', color);
+     $('.currently-picking').css('background', color);
 		$('.currently-picking').attr('data-yPos', $('#color-zoom').css('top'));
 		$('.currently-picking').css('background-image', 'none');
 		$('.currently-picking').attr('data-xPos', $('#color-zoom').css('left'));
-		$('#virtual-blink').css('background-color', color);
+     $('#virtual-blink').css('background-color', color);
 		$('#r').val(rVal);
 		$('#g').val(gVal);
 		$('#b').val(bVal);
 		
 		// logging the color for you to use with the hardware settings here :o)
-		console.log(color);
+		//console.log(color);
         backendSetColor(color);
 	}
 }
