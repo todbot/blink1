@@ -1,0 +1,10 @@
+{
+  "events":[
+    {
+      "blink1_id":"ABCDABCDABCDABCD",
+      "name":"foobar",
+      "source":"gmail",
+      "date":"1353014234"
+    }
+  ]
+}
