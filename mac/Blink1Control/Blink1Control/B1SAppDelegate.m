@@ -21,6 +21,9 @@
 // - lastVal  -- string, last value when input was parsed
 // - lastTime -- date?, last time when input was parsed
 //
+//
+// NOTE: CocoaHTTPServer HTTPConnection was modified to replace "+" with "%20"
+//
 
 #import "B1SAppDelegate.h"
 #import "RoutingHTTPServer.h"
@@ -55,12 +58,16 @@ const NSInteger http_port_default = 8934;
 // solution: put them in the prefs, duh
 NSString* confURLbase =  @"http://localhost:%ld/blink_1/";
 NSString* playURLbase =  @"http://localhost:%ld/bootstrap/blink1.html";
+
 NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
+
 NSString* scriptsPath = @"~/Documents/blink1-scripts";
 
-NSTimeInterval inputInterval = 5.0f;  // in seconds
+NSTimeInterval inputInterval       = 5.0f;  // in seconds
 
+NSTimeInterval iftttUpdateInterval = 15.0f;
+NSTimeInterval urlUpdateInterval   = 30.0f;
 
 
 // play pattern with restart
@@ -75,6 +82,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 // returns true if pattern was played, false if not
 - (Boolean) playPattern: (NSString*)pname restart:(Boolean)restart
 {
+    DLog(@"play %@",pname);
     if( pname == nil ) return false;
     
     // a hex color, not a proper pattern, send hex color immediately
@@ -200,7 +208,6 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 //
 - (void) updateFileInput: (NSMutableDictionary*)input
 {
-    DLog(@"updateFileInput");
     NSString* path = [input objectForKey:@"arg1"];
     NSString* filepath = [path stringByStandardizingPath];
     //NSString* fpath = [path stringByExpandingTildeInPath];
@@ -213,7 +220,9 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         DLog(@"patternstr='%@'",patternstr);
         if( patternstr != nil ) {                                        // FIXME: !!!! what about test mode
             [input setObject:patternstr forKey:@"lastVal"];
+
             [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+            
         }
     }
     else {
@@ -229,7 +238,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     NSString* lastVal        = [input valueForKey:@"lastVal"];
     NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    if( (now - lastTime) < 30 ) {   // only update URLs every 30 secs
+    if( (now - lastTime) < urlUpdateInterval ) {   // only update URLs every 30 secs
         return;
     }
     [input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
@@ -250,46 +259,68 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     }
 }
 
-//
-- (void) updateIftttInput: (NSMutableDictionary*) input
+// fetch and parse ifttt response, only once per interval
+- (void) getIftttResponse: (Boolean) normalmode
 {
-    NSString* pname          = [input valueForKey:@"pname"];
-    NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    if( (now - lastTime) < 30 ) {     // only update URLs every 30 secs
+    if( normalmode && ((now - iftttLastTime) < iftttUpdateInterval) ) {   // only update URLs every 30 secs
         return;
     }
-    [input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
+    iftttLastTime = now;
 
     NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", iftttEventUrl, [blink1 blink1_id]];
-    
     NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
-    DLog(@"ifttt url:%@ json: '%@'", eventUrlStr,jsonStr);
+    iftttResponse = [NSMutableDictionary dictionaryWithDictionary:[_jsonparser objectWithString:jsonStr]];
+    DLog(@"ifttt time:%ld url:%@ json: '%@'", (long)iftttLastTime, eventUrlStr,jsonStr);
+}
 
-    NSDictionary* jsonResponse = [_jsonparser objectWithString:jsonStr];
-    NSString* status = [jsonResponse objectForKey:@"status"];
-    DLog(@"status: %@",status);
-    if( !jsonResponse || !status ) { // badly formated JSON
-        [input setObject:@"error: badly formed JSON response" forKey:@"lastVal"];
-    }
+// depends on getIftttResponse being called before
+- (void) updateIftttInput: (NSMutableDictionary*) input
+{
+    if( !iftttResponse ) return;
 
-    if( [status hasPrefix:@"error"] ) { // uh oh, error
-        [input setObject:status forKey:@"lastVal"];
+    NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    if( (now - lastTime) < urlUpdateInterval ) {   // only update URLs every 30 secs
         return;
     }
-    NSDictionary* list = [jsonResponse objectForKey:@"events"];
-    for (NSDictionary *event in list) {
-        NSString * bl1_id     = [event objectForKey:@"blink1_id"];
-        NSString * bl1_name   = [event objectForKey:@"name"];
-        NSString * bl1_source = [event objectForKey:@"source"];
-        DLog(@"bl1_id:%@, name:%@, source:%@", bl1_id, bl1_name, bl1_source);
-        
-        // FIXME: source?
-        // FIXME: double-check bl1_id?
-        pname = (pname) ? pname : bl1_name;
-        [self playPattern: pname];
-        [input setObject:pname forKey:@"lastVal"];
+    //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTimeEval"];
+
+    
+    NSString* pname          = [input valueForKey:@"pname"];
+    NSString* rulename       = [input valueForKey:@"arg1"];
+
+    NSDictionary* list = [iftttResponse objectForKey:@"events"];
+    if( !list ) {
+        [input setObject:@"no events" forKey:@"lastVal"];
     }
+    
+    NSMutableArray* possible_vals = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *event in list) {
+        NSString * ev_id      = [event objectForKey:@"blink1_id"];
+        NSString * ev_name    = [event objectForKey:@"name"];
+        NSString * ev_source  = [event objectForKey:@"source"];
+        NSString * ev_datestr = [event objectForKey:@"date"];
+        NSTimeInterval ev_date = [ev_datestr integerValue];
+
+        //[possible_vals setObject:ev_source forKey:ev_name];
+        [possible_vals addObject:ev_name];
+        
+        //DLog(@"ev_id:%@, name:%@, source:%@ date: %@ lastTime:%f", ev_id, ev_name, ev_source, ev_datestr, iftttLastTime);
+        
+        if( [ev_name isEqualToString:rulename] ) {  // match
+            DLog(@"ifttt match!");
+            if( ev_date > lastTime ) {
+                DLog(@"ifttt new event!");
+                [input setObject:ev_source forKey:@"lastVal"];
+                [self playPattern: pname]; // trigger the pattern
+            }
+        
+            [input setObject:[NSNumber numberWithInt:ev_date] forKey:@"lastTime"];  // FIXME:
+        }
+    }
+    [input setObject:possible_vals forKey:@"possibleVals"];  // FIXME: document this
 }
 
 //
@@ -318,8 +349,10 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         DLog(@"script results='%@'",contentstr);
         NSString* patternstr  = [self parsePatternOrColorInString: contentstr];
         DLog(@"patternstr='%@'",patternstr);
-        [input setObject:patternstr forKey:@"lastVal"];
-        [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+        if( patternstr ) {
+            [input setObject:patternstr forKey:@"lastVal"];
+            [self playPattern: patternstr]; // FIXME: need to check for no pattern?
+        }
     }
     else {
         NSString* errstr = [NSString stringWithFormat:@"no such file '%@'",filepath];
@@ -367,6 +400,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // these must be updated periodically for statistics on them to work
     cpuload = [cpuuse getCPUuse];
     netload = [netuse getNetuse];
+    [self getIftttResponse:true];
 
     NSString* key;
     for( key in inputs) {
@@ -640,6 +674,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     [http get:@"/blink1/pattern/add" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* pname      = [request param:@"pname"];
         NSString* patternstr = [request param:@"pattern"];
+        DLog(@"pattern add: %@", pname);
         Blink1Pattern* pattern = nil;
         NSString* statusstr = @"pattern add";
         
@@ -774,6 +809,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a file watching input
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
@@ -781,6 +817,8 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
 
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && path != nil ) {
+            if( !pname )  pname = [iname copy];
+            [input setObject:pname   forKey:@"pname"];
             [input setObject:iname   forKey:@"iname"];
             [input setObject:@"file" forKey:@"type"];
             [input setObject:path    forKey:@"arg1"];
@@ -803,6 +841,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a URL watching input
     [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         NSString* url   = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
@@ -810,9 +849,11 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && url != nil ) { // the minimum requirements for this input type
-            [input setObject:iname  forKey:@"iname"];
-            [input setObject:@"url" forKey:@"type"];
-            [input setObject:url    forKey:@"arg1"];
+            if( !pname )  pname = [iname copy];
+            [input setObject:pname   forKey:@"pname"];
+            [input setObject:iname   forKey:@"iname"];
+            [input setObject:@"url"  forKey:@"type"];
+            [input setObject:url     forKey:@"arg1"];
         
             [self updateUrlInput: input];
 
@@ -831,21 +872,29 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     
     // add the ifttt watching input
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* test  = [request param:@"test"];
         NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         NSString* chan  = [request param:@"arg1"];
+        NSString* test  = [request param:@"test"];
+        
+        Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
         
         NSString* statusstr = @"must specifiy 'iname' and 'arg1' (channel)";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && chan != nil ) { // the minimum requirements for this input type
-            [input setObject:iname    forKey:@"iname"];
-            [input setObject:@"ifttt" forKey:@"type"];
-            [input setObject:chan     forKey:@"arg1"];
+            if( !pname )  pname = [iname copy];
+            [input setObject:pname     forKey:@"pname"];
+            [input setObject:iname     forKey:@"iname"];
+            [input setObject:@"ifttt"  forKey:@"type"];
+            [input setObject:chan      forKey:@"arg1"];
+
+            if( testmode )
+                [self getIftttResponse:false];
 
             [self updateIftttInput: input];
         
-            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+            if( !testmode ) {
                 [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
             }
             statusstr = @"input ifttt";
@@ -861,6 +910,7 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a script execing input
     [http get:@"/blink1/input/script" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
         
@@ -868,6 +918,8 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && path != nil ) {
+            if( !pname ) pname = [iname copy];
+            [input setObject:pname     forKey:@"pname"];
             [input setObject:iname     forKey:@"iname"];
             [input setObject:@"script" forKey:@"type"];
             [input setObject:path      forKey:@"arg1"];
@@ -906,22 +958,22 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a cpu load watching input
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         NSString* min   = [request param:@"arg1"];
         NSString* max   = [request param:@"arg2"];
-        NSString* pname = [request param:@"pname"];
         NSString* test  = [request param:@"test"];
         
         NSString* statusstr = @"must specifiy 'iname' and 'arg1' for min";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && min != nil ) {
-            if( pname == nil ) pname = [iname copy];
+            if( !pname ) pname = [iname copy];
+            [input setObject:pname      forKey:@"pname"];
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"cpuload" forKey:@"type"];
             [input setObject:min        forKey:@"arg1"];
             if( max )
                 [input setObject:max    forKey:@"arg2"];
-            [input setObject:pname      forKey:@"pname"];
             
             [self updateCpuloadInput:input];
 
@@ -941,22 +993,22 @@ NSTimeInterval inputInterval = 5.0f;  // in seconds
     // add a network load watching input
     [http get:@"/blink1/input/netload" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
         NSString* min   = [request param:@"arg1"];
         NSString* max   = [request param:@"arg2"];
-        NSString* pname = [request param:@"pname"];
         NSString* test  = [request param:@"test"];
 
-        NSString* statusstr = @"must specifiy 'iname' and 'level'";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' for min";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
         if( iname != nil && min != nil ) {
             if( pname == nil ) pname = [iname copy];
+            [input setObject:pname      forKey:@"pname"];
             [input setObject:iname      forKey:@"iname"];
             [input setObject:@"netload" forKey:@"type"];
             [input setObject:min        forKey:@"arg1"];
             if( max )
                 [input setObject:max    forKey:@"arg2"];
-            [input setObject:pname      forKey:@"pname"];
             
             [self updateNetloadInput:input];
             

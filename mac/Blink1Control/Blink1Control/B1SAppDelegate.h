@@ -28,6 +28,10 @@
     
     CPUuse* cpuuse;
     Netuse* netuse;
+
+    NSTimeInterval iftttLastTime;
+    NSString* iftttResponseStr;
+    NSMutableDictionary* iftttResponse;
     
     SBJsonWriter *_jsonwriter;
     SBJsonParser *_jsonparser;
