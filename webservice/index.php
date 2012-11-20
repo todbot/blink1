@@ -53,6 +53,7 @@ function writeEvents($blink1_id,$events)
         return $retstr;
     }
 
+    $events['status'] = 'events saved';
     $eventstr = json_pretty( json_encode($events,true) ) . "\n";
 
     // Write $somecontent to our opened file.
