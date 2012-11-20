@@ -94,11 +94,14 @@
 						<div id="ifttt-options-selector" class="ifttt">
 							<h4>IFTT Rule Name</h4>
 							<input id="ifttt-rulename" type="text" class="arg1" placeholder="enter rule name here" /> 
-                            <br /><br />
-							<label for="value-retrieved-text-box">Event Received:</label>
-                            <span id="value-retrieved-text-box" style="	border: 1px solid #888; padding:2px;">-none-</span>
-                            <br /> <label for="value-retrived-timestamp">at time: </label>
-                            <span id="value-retrieved-timestamp"></span>
+                            <br />
+							<br /><span class="medium">Event received from:</span>
+                            <br /><span id="value-retrieved-text-box" class="light" style="margin:15px">[no source]</span>
+                            <br />
+                            <br /><span class="medium"> Rule names seen: </span>
+                            <br /><span id="value-retrieved-possibles" class="light" style="margin:15px">-none-</span>
+                            <br />
+                            <br /><span id="value-retrieved-timestamp" class="light">unknown minutes ago</span> 
                      <!--<span id="ifttt-event-received-icon" ><img align="center" src="images/icon-ok.png" /></span>-->
                      <!-- <input id="value-retrieved-text-box" type="text" value="color value retrieved"/>-->
                              <p>

@@ -489,7 +489,6 @@ $(document).ready(function(){
 		$('#duration-setting').val('0.5');
 		
 		
-		
 		$('#number-of-colors-group').val('1');
 		$('.color-swatch').removeClass('active').css('background-color', '#eee');
 		$('#virtual-blink').css('background-color', '#eee');
@@ -518,6 +517,9 @@ $(document).ready(function(){
 		$('#color-selector .color-swatch').each(function(index){
 			$(this).attr('id', 'color-' + (index + 1));
 		});
+
+        console.log("setting ifttt-uid "+ blink1Settings.blink1_id);
+        $('#ifttt-uid').text(    blink1Settings.blink1_id );
 	}
 	
 
@@ -553,9 +555,6 @@ $(document).ready(function(){
 		
 	function applyConfigurationOptions(triggerObj, id, index) {
 		resetConfigurationPanel();
-
-        console.log("setting ifttt-uid "+ blink1Settings.blink1_id);
-        $('#ifttt-uid').text(    blink1Settings.blink1_id );
 
 		$('#configuration-popup').addClass('existing');
 		// fill in all the values from that object
@@ -729,7 +728,9 @@ $(document).ready(function(){
         console.log("backendLiveValueStart:"); 
         console.log(aTriggerObject);
 
+        liveValue.source = new Object();
         liveValue.source.type = aTriggerObject.source.type;
+        liveValue.startTime = new Date();
 
         backendLiveValueStop();
         backendLiveValue();
@@ -764,13 +765,17 @@ $(document).ready(function(){
                 } else if( type == 'file' ) {
                     $('.file #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'ifttt' ) {
-                    console.log("lastVal: "+ result.input.lastVal);
-                    var d = new Date( result.input.lastTime * 1000 );
-                    var datestr = d.getHours() +':'+ d.getMinutes() + ":" +d.getSeconds();
-                    console.log("date:"+d);
+                    var possibleVals = result.input.possibleVals;
+                    var lastVal = result.input.lastVal;
+                    console.log("lastVal: "+ lastVal);
+                    console.log(possibleVals);
+                    var minsago = ((new Date().getTime()/1000 - result.input.lastTime )/60).toFixed(1);
+                    minsago = (isNaN(minsago)) ? '-never-' : minsago;
+                    possibleVals = (possibleVals.length) ? possibleVals.toString() : '-never-';
+
+                    $('.ifttt #value-retrieved-timestamp').text( "last seen " + minsago + " minutes ago" );
                     $('.ifttt #value-retrieved-text-box').text( result.input.lastVal );
-                    $('.ifttt #value-retrieved-timestamp').text( datestr );
-                    
+                    $('.ifttt #value-retrieved-possibles').text( possibleVals );
                 }
             });
 
@@ -886,7 +891,10 @@ function backendUpdateInputsAndPatterns(triggerObjects) {
         iparms.arg2  = source.arg2;
         iparms.arg3  = source.arg3;
         
-        if( trigObj.type != "undefined" ) {   
+        console.log("title: "+trigObj.title);
+        console.log("arg1: "+source.arg1);
+
+        if( trigObj.type != "undefined" ) {
             var iurl = '/blink1/input/' + type;
             $.getJSON( iurl, iparms, function(result) { 
                     console.log("input add status '"+ result.status+"'");  // FIXME: parse status
