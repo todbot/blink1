@@ -271,7 +271,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     NSString* eventUrlStr = [NSString stringWithFormat:@"%@/%@", iftttEventUrl, [blink1 blink1_id]];
     NSString* jsonStr = [self getContentsOfUrl: eventUrlStr];
     iftttResponse = [NSMutableDictionary dictionaryWithDictionary:[_jsonparser objectWithString:jsonStr]];
-    DLog(@"ifttt time:%ld url:%@ json: '%@'", (long)iftttLastTime, eventUrlStr,jsonStr);
+    iftttResponseStr = [NSString stringWithFormat:@"%@\n%@",eventUrlStr, jsonStr];
+    //DLog(@"ifttt time:%ld url:%@ json: '%@'", (long)iftttLastTime, eventUrlStr,jsonStr);
 }
 
 // depends on getIftttResponse being called before
@@ -285,7 +286,6 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         return;
     }
     //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTimeEval"];
-
     
     NSString* pname          = [input valueForKey:@"pname"];
     NSString* rulename       = [input valueForKey:@"arg1"];
@@ -298,7 +298,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     NSMutableArray* possible_vals = [[NSMutableArray alloc] init];
     
     for (NSDictionary *event in list) {
-        NSString * ev_id      = [event objectForKey:@"blink1_id"];
+        //NSString * ev_id      = [event objectForKey:@"blink1_id"];
         NSString * ev_name    = [event objectForKey:@"name"];
         NSString * ev_source  = [event objectForKey:@"source"];
         NSString * ev_datestr = [event objectForKey:@"date"];
@@ -310,9 +310,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         //DLog(@"ev_id:%@, name:%@, source:%@ date: %@ lastTime:%f", ev_id, ev_name, ev_source, ev_datestr, iftttLastTime);
         
         if( [ev_name isEqualToString:rulename] ) {  // match
-            DLog(@"ifttt match!");
             if( ev_date > lastTime ) {
-                DLog(@"ifttt new event!");
+                DLog(@"ifttt new event! %@", ev_name);
                 [input setObject:ev_source forKey:@"lastVal"];
                 [self playPattern: pname]; // trigger the pattern
             }
@@ -806,70 +805,6 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         [self savePrefs];
     }];
         
-    // add a file watching input
-    [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
-        NSString* path  = [request param:@"arg1"];
-        NSString* test  = [request param:@"test"];
-
-        NSString* statusstr = @"must specifiy 'iname' and 'path'";
-
-        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        if( iname != nil && path != nil ) {
-            if( !pname )  pname = [iname copy];
-            [input setObject:pname   forKey:@"pname"];
-            [input setObject:iname   forKey:@"iname"];
-            [input setObject:@"file" forKey:@"type"];
-            [input setObject:path    forKey:@"arg1"];
-            
-            [self updateFileInput:input];
-                        
-            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
-                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
-            }
-            statusstr = @"input file";
-        }
-
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init]; //[NSMutableDictionary dictionaryWithDictionary:input];
-        [respdict setObject:input     forKey:@"input"];
-        [respdict setObject:statusstr forKey:@"status"];
-        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
-        [self savePrefs];
-    }];
-    
-    // add a URL watching input
-    [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
-        NSString* url   = [request param:@"arg1"];
-        NSString* test  = [request param:@"test"];
-
-        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (url)";
-        
-        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        if( iname != nil && url != nil ) { // the minimum requirements for this input type
-            if( !pname )  pname = [iname copy];
-            [input setObject:pname   forKey:@"pname"];
-            [input setObject:iname   forKey:@"iname"];
-            [input setObject:@"url"  forKey:@"type"];
-            [input setObject:url     forKey:@"arg1"];
-        
-            [self updateUrlInput: input];
-
-            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
-                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
-            }
-            statusstr = @"input url";
-        }
-        
-        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init]; //[NSMutableDictionary dictionaryWithDictionary:input];
-        [respdict setObject:input forKey:@"input"];
-        [respdict setObject:statusstr forKey:@"status"];
-        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
-        [self savePrefs];
-    }];
-    
     // add the ifttt watching input
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
@@ -888,25 +823,95 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
             [input setObject:iname     forKey:@"iname"];
             [input setObject:@"ifttt"  forKey:@"type"];
             [input setObject:chan      forKey:@"arg1"];
-
-            if( testmode )
+            
+            if( testmode ) {
                 [self getIftttResponse:false];
-
+                DLog( @"ifttt: %@",iftttResponseStr );
+            }
+            
             [self updateIftttInput: input];
-        
+            
             if( !testmode ) {
                 [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
             }
             statusstr = @"input ifttt";
         }
-
+        
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
         [respdict setObject:statusstr forKey:@"status"];
         [respdict setObject:input     forKey:@"input"];
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
         [self savePrefs];
     }];
-    
+
+    // add a URL watching input
+    [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
+        NSString* url   = [request param:@"arg1"];
+        NSString* test  = [request param:@"test"];
+
+        Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
+
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (url)";
+        
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        if( iname != nil && url != nil ) { // the minimum requirements for this input type
+            if( !pname )  pname = [iname copy];
+            [input setObject:pname   forKey:@"pname"];
+            [input setObject:iname   forKey:@"iname"];
+            [input setObject:@"url"  forKey:@"type"];
+            [input setObject:url     forKey:@"arg1"];
+            
+            [self updateUrlInput: input];
+            
+            if( !testmode ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"input url";
+        }
+        
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init]; //[NSMutableDictionary dictionaryWithDictionary:input];
+        [respdict setObject:input forKey:@"input"];
+        [respdict setObject:statusstr forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
+    }];
+
+    // add a file watching input
+    [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* iname = [request param:@"iname"];
+        NSString* pname = [request param:@"pname"];
+        NSString* path  = [request param:@"arg1"];
+        NSString* test  = [request param:@"test"];
+
+        Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
+
+        NSString* statusstr = @"must specifiy 'iname' and 'path'";
+
+        NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
+        if( iname != nil && path != nil ) {
+            if( !pname )  pname = [iname copy];
+            [input setObject:pname   forKey:@"pname"];
+            [input setObject:iname   forKey:@"iname"];
+            [input setObject:@"file" forKey:@"type"];
+            [input setObject:path    forKey:@"arg1"];
+            
+            [self updateFileInput:input];
+                        
+            if( !testmode ) {
+                [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
+            }
+            statusstr = @"input file";
+        }
+
+        NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init]; //[NSMutableDictionary dictionaryWithDictionary:input];
+        [respdict setObject:input     forKey:@"input"];
+        [respdict setObject:statusstr forKey:@"status"];
+        [response respondWithString: [_jsonwriter stringWithObject:respdict]];
+        [self savePrefs];
+    }];
+            
     // add a script execing input
     [http get:@"/blink1/input/script" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* iname = [request param:@"iname"];
@@ -914,6 +919,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
         
+        Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
+
         NSString* statusstr = @"must specifiy 'iname' and 'arg1' for scriptname";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
@@ -926,7 +933,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
             
             [self updateScriptInput:input];
             
-            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+            if( !testmode ) {
                 [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
             }
             statusstr = @"input script";
@@ -963,6 +970,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         NSString* max   = [request param:@"arg2"];
         NSString* test  = [request param:@"test"];
         
+        Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
+
         NSString* statusstr = @"must specifiy 'iname' and 'arg1' for min";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
@@ -977,7 +986,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
             
             [self updateCpuloadInput:input];
 
-            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+            if( !testmode ) {
                 [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
             }
             statusstr = @"cpuload input";
@@ -998,6 +1007,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         NSString* max   = [request param:@"arg2"];
         NSString* test  = [request param:@"test"];
 
+        Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
+
         NSString* statusstr = @"must specifiy 'iname' and 'arg1' for min";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
@@ -1012,7 +1023,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
             
             [self updateNetloadInput:input];
             
-            if( !([test isEqualToString:@"on"] || [test isEqualToString:@"true"]) ) {
+            if( !testmode ) {
                 [inputs setObject:input forKey:iname];  // not a test, add new input to inputs list
             }
             statusstr = @"netload input";
