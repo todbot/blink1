@@ -492,6 +492,7 @@ __Example:__
 `http://localhost:8934/blink1/input/url?iname=tod+test&arg1=http://todbot.com/tst/color.txt&test=true`
 
 __Response:__ 
+
     {
       "input": {
         "arg1": "http://todbot.com/tst/color.txt",
