@@ -1,7 +1,7 @@
  
 URL API for blink(1) Applications
 =================================
-version 0.4 -- 20121013 -- Tod E. Kurt
+version 0.6 -- 20121020 -- Tod E. Kurt
 
 The application that controls a blink(1) device is comprised of an HTML5 GUI 
 running on an embedded webserver.  The GUI communicates to the application
@@ -73,20 +73,12 @@ __IFTTT response:__
         {
           "blink1_id":"4428808301AA1A23",
           "name":"todpoliceflash",
+          "source":"gmail",
           "date":"1348631098"
         },
       ],
       "event_count":1,
       "status" : "ok"
-    }
-
-__IFTTT response: (OLD) __
-
-    {
-      "blink1_id":"7890abcd12",
-      "name":"New Mail",
-      "source":"gmail",
-      "date":"1348604177"
     }
 
 __File with RGB hex string:__
@@ -108,12 +100,41 @@ __File with RGB hex string:__
 
 ### Mapping Inputs to Color Patterns ###
 
-### File Watcher ###
+A color pattern is identified by its "pname", or pattern name.  
+This is its unique key into the color pattern dictionary.
+Similarly, an input is uniquely identified by its "iname", or input name.
+These names are used purely as identifies and can be arbitrary strings.
 
-There can be at most 5 tracked files.  
-These files contain RGB hex strings or color pattern names in simple text files.
-If the underlying OS supports file system events, those should be used.
-Otherwise, files are scanned every 30 seconds for changes.
+Normally (and expected by the current HTML front-end) an "iname" and "pname" must match,
+for those inputs that work by triggering a color pattern.  
+When configuring an input, if a "pname" is not specified for an input, 
+it is assumed to be the same as the "iname".
+
+
+### IFTTT Watcher ###
+
+The IFTTT Watcher pulls queued IFTTT events for a particular "blink1_id" from api.thingm.com/blink1. 
+The watcher runs every 15 seconds, and keeps track of the timestamp of the last seen event.
+It uses the timestamp to determine if a new event of the same name has occurred.
+
+IFTTT events are identified by a "name" (IFTTT rule name) and an optional "source" (IFTTT trigger source).
+The expected operation of the IFTTT functionality is:
+
+* On IFTTT.com, user configures the blink(1) channel with their "blink_id".
+
+* On IFTTT.com, user creates a new recipe with blink(1) as the action. 
+
+* The name of the user's recipe or user-chosen text string becomes the "name" of the event seen by the IFTTT Watcher.
+
+* In blink(1) control app, user creates a new IFTTT trigger with "rule name" set to the same as on IFTTT.com.
+
+* When the action is triggered, IFTTT.com sends event to IFTTT reflector at api.thingm.com, with "name" and "source".
+
+* User's blink(1) control application's IFTTT Watcher queries api.thingm.com every 15 seconds 
+for new events on user's blink1_id.
+
+* When new event is seen, IFTTT Watcher plays color pattern "pname" bound to the configured input.
+
 
 ### URL Watcher ###
 
@@ -121,7 +142,18 @@ There can be at most 5 tracked URLs.
 These URLs contain RGB hex strings or color pattern names in simple text files.
 URLs are scanned for changes every 30 seconds.
 
+
+### File Watcher ###
+
+There can be at most 5 tracked files.  
+These files contain RGB hex strings or color pattern names in simple text files.
+Files are scanned every 15 seconds for changes.
+
+
 ### Script Executer ###
+
+All scripts must live in the "blink-scripts" folder in the user's "Documents" folder.
+Scripts are executed every 15 seconds.  Output is parsed like files.
 
 
 ### Color Pattern Player ###
@@ -133,7 +165,7 @@ color patterns, but instead just sends the color commands.
 
 ## URL Summary ##############################################################
 
-Base URL: `http://localhost:8080/blink1`
+Base URL: `http://localhost:8934/blink1`
 
 
 ### Direct blink(1) control ###
@@ -171,6 +203,9 @@ Base URL: `http://localhost:8080/blink1`
 * `/blink1/input/delall` 
 -- Remove all configured inputs
 
+* `/blink1/input/ifttt` 
+-- Add and Start watching messages from IFTTT webservice
+
 * `/blink1/input/file` 
 -- Add and Start file watcher on given filepath
 
@@ -182,9 +217,6 @@ Base URL: `http://localhost:8080/blink1`
 
 * `/blink1/input/scriptlist` 
 -- List available scripts to run
-
-* `/blink1/input/ifttt` 
--- Add and Start watching messages from IFTTT webservice
 
 * `/blink1/input/cpuload` 
 -- Add and Start CPU load watching input
@@ -226,7 +258,7 @@ Also show "blink1_id" used as identifier with IFTTT web service.
 __Query args:__ -none-
 
 __Example:__
-`http://localhost:8080/blink1/id`
+`http://localhost:8934/blink1/id`
 
 __Response:__ 
 
@@ -255,7 +287,8 @@ With blink(1) plugged in:
 __Description:__ Regenerate the blink1_id based on current blink(1) device.
 
 __Example:__
-`http://localhost:8080/blink1/regenerateblink1id`
+
+`http://localhost:8934/blink1/regenerateblink1id`
 
 __Response:__ 
 
@@ -276,7 +309,8 @@ __Description:__ Re-enumerate and List available blink(1) devices.
 __Query args:__ -none-
 
 __Example:__
-`http://localhost:8080/blink1/enumerate`
+
+`http://localhost:8934/blink1/enumerate`
 
 __Response:__ 
 
@@ -300,7 +334,8 @@ __Query args:__
 * `time` : time in seconds to complete fade (e.g. "0.8")
 
 __Example:__
-`http://localhost:8080/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
+
+`http://localhost:8934/blink1/fadeToRGB?rgb=%23FF00FF&time=2.7`
 
 __Response:__ 
 
@@ -318,7 +353,8 @@ __Description:__ Return last fadeToRGB color sent to blink(1).
 __Query args:__ -none-
 
 __Example:__
-`http://localhost:8080/blink1/lastColor`
+
+`http://localhost:8934/blink1/lastColor`
 
 __Response:__
 
@@ -335,7 +371,8 @@ __Description:__ List configured inputs
 __Query args:__ 'enable' : "on" == enable all configured inputs, "off" == off
 
 __Example:__ 
-`http://localhost:8080/blink1/input`
+
+`http://localhost:8934/blink1/input`
 
 __Response:__ 
 (example with several inputs configured)
@@ -379,7 +416,8 @@ __Query args:__
 * `iname` -- input name
 
 __Example:__
-`http://localhost:8080/blink1/input/del?iname=mysqllog`
+
+`http://localhost:8934/blink1/input/del?iname=mysqllog`
 
 __Response:__ Standard JSON 'status' response
 
@@ -391,9 +429,80 @@ __Description:__ Remove all configured inputs
 __Query args:__  -none-
 
 __Example:__
-`http://localhost:8080/blink1/input/delall`
+
+`http://localhost:8934/blink1/input/delall`
 
 __Response:__ Standard JSON 'status' response
+
+
+`/blink1/input/ifttt`
+-------------------
+__Description:__ Start watching for messages from IFTTT webservice
+Multiple IFTTT inputs can be added, each with its own name.  
+The IFTTT webservice is queried once every 15 seconds, no matter how many IFTTT inputs are configured.
+The arg1 parameter of each configured IFTTT input is compared against the rule name attribute from IFTTT.
+When a match occurs, the color pattern specified in "pname" is triggered.
+
+__Query args:__ 
+
+* `iname` -- name for this input
+* `pname` -- (optional) color pattern name to trigger, otherwise is set to contents of 'iname'
+* `arg1`  -- ifttt rule name (defined by user on ifttt.com)
+* `test`  -- testmode boolean, immediately run input processor, but don't add to input list. Set to "on" or "true" to enable, otherwise false.
+
+__Example:__
+
+`http://localhost:8934/blink1/input/ifttt?iname=My+Favorite+Trigger&arg1=New+Gmail`
+
+`http://localhost:8934/blink1/input/ifttt?iname=My+Favorite+Trigger&arg1=New+Gmail&test=true`
+
+__Response:__  standard JSON response with keys: "input" and "status".  
+The "input" keys contain the parsed input, with an additional array "possibleVals" that may exist if the IFTTT processor has run 
+and seen iftt rule names (arg1 values) from the IFTTT reflector.
+
+    {
+      "input": {
+        "arg1": "New Gmail",
+        "iname": "My Favorite Trigger",
+        "pname": "My Favorite Trigger",
+        "possibleVals": [
+          "some rss feed", "New Gmail"
+        ],
+        "type": "ifttt"
+      },
+      "status": "input ifttt"
+    }
+
+
+`/blink1/input/url`
+-----------------
+__Description:__ Start URL watcher on given URL; URL contains color pattern names or explicit hex color values.
+
+__Query args:__ 
+
+* `iname` -- name for this input
+* `pname` -- (optional) color pattern name to trigger
+* `arg1`  -- URL path to text file to watch, properly escaped
+* `test`  -- testmode boolean, immediately run input processor, but don't add to input list. Set to "on" or "true" to enable, otherwise false.
+
+__Example:__
+
+`http://localhost:8934/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
+
+`http://localhost:8934/blink1/input/url?iname=tod+test&arg1=http://todbot.com/tst/color.txt&test=true`
+
+__Response:__ 
+    {
+      "input": {
+        "arg1": "http://todbot.com/tst/color.txt",
+        "iname": "tod test",
+        "lastTime": 1353463912,
+        "lastVal": "#9970FF",
+        "pname": "tod test",
+        "type": "url"
+      },
+      "status": "input url"
+    }
 
 
 `/blink1/input/file`
@@ -403,30 +512,15 @@ __Description:__ Start file watcher on given filepath; file contains color patte
 __Query args:__
 
 * `iname` -- name for this input
-* `pname` -- (optional) color pattern name to trigger
+* `pname` -- (optional) color pattern name to trigger, otherwise is set to contents of 'iname'
 * `arg1`  -- filename, fully-qualified filepath to text file to parse
+* `test`  -- testmode boolean, immediately run input processor, but don't add to input list. Set to "on" or "true" to enable, otherwise false.
 
 __Example:__
-`http://localhost:8080/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
 
-__Response:__ Standard JSON 'status' response
+`http://localhost:8934/blink1/input/file?iname=mysqllog&path=/usr/local/mysqlout.txt`
 
-
-
-`/blink1/input/url`
------------------
-__Description:__ Start URL watcher on given URL; URL contains color pattern names
-
-__Query args:__ 
-
-* `iname` -- name for this input
-* `pname` -- (optional) color pattern name to trigger
-* `arg1`  -- URL path to text file to watch, properly escaped
-
-__Example:__
-`http://localhost:8080/blink1/input/url?iname=myarduino&url=http://todbot.com/tst/color.txt`
-
-__Response:__ Standard JSON 'status' response
+__Response:__ Standard JSON 'input' & 'status' response
 
 
 `/blink1/input/script`
@@ -436,27 +530,15 @@ __Description:__ Run command-line script, get output as color name or rgb color 
 __Query args:__
 
 * `iname` -- name for this input
-* `pname` -- (optional) color pattern name to trigger
-* `arg1`  -- script name (must live in "~/Documents/blink1-scripts" directory)
+* `pname` -- (optional) color pattern name to trigger, otherwise is set to contents of 'iname'
+* `arg1`  -- script name (must live in "~/Documents/blink1-scripts" folder)
+* `test`  -- testmode boolean, immediately run input processor, but don't add to input list. Set to "on" or "true" to enable, otherwise false.
 
 __Example:__
-`http://localhost:8080/blink1/input/script?iname=checkService&arg1=CheckServ.bat`
 
-__Response:__  Standard JSON 'status' response
+`http://localhost:8934/blink1/input/script?iname=checkService&arg1=CheckServ.bat`
 
-
-`/blink1/input/ifttt`
--------------------
-__Description:__ Start watching for messages from IFTTT webservice
-
-__Query args:__ 
-
-* `pname` -- color pattern name to trigger
-
-__Example:__
-`http://localhost:8080/blink1/input/ifttt`
-
-__Response:__  Standard JSON 'status' response
+__Response:__  Standard JSON 'input' & 'status' response
 
 
 `/blink1/input/cpuload`
@@ -467,14 +549,16 @@ Start CPU load watching input.  If no arguments, returns load
 ____Query args:____ 
 
 * `iname` -- name for this input
-* `pname` -- (optional) color pattern name to trigger
+* `pname` -- (optional) color pattern name to trigger, otherwise is set to contents of 'iname'
 * `arg1`  -- min, minimum level on which to trigger this event
 * `arg2`  -- max, (optional) maximum level on which to trigger this event
+* `test`  -- testmode boolean, immediately run input processor, but don't add to input list. Set to "on" or "true" to enable, otherwise false.
 
 __Example:__
-`http://localhost:8080/blink1/input/cpuload?iname=cpu99&arg1=90`
 
-__Response:__  Standard JSON 'status' response
+`http://localhost:8934/blink1/input/cpuload?iname=cpu99&arg1=90`
+
+__Response:__  Standard JSON 'input' & 'status' response
 
 
 `/blink1/input/netload`
@@ -488,9 +572,10 @@ ____Query args:____
 * `pname` -- (optional) color pattern name to trigger
 * `arg1`  -- min, minimum level on which to trigger this event
 * `arg2`  -- max, (optional) maximum level on which to trigger this event
+* `test`  -- testmode boolean, immediately input processor, but don't add to input list. Set to "on" or "true" to enable, otherwise false.
 
 __Example:__
-`http://localhost:8080/blink1/input/cpuload?iname=net95&arg1=95&arg2=100`
+`http://localhost:8934/blink1/input/cpuload?iname=net95&arg1=95&arg2=100`
 
 __Response:__  Standard JSON 'status' response
 
@@ -504,7 +589,8 @@ List saved color patterns
 __Query args:__ -none-
 
 __Example:__
-`http://localhost:8080/blink1/pattern/`
+
+`http://localhost:8934/blink1/pattern/`
 
 __Response:__ 
 
@@ -536,7 +622,8 @@ __Query args:__
     format: "repeats,color1,color1time,color2,color2time,..."
 
 __Example:__
-`http://localhost:8080/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
+
+`http://localhost:8934/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
 
 __Response:__ Standard JSON 'status' response
 
@@ -551,7 +638,8 @@ __Query args:__
 * `pname` -- name of color pattern to delete
 
 __Example:__
-`http://localhost:8080/blink1/pattern/del?pname=blink3_red`
+
+`http://localhost:8934/blink1/pattern/del?pname=blink3_red`
 
 __Response:__ Standard JSON 'status' response
 
@@ -566,7 +654,8 @@ __Query args:__
 * `pname` -- name of color pattern to play
 
 __Example:__
-`http://localhost:8080/blink1/pattern/play?pname=blink3_red`
+
+`http://localhost:8934/blink1/pattern/play?pname=blink3_red`
 
 __Response:__ Standard JSON 'status' response
 
@@ -581,7 +670,8 @@ __Query args:__
 * `pname` -- pattern name string
 
 __Example:__
-`http://localhost:8080/blink1/pattern/stop?pname=blink3_red`
+
+`http://localhost:8934/blink1/pattern/stop?pname=blink3_red`
 
 __Response:__ Standard 'status' JSON response
 
