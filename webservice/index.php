@@ -195,7 +195,10 @@ $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app,$blink1_id_
         $blink1_id = strtoupper($blink1_id);
 
         if( ($errorcode = isInvalidBlink1Id( $blink1_id )) ) { 
-            send_json_response( "error: invalid blink1_id '$blink1_id': $errorcode", NULL);
+            $app->notFound( function() use ($app) {
+                    send_json_response( "error: invalid blink1_id '$blink1_id': $errorcode", NULL);
+                });
+            $app->notFound();
             return;
         }
 
@@ -207,14 +210,20 @@ $app->get('/events/:blink1_id', function($blink1_id) use( &$req,$app,$blink1_id_
           $events_present = 1;
         }
         else {
-            send_json_response( "no events",null );
+            $app->notFound( function() use ($app) {
+                    send_json_response( "no events",null );
+                });
+            $app->notFound();
         }
 
         // log the blink1_id used
-        $logline = time() . "\t" . $blink1_id . "\t" . $events_present . "\n";
-        $fhl = fopen( $blink1_id_logfile , 'a'); // append
-        fwrite( $fhl, $logline );
-        fclose( $fhl );
+        // Do not use this: use apache logs instead
+        if( 0 ) { 
+            $logline = time() . "\t" . $blink1_id . "\t" . $events_present . "\n";
+            $fhl = fopen( $blink1_id_logfile , 'a'); // append
+            fwrite( $fhl, $logline );
+            fclose( $fhl );
+        }
 
     });
 
