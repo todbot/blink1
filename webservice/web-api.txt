@@ -1,7 +1,7 @@
 
 blink(1) Web Service Reflector for IFTTT   
 ========================================
-20120924 tod at thingm.com
+20121121 tod at thingm.com
 
 Intro
 -----
