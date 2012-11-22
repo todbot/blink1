@@ -44,9 +44,9 @@ JAVA_HOME:=/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home
 PATH:=$(JAVA_HOME)/bin:$(PATH)
 
 LIBTARGET = lib$(TARGET).jnilib
-USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
-USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
-USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
+#USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
+#USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
+#USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
 OBJS = ../commandline/hidapi/mac/hid.o
 
 #
@@ -151,7 +151,7 @@ processinglib: jar
 	rm -f blink1.zip
 	mkdir -p blink1/library
 	cp packaging/processing-export.txt blink1/library/export.txt
-	cp ../libraries/* blink1/library
+	cp -r ../libraries/* blink1/library
 	zip -r blink1.zip blink1
 	@echo
 	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
