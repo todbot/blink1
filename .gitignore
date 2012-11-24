@@ -154,3 +154,11 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+
+# tod stuff
+# emacs
+*~
+# c build results
+*.o
+# java build results
+*.class
