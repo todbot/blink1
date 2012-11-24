@@ -10,7 +10,7 @@
 # Architecture is usually detected automatically, so normally just type "make"
 #
 # Dependencies: 
-# - libusb is required
+# - hidapi (included), which uses libusb on Linux-like OSes
 #
 # Platform-specific notes:
 #
@@ -177,3 +177,4 @@ otool:
 
 foo:
 	@echo "OS=$(OS), USBFLAGS=$(USBFLAGS)"
+
