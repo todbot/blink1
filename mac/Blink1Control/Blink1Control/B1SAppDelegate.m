@@ -406,13 +406,13 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         NSMutableDictionary* input = [inputs objectForKey:key];
         NSString* type    = [input valueForKey:@"type"];
         
-        if( [type isEqualToString:@"url"])
-        {
-            [self updateUrlInput: input];
-        }
-        else if( [type isEqualToString:@"ifttt"] )
+        if( [type isEqualToString:@"ifttt"] )
         {
             [self updateIftttInput: input];
+        }
+        else if( [type isEqualToString:@"url"])
+        {
+            [self updateUrlInput: input];
         }
         else if( [type isEqualToString:@"file"] )
         {

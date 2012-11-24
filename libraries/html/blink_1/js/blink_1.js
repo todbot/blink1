@@ -771,7 +771,7 @@ $(document).ready(function(){
                     console.log(possibleVals);
                     var minsago = ((new Date().getTime()/1000 - result.input.lastTime )/60).toFixed(1);
                     minsago = (isNaN(minsago)) ? '-never-' : minsago;
-                    possibleVals = (possibleVals.length) ? possibleVals.toString() : '-never-';
+                    possibleVals = (possibleVals.length) ? possibleVals.toString() : '-none-';
 
                     $('.ifttt #value-retrieved-timestamp').text( "last seen " + minsago + " minutes ago" );
                     $('.ifttt #value-retrieved-text-box').text( result.input.lastVal );
