@@ -29,6 +29,7 @@ $(document).ready(function(){
 
 	// active tabs behavior for ajax transitions (jquery-ui)
 	$( "#tabs" ).tabs({
+		active: 1,
 		hide: false,
 		show: true,
         beforeLoad: function( event, ui ) {
@@ -406,6 +407,24 @@ $(document).ready(function(){
         backendLiveValueStart( fakeTriggerObject );
 	});
 	
+
+/*********************************
+
+	DEMO PAGE BEHAVIOR
+
+*********************************/
+
+	$('.demo-grid-square').click(function(e) {
+		console.log($(this).attr('id').replace('demo-', ''));
+		$('.demo-grid-square.active').removeClass('active');
+		$(this).addClass('active');
+	});	
+
+
+
+
+
+
 	
 /*********************************
 

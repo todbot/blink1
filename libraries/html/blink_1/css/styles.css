@@ -81,7 +81,7 @@ p {
 }
 
 h2 {
-	margin-bottom: 20px;
+	margin-bottom: 6px;
 }
 
 p span.light {
@@ -822,7 +822,7 @@ display: block;
 
 /** virtual blink **/
 
-#virtual-blink {
+#virtual-blink, #virtual-blink-demo {
 	width: 170px;
 	height: 110px;
 	background: #eee;
@@ -833,7 +833,7 @@ display: block;
 }
 
 
-#virtual-blink-overlay {
+#virtual-blink-overlay, #virtual-blink-overlay-demo {
 	width: 170px;
 	height: 110px;
 	background: transparent url('../images/virtual_blink1.png') no-repeat;
@@ -843,6 +843,12 @@ display: block;
 	z-index: 99;
 }
 
+#demo-blink {
+	position: absolute;
+	left: 360px;
+	bottom: 40px;
+	z-index: 0;
+}
 
 /** value selector **/
 
@@ -1394,8 +1400,93 @@ a#thingm-logo {
 	}
 
 
+/****************************************
 
+	DEMO PAGE STYLES
 
+****************************************/
+
+#demo-dark-container {
+	width: 690px;
+	height: 290px;
+	position: relative;
+	margin-top: 44px;
+}
+
+/*virtual blink preliminary styles included earlier with config blink*/
+
+.demo-grid-square {
+	text-align: center;
+	padding-top: 0px;
+	width: 78px;
+	height: 110px;
+	background: white;
+	float: left;
+	margin-right: 18px;
+	margin-bottom: 30px;
+	cursor: pointer;
+	background-position: -9px 26px;
+	background-repeat: no-repeat;
+/* 	border: 1px solid #fff; */
+	padding: 10px 20px;
+}
+
+	.demo-grid-square:hover {
+/* 		border: 1px solid #eee; */
+		box-shadow: inset 0px 0px 6px 2px #eee;
+		-moz-box-shadow: inset 0px 0px 6px 2px #eee;
+		-webkit-box-shadow: inset 0px 0px 6px 2px #eee;
+	}
+
+	.demo-grid-square.active {
+/* 		border: 1px solid #F7931E; */
+		box-shadow: inset 0px 0px 8px 2px orange;
+		-moz-box-shadow: inset 0px 0px 8px 2px orange;
+		-webkit-box-shadow: inset 0px 0px 8px 2px orange;
+	}
+
+	.demo-grid-square#demo-light-on {
+		background-image: url('../images/demo-light-on.png');
+	}
+	
+	.demo-grid-square#demo-light-off {
+		background-image: url('../images/demo-light-off.png');
+	}
+	
+	.demo-grid-square#demo-rgb {
+		background-image: url('../images/demo-rgb.png');
+	}
+	
+	.demo-grid-square#demo-mood {
+		background-image: url('../images/demo-mood.png');
+	}
+	
+	.demo-grid-square#demo-color-picker {
+		background-image: url('../images/demo-color-picker.png');
+	}
+	
+	
+
+.demo-grid-square:nth-of-type(5n) {
+	margin-right: 0px;
+}
+	
+#demo-blink {
+	bottom: -10px;
+	left: 258px;
+}
+
+#virtual-blink-demo {
+	width: 210px;
+	height: 127px; 
+}	
+
+#virtual-blink-overlay-demo {
+	width: 218px;
+	height: 130px;
+	left: -36px;
+ 	background: transparent url('../images/virtual_blink-big.png') no-repeat;	
+}
 	
 /*************************************************
 
