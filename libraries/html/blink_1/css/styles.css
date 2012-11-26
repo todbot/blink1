@@ -233,8 +233,8 @@ span.medium {
 	
 #main-content {
 	padding: 60px 60px 50px 70px;
-	width: 704px;
-	min-height: 375px;
+	width: 708px;
+	height: 415px;
 }	
 
 /*
@@ -1407,10 +1407,11 @@ a#thingm-logo {
 ****************************************/
 
 #demo-dark-container {
-	width: 690px;
-	height: 290px;
+	width: 730px;
+	height: 330px;
 	position: relative;
-	margin-top: 44px;
+	margin-top: 34px;
+	left: 0px;
 }
 
 /*virtual blink preliminary styles included earlier with config blink*/
@@ -1420,9 +1421,9 @@ a#thingm-logo {
 	padding-top: 0px;
 	width: 78px;
 	height: 110px;
-	background: white;
+/* 	background: white; */
 	float: left;
-	margin-right: 18px;
+	margin-right: 26px;
 	margin-bottom: 30px;
 	cursor: pointer;
 	background-position: -9px 26px;
@@ -1436,6 +1437,7 @@ a#thingm-logo {
 		box-shadow: inset 0px 0px 6px 2px #eee;
 		-moz-box-shadow: inset 0px 0px 6px 2px #eee;
 		-webkit-box-shadow: inset 0px 0px 6px 2px #eee;
+/* 		background-position: -9px -94px; */
 	}
 
 	.demo-grid-square.active {
@@ -1472,20 +1474,35 @@ a#thingm-logo {
 }
 	
 #demo-blink {
-	bottom: -10px;
-	left: 258px;
+	bottom: -20px;
+	left: 278px;
 }
 
 #virtual-blink-demo {
-	width: 210px;
-	height: 127px; 
+	background-color: #ccc;
+	width: 220px;
+	height: 157px; 
 }	
 
 #virtual-blink-overlay-demo {
-	width: 218px;
-	height: 130px;
+	width: 225px;
+	height: 160px;
 	left: -36px;
- 	background: transparent url('../images/virtual_blink-big.png') no-repeat;	
+ 	background: transparent url('../images/virtual_blink-big_white.png') no-repeat -10px -2px;
+/*
+ 	-webkit-box-shadow: inset 0px 0px 10px 0px #666;
+ 	-moz-box-shadow: inset 0px 0px 10px 0px #666;
+ 	box-shadow: inset 0px 0px 10px 0px #666; 	 		
+*/
+}
+
+	#virtual-blink-overlay-demo.dark {
+		background: transparent url('../images/virtual_blink-big_dark.png') no-repeat -10px -2px; 
+
+	}
+	
+#container.demo #main-content.dark {
+	background: #ccc;
 }
 	
 /*************************************************
