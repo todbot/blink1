@@ -149,9 +149,14 @@ jar: javac jni compile
 processing: processinglib
 processinglib: jar
 	rm -f blink1.zip
+	rm -rf blink1/library
+	rm -rf blink1/examples
 	mkdir -p blink1/library
+	mkdir -p blink1/examples
 	cp packaging/processing-export.txt blink1/library/export.txt
 	cp -r ../libraries/* blink1/library
+	rm -rf blink1/library/html
+	cp -r ../processing/* blink1/examples
 	zip -r blink1.zip blink1
 	@echo
 	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
