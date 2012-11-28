@@ -102,7 +102,8 @@ endif
 ifeq "$(OS)" "windows"
 #CFLAGS += 
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
-LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
+#LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
+LIBS +=  -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
 OBJS = ./hidapi/windows/hid.o
 EXE= .exe
 endif
