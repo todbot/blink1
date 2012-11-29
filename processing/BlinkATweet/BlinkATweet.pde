@@ -112,15 +112,15 @@ void keyPressed() {
   int r = int(random(255));
   int g = int(random(255));
   int b = int(random(255));
-  lastColor = new Color(r,g,b);
-  screenColor = new Color(lastColor.getRed(),lastColor.getGreen(),lastColor.getBlue());// better way of doing this?
+  lastColor = new Color(r,g,b); 
+  // better way of doing this?
+  screenColor = new Color(lastColor.getRed(),lastColor.getGreen(),lastColor.getBlue());
 
   println("keyPressed: "+lastColor);
   blink1.fadeToRGB( 200, r,g,b );
   delay(100);
   blink1.fadeToRGB( 2000, 0,0,0 );
 }
-
 
 
 //
@@ -155,9 +155,13 @@ StatusListener listener = new StatusListener() {
     
     updateMsg( "@"+status.getUser().getScreenName()+": "+text );
 
-    screenColor = new Color(lastColor.getRed(),lastColor.getGreen(),lastColor.getBlue());// better way of doing this?
+    int r = lastColor.getRed();
+    int g = lastColor.getGreen();
+    int b = lastColor.getBlue();
 
-    blink1.fadeToRGB( 100, lastColor.getRed(), lastColor.getGreen(), lastColor.getBlue() );
+    screenColor = new Color(r,g,b); // better way of doing this?
+
+    blink1.fadeToRGB( 100, r,g,b );
     delay( 100 );
     blink1.fadeToRGB( 2000, 0,0,0 );
     delay( 100 );
@@ -166,9 +170,8 @@ StatusListener listener = new StatusListener() {
       boolean rc = parseColors( lctext );
       if( rc ) {
         //blink1.fadeToRGB( 100, lastColor );
-        blink1.fadeToRGB( 100, lastColor.getRed(), lastColor.getGreen(), lastColor.getBlue() );
+        blink1.fadeToRGB( 100, r,g,b );
       }
-
   }
 
   public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
@@ -178,9 +181,8 @@ StatusListener listener = new StatusListener() {
     //  System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
   }
   public void onScrubGeo(long userId, long upToStatusId) {
-    System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
+    System.out.println("Got scrub_geo event userId:"+userId+" upToStatusId:"+upToStatusId);
   }
-
   public void onException(Exception ex) {
     ex.printStackTrace();
   }
@@ -312,25 +314,25 @@ void createGradient (float x, float y, float radius, color c1, color c2) {
 // stolen from: http://processing.org/discourse/yabb2/YaBB.pl?num=1213696787/1
 //
 void roundrect(int x, int y, int  w, int h, int r) {
- noStroke();
- rectMode(CORNER);
-
- int  ax, ay, hr;
-
- ax=x+w-1;
- ay=y+h-1;
- hr = r/2;
-
- rect(x, y, w, h);
- arc(x, y, r, r, radians(180.0), radians(270.0));
- arc(ax, y, r,r, radians(270.0), radians(360.0));
- arc(x, ay, r,r, radians(90.0), radians(180.0));
- arc(ax, ay, r,r, radians(0.0), radians(90.0));
- rect(x, y-hr, w, hr);
- rect(x-hr, y, hr, h);
- rect(x, y+h, w, hr);
- rect(x+w,y,hr, h);
-
+  noStroke();
+  rectMode(CORNER);
+  
+  int  ax, ay, hr;
+  
+  ax=x+w-1;
+  ay=y+h-1;
+  hr = r/2;
+  
+  rect(x, y, w, h);
+  arc(x, y, r, r, radians(180.0), radians(270.0));
+  arc(ax, y, r,r, radians(270.0), radians(360.0));
+  arc(x, ay, r,r, radians(90.0), radians(180.0));
+  arc(ax, ay, r,r, radians(0.0), radians(90.0));
+  rect(x, y-hr, w, hr);
+  rect(x-hr, y, hr, h);
+  rect(x, y+h, w, hr);
+  rect(x+w,y,hr, h);
+  
 }
 
 //
