@@ -15,7 +15,6 @@ import ddf.minim.*;
 Blink1 blink1;
 
 // Sound Input and processing objects
-//Serial myPort;
 Minim minim;
 AudioInput myInput;
 AudioOutput myOutput;
@@ -99,10 +98,6 @@ void setup() {
   noiseLvl = new float[bandNumber];
   for (int i = 0; i < bandNumber; ++i) peaks[i] = minPeak;
 
-  // Init communications
-  //String portName = Serial.list()[0];
-  //println(portName);
-  //myPort = new Serial(this, portName, 57600);
   lastUpdate = millis();
 }
 
@@ -175,6 +170,7 @@ void colorOrgan() {
   for (int i=0; i < bandNumber; i++) {
     int col = colorIndex[i%colorIndex.length];
     float amp = fftL.getAvg(i) + fftR.getAvg(i);
+    print(nf(int(10*amp),2,0) + ", ");
 
     // Check noise threshold. If above, normalize amp to [0-1].
     if (amp > noiseLvl[i]) amp = (amp)/peaks[i];
@@ -205,6 +201,7 @@ void colorOrgan() {
     tb += bbb;
 
   }
+  println();
 
   int div = bandNumber/3;
   tr /= div;
