@@ -5,6 +5,7 @@ package thingm.blink1;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
+import java.awt.Color;
 
 public class Blink1 
 {
@@ -64,8 +65,12 @@ public class Blink1
       if( rc == -1 ) { 
         System.out.print("couldn't open "+id+" ");
       }
+      
+      //rc = blink1.setRGB( r,g,b );
 
-      rc = blink1.setRGB( r,g,b );
+      Color c = new Color( r,g,b );
+      rc = blink1.setRGB( c );
+      
       blink1.close();
       
       if( rc == -1 ) { 
@@ -78,6 +83,7 @@ public class Blink1
       blink1.pause( 250 );
     }
 
+    System.out.println("Done.");
   }
 
   //--------------------------------------------------------------------------
@@ -171,6 +177,17 @@ public class Blink1
   public native synchronized int setRGB(int r, int g, int b);
 
   /**
+   * Set blink(1) RGB color immediately
+   * @param c Color to set
+   * @returns blink1_command response code, -1 == fail 
+   */
+  public int setRGB(Color c) 
+  {
+    return setRGB( c.getRed(), c.getGreen(), c.getBlue() );
+  }
+
+
+  /**
    * Fade blink(1) to RGB color over fadeMillis milliseconds.
    * @param fadeMillis milliseconds to take to get to color
    * @param r red component 0-255
@@ -180,6 +197,17 @@ public class Blink1
    */
   public native synchronized int fadeToRGB(int fadeMillis, int r, int g, int b);
   
+  /**
+   * Fade blink(1) to RGB color over fadeMillis milliseconds.
+   * @param fadeMillis milliseconds to take to get to color
+   * @param c Color to set
+   * @returns blink1_command response code, -1 == fail 
+   */
+  public int fadeToRGB(int fadeMillis, Color c) 
+  {
+    return fadeToRGB( fadeMillis, c.getRed(), c.getGreen(), c.getBlue() );
+  }
+
   /**
    * Write a blink(1) light pattern entry
    * @param fadeMillis milliseconds to take to get to color
