@@ -155,7 +155,7 @@ $(OBJS): %.o: %.c
 
 blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
-	$(CC) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
+	$(CC) $(CFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
 blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
