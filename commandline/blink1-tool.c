@@ -19,6 +19,7 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>    // for memset(), strcmp(), et al
 #include <stdlib.h>
 #include <stdint.h>
@@ -34,7 +35,7 @@ int delayMillis = 500;
 int numDevicesToUse = 1;
 
 hid_device* dev;
-const wchar_t* dev_serial;
+//const wchar_t* dev_serial;
 char  deviceIds[blink1_max_devices];
 
 char  cmdbuf[9]; 
@@ -42,14 +43,18 @@ int verbose;
 
 
 //---------------------------------------------------------------------------- 
+/*
+  TBD: replace printf()s with something like this
+void logpri(int loglevel, char* fmt, ...)
+{
+    if( loglevel < verbose ) return;
+    va_list ap;
+    va_start(ap,fmt);
+    vprintf(fmt,ap);
+    va_end(ap);
+}
+*/
 
-// a simple logarithmic -> linear mapping as a sort of gamma correction
-// maps from 0-255 to 0-255
-//static int log2lin( int n )  
-//{
-  //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
-//  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
-//}
 
 //
 static void hexdump(char *buffer, int len)
@@ -83,6 +88,7 @@ int     pos = 0;
     }
     return pos;
 }
+
 
 // --------------------------------------------------------------------------- 
 
@@ -309,12 +315,12 @@ int main(int argc, char** argv)
 
     if( numDevicesToUse == 0 ) numDevicesToUse = count; 
 
-    if( !dev_serial ) 
-        dev_serial = blink1_getCachedSerial( deviceIds[0] );
+    //if( !dev_serial ) 
+    //    dev_serial = blink1_getCachedSerial( deviceIds[0] );
 
     if( verbose ) { 
         printf("deviceId[0] = %d\n", deviceIds[0]);
-        printf("cached path = '%ls'\n", dev_serial);
+        //printf("cached path = '%ls'\n", dev_serial);
         for( int i=0; i< count; i++ ) { 
             printf("%d: serial: '%ls'\n", i,blink1_getCachedSerial(i) );
         }
@@ -378,8 +384,10 @@ int main(int argc, char** argv)
         uint8_t g = cmdbuf[1];
         uint8_t b = cmdbuf[2];
 
+        //if( bink_count > 1 ) { 
+        // }
+
         for( int i=0; i< numDevicesToUse; i++ ) {
-            dev_serial = blink1_getCachedSerial( deviceIds[i] );
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
             printf("set dev:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
