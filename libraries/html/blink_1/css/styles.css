@@ -283,7 +283,7 @@ display: block;
 	
 	#main-content #trigger-list {
 		position: relative;
-		height: 325px;
+		height: 305px;
         overflow:auto;
 		padding-right: 0px;
 	}
@@ -1421,27 +1421,28 @@ a#thingm-logo {
 	padding-top: 0px;
 	width: 78px;
 	height: 110px;
-/* 	background: white; */
 	float: left;
 	margin-right: 26px;
 	margin-bottom: 30px;
 	cursor: pointer;
 	background-position: -9px 26px;
 	background-repeat: no-repeat;
-/* 	border: 1px solid #fff; */
 	padding: 10px 20px;
 }
 
 	.demo-grid-square:hover {
-/* 		border: 1px solid #eee; */
 		box-shadow: inset 0px 0px 6px 2px #eee;
 		-moz-box-shadow: inset 0px 0px 6px 2px #eee;
 		-webkit-box-shadow: inset 0px 0px 6px 2px #eee;
-/* 		background-position: -9px -94px; */
 	}
+	
+		.dark .demo-grid-square:hover {
+			box-shadow: inset 0px 0px 6px 2px #aaa;
+			-moz-box-shadow: inset 0px 0px 6px 2px #aaa;
+			-webkit-box-shadow: inset 0px 0px 6px 2px #aaa;
+		}
 
 	.demo-grid-square.active {
-/* 		border: 1px solid #F7931E; */
 		box-shadow: inset 0px 0px 8px 2px orange;
 		-moz-box-shadow: inset 0px 0px 8px 2px orange;
 		-webkit-box-shadow: inset 0px 0px 8px 2px orange;
@@ -1479,7 +1480,7 @@ a#thingm-logo {
 }
 
 #virtual-blink-demo {
-	background-color: #ccc;
+	background-color: white;
 	width: 220px;
 	height: 157px; 
 }	
