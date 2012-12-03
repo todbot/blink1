@@ -407,57 +407,9 @@ $(document).ready(function(){
 	});
 	
 
-/*********************************
 
-	DEMO PAGE BEHAVIOR
-
-*********************************/
-
-	$('.demo-grid-square').click(function(e) {
-		var buttonName = $(this).attr('id').replace('demo-', '');
-		$('.demo-grid-square.active').removeClass('active');
-		$(this).addClass('active');
-		runDemoEffect(buttonName);
-		
-	});	
 	
-/* 	virtual-blink-demo */
-
-	function runDemoEffect(demoName) {
-/* 		console.log(demoName); */
-		switch(demoName) {
-			case 'light-on':
-				console.log('yay white');
-				$('#virtual-blink-demo').css('background-color', 'white');
-				$('#virtual-blink-overlay-demo').removeClass('dark');
-				$('#main-content').attr('class', '');									
-				break;
-			case 'light-off':
-				console.log('yay dark');
-				$('#virtual-blink-overlay-demo').addClass('dark');
-				$('#virtual-blink-demo').css('background-color', '#ccc');
-				$('#main-content').attr('class', 'dark');
-				break;
-			case 'rgb':
-				console.log('yay colors');
-				$('#virtual-blink-overlay-demo').removeClass('dark');
-				$('#virtual-blink-demo').css('background-color', '#f00');	
-				$('#main-content').attr('class', '');											
-				break;	
-			case 'mood':
-				console.log('yay mood lighting');
-				$('#virtual-blink-overlay-demo').removeClass('dark');
-				$('#virtual-blink-demo').css('background-color', 'magenta');
-				$('#main-content').attr('class', '');											
-				break;	
-			case 'color-picker':
-				$('#virtual-blink-overlay-demo').removeClass('dark');
-				$('#main-content').attr('class', '');									
-				console.log('yay color picker');
-				break;																
-		}
-	}
-
+	
 	
 /*********************************
 
@@ -476,8 +428,12 @@ $(document).ready(function(){
 		$('#container').attr('class', '');	
 		$('#container').addClass($('.active').attr('id').split('-')[0]);	
 	});
+	
+	
 		
 		
+
+
 		
 			
 /****************************************
@@ -868,6 +824,7 @@ $(document).ready(function(){
     }
 
 
+
 }); // document.ready
 
 
@@ -1084,3 +1041,8 @@ function hexToColor(hexstring) {
     var b = parseInt(hex.substring(4,6),16);
     return("rgb(" + r + ", "+g+", "+b+")");
 }
+
+
+
+	
+	
