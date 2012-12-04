@@ -641,8 +641,16 @@ display: block;
 			display: block;
 		}
 		
-		#configuration-popup.existing input.save-button.save-as-new:hover, #configuration-popup.existing input.save-button.save-as-new:active {
+		#configuration-popup.existing input.save-button.save-as-new:hover, #configuration-popup.existing input.save-button.save-as-new:active, #configuration-popup.demo input.save-button.save-as-new:hover, #configuration-popup.demo input.save-button.save-as-new:active {
 			background-color: #5CA1FF;
+		}
+		
+		#configuration-popup.demo .column-1, #configuration-popup.demo .column-2 {
+			visibility: hidden;
+		}
+		
+		#configuration-popup.demo #submit-options-buttons {
+			z-index: 1;
 		}
 		
 	#configuration-popup input.save-button, #configuration-popup  a.cancel {
@@ -690,6 +698,7 @@ display: block;
 	    	
     	#configuration-popup .column-3 {
     		width: 200px;
+    		z-index: 1;
     	}
     	
     #source-selector input[type="radio"] {
@@ -829,7 +838,7 @@ display: block;
 	position: absolute;
 	bottom: 18px;
 	left: -34px;
-	z-index: 98;
+/* 	z-index: 98; */
 }
 
 
@@ -840,7 +849,7 @@ display: block;
 	position: absolute;
 	bottom: 18px;
 	left: -34px;
-	z-index: 99;
+/* 	z-index: 99; */
 }
 
 #demo-blink {
@@ -952,6 +961,10 @@ display: block;
 			color: #999;
 		}
 		
+		#color-selector .color-swatch#color-1 {
+			width: 128px;
+		}
+		
 			#color-selector .color-swatch:hover {
 				color: #666;
 			}
@@ -1025,7 +1038,7 @@ display: block;
 
 #picker {
 	position: absolute;
-	left: 252px;
+	left: 130px;
 	top: 10px;
 	display: none;
 /* 	z-index: 12; */
@@ -1034,10 +1047,10 @@ display: block;
 	#picker #fade-out {
 		height: 492px;
 		width: 722px;
-		opacity: .7;
+		opacity: .8;
 		background: #fff;
 		position: absolute;
-		left: -192px;
+		left: -70px;
 		top: 40px;
 	}
 
@@ -1055,6 +1068,19 @@ display: block;
 			left: 211px;
 			top: 496px;
 		}
+			
+			#configuration-popup.demo ~ #picker a.cancel, #configuration-popup.demo ~ #picker a.done {
+				visibility: hidden;
+			}
+			
+		#configuration-popup input.test {	
+			display: none;
+		}
+			
+			#configuration-popup.demo input.test {
+				display: block;
+			}
+			
 		
 		.ie #picker a.cancel {
 			left: 202px;
@@ -1256,8 +1282,8 @@ div#gradient-circle-container #gradient-circle {
 	width: 36px;
 	height: 36px;
 	position: absolute;
-	top: 0;
-	left: 0;
+	top: -190px; 
+	left: 61px;
 	border: 1px solid #555;
 	cursor: pointer;
 }
