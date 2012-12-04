@@ -24,7 +24,6 @@ $('#gradient-circle').bind('mousedown', function(e){
 		else {
 		
 		}
-		
 	});
 	$('#color-zoom').bind('mousemove', function(e){
 		if(drawMe) {
@@ -47,7 +46,7 @@ $(document).bind('mouseup', function(e){
 function draw(e){
 
 	xPos=e.pageX-circle.offsetLeft-container.offsetLeft-picker.offsetLeft-n-12;
-	yPos=e.pageY-circle.offsetTop-container.offsetTop-n-8;
+	yPos=e.pageY-circle.offsetTop-container.offsetTop-n-18;
 	var angle=Math.atan2(yPos,xPos);
 	var t = xPos*xPos + yPos*yPos;
 	// if outside the circle, constrain x and y

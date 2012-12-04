@@ -88,6 +88,7 @@ $(document).ready(function(){
 	// add a new trigger (clear config panel and open)
 	$('#add-new-trigger').live('click', function(e) {
 		resetConfigurationPanel();
+		logSettings();
 		openConfigurationPanel();
 	});
 
@@ -430,7 +431,7 @@ $(document).ready(function(){
 	});
 	
 	
-		
+
 		
 
 
@@ -460,7 +461,11 @@ $(document).ready(function(){
 		// escape key
 		if (e.keyCode == 27) { 
 			if($('#picker').css('display') == 'block') {
-				$('#picker .cancel').click(); 		
+				if($('#configuration-popup').hasClass('demo')) {
+					$('.cancel').click(); 							
+				} else {
+					$('#picker .cancel').click(); 		
+				}			
 			} else {
 				$('.cancel').click(); 			
 			}
@@ -475,62 +480,6 @@ $(document).ready(function(){
 
 *************************************/		
 		
-		
-	/*-------------------------
-		RESET POPUP FUNCTIONS
-	--------------------------*/
-		
-	function resetNeutralColors() {
-		$('body').css('background-color', "#F0F0F0");
-		$('#virtual-blink').css('background-color', "#eee");
-		$('#color-zoom').css({'top': '-190px', 'left': '61px', 'background-color' : '#eee'});		
-		$('.color-swatch').removeClass('.light-off').css('background-image', 'none');
-		$('#color-display #rgb input').val('255');	
-	}
-	
-	function resetConfigurationPanel() {
-		// reset the color swatches, input selections and classes to neutral/unassigned status
-		$('.color-swatch').removeClass('active').removeClass('.light-off').css('background-image', 'none').html('0.5');
-		$('#color-zoom').css({'top': '-190px', 'left': '61px', 'background-color' : '#eee'});
-					
-		$('#rgb input').val('255');
-		$('#duration-setting').val('0.5');
-		
-		
-		$('#number-of-colors-group').val('1');
-		$('.color-swatch').removeClass('active').css('background-color', '#eee');
-		$('#virtual-blink').css('background-color', '#eee');
-		$('#color-1').addClass('active');
-		$('.color-swatch').css('width', 128);
-		
-		
-		$('body').css('background-color', "#F0F0F0");		
-		$('#configuration-popup input[type="text"] ').val('');
-		$('#popup-title input').val('[Click to Edit Title]');		
-		// uncheck all source radio buttons
-		$('#configuration-popup #source-selector input[type="radio"] ').removeAttr('checked');
-		// set default color setting to fade and repeat times to 1		
-		$('#configuration-popup #transition-options #fade').attr('checked', 'checked');		
-		$('#configuration-popup #repeat-options-group').val('1');		
-		// clear out all column-2 visible divs
-		$('#configuration-popup .column-2 div').hide();
-		
-		// turn all the dropdowns back to the top option
-		$('#configuration-popup select').each(function(e){
-			$(this).val($(this).children().first().val());
-		});
-		$('#configuration-popup').removeClass('existing').removeClass('new');
-		
-		// and finally, get the color swatches back in the right order
-		$('#color-selector .color-swatch').each(function(index){
-			$(this).attr('id', 'color-' + (index + 1));
-		});
-
-        console.log("setting ifttt-uid "+ blink1Settings.blink1_id);
-        $('#ifttt-uid').text(    blink1Settings.blink1_id );
-	}
-	
-
 	/*-------------------------
 		OPEN POPUP FUNCTIONS
 	--------------------------*/
@@ -550,6 +499,7 @@ $(document).ready(function(){
 		else {
 			// so we need to clear any residual values
 			resetConfigurationPanel();
+			logSettings();
 			$('#configuration-popup').addClass('new');	
 			$('#configuration-popup #submit-options-buttons input.save-as-new').val('save');		
 		}
@@ -557,12 +507,12 @@ $(document).ready(function(){
 		$('#gray-out').fadeIn('fast');
 		$('#configuration-popup').fadeIn('fast');
 
-	}
-
+	}		
 	
-		
+	
 	function applyConfigurationOptions(triggerObj, id, index) {
 		resetConfigurationPanel();
+		logSettings();
 
 		$('#configuration-popup').addClass('existing');
 		// fill in all the values from that object
@@ -594,127 +544,20 @@ $(document).ready(function(){
 	}
 
 	
-	/*--------------------
-		SWATCH FUNCTIONS
-	---------------------*/
-	
-	function resizeSwatches(numberOfColors, swatchSelector, containerWidth) {
-		var currentNum = $(swatchSelector + '.active').length;		
-		var numColors = numberOfColors;
-		var margin = 4;
-		var boxWidth = parseInt(  (containerWidth - ((margin + 2)*(numColors-1)) ) / numColors  );
-		$(swatchSelector).css('width', boxWidth);
-		
-		if(swatchSelector == '.color-swatch') {	
-			$(swatchSelector).css('margin-left', margin);
-			if(numColors > 1) {
-				$('#color-selector label[for="color-swatches"] ').html('State Colors');	
-			} else {
-				$('#color-selector label[for="color-swatches"] ').html('State Color');	
-			}
-		}
-	
-		if(numColors < currentNum) {
-			for(var i = numColors; i < currentNum; i++) {
-				$($(swatchSelector)[i]).removeClass('active').hide();
-			}
-		} else if(numColors > currentNum) {
-			for(var i = currentNum; i < numColors; i++) {
-				$($(swatchSelector)[i]).addClass('active').show();
-			}
-		}
-	}
-
-	
-	function recolorSwatches(colors) {
-		for(var i = 0; i < colors.length; i++) {
-			if(colors[i] == 'rgb(0, 0, 0)') {
-				$('#color-' + (i + 1)).css('background-color', '#999').addClass('light-off');
-			} else {
-				$('#color-' + (i + 1)).css('background-color', colors[i]).addClass('active').removeClass('light-off');
-			}		
-		}
-	}
-	
-	function reassignSwatchDurations(durations) {
-		for(var i = 0; i < durations.length; i++) {
-			$('#color-' + (i + 1)).html(durations[i]);
-		}
-	} 
-	
-	
-	function colorWhilePicking(color) {
-		$('.currently-picking').css('background-color', color);
-		$('#color-zoom').css('background-color', color);
-		$('body').css('background-color', color);
-		$('#virtual-blink').css('background-color', color);
-	}
 	
 	/*-------------------------
 		SAVE/CLOSE FUNCTIONS
 	--------------------------*/
 	
-	function compileSettings() {
-		// find number of active colors 
-		var numberOfSwatches = parseInt($('#number-of-colors-group').val());
-		var reorderedSwatches = [];
-		var newSettings = new Object();
-		
-		//collect all settings in one object
-		newSettings.colorSettings = new Object();
-		newSettings.colorSettings.colors = [];
-		newSettings.colorSettings.durations = [];		
-		newSettings.source = new Object();
-
-		
-		newSettings.colorSettings.behavior = $('#behavior-selector select').val();
-		newSettings.colorSettings.transition = $('#transition-options > input:checked').val();
-		newSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
-/* 		newSettings.colorSettings.duration = $('#duration-setting').val();		 */
-		newSettings.source.type = $('#source-selector .options-group > input:checked').val();	
-
-        if( newSettings.source.type == 'ifttt' )  {
-			newSettings.source.arg1 = $('#ifttt-rulename').val();
-        }
-        else if( newSettings.source.type == 'url' )  {
-			newSettings.source.arg1 = $('#web-page-url').val(); 
-			newSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
-			newSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
-        }
-        else if( newSettings.source.type == 'file' )  {
-			newSettings.source.arg1 = $('#file-path').val();
-        }
-        else if( newSettings.source.type == 'script' )  {
-			newSettings.source.arg1 = $('#script-path').val();
-        }
 
 
-		if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
-            var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
-			newSettings.title = 'Untitled'+ randid +'';
-		}
-		else {
-			newSettings.title = $('#popup-title > input').val();						
-		}			
-		
-		// serialize the sorted color choices into an array
-		var activeSwatches = $('#color-swatches-container').sortable('toArray');	
 
-		// create new array with color values and the correct order
-		for(var i = 0; i < numberOfSwatches; i++){
-			if($('#' + activeSwatches[i]).css('background-color') == 'rgb(153, 153, 153)') {
-				newSettings.colorSettings.colors.push('rgb(0, 0, 0)');
-				newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
-			} else {
-			    newSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
-				newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
-			}
-		}
-		return(newSettings);
-	}
 
 
 	function closeConfigurationPanel() {
+		if($('#picker').css('display') != 'none') {
+			$('#picker').fadeOut('fast');
+		}	
 		$('#gray-out').fadeOut('fast');
 		$('#configuration-popup').fadeOut('fast');
         backendLiveValueStop();
@@ -823,9 +666,202 @@ $(document).ready(function(){
             });
     }
 
+	function logSettings() {
+		console.log("setting ifttt-uid "+ blink1Settings.blink1_id);
+        $('#ifttt-uid').text(    blink1Settings.blink1_id );
+	}
 
 
 }); // document.ready
+
+
+/*************************************
+
+	PUBLIC FUNCTIONS: CONFIGURATION POPUP
+
+*************************************/	
+
+/*-------------------------
+		RESET POPUP FUNCTIONS
+	--------------------------*/
+		
+	function resetNeutralColors() {
+		$('body').css('background-color', "#F0F0F0");
+		$('#virtual-blink').css('background-color', "#eee");
+		$('#color-zoom').css({'top': '-190px', 'left': '61px', 'background-color' : '#eee'});		
+		$('.color-swatch').removeClass('.light-off').css('background-image', 'none');
+		$('#color-display #rgb input').val('255');	
+	}
+	
+	function resetConfigurationPanel() {
+		// reset the color swatches, input selections and classes to neutral/unassigned status
+		$('.color-swatch').removeClass('active').removeClass('.light-off').css('background-image', 'none').html('1.0');
+		$('#color-zoom').css({'top': '-190px', 'left': '61px', 'background-color' : '#eee'});
+					
+		$('#rgb input').val('255');
+		$('#duration-setting').val('1.0');
+		
+		if($('#configuration-popup.demo').hasClass('demo')) {
+		 	$('#configuration-popup.demo').removeClass('demo');
+		}
+		$('#number-of-colors-group').val('1');
+		$('.color-swatch').removeClass('active').css('background-color', '#eee');
+		$('#virtual-blink').css('background-color', '#eee');
+		$('#color-1').addClass('active');
+		$('.color-swatch').css('width', 128);
+		
+		
+		$('body').css('background-color', "#F0F0F0");		
+		$('#configuration-popup input[type="text"] ').val('');
+		$('#popup-title input').val('[Click to Edit Title]');		
+		// uncheck all source radio buttons
+		$('#configuration-popup #source-selector input[type="radio"] ').removeAttr('checked');
+		// set default color setting to fade and repeat times to 1		
+		$('#configuration-popup #transition-options #fade').attr('checked', 'checked');		
+		$('#configuration-popup #repeat-options-group').val('1');		
+		// clear out all column-2 visible divs
+		$('#configuration-popup .column-2 div').hide();
+		
+		// turn all the dropdowns back to the top option
+		$('#configuration-popup select').each(function(e){
+			$(this).val($(this).children().first().val());
+		});
+		$('#configuration-popup').removeClass('existing').removeClass('new');
+		
+		// and finally, get the color swatches back in the right order
+		$('#color-selector .color-swatch').each(function(index){
+			$(this).attr('id', 'color-' + (index + 1));
+		});
+
+   	}
+
+	
+	
+	
+		
+	
+	
+	/*--------------------
+		SWATCH FUNCTIONS
+	---------------------*/
+	
+	function resizeSwatches(numberOfColors, swatchSelector, containerWidth) {
+		var currentNum = $(swatchSelector + '.active').length;		
+		var numColors = numberOfColors;
+		var margin = 4;
+		var boxWidth = parseInt(  (containerWidth - ((margin + 2)*(numColors-1)) ) / numColors  );
+		$(swatchSelector).css('width', boxWidth);
+		
+		if(swatchSelector == '.color-swatch') {	
+			$(swatchSelector).css('margin-left', margin);
+			if(numColors > 1) {
+				$('#color-selector label[for="color-swatches"] ').html('State Colors');	
+			} else {
+				$('#color-selector label[for="color-swatches"] ').html('State Color');	
+			}
+		}
+	
+		if(numColors < currentNum) {
+			for(var i = numColors; i < currentNum; i++) {
+				$($(swatchSelector)[i]).removeClass('active').hide();
+			}
+		} else if(numColors > currentNum) {
+			for(var i = currentNum; i < numColors; i++) {
+				$($(swatchSelector)[i]).addClass('active').show();
+			}
+		}
+	}
+
+	
+	function recolorSwatches(colors) {
+		for(var i = 0; i < colors.length; i++) {
+			if(colors[i] == 'rgb(0, 0, 0)') {
+				$('#color-' + (i + 1)).css('background-color', '#999').addClass('light-off');
+			} else {
+				$('#color-' + (i + 1)).css('background-color', colors[i]).addClass('active').removeClass('light-off');
+			}		
+		}
+	}
+	
+	function reassignSwatchDurations(durations) {
+		for(var i = 0; i < durations.length; i++) {
+			$('#color-' + (i + 1)).html(durations[i]);
+		}
+	} 
+	
+	
+	function colorWhilePicking(color) {
+		$('.currently-picking').css('background-color', color);
+		$('#color-zoom').css('background-color', color);
+		$('body').css('background-color', color);
+		$('#virtual-blink').css('background-color', color);
+	}
+	
+
+/*--------------------
+	CLOSE POPUP FUNCTIONS
+---------------------*/
+
+function compileSettings() {
+	// find number of active colors 
+	var numberOfSwatches = parseInt($('#number-of-colors-group').val());
+	var reorderedSwatches = [];
+	var newSettings = new Object();
+	
+	//collect all settings in one object
+	newSettings.colorSettings = new Object();
+	newSettings.colorSettings.colors = [];
+	newSettings.colorSettings.durations = [];		
+	newSettings.source = new Object();
+
+	
+	newSettings.colorSettings.behavior = $('#behavior-selector select').val();
+	newSettings.colorSettings.transition = $('#transition-options > input:checked').val();
+	newSettings.colorSettings.repeatTimes = $('#repeat-options-group').val();
+/* 		newSettings.colorSettings.duration = $('#duration-setting').val();		 */
+	newSettings.source.type = $('#source-selector .options-group > input:checked').val();	
+
+    if( newSettings.source.type == 'ifttt' )  {
+		newSettings.source.arg1 = $('#ifttt-rulename').val();
+    }
+    else if( newSettings.source.type == 'url' )  {
+		newSettings.source.arg1 = $('#web-page-url').val(); 
+		newSettings.source.colorOption = $('.column-2.url #url-options-selector input[type="radio"]:checked').val();
+		newSettings.source.colorRetrieved = $('.column-2.url #url-options-selector #value-retrieved-text-box').val();
+    }
+    else if( newSettings.source.type == 'file' )  {
+		newSettings.source.arg1 = $('#file-path').val();
+    }
+    else if( newSettings.source.type == 'script' )  {
+		newSettings.source.arg1 = $('#script-path').val();
+    }
+
+
+	if($('#popup-title > input').val() == '' || $('#popup-title > input').val() == '[Click to Edit Title]') {
+        var randid = Math.floor((Math.random()*100)+1);  // if no title, make up a random one
+		newSettings.title = 'Untitled'+ randid +'';
+	}
+	else {
+		newSettings.title = $('#popup-title > input').val();						
+	}			
+	
+	// serialize the sorted color choices into an array
+	var activeSwatches = $('#color-swatches-container').sortable('toArray');	
+
+	// create new array with color values and the correct order
+	for(var i = 0; i < numberOfSwatches; i++){
+		if($('#' + activeSwatches[i]).css('background-color') == 'rgb(153, 153, 153)') {
+			newSettings.colorSettings.colors.push('rgb(0, 0, 0)');
+			newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());
+		} else {
+		    newSettings.colorSettings.colors.push($('#' + activeSwatches[i]).css('background-color'));
+			newSettings.colorSettings.durations.push($('#' + activeSwatches[i]).html());		
+		}
+	}
+	return(newSettings);
+}
+
+
 
 
 //

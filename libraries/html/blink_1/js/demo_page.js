@@ -32,6 +32,34 @@ $('.demo-grid-square').live('click', function(e) {
 
 });	
  
+$('#configuration-popup.demo input.test').live('click', function(e) {
+	var testSettings = compileSettings();
+	var colorsObj = testSettings.colorSettings.colors;
+/* 	var durationsObj = testSettings.colorSettings.durations; */
+	var testColors = [];
+	var testDurations = [];
+	console.log(testSettings);
+	for(var key in colorsObj) {
+		/* console.log(colorsObj[key].split('(')[1].split(',')[0]); */
+		var colorArray = [parseInt(colorsObj[key].split('(')[1].split(',')[0]), parseInt(colorsObj[key].split('(')[1].split(',')[1]), parseInt(colorsObj[key].split('(')[1].split(',')[2].split(')')[0])];	
+		testColors.push(colorArray);
+
+	}
+
+	$(testSettings.colorSettings.durations).each(function(index, value) {
+		testDurations.push(parseFloat(value));
+	});
+	console.log(testColors);
+	setCycleValues(testColors, testDurations);
+	playColorCycle();
+});
+
+
+/*
+ $('#configuration-popup.demo a.cancel').live('click', function(e) {
+ 	$('#configuration-popup.demo').removeClass('demo');
+ });
+*/
 
 /*************************************
 
@@ -42,6 +70,11 @@ $('.demo-grid-square').live('click', function(e) {
 function setCycleValues(colors, durations) {
 /* console.log(colors); */
 	numColors = colors.length;
+	if (numColors < 2) {
+		colors.push([0, 0, 0]);
+		durations.push(durations[0]);		
+		numColors = 2;
+	}
 	fadeColors = colors;
 	fadeDurations = durations;
 	durationInSeconds = durations[0];
@@ -50,10 +83,7 @@ function setCycleValues(colors, durations) {
 }
 
 function playColorCycle() {
-	
 	timeElapsed += intervalLength;
-	
-	
 	demoColor.r = (1-pct)*fadeColors[currIndex1][0] + pct*fadeColors[currIndex2][0];
 	demoColor.g = (1-pct)*fadeColors[currIndex1][1] + pct*fadeColors[currIndex2][1];
 	demoColor.b = (1-pct)*fadeColors[currIndex1][2] + pct*fadeColors[currIndex2][2];		
@@ -80,8 +110,10 @@ function playColorCycle() {
 		}
 	}
 	// calculate luminosity for potential use
+/*
 	var tempHsl = rgbToHsl(demoColor.r, demoColor.g, demoColor.b);
 	lum = tempHsl[2];
+*/
 	var tempColor = 'rgb(' + parseInt(demoColor.r) + ', ' + parseInt(demoColor.g) + ', ' + parseInt(demoColor.b)+ ')';
 	console.log(tempColor);
 	$('#virtual-blink-demo').css('background-color', tempColor );
@@ -124,10 +156,28 @@ function runDemoEffect(demoName) {
 			break;	
 		case 'color-picker':
 			$('#virtual-blink-overlay-demo').removeClass('dark');
-			$('#main-content').attr('class', '');									
+			$('#main-content').attr('class', '');	
+			openColorPanel();								
 			break;																
 	}
 }
 
 
-	
+/*-------------------------
+	OPEN POPUP FUNCTIONS
+--------------------------*/
+
+function openColorPanel() {
+	// hide configuration related columns to use as blank color picker
+/* 	resetConfigurationPanel(); */
+	$('#popup-title > input').val('Color Picker');
+	$('#configuration-popup').removeClass('existing').removeClass('new').addClass('demo');	
+	$('#configuration-popup #submit-options-buttons input.save-as-new').val('new trigger');		
+	// and finally, open the panel
+	$('#gray-out').fadeIn('fast');
+	$('#configuration-popup').fadeIn('fast');
+	$('#picker').fadeIn('fast');	
+}	
+
+
+

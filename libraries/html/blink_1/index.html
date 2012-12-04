@@ -80,7 +80,7 @@
 							<div class="demo-grid-square" id="demo-color-picker">color picker</div>
 							<div id="demo-blink">
 								<div id="virtual-blink-demo"></div>
-								<div id="virtual-blink-overlay-demo"></div>											
+								<div id="virtual-blink-overlay-demo"></div>									
 							</div>
 						</div>
 					</div>		
@@ -104,8 +104,10 @@
 								<input type="radio" name="source-options" value="script" id="source-option-script"><label for="source-option-script">Script</label>
 							</div> <!-- .options-group -->	
 						</div> <!-- #source-selector -->		
-						<div id="virtual-blink"></div>
-						<div id="virtual-blink-overlay"></div>						
+						<div id="virtual-blink-container">
+							<div id="virtual-blink"></div>
+							<div id="virtual-blink-overlay"></div>						
+						</div>
 					</div> <!-- .column-1 -->		
 					<div class="column column-2">
 						<div id="ifttt-options-selector" class="ifttt">
@@ -190,13 +192,13 @@ Add both rule name and your IFTTT ID <br />
 							<label for="color-swatches" title="drag and drop swatches to reorder">State Color</label>		
 							<div id="color-swatches" class="clearfix">
 								<ul id="color-swatches-container" class="clearfix">
-									<li id="color-1" class="color-swatch active" data-xPos="61px" data-yPos="-190px">0.5</li>
-									<li id="color-2" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
-									<li id="color-3" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
-									<li id="color-4" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
-									<li id="color-5" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
-									<li id="color-6" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>
-									<li id="color-7" class="color-swatch" data-xPos="61px" data-yPos="-190px">0.5</li>				
+									<li id="color-1" class="color-swatch active" data-xPos="61px" data-yPos="-190px">1.0</li>
+									<li id="color-2" class="color-swatch" data-xPos="61px" data-yPos="-190px">1.0</li>
+									<li id="color-3" class="color-swatch" data-xPos="61px" data-yPos="-190px">1.0</li>
+									<li id="color-4" class="color-swatch" data-xPos="61px" data-yPos="-190px">1.0</li>
+									<li id="color-5" class="color-swatch" data-xPos="61px" data-yPos="-190px">1.0</li>
+									<li id="color-6" class="color-swatch" data-xPos="61px" data-yPos="-190px">1.0</li>
+									<li id="color-7" class="color-swatch" data-xPos="61px" data-yPos="-190px">1.0</li>				
 								</ul>																	
 							</div>				
 							<div id="repeat-options">
@@ -225,6 +227,7 @@ Add both rule name and your IFTTT ID <br />
 						</div>	<!-- #color-selector -->
 					</div>	<!-- .column-3 -->		
 					<div id="submit-options-buttons">
+						<input type="button" value="test" class="save-button test" />
 						<input type="button" value="save changes" class="save-button save-changes" />
 						<input type="button" value="save as new" class="save-button save-as-new" />
 						<a class="cancel">Cancel</a>
@@ -262,7 +265,7 @@ Add both rule name and your IFTTT ID <br />
 					<div id="light-off" class="picker-swatch"><p>light off</p></div>					
 					<p id="rgb">R: <input type="number" max="255" min="0" id="r" value="255"/> G: <input type="number" max="255" min="0" id="g" value="255"/> B: <input type="number" max="255" min="0" id="b" value="255"/></p>
 					<input type="range" id="darkness-range" max="60" value="60" />
-					<label for="duration-setting">Seconds:</label> <input id="duration-setting" type="number" min="0" value="0.2" step="0.1"/>
+					<label for="duration-setting">Seconds:</label> <input id="duration-setting" type="number" min="0" value="1" step="0.5"/>
 				</div>
 
 				<!-- <p class="instructions">user slider to control darkness</p> -->
