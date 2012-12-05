@@ -1,0 +1,6 @@
+C:\Users\justin\Documents\GitHub\blink1\windows\MiniHttpd\bin\Debug\MiniHttpd.dll
+C:\Users\justin\Documents\GitHub\blink1\windows\MiniHttpd\bin\Debug\MiniHttpd.pdb
+C:\Users\justin\Documents\GitHub\blink1\windows\MiniHttpd\bin\Debug\MiniHttpdDocumentation.xml
+C:\Users\justin\Documents\GitHub\blink1\windows\MiniHttpd\obj\Debug\MiniHttpd.csprojResolveAssemblyReference.cache
+C:\Users\justin\Documents\GitHub\blink1\windows\MiniHttpd\obj\Debug\MiniHttpd.dll
+C:\Users\justin\Documents\GitHub\blink1\windows\MiniHttpd\obj\Debug\MiniHttpd.pdb
