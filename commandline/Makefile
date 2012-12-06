@@ -133,7 +133,7 @@ help:
 	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
-	@echo "make PKGOS=mac  ... zip up build, give it a name 'mac' "
+	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
 
