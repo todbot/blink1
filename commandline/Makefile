@@ -5,7 +5,6 @@
 # - "OS=macosx"  -- build Mac version on Mac OS X
 # - "OS=windows" -- build Windows version on Windows
 # - "OS=linux"   -- build Linux version on Linux
-# - "OS=wrt"     -- build OpenWrt/DD-WRT version on Linux
 # 
 # Architecture is usually detected automatically, so normally just type "make"
 #
@@ -51,23 +50,7 @@
 #      cd /lib; ln -s libusb-0.1.so.4 libusb.so
 #   - make
 #
-# OpenWrt / DD-WRT
-#   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
-#   - set WRT_SDK_HOME environment variable
-#   - type "make OS=wrt" to build
 #
-#
-# -----
-# Based off of obdev hid-data "hidtool":
-# Name: Makefile
-# Project: hid-data example
-# Author: Christian Starkjohann
-# Creation Date: 2008-04-11
-# Tabsize: 4
-# Copyright: (c) 2008 by OBJECTIVE DEVELOPMENT Software GmbH
-# License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
-# This Revision: $Id: Makefile 692 2008-11-07 15:07:40Z cs $
-
 
 # try to do some autodetecting
 UNAME := $(shell uname -s)
@@ -83,6 +66,11 @@ endif
 ifeq "$(UNAME)" "Linux"
 	OS=linux
 endif
+
+ifeq "$(PKGOS)" ""
+   PKGOS = $(OS)
+endif
+
 
 CC=gcc
 
@@ -110,8 +98,6 @@ endif
 
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
-#USBFLAGS =   `libusb-config --cflags`
-#USBLIBS  =   `libusb-config --libs`
 #LIBS   += `pkg-config libudev --libs` -lrt
 #CFLAGS += `pkg-config libusb-1.0 --cflags`
 #CFLAGS += -m32
@@ -144,9 +130,10 @@ msg:
 # symbolic targets:
 help:
 	@echo "This Makefile works on multiple archs. Use one of the following:"
-	@echo "make OS=windows ... build Windows  linkm-lib and linkm-tool" 
-	@echo "make OS=linux   ... build Linux    linkm-lib and linkm-tool" 
-	@echo "make OS=macosx  ... build Mac OS X linkm-lib and linkm-tool" 
+	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
+	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
+	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
+	@echo "make PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
 
@@ -162,6 +149,9 @@ blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
 	$(CC) -g $(OBJS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
 
+package: blink1-tool
+	@echo "Zipping up blink1-tool for '$(PKGOS)'"
+	zip ../builds/blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
 
 clean: 
 	rm -f $(OBJS) 
