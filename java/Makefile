@@ -79,12 +79,9 @@ endif
 ifeq "$(OS)" "linux"
 # ???
 LIBTARGET = lib$(TARGET).so  # for linux
-#LIBUSBA   = libusb-linux.a
-#USBFLAGS  = `libusb-config --cflags`
-#USBLIBS   = `libusb-config --libs`
 USBFLAGS += `pkg-config libusb-1.0 --cflags`
 USBLIBS  += `pkg-config libusb-1.0 --libs` 
-OS_CFLAGS  = $(USBFLAGS) -shared -I/usr/lib/jvm/java-6-openjdk/include -I/usr/lib/jvm/java-6-openjdk/include/linux
+OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/java-6-openjdk/include -I/usr/lib/jvm/java-6-openjdk/include/linux
 OS_LDFLAGS = $(USBLIBS) 
 endif
 
