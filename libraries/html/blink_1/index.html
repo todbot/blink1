@@ -83,6 +83,7 @@
 								<div id="virtual-blink-overlay-demo"></div>									
 							</div>
 						</div>
+							<!-- <input type="button" value="save as new trigger" class="save-button save-as-new" /> -->
 					</div>		
 				</div> <!-- #tabs -->
 			</div> <!-- #main-content -->
@@ -113,20 +114,17 @@
 						<div id="ifttt-options-selector" class="ifttt">
 							<h4>IFTTT Rule Name</h4>
 							<input id="ifttt-rulename" type="text" class="arg1" placeholder="enter rule name here" /> 
-                            <br />
-							<br /><span class="medium">Event received from:</span>
-                            <br /><span id="value-retrieved-text-box" class="light" style="margin:15px">[no source]</span>
-                            <br />
-                            <br /><span class="medium"> Rule names seen: </span>
-                            <br /><span id="value-retrieved-possibles" class="light" style="margin:15px">-none-</span>
-                            <br />
-                            <br /><span id="value-retrieved-timestamp" class="light">unknown minutes ago</span> 
+							<span class="medium">Event received from</span>
+                            <span id="value-retrieved-text-box" class="light value-box" >[no source]</span>
+                            <span class="medium"> Rule names seen </span>
+                            <span id="value-retrieved-possibles" class="light value-box" >-none-</span>
+                            <span id="value-retrieved-timestamp" class="light">unknown minutes ago</span>
                      <!--<span id="ifttt-event-received-icon" ><img align="center" src="images/icon-ok.png" /></span>-->
                      <!-- <input id="value-retrieved-text-box" type="text" value="color value retrieved"/>-->
-                             <p>
-Add both rule name and your IFTTT ID <br />
-<span style="font-weight:bold; color:#333;" id="ifttt-uid">DEADBEEF12341234</span><br />
- to your IFTTT.com recipe.
+                             <p class="description">
+Add rule name and IFTTT ID <br />
+<span style="font-weight:bold; color:#666; font-size: 16px; line-height: 20px;" id="ifttt-uid">DEADBEEF12341234</span><br />
+ to your IFTTT.com recipe!
 							</p>
 						</div>
 
@@ -228,10 +226,10 @@ Add both rule name and your IFTTT ID <br />
 					</div>	<!-- .column-3 -->		
 					<div id="submit-options-buttons">
 						<input type="button" value="test" class="save-button test" />
-						<input type="button" value="save changes" class="save-button save-changes" />
-						<input type="button" value="save as new" class="save-button save-as-new" />
-						<a class="cancel">Cancel</a>
-					</div>		
+						<input type="button" value="save" class="save-button save-changes" />
+						<input type="button" value="create new" class="save-button save-as-new" />
+					</div>	
+					<a class="cancel"></a>	
 				</div> <!-- .popup-content -->
 			</div> <!-- #configuration-popup -->
 			<div id="settings-popup" class="popup-window">
@@ -259,13 +257,16 @@ Add both rule name and your IFTTT ID <br />
 				<div id="gradient-circle-container">
 					<div id="gradient-circle"></div>	
 				</div>	
+				<div id="picker-swatches">
+<!-- 					<p>Swatches</p> -->
+					<div id="bright-white" class="picker-swatch"><p>white light</p></div>
+					<div id="light-off" class="picker-swatch"><p>light off</p></div>
+					<input id="duration-setting" type="number" min="0" value="1" step="0.5"/><label for="duration-setting">seconds</label>					
+				</div>
 				<div id="color-display">
 					<div id="color-zoom"></div>
-					<div id="bright-white" class="picker-swatch"><p>white light</p></div>
-					<div id="light-off" class="picker-swatch"><p>light off</p></div>					
 					<p id="rgb">R: <input type="number" max="255" min="0" id="r" value="255"/> G: <input type="number" max="255" min="0" id="g" value="255"/> B: <input type="number" max="255" min="0" id="b" value="255"/></p>
 					<input type="range" id="darkness-range" max="60" value="60" />
-					<label for="duration-setting">Seconds:</label> <input id="duration-setting" type="number" min="0" value="1" step="0.5"/>
 				</div>
 
 				<!-- <p class="instructions">user slider to control darkness</p> -->
