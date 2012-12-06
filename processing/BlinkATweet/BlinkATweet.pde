@@ -1,6 +1,8 @@
 /*
  * BlinkATweet -- Flash blink(1) when a particular tweet comes in
  *
+ * Note: This uses official ThingM OAuth credentials. 
+ *       You will want to change the credentials to your own.
  *
  * 2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
  * 
