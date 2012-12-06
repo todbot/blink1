@@ -46,7 +46,7 @@ $(document).bind('mouseup', function(e){
 function draw(e){
 
 	xPos=e.pageX-circle.offsetLeft-container.offsetLeft-picker.offsetLeft-n-12;
-	yPos=e.pageY-circle.offsetTop-container.offsetTop-n-18;
+	yPos=e.pageY-circle.offsetTop-container.offsetTop-n-8;
 	var angle=Math.atan2(yPos,xPos);
 	var t = xPos*xPos + yPos*yPos;
 	// if outside the circle, constrain x and y
@@ -59,9 +59,9 @@ function draw(e){
  	
 	if($('#picker').css('display') != 'none') {
      // FIXME: these are in colorWhilePicking()
-     $('body').css('background-color', color);
+     /* $('body').css('background-color', color); */
 		$('#color-zoom').css('left', xPos + 60);
-		$('#color-zoom').css('top', yPos - 194);	
+		$('#color-zoom').css('top', yPos - 188);	
 		$('#color-zoom').css('background-image', 'none');			
      $('#color-zoom').css('background-color', color);
      $('.currently-picking').css('background', color);
