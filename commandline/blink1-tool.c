@@ -1,5 +1,5 @@
 /* 
- * blinkmusb-tool.c --
+ * blink1-tool.c -- command-line tool for controlling blink(1) usb rgb leds
  *
  * 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
  *
@@ -108,6 +108,7 @@ static void usage(char *myName)
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
 "  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
 "  --readrgb <pos>             Read pattern RGB value at pos\n" 
+"  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --servertickle <on/off>     Turn on/off servertickle (uses -t msec) \n"
 "  --on                        Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
@@ -117,7 +118,7 @@ static void usage(char *myName)
 "  -g -nogamma                 Disable autogamma correction\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
 "//--serial <num>              Connect to blink(1) by its serial number \n"  
-"  -m ms,   --miilis=millis    Set millisecs for color fading (default 300)\n"
+"  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 "  -v, --verbose               verbose debugging msgs\n"

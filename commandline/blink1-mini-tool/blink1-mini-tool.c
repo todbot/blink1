@@ -15,8 +15,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>     // for memset() et al
-#include <stdint.h>
+#include <string.h>    // for memset() et al
+#include <stdint.h>    // for uint8_t
 #include <unistd.h>    // for usleep()
 
 #include "hiddata.h"
