@@ -49,11 +49,15 @@ $('#configuration-popup.demo input.test').live('click', function(e) {
 	$(testSettings.colorSettings.durations).each(function(index, value) {
 		testDurations.push(parseFloat(value));
 	});
-	console.log(testColors);
+	console.log(testDurations);
 	setCycleValues(testColors, testDurations);
 	playColorCycle();
 });
 
+$('#navbar li').live('click', function(e) {
+	$('#main-content').attr('style', '');
+	clearInterval(cycleInterval);
+});
 
 /*
  $('#configuration-popup.demo a.cancel').live('click', function(e) {
@@ -110,13 +114,12 @@ function playColorCycle() {
 		}
 	}
 	// calculate luminosity for potential use
-/*
 	var tempHsl = rgbToHsl(demoColor.r, demoColor.g, demoColor.b);
 	lum = tempHsl[2];
-*/
-	var tempColor = 'rgb(' + parseInt(demoColor.r) + ', ' + parseInt(demoColor.g) + ', ' + parseInt(demoColor.b)+ ')';
-	console.log(tempColor);
+	var tempColor = 'rgb(' + parseInt(demoColor.r) + ', ' + parseInt(demoColor.g) + ', ' + parseInt(demoColor.b) + ')';
+/* 	console.log(tempColor); */
 	$('#virtual-blink-demo').css('background-color', tempColor );
+	/* $('#main-content').css('background-color', 'rgba(220, 220, 220, ' + (1- lum - .1) + ')' ); */
 
 }	
 
@@ -133,13 +136,13 @@ function runDemoEffect(demoName) {
 			console.log('rgb(255, 255, 255)');
 			$('#virtual-blink-demo').css('background-color', 'white');
 			$('#virtual-blink-overlay-demo').removeClass('dark');
-			$('#main-content').attr('class', '');
+			$('#main-content').attr('class', '').attr('style', '');
 			break;
 		case 'light-off':
 			console.log('rgb(0, 0, 0)');
 			$('#virtual-blink-overlay-demo').addClass('dark');
-			$('#virtual-blink-demo').css('background-color', '#ccc');
-			$('#main-content').attr('class', 'dark');
+			$('#virtual-blink-demo').css('background-color', '#000');
+			$('#main-content').attr('style', '').attr('class', 'dark');
 			break;
 		case 'rgb':
 			$('#virtual-blink-overlay-demo').removeClass('dark');

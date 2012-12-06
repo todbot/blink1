@@ -37,7 +37,9 @@ $(document).ready(function(){
             });
         }
     });
-
+    
+    $('.color-swatch').css('width', 126);
+    $('#color-1').addClass('currently-picking');
 
 	$('#navbar li').live('click', function(e) {
 	// settings tab
@@ -311,18 +313,19 @@ $(document).ready(function(){
 		swatchId = $(this).attr('id');
 		// color the virtual blink and body background with the same color
 		$('#virtual-blink').css('background-color', currentColor);
-		$('body').css('background-color', currentColor);		
 		// move the color zoom/view to the place of the color
 		$('#color-zoom').css({'top': $currentSwatch.attr('data-yPos'), 'left' : $currentSwatch.attr('data-xPos'), 'background': currentColor});
 		// and bring on the color picker!
 		$('#picker').fadeIn('fast');
+		if(!$('#configuration-popup').hasClass('demo')) {
+			$('#configuration-popup').addClass('color-picker-open');
+		}
 		
 		// choose a preset value (white or off)
 		$('#picker .picker-swatch').live('click', function(e) {
 			$currentSwatch.css('background', $(e.target).css('background'));
 			$('#virtual-blink').css('background-color', $(e.target).css('background-color'));
 			$('#color-zoom').css('background', $(e.target).css('background')).css({'top': -190, 'left': 61});
-			$('body').css('background-color', $(e.target).css('background-color'));		
 			if($(e.target).attr('id') != "light-off") {
 				//console.log($(e.target).css('background-color'));
                 backendSetColor("rgb(255, 255, 255)");
@@ -368,7 +371,7 @@ $(document).ready(function(){
 			$currentSwatch.css('background-color', currentColor);
 			$('#virtual-blink').css('background-color', currentColor);
 			$('.currently-picking').removeClass('currently-picking');
-			$('body').css('background-color', "#F0F0F0");		
+			$('#configuration-popup').removeClass('color-picker-open');
 		});
 		
 		// save the current selection
@@ -376,7 +379,7 @@ $(document).ready(function(){
 			$('.currently-picking').html($('#duration-setting').val());
 			$('.currently-picking').removeClass('currently-picking');
 			$('#picker').fadeOut('fast');
-			$('body').css('background-color', "#F0F0F0");
+			$('#configuration-popup').removeClass('color-picker-open');			
 		});
 	
 	});
@@ -492,7 +495,7 @@ $(document).ready(function(){
 		if(existingObject) {
 			applyConfigurationOptions(existingObject, id, index);
 			$('#configuration-popup').addClass('existing');
-			$('#configuration-popup #submit-options-buttons input.save-as-new').val('save as new');	
+			$('#configuration-popup #submit-options-buttons input.save-as-new').val('create new');	
             backendLiveValueStart( existingObject );
 		} 
 		// otherwise, we're creating a new trigger
@@ -557,6 +560,7 @@ $(document).ready(function(){
 	function closeConfigurationPanel() {
 		if($('#picker').css('display') != 'none') {
 			$('#picker').fadeOut('fast');
+			$('#configuration-popup').removeClass('color-picker-open');
 		}	
 		$('#gray-out').fadeOut('fast');
 		$('#configuration-popup').fadeOut('fast');
@@ -686,7 +690,6 @@ $(document).ready(function(){
 	--------------------------*/
 		
 	function resetNeutralColors() {
-		$('body').css('background-color', "#F0F0F0");
 		$('#virtual-blink').css('background-color', "#eee");
 		$('#color-zoom').css({'top': '-190px', 'left': '61px', 'background-color' : '#eee'});		
 		$('.color-swatch').removeClass('.light-off').css('background-image', 'none');
@@ -711,7 +714,6 @@ $(document).ready(function(){
 		$('.color-swatch').css('width', 128);
 		
 		
-		$('body').css('background-color', "#F0F0F0");		
 		$('#configuration-popup input[type="text"] ').val('');
 		$('#popup-title input').val('[Click to Edit Title]');		
 		// uncheck all source radio buttons
@@ -793,7 +795,6 @@ $(document).ready(function(){
 	function colorWhilePicking(color) {
 		$('.currently-picking').css('background-color', color);
 		$('#color-zoom').css('background-color', color);
-		$('body').css('background-color', color);
 		$('#virtual-blink').css('background-color', color);
 	}
 	
