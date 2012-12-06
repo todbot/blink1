@@ -11,17 +11,7 @@
 
 #include <linux/types.h>
 #include <linux/input.h>
-#include <linux/hidraw.h>
 
-#ifndef HIDIOCSFEATURE
-#define HIDIOCSFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x06, len)
-#define HIDIOCGFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x07, len)
-#endif /* HIDIOCSFEATURE */
-
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 #include <stdio.h>
@@ -30,6 +20,8 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <ctype.h>
+
+#include "blink1raw-lib.h"
 
 static void
 usage(const char* hunh) {
@@ -65,11 +57,11 @@ usage(const char* hunh) {
 }
 
 static void
-color(int fd, char action, int R, int G, int B, int T, int step) {
+color(blink1_dev fd, char action, int R, int G, int B, int T, int step) {
   char buf[16];
   int rc;
 
-  if (-1 == fd) return;
+  if (blink1_error(fd)) return;
 
   memset(buf, 0, sizeof(buf));
 
@@ -95,16 +87,16 @@ color(int fd, char action, int R, int G, int B, int T, int step) {
   buf[7] = step;
   buf[8] = 0;
 
-  rc = ioctl(fd, HIDIOCSFEATURE(9), buf);
-  if (rc < 0) perror("HIDIOCSFEATURE");
+  if (blink1_write(fd, buf, 9) < 0)
+	  perror("write");
 }
 
 static void
-play(int fd, char action, int play, int step) {
+play(blink1_dev fd, char action, int play, int step) {
   char buf[16];
   int rc;
 
-  if (-1 == fd) return;
+  if (blink1_error(fd)) return;
 
   memset(buf, 0, sizeof(buf));
 
@@ -113,32 +105,13 @@ play(int fd, char action, int play, int step) {
   buf[2] = play;
   buf[3] = step;
 
-  rc = ioctl(fd, HIDIOCSFEATURE(9), buf);
-  if (rc < 0) perror("HIDIOCSFEATURE");
-}
-
-static int
-isblink1(int fd) {
-  int rc;
-  struct hidraw_devinfo info;
-  memset(&info, 0, sizeof(info));
-
-  rc = ioctl(fd, HIDIOCGRAWINFO, &info);
-  if (rc < 0) {
-    perror("HIDIOCGRAWINFO");
-    return 0;
-  }
-
-  if ((info.vendor == 0x27b8) && (info.product == 0x01ed)) {
-    return 1;
-  } else {
-    return 0;
-  }
+  if (blink1_write(fd, buf, 9) < 0)
+	  perror("write");
 }
 
 int
 main(int argc, char *argv[]) {
-  int fd = -1;
+  blink1_dev fd = -1;
 
   if (argc < 2) usage(NULL);
 
@@ -155,15 +128,10 @@ main(int argc, char *argv[]) {
 
     switch(**argv) {
     case '/': case '.':
-      rc = open(*argv, O_RDWR|O_NONBLOCK);
-      if (rc < 0) {
+      fd = blink1_openByPath(*argv);
+      if (blink1_error(fd)) {
         perror(*argv);
         continue;
-      }
-
-      if (isblink1(rc)) {
-        if (fd >= 0) close(fd);
-        fd = rc;
       }
 
       break;
@@ -210,6 +178,6 @@ main(int argc, char *argv[]) {
     }
   }
 
-  close(fd);
+  blink1_close(fd);
   return 0;
 }

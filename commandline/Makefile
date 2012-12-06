@@ -118,7 +118,7 @@ CFLAGS += -I./hidapi/hidapi -I./mongoose -g
 # only uncomment for debugging HIDAPI stuff
 #CFLAGS += -DDEBUG_PRINTF
 
-OBJS +=  blink1-lib.o 
+OBJS +=  blink1-lib.o blink1-common.o
 
 
 #all: msg blink1-tool blink1-server-simple
