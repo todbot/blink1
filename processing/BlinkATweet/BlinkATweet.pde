@@ -1,6 +1,8 @@
 /*
- * BlinkATweet
+ * BlinkATweet -- Flash blink(1) when a particular tweet comes in
  *
+ *
+ * 2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
  * 
  */
 

@@ -1,11 +1,14 @@
-//
-// Blink1ColorOrgan
-//
-// Just a heavily modified version of:
-// http://projects.mathfarmer.com/home/12-band-color-organ-rgb-led
-// 
-// Requires Minim: http://code.compartmental.net/tools/minim/
-//
+/*
+ * Blink1ColorOrgan --
+ *
+ * Just a heavily modified version of:
+ * http://projects.mathfarmer.com/home/12-band-color-organ-rgb-led
+ *
+ * Requires Minim: http://code.compartmental.net/tools/minim/
+ *
+ * 2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
+ *
+ */
 
 import thingm.blink1.*;
 
@@ -22,7 +25,7 @@ BeatDetect beat;
 FFT fftL;
 FFT fftR;
 int bufferSize = 2048;
-int minBeatPeriod = 300; // if new "beat" is < 300 ms after last beat, ignore it.
+int minBeatPeriod = 300; // if new "beat" is < 300 ms after last beat, ignore it
 
 int updateMillis = 50;
 
@@ -33,7 +36,7 @@ float thresTop = 0.9;
 float[] peaks;
 float[] peakSinceUpdate;
 float[] noiseLvl;
-float minPeak = 0.1; // Used to stop lights flickering at start due to inaudible noise
+float minPeak = 0.1; // Used to stop lights flickering at start due inaudible noise
 boolean trackNoiseLvl = false;
 float maxPeak = 0;
 int maxPeakIdx = 0;
@@ -60,7 +63,7 @@ int ledCount = 1;  //How many LEDs in your string.
 //}; // Standard HTML 24-bit RGB hex color notation.
 int[] colorIndex = { 
   0xff0000, 0xff0000, 0xff0000, 0xff0000, 
-  0x00ff00, 0x00ff00, 0x00ff00, 0x00ff00, 
+  0xff0000, 0x00ff00, 0x00ff00, 0x0000ff, 
   0x0000ff, 0x0000ff, 0x0000ff, 0x0000ff, 
 }; // Standard HTML 24-bit RGB hex color notation.
 int bandLimit = 12;
@@ -193,8 +196,8 @@ void colorOrgan() {
 
     // Set the colors from the amplitudes
     int rrr = (int)( ((col&0xff0000) >> 16)*amp );
-    int ggg = (int)( ((col&0x00ff00) >> 8)*amp  ); 
-    int bbb = (int)( ((col&0x0000ff)     )*amp  );
+    int ggg = (int)( ((col&0x00ff00) >>  8)*amp ); 
+    int bbb = (int)( ((col&0x0000ff)      )*amp );
     
     tr += rrr;
     tg += ggg;
@@ -203,7 +206,7 @@ void colorOrgan() {
   }
   println();
 
-  int div = bandNumber/3;
+  int div = bandNumber/3;  // such a hack
   tr /= div;
   tg /= div;
   tb /= div;

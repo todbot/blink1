@@ -1,6 +1,10 @@
-//
-//
-//
+/*
+ * Blink1ColorPicker -- Simple test of the blink(1) Processing library 
+ *
+ * 2012, Tod E. Kurt, http://thingm.com/ , http://todbot.com/blog/
+ *
+ */
+
 import thingm.blink1.*;
 
 Blink1 blink1;

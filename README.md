@@ -32,7 +32,7 @@ Some docs that might be useful
 - [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
 - [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 
-Also see the [wiki](https://github.com/todbot/blink1/wiki/_pages).
+Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages) 
 
 
 More Info about blink(1)
