@@ -12,8 +12,6 @@
 #include <linux/types.h>
 #include <linux/input.h>
 
-#include <unistd.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -56,59 +54,6 @@ usage(const char* hunh) {
   exit(1);
 }
 
-static void
-color(blink1_dev fd, char action, int R, int G, int B, int T, int step) {
-  char buf[16];
-  int rc;
-
-  if (blink1_error(fd)) return;
-
-  memset(buf, 0, sizeof(buf));
-
-  if (R<0) R=0;
-  if (G<0) G=0;
-  if (B<0) B=0;
-  if (T<0) T=0;
-  if (step<0) step=0;
-
-  if (R>255) R=255;
-  if (G>255) G=255;
-  if (B>255) B=255;
-  if (T>65535) T=65535;
-  if (step>15) step=15;
-  
-  buf[0] = 1;
-  buf[1] = action;
-  buf[2] = R; /* R */
-  buf[3] = G; /* G */
-  buf[4] = B; /* B */
-  buf[5] = (T >>8);    /* time/cs high */
-  buf[6] = (T & 0xff); /* time/cs low */
-  buf[7] = step;
-  buf[8] = 0;
-
-  if (blink1_write(fd, buf, 9) < 0)
-	  perror("write");
-}
-
-static void
-play(blink1_dev fd, char action, int play, int step) {
-  char buf[16];
-  int rc;
-
-  if (blink1_error(fd)) return;
-
-  memset(buf, 0, sizeof(buf));
-
-  buf[0] = 1;
-  buf[1] = action;
-  buf[2] = play;
-  buf[3] = step;
-
-  if (blink1_write(fd, buf, 9) < 0)
-	  perror("write");
-}
-
 int
 main(int argc, char *argv[]) {
   blink1_dev fd = -1;
@@ -116,12 +61,12 @@ main(int argc, char *argv[]) {
   if (argc < 2) usage(NULL);
 
   while(++argv, --argc) {
-    int rc = -1;
-    int step = 0;
-    int R = 0;
-    int G = 0;
-    int B = 0;
-    int T = 0;
+    int rc = 0;
+    uint8_t step = 0;
+    uint8_t R = 0;
+    uint8_t G = 0;
+    uint8_t B = 0;
+    uint16_t T = 0;
     char buf[16];
 
     memset(buf, 0, sizeof(buf));
@@ -133,49 +78,51 @@ main(int argc, char *argv[]) {
         perror(*argv);
         continue;
       }
+      rc = fd;
 
       break;
     case '=':
-      rc = sscanf(*argv, "=%d,%d,%d,%d", &R, &G, &B, &T);
+      rc = sscanf(*argv, "=%hhu,%hhu,%hhu,%hu", &R, &G, &B, &T);
       if (rc != 4) usage(*argv);
-      color(fd, 'c', R, G, B, T, 0);
+      rc = blink1_fadeToRGB(fd, T, R, G, B);
       break;
     case ':':
-      rc = sscanf(*argv, ":%d,%d,%d", &R, &G, &B);
+      rc = sscanf(*argv, ":%hhu,%hhu,%hhu", &R, &G, &B);
       if (rc != 3) usage(*argv);
-      color(fd, 'n', R, G, B, 0, 0);
+      rc = blink1_setRGB(fd, R, G, B);
       break;
     case '@':
-      rc = sscanf(*argv, "@%d:%d,%d,%d,%d", &step, &R, &G, &B, &T);
+      rc = sscanf(*argv, "@%hhu:%hhu,%hhu,%hhu,%hu", &step, &R, &G, &B, &T);
       if (rc != 5) usage(*argv);
       if ((step < 0) || step > 15) usage(*argv);
-      color(fd, 'P', R, G, B, T, step);
+      rc = blink1_writePatternLine(fd, T, R, G, B, step);
       break;
     case '_':
-      rc = sscanf(*argv, "_%d", &T);
-      if (rc == 1) color(fd, 'c', 0, 0, 0, T, 0);
-      else color(fd, 'n', 0, 0, 0, 0, 0);
+      rc = sscanf(*argv, "_%hu", &T);
+      if (rc == 1) rc = blink1_fadeToRGB(fd, T, 0, 0, 0);
+      else rc = blink1_setRGB(fd, 0, 0, 0);
       break;
     case '+':
-      rc = sscanf(*argv, "+%d", &step);
+      rc = sscanf(*argv, "+%hhu", &step);
       if (rc != 1) usage(*argv);
       if ((step < 0) || step > 15) usage(*argv);
-      play(fd, 'p', 1, step);
+      rc = blink1_play(fd, 1, step);
       break;
     case '-':
-      rc = sscanf(*argv, "-%d", &step);
+      rc = sscanf(*argv, "-%hhu", &step);
       if (rc != 1) step = 0;
       if ((step < 0) || step > 15) step = 0;
-      play(fd, 'p', 0, step);
+      rc = blink1_play(fd, 0, step);
       break;
     case '%':
-      for(step = 0; step < 16; ++step) {
-        color(fd, 'P', 0, 0, 0, 0, step);
-      }
+      for(step = 0; step < 16; ++step)
+        rc |= blink1_writePatternLine(fd, 0, 0, 0, 0, step);
       break;
     default:
       usage(*argv);
     }
+    if (rc < 0)
+      perror("blink1 command");
   }
 
   blink1_close(fd);
