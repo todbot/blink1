@@ -80,10 +80,11 @@ ifeq "$(OS)" "linux"
 # ???
 LIBTARGET = lib$(TARGET).so  # for linux
 #LIBUSBA   = libusb-linux.a
-USBFLAGS  = `libusb-config --cflags`
-USBLIBS   = `libusb-config --libs`
-#USBLIBS   =  -L$(LIBUSBA_DIR) -lusb-linux
-OS_CFLAGS  = $(USBFLAGS) -shared -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/java-6-sun/include/linux
+#USBFLAGS  = `libusb-config --cflags`
+#USBLIBS   = `libusb-config --libs`
+USBFLAGS += `pkg-config libusb-1.0 --cflags`
+USBLIBS  += `pkg-config libusb-1.0 --libs` 
+OS_CFLAGS  = $(USBFLAGS) -shared -I/usr/lib/jvm/java-6-openjdk/include -I/usr/lib/jvm/java-6-openjdk/include/linux
 OS_LDFLAGS = $(USBLIBS) 
 endif
 
@@ -157,10 +158,11 @@ processinglib: jar
 	cp -r ../libraries/* blink1/library
 	rm -rf blink1/library/html
 	cp -r ../processing/* blink1/examples
-	zip -r blink1.zip blink1
+	zip --exclude \*application.\* --exclude \*~ -r blink1.zip blink1
 	@echo
 	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
+
 
 javadoc:
 #	cd doc && javadoc -sourcepath .. thingm.blink1 && cd ..
