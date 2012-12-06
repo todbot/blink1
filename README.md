@@ -13,6 +13,7 @@ What is in this repo
 --------------------
 The following directories exist:
 
+- builds      -- Compiled versions of popular blink(1) apps
 - docs        -- documentation about APIs and such
 - commandline -- C library and command-line tools
 - java        -- Java / Processing library
@@ -21,7 +22,8 @@ The following directories exist:
 - mac         -- Mac OS X details and GUI control application
 - windows     -- Windows details and GUI control application
 - linux       -- Linux details 
-- hardware    -- all hardware-related info (firmware & schematic)
+- hardware    -- all hardware-related info (firmware & schematic & enclosure)
+
 
 Some docs that might be useful
 ------------------------------
@@ -30,7 +32,9 @@ Some docs that might be useful
 - [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
 - [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 
+Also see the [wiki](https://github.com/todbot/blink1/wiki/_pages).
 
-More Info
----------
+
+More Info about blink(1)
+------------------------
 http://blink1.thingm.com/
