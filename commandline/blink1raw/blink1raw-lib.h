@@ -14,6 +14,7 @@
 typedef int blink1_dev;
 #define blink1_error(X) ((X) < 0)
 
+blink1_dev blink1_open();
 blink1_dev blink1_openByPath(const char *path);
 void blink1_close(blink1_dev dev);
 

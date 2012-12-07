@@ -5,11 +5,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "blink1raw-lib.h"
 
-#define IDENT_VENDOR        0x27B8
-#define IDENT_PRODUCT       0x01ED
+#define HIDDEV_DIR	"/sys/bus/hid/devices"
+#define BLINK1_VENDOR	0x27B8
+#define BLINK1_PRODUCT	0x01ED
 
 #ifndef HIDIOCSFEATURE
 #define HIDIOCSFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x06, len)
@@ -23,14 +28,53 @@ int blink1_openByPath(const char *path)
 		return d;
 
 	struct hidraw_devinfo info = {};
-	if (ioctl(d, HIDIOCGRAWINFO, &info) < 0
-			|| info.vendor != IDENT_VENDOR
-			|| info.product != IDENT_PRODUCT)
+	if (ioctl(d, HIDIOCGRAWINFO, &info) < 0)
 	{
 		close(d);
 		return -1;
 	}
 
+	if (info.vendor != BLINK1_VENDOR || info.product != BLINK1_PRODUCT)
+	{
+		close(d);
+		errno = ENXIO;
+		return -1;
+	}
+
+	return d;
+}
+
+int blink1_open()
+{
+	char hidpath[512] = HIDDEV_DIR;
+	int d = -1;
+	struct dirent *ent;
+	DIR *hiddir = opendir(hidpath);
+
+	if (!hiddir)
+		return -1;
+	while (d < 0 && (ent = readdir(hiddir)))
+	{
+		unsigned short int vend, prod;
+		if (sscanf(ent->d_name, "%*4x:%4hx:%4hx.", &vend, &prod) != 2
+				|| vend != BLINK1_VENDOR || prod != BLINK1_PRODUCT)
+			continue;
+		snprintf(hidpath, sizeof(hidpath), "%s/%s/hidraw", HIDDEV_DIR, ent->d_name);
+		DIR *rawdir = opendir(hidpath);
+		if (!rawdir)
+			continue;
+		while (d < 0 && (ent = readdir(rawdir)))
+		{
+			if (strncmp(ent->d_name, "hidraw", 6))
+				continue;
+			snprintf(hidpath, sizeof(hidpath), "/dev/%s", ent->d_name);
+			d = blink1_openByPath(hidpath);
+		}
+		closedir(rawdir);
+	}
+	closedir(hiddir);
+	if (d < 0)
+		errno = ENODEV;
 	return d;
 }
 
