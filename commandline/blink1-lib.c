@@ -240,6 +240,7 @@ int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val)
 }
 
 // FIXME: this doesn't work
+// Probably because it's trying to pass a uint8_t** rather than a uint8_t *.  Prototype seems incorrect.
 int blink1_serialnumread(hid_device *dev, uint8_t** serialnum)
 {
     int rc = 0;
