@@ -37,7 +37,7 @@ usage(const char* hunh) {
     fprintf(stderr, "Can't understand %s\n", hunh);
   }
 
-  fprintf(stderr,
+  fputs(
           "Usage: blinkraw {arg, ...}\n"
           "  /dev/whatever  -- open device\n"
           "  ./whatever     -- open device\n"
@@ -46,11 +46,11 @@ usage(const char* hunh) {
           "  @step:R,G,B,t  -- set step\n"
           "  +step          -- start playing at step\n"
           "  -[step]        -- stop playing at step (default zero)\n"
-          "  %%              -- clear all steps\n"
+          "  %              -- clear all steps\n"
           "  _              -- turn off\n"
           "  _t             -- fade off\n"
           "\n"
-          "       step is on [0,15]\n",
+          "       step is on [0,15]\n"
           "       R, G, B are on [0, 255]\n"
           "       t is time in centiseconds\n"
           "\n"
@@ -58,7 +58,8 @@ usage(const char* hunh) {
           "    a valid blink(1) device, will become the new target.\n"
           "\n"
           "    Example:\n"
-          "    # blinkraw /dev/hidraw* % =255,0,0,100\n"
+          "    # blinkraw /dev/hidraw* % =255,0,0,100\n",
+	  stderr
           );
   exit(1);
 }
