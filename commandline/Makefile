@@ -23,7 +23,7 @@
 #
 # Linux (Ubuntu) 
 #   - apt-get install gcc-avr avr-libc   (to build firmware files)
-#   - apt-get install libusb-1.0
+#   - apt-get install libusb-1.0-0-dev
 #   - make
 #
 # Linux Ubuntu 32-bit cross-compile on 64-bit
