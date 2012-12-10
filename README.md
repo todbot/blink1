@@ -11,14 +11,31 @@ websites or typing any commands."
 
 Ready-to-run Applications to play with
 ---------------------------------------
-All of these can be found in the [builds directory](https://github.com/todbot/blink1/tree/master/builds).
-- Blink1Control -- Mac & Windows GUI for IFTTT and other blink(1) triggering
-- Blink1Test0 -- a very simple random-color app
-- Blink1ColorPicker -- select colors
-- Blink1ColorOrgan -- a sound-reactive program, music-to-color!
-- BlinkATweet -- Watch real-time Twitter stream for keywords, flash blink(1) when found
-- blink1-tool -- command-line program for use in your own scripts
 
+- Blink1Control  -- -- Mac & Windows GUI for IFTTT and other blink(1) triggering [not ready yet]
+
+- BlinkATweet -- Watch real-time Twitter stream for keywords, flash blink(1) when found.  Download:
+[(Mac OSX)](http://thingm.com/blink1/downloads/BlinkATweet-mac.zip) /
+[(Windows)](http://thingm.com/blink1/downloads/BlinkATweet-win.zip)
+
+- Blink1ColorOrgan -- Sound-reactive program, music-to-color, instant disco!  Download:
+[(Mac OSX)](http://thingm.com/blink1/downloads/Blink1ColorOrgan-mac.zip) /
+[(Windows)](http://thingm.com/blink1/downloads/Blink1ColorOrgan-win.zip)
+
+- Blink1ColorPicker -- Play with blink(1) select colors. Download:
+[(Mac OSX)](http://thingm.com/blink1/downloads/Blink1ColorPicker-mac.zip),
+[(Windows)](http://thingm.com/blink1/downloads/Blink1ColorPicker-win.zip)
+
+- Blink1Test0 -- a very simple random-color app. Download:
+[(Mac OSX)](http://thingm.com/blink1/downloads/Blink1Test0-mac.zip) /
+[(Windows)](http://thingm.com/blink1/downloads/Blink1Test0-win.zip)
+
+
+- blink1-tool -- command-line program for use in your own scripts. Download for: 
+[(Mac OSX)](http://thingm.com/blink1/downloads/blink1-tool-mac.zip) / 
+[(Windows)](http://thingm.com/blink1/downloads/blink1-tool-win.zip) /
+[(Linux64)](http://thingm.com/blink1/downloads/blink1-tool-linux_x86_64.zip) /
+[(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-linux_raspi.zip)
 
 What is in this repo
 --------------------
