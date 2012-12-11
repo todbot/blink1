@@ -109,7 +109,7 @@ static void usage(char *myName)
 "  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
 "  --readrgb <pos>             Read pattern RGB value at pos\n" 
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
-"  --servertickle <on/off>     Turn on/off servertickle (uses -t msec) \n"
+"  --servertickle <1/0>        Turn on/off servertickle (uses -t msec) \n"
 "  --on                        Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --list                      List connected blink(1) devices \n"
@@ -404,7 +404,7 @@ int main(int argc, char** argv)
         uint8_t play = cmdbuf[0];
         uint8_t pos = cmdbuf[1];
 
-        printf("%sing color pattern at pos %d\n", ((play)?"play":"stop"),pos);
+        printf("%s color pattern at pos %d\n", ((play)?"playing":"stopping"),pos);
         rc = blink1_play(dev, play, pos);
         if( rc == -1 ) { 
         }
