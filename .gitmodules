@@ -1,0 +1,3 @@
+[submodule "mac/Blink1Control/VDKQueue"]
+    path = mac/Blink1Control/VDKQueue
+    url = https://github.com/bdkjones/VDKQueue.git
