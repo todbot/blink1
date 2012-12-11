@@ -90,7 +90,7 @@ function playColorCycle() {
 	timeElapsed += intervalLength;
 	demoColor.r = (1-pct)*fadeColors[currIndex1][0] + pct*fadeColors[currIndex2][0];
 	demoColor.g = (1-pct)*fadeColors[currIndex1][1] + pct*fadeColors[currIndex2][1];
-	demoColor.b = (1-pct)*fadeColors[currIndex1][2] + pct*fadeColors[currIndex2][2];		
+	demoColor.b = (1-pct)*fadeColors[currIndex1][2] + pct*fadeColors[currIndex2][2];	
 	increment = 1/(fadeDurations[currIndex1]*(1000/intervalLength));
 	
 	pct += increment;
@@ -120,6 +120,7 @@ function playColorCycle() {
 /* 	console.log(tempColor); */
 	$('#virtual-blink-demo').css('background-color', tempColor );
 	/* $('#main-content').css('background-color', 'rgba(220, 220, 220, ' + (1- lum - .1) + ')' ); */
+    backendSetColor( tempColor );
 
 }	
 
@@ -133,16 +134,18 @@ function runDemoEffect(demoName) {
 	// cases for different buttons
 	switch(demoName) {
 		case 'light-on':
-			console.log('rgb(255, 255, 255)');
+			//console.log('rgb(255, 255, 255)');
 			$('#virtual-blink-demo').css('background-color', 'white');
 			$('#virtual-blink-overlay-demo').removeClass('dark');
 			$('#main-content').attr('class', '').attr('style', '');
+            backendSetColor( 'rgb(255, 255, 255)' );
 			break;
 		case 'light-off':
-			console.log('rgb(0, 0, 0)');
+			//console.log('rgb(0, 0, 0)');
 			$('#virtual-blink-overlay-demo').addClass('dark');
 			$('#virtual-blink-demo').css('background-color', '#000');
 			$('#main-content').attr('style', '').attr('class', 'dark');
+            backendSetColor( 'rgb(0, 0, 0)' );
 			break;
 		case 'rgb':
 			$('#virtual-blink-overlay-demo').removeClass('dark');
@@ -153,8 +156,19 @@ function runDemoEffect(demoName) {
 		case 'mood':
 			$('#virtual-blink-overlay-demo').removeClass('dark');
 			$('#virtual-blink-demo').css('background-color', 'magenta');
-			$('#main-content').attr('class', '');	
-			setCycleValues([[255, 84, 229],[35, 138, 255]],[1, 1]);
+			$('#main-content').attr('class', '');
+            var moodColors = [];
+            var moodDurations = [];
+            for(var i = 0; i < 20; i++){
+                var r = Math.floor( (Math.random()*255) );
+                var g = Math.floor( (Math.random()*255) );
+                var b = Math.floor( (Math.random()*255) );
+                moodColors.push( [r,g,b] );
+                moodDurations.push( 1 );
+            }
+            console.log(moodColors);
+            setCycleValues( moodColors, moodDurations );
+			//setCycleValues( [[255, 84, 229], [35, 138, 255]], [1, 1]);
 			playColorCycle();										
 			break;	
 		case 'color-picker':
