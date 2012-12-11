@@ -61,6 +61,7 @@
 		DE3C79DE1626787000104F4D /* Blink1Pattern.m in Sources */ = {isa = PBXBuildFile; fileRef = DE3C79DD1626787000104F4D /* Blink1Pattern.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE3C79E5162B799000104F4D /* blink1iconA1i.png in Resources */ = {isa = PBXBuildFile; fileRef = DE3C79E3162B798F00104F4D /* blink1iconA1i.png */; };
 		DE3C79E6162B799000104F4D /* blink1iconA1.png in Resources */ = {isa = PBXBuildFile; fileRef = DE3C79E4162B799000104F4D /* blink1iconA1.png */; };
+		DE44AF011676C987005422E0 /* icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = DE44AF001676C987005422E0 /* icon.icns */; };
 		DE9CDD7315F5A454003F584C /* html in Resources */ = {isa = PBXBuildFile; fileRef = DE9CDD7215F5A454003F584C /* html */; };
 		DE9CDD8215F86D36003F584C /* PLWeakCompatibilityStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDD8515F886C9003F584C /* Task.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD8415F886C9003F584C /* Task.m */; };
@@ -68,7 +69,6 @@
 		DE9CDD9215F9290E003F584C /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE9CDD9115F9290D003F584C /* QTKit.framework */; };
 		DE9CDD9515F92F5B003F584C /* AudioListener.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDD9415F92F5B003F584C /* AudioListener.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE9CDDCA15F9CA3C003F584C /* VDKQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = DE9CDDC815F9CA3C003F584C /* VDKQueue.m */; };
-		DEAFC809162D08E500EA0FAF /* blink1-icon-set.icns in Resources */ = {isa = PBXBuildFile; fileRef = DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */; };
 		DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB261630BA7C008B26D8 /* Blink1Input.m */; };
 		DEB0CB2A16328E29008B26D8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEB0CB2916328E29008B26D8 /* QuartzCore.framework */; };
 		DEB0CB2D16331C54008B26D8 /* Netuse.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB2C16331C54008B26D8 /* Netuse.m */; };
@@ -184,6 +184,7 @@
 		DE3C79DD1626787000104F4D /* Blink1Pattern.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Pattern.m; sourceTree = "<group>"; };
 		DE3C79E3162B798F00104F4D /* blink1iconA1i.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blink1iconA1i.png; path = Blink1Control/blink1iconA1i.png; sourceTree = "<group>"; };
 		DE3C79E4162B799000104F4D /* blink1iconA1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = blink1iconA1.png; path = Blink1Control/blink1iconA1.png; sourceTree = "<group>"; };
+		DE44AF001676C987005422E0 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
 		DE9CDD7215F5A454003F584C /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; name = html; path = ../../libraries/html; sourceTree = "<group>"; };
 		DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PLWeakCompatibilityStubs.m; path = PLWeakCompatibility/PLWeakCompatibility/PLWeakCompatibilityStubs.m; sourceTree = "<group>"; };
 		DE9CDD8315F886C9003F584C /* Task.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Task.h; path = PolKit/Task.h; sourceTree = "<group>"; };
@@ -195,7 +196,6 @@
 		DE9CDD9415F92F5B003F584C /* AudioListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioListener.m; sourceTree = "<group>"; };
 		DE9CDDC715F9CA3C003F584C /* VDKQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VDKQueue.h; sourceTree = "<group>"; };
 		DE9CDDC815F9CA3C003F584C /* VDKQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VDKQueue.m; sourceTree = "<group>"; };
-		DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "blink1-icon-set.icns"; sourceTree = "<group>"; };
 		DEB0CB251630BA7C008B26D8 /* Blink1Input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1Input.h; sourceTree = "<group>"; };
 		DEB0CB261630BA7C008B26D8 /* Blink1Input.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1Input.m; sourceTree = "<group>"; };
 		DEB0CB2916328E29008B26D8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -254,7 +254,7 @@
 		DE3097BC15F1CACB00B84287 = {
 			isa = PBXGroup;
 			children = (
-				DEAFC808162D08E500EA0FAF /* blink1-icon-set.icns */,
+				DE44AF001676C987005422E0 /* icon.icns */,
 				DE1D059E160BC69700B97943 /* Blink1Control */,
 				DE9CDD7115F5A428003F584C /* Resources */,
 				DE9CDD7915F862FE003F584C /* Utility Code */,
@@ -575,7 +575,7 @@
 				DE1D05B3160BC69700B97943 /* MainMenu.xib in Resources */,
 				DE3C79E5162B799000104F4D /* blink1iconA1i.png in Resources */,
 				DE3C79E6162B799000104F4D /* blink1iconA1.png in Resources */,
-				DEAFC809162D08E500EA0FAF /* blink1-icon-set.icns in Resources */,
+				DE44AF011676C987005422E0 /* icon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

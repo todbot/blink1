@@ -57,7 +57,7 @@ const NSInteger http_port_default = 8934;
 //FIXME: what to do with these URLs?
 // solution: put them in the prefs, duh
 NSString* confURLbase =  @"http://localhost:%ld/blink_1/";
-NSString* playURLbase =  @"http://localhost:%ld/bootstrap/blink1.html";
+NSString* playURLbase =  @"http://localhost:%ld/blink_1/#tab-2";
 
 NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
