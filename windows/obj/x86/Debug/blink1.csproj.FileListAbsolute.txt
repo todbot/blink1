@@ -9,3 +9,11 @@ C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.g.resources
 C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.exe
 C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.pdb
 C:\Users\justin\Documents\GitHub\blink1\windows\obj\x86\Debug\blink1.csprojResolveAssemblyReference.cache
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\Awesomium.Core.dll
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\awesomium.windows.controls.dll
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\Awesomium.Core.xml
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\awesomium.windows.controls.xml
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\en-US.dll
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\AwesomiumProcess
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\Awesomium.dll
+C:\Users\justin\Documents\GitHub\blink1\windows\bin\x86\Debug\icudt42.dll

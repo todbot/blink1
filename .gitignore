@@ -92,6 +92,7 @@ DocProject/Help/html
 
 # Click-Once directory
 publish
+obj
 
 # Others
 sql
