@@ -97,12 +97,12 @@ void setup() {
   //COLOR AND MESSAGE ARRAYS
   btColors[7] = color(0, 0, 0);
   btColors[6] = color(130, 10, 5);
-  btColors[5] = color(190, 90, 0);
-  btColors[4] = color(220, 120, 0);
-  btColors[3] = color(245, 149, 0);
+  btColors[5] = color(190, 80, 0);
+  btColors[4] = color(220, 115, 0);
+  btColors[3] = color(245, 140, 0);
   btColors[2] = color(255, 180, 2);
   btColors[1] = color(255, 209, 168);
-  btColors[0] = color(0, 0, 0);  
+  btColors[0] = color(0, 0, 0);   
 
   messages[0] = "";
   messages[1] = "steeping";
