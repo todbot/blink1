@@ -39,6 +39,7 @@ hid_device* dev;
 char  deviceIds[blink1_max_devices];
 
 char  cmdbuf[9]; 
+char rgbbuf[4];
 int verbose;
 
 
@@ -213,10 +214,12 @@ int main(int argc, char** argv)
         switch (opt) {
          case 0:             // deal with long opts that have no short opts
             switch(cmd) { 
+            case CMD_RGB:
+                hexread(rgbbuf, optarg, sizeof(rgbbuf));
+                break;
             case CMD_HIDWRITE:
             case CMD_EEREAD:
             case CMD_EEWRITE:
-            case CMD_RGB:
             case CMD_SAVERGB:
             case CMD_READRGB:
             case CMD_BLINK:
@@ -232,19 +235,19 @@ int main(int argc, char** argv)
                 strcpy(tmpstr, optarg);
                 break;
             case CMD_ON:
-                cmdbuf[0] = 255; cmdbuf[1] = 255; cmdbuf[2] = 255;
+                rgbbuf[0] = 255; rgbbuf[1] = 255; rgbbuf[2] = 255;
                 break;
             case CMD_OFF:
-                cmdbuf[0] = 0; cmdbuf[1] = 0; cmdbuf[2] = 0;
+                rgbbuf[0] = 0; rgbbuf[1] = 0; rgbbuf[2] = 0;
                 break;
             case CMD_RED:
-                cmdbuf[0] = 255;
+                rgbbuf[0] = 255;
                 break;
             case CMD_GRN:
-                cmdbuf[1] = 255; 
+                rgbbuf[1] = 255; 
                 break;
             case CMD_BLU:
-                cmdbuf[2] = 255; 
+                rgbbuf[2] = 255; 
                 break;
 
             } // switch(cmd)
@@ -381,9 +384,9 @@ int main(int argc, char** argv)
              cmd == CMD_RED || cmd == CMD_BLU || cmd ==CMD_GRN ) { 
         blink1_close(dev); // close global device, open as needed
         
-        uint8_t r = cmdbuf[0];
-        uint8_t g = cmdbuf[1];
-        uint8_t b = cmdbuf[2];
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
 
         //if( bink_count > 1 ) { 
         // }
@@ -458,9 +461,12 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_BLINK ) { 
         uint8_t n = cmdbuf[0]; 
-        uint8_t r = 255;
-        uint8_t g = 255;
-        uint8_t b = 255;
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
+        //r = (r==0) ? 255 : r;
+        //g = (g==0) ? 255 : g;
+        //b = (b==0) ? 255 : b;
         printf("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGB(dev, millis,r,g,b);
