@@ -100,33 +100,37 @@ static void usage(char *myName)
 "Usage: \n"
 "  %s <cmd> [options]\n"
 "where <cmd> is one of:\n"
-"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
-"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
-"  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
-"  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
-"  --blink <numtimes>          Blink on/off \n"
+"  --blink <numtimes>          Blink on/off (specify --rgb before to blink a color)\n"
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
+"  --on                        Turn blink(1) full-on white \n"
+"  --red                       Turn blink(1) off \n"
+"  --green                     Turn blink(1) red \n"
+"  --blue                      Turn blink(1) green \n"
+"  --off                       Turn blink(1) blue \n"
 "  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
 "  --readrgb <pos>             Read pattern RGB value at pos\n" 
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --servertickle <1/0>        Turn on/off servertickle (uses -t msec) \n"
-"  --on                        Turn blink(1) full-on white \n"
-"  --off                       Turn blink(1) off \n"
 "  --list                      List connected blink(1) devices \n"
+" Nerd functions: (not used normally) \n"
+"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
+"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
+"  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
+"  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
 "  --version                   Display blink(1) firmware version \n"
 "and [options] are: \n"
 "  -g -nogamma                 Disable autogamma correction\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
-"//--serial <num>              Connect to blink(1) by its serial number \n"  
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
 "Examples \n"
-"  blink1-tool -m 100 --rgb 255,0,255   # fade to #FF00FF in 0.1 seconds \n"
-"  blink1-tool -t 2000 --random 100     # every 2 seconds new random color\n"
+"  blink1-tool -m 100 --rgb 255,0,255    # fade to #FF00FF in 0.1 seconds \n"
+"  blink1-tool -t 2000 --random 100      # every 2 seconds new random color\n"
+"  blink1-tool --rgb 0xff,0,00 --blink 3 # blink red 3 times\n"
 "\n"
             ,myName);
 }
@@ -464,9 +468,9 @@ int main(int argc, char** argv)
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
-        //r = (r==0) ? 255 : r;
-        //g = (g==0) ? 255 : g;
-        //b = (b==0) ? 255 : b;
+        if( r == 0 && b == 0 && g == 0 ) {
+            r = g = b = 255;
+        }
         printf("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGB(dev, millis,r,g,b);
