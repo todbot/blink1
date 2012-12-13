@@ -67,6 +67,10 @@ ifeq "$(UNAME)" "Linux"
 	OS=linux
 endif
 
+ifeq "$(UNAME)" "FreeBSD"
+	OS=freebsd
+endif
+
 ifeq "$(PKGOS)" ""
    PKGOS = $(OS)
 endif
@@ -107,6 +111,17 @@ OBJS = ./hidapi/libusb/hid.o
 EXE=
 endif
 
+#################  Freebsd  ###################################################
+ifeq "$(OS)" "freebsd"
+#LIBS   += `pkg-config libudev --libs` -lrt
+#CFLAGS += `pkg-config libusb-1.0 --cflags`
+#CFLAGS += -m32
+#CFLAGS += `pkg-config libusb-1.0 --cflags`
+LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
+OBJS = ./hidapi/libusb/hid.o
+EXE=
+endif
+
 
 #####################  Common  ##############################################
 
@@ -132,6 +147,7 @@ help:
 	@echo "This Makefile works on multiple archs. Use one of the following:"
 	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
+	@echo "make OS=freebsd   ... build FreeBSD    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
