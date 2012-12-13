@@ -3,6 +3,7 @@
  * by Carlyn Maw / carlynorama
  *
  * Created December 12, 2012 
+ * Updated December 13, 2012
  *
  * Helps you time your tea. Example shows blink1 being updated from an
  * array at increments based on the passage of time. 
@@ -34,7 +35,7 @@ final int stageNum = 4;
 
 //TEA CUP CONSTANTS
 //cupSize/30 seconds  100 px
-final float cupSize = stageNum * 100;
+final float cupSize =  3*min(myHeight,myWidth)/4;
 final int cupColor = 180;
 final int teaAlpha = 255/(stageNum-1);
 final color teaColor = color(158, 80, 0, teaAlpha);
@@ -44,11 +45,14 @@ final float increment = ((cupSize) / (minSteepTime)) ;
 
 //GENERAL ARTBOARD (LAYOUT) CONSTANTS
 final int bgColor = 250;
-final float artCenterH = myHeight/2-40;
+final float artCenterH = myHeight/2-(myHeight*0.075);
 final float artCenterW = myWidth/2;
 final float cupBottom = artCenterH + cupSize/2;
-final float lineHeight = 12;
-final float lineSpacing = 2.3;
+final float textTop = cupBottom + cupSize*0.03;
+final float textMargin = myWidth/2; //- ((myWidth - cupSize)/2);
+final float lineHeight = min(myHeight/20, 14);
+
+final float lineSpacing = 1.2;
 
 //TEA TIME VARIABLES
 //when the user clicked, i.e. started the tea timer
@@ -80,11 +84,13 @@ Blink1 myBlink1;
 //----------------------------------------------------------------- START SETUP
 
 void setup() {
+  println(cupSize);
   //SETUP ENVIRONMENT
   size(int(myHeight), int(myWidth));
   frameRate(framerateVar);
   textFont(createFont("helvetica", lineHeight));
   textAlign(CENTER, TOP);
+  
 
   //DRAW BACKGROUND
   drawBackground();
@@ -102,7 +108,7 @@ void setup() {
   btColors[3] = color(245, 140, 0);
   btColors[2] = color(255, 180, 2);
   btColors[1] = color(255, 209, 168);
-  btColors[0] = color(0, 0, 0);   
+  btColors[0] = color(0, 0, 0);  
 
   messages[0] = "";
   messages[1] = "steeping";
@@ -139,7 +145,7 @@ void draw() {
     //I could have made this be a conditional display of the
     //text field itself but I wanted to keep the two text fields
     //together and that one has to be later. 
-    timeString = "";
+    timeString = "– : ––";
   }
 
 
@@ -187,8 +193,9 @@ void draw() {
   pcNum = cNum;
 
   //DRAW THE TEXT FIELDS
-  text(messages[mNum], artCenterW, (cupBottom + lineHeight));
-  text(timeString, artCenterW, (cupBottom + lineSpacing*lineHeight));
+
+  text(messages[mNum], textMargin, (textTop));
+  text(timeString, textMargin, (textTop + lineHeight*lineSpacing));
 
   //DRAW IN THE "BACKGROUND" (i.e. the teacup)
   drawBackground();
@@ -265,9 +272,9 @@ void drawBackground() {
 //UNPACKS A COLOR OBJECT AND SENDS IT TO BLINK1
 void sendColor2Blink1(color y) {
   //sharp
-  //myBlink1.setRGB(int(red(y)), int(green(y)), int(blue(y)));
+  myBlink1.setRGB(int(red(y)), int(green(y)), int(blue(y)));
   //fade
-  myBlink1.fadeToRGB(mps, int(red(y)), int(green(y)), int(blue(y)));
+  //myBlink1.fadeToRGB(mps, int(red(y)), int(green(y)), int(blue(y)));
 }
 
 //--------------------------------------------------------- makeTimeDisplayString
