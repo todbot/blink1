@@ -145,7 +145,7 @@ void draw() {
     //I could have made this be a conditional display of the
     //text field itself but I wanted to keep the two text fields
     //together and that one has to be later. 
-    timeString = "– : ––";
+    timeString = "";
   }
 
 
