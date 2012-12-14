@@ -28,7 +28,7 @@
 					<ul id="navbar">
 						<li id="home-tab" class="tab active"><a href="#tab-1">Home</a></li>
 						<li id="demo-tab" class="tab"><a href="#tab-2">Demo</a></li>					
-						<li id="help-tab" class="tab"><a href="ajax/help.html">Help</a></li>	
+						<li id="help-tab" class="tab"><a href="help.html">Help</a></li>
 						<li id="settings-tab" class="tab"><a>&nbsp;</a></li>
 					</ul> <!-- #navbar -->	
 					<div id="tab-1">
@@ -114,11 +114,12 @@
 						<div id="ifttt-options-selector" class="ifttt">
 							<h4>IFTTT Rule Name</h4>
 							<input id="ifttt-rulename" type="text" class="arg1" placeholder="enter rule name here" /> 
+                            <span id="value-retrieved-timestamp" class="light">last seen n/a minutes ago</span><br/>
+							<span class="light">from source:</span>
+                            <span class="light" id="value-retrieved-text-box">[no source]</span>
                             <span class="medium"> Previous rule names seen </span>
-                            <span id="value-retrieved-possibles" class="light value-box" >-none-</span>
-                            <span id="value-retrieved-timestamp" class="light">unknown minutes ago</span>
-							<span class="medium">Event source</span>
-                            <span id="value-retrieved-text-box" class="light value-box" >[no source]</span>
+                            <span id="value-retrieved-possibles" class="light" >-none-</span>
+
                      <!--<span id="ifttt-event-received-icon" ><img align="center" src="images/icon-ok.png" /></span>-->
                      <!-- <input id="value-retrieved-text-box" type="text" value="color value retrieved"/>-->
                              <p class="description">
