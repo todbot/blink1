@@ -43,7 +43,12 @@
     return serialnums;
 }
 
+// Create a blink1_id (aka "IFTTT Key" and other names)
+// If no blink1 device is present, create a fake blink1_id with zerod serial
 //
+// How about:
+//- (NSString*) regenerateBlink1Id:(NSString*)lastId
+// and we check to see if lastId contained a non-zero serial?
 - (NSString*) regenerateBlink1Id
 {
     if( host_id == nil ) {
