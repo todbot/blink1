@@ -41,6 +41,7 @@
 @synthesize window = _window;
 @synthesize webView = _webView;
 @synthesize blink1status = _blink1status;
+@synthesize blink1id     = _blink1id;
 @synthesize blink1serial = _blink1serial;
 
 @synthesize statusItem;
@@ -436,6 +437,9 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
 
 //
+// to dump current saved prefs, do:
+// plutil -convert xml1  ~/Library/Preferences/com.thingm.Blink1Control.plist -o -
+//
 - (void) loadPrefs
 {
     inputs   = [[NSMutableDictionary alloc] init];
@@ -464,11 +468,9 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     }
 
     [blink1 setHost_id:host_id_prefs]; // accepts nil
-    if( blink1_id_prefs != nil ) {
-        [blink1 setBlink1_id:blink1_id_prefs];
-    } else {
-        [blink1 regenerateBlink1Id];
-    }
+    
+    [blink1 regenerateBlink1Id];
+    
     DLog(@"blink1_id:%@",[blink1 blink1_id]);
     
     //if( !first_run ) {
@@ -482,9 +484,9 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     [prefs setObject:inputs forKey:@"inputs"];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:patterns];
     [prefs setObject:data forKey:@"patterns"];
-    [prefs setObject:[blink1 blink1_id] forKey:@"blink1_id"];
-    [prefs setObject:[blink1 host_id]   forKey:@"host_id"];
-    [prefs setInteger:http_port         forKey:@"http_port"];
+    [prefs setObject:[blink1 blink1_id]     forKey:@"blink1_id"];
+    [prefs setObject:[blink1 host_id]       forKey:@"host_id"];
+    [prefs setInteger:http_port             forKey:@"http_port"];
     [prefs synchronize];
 }
 
@@ -1126,11 +1128,14 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 {
     if( [[blink1 serialnums] count] ) {
         NSString* serstr = [[blink1 serialnums] objectAtIndex:0];
-        [_blink1serial setTitle: [NSString stringWithFormat:@"serial:%@",serstr]];
+        [_blink1serial setTitle: [NSString stringWithFormat:@"serial:%@",serstr]]; // FIXME: just use [blink1 serial]?
+        [_blink1id     setTitle: [NSString stringWithFormat:@"key: %@",[blink1 blink1_id]]];
         [_blink1status setTitle: @"blink(1) found"];
     }
     else {
         [_blink1serial setTitle: @"serial:-none-"];
+        [_blink1id     setTitle: [blink1 blink1_id]];
+        [_blink1id     setTitle: [NSString stringWithFormat:@"key: %@",[blink1 blink1_id]]];
         [_blink1status setTitle: @"blink(1) not found"];
     }
 }
@@ -1194,7 +1199,6 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     //[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(showMenu) userInfo:nil repeats:NO];
     //[NSApp activateIgnoringOtherApps:YES];
     [statusItem popUpStatusItemMenu:statusMenu];
-    
 }
 
 // GUI action: quit the app
@@ -1209,6 +1213,9 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
 
 @end
+
+
+
 
 /*
 

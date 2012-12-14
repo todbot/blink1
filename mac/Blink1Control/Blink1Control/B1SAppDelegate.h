@@ -57,6 +57,7 @@
 @property (strong) IBOutlet WebView *webView;
 
 @property (assign) IBOutlet NSMenuItem *blink1status;
+@property (assign) IBOutlet NSMenuItem *blink1id;
 @property (assign) IBOutlet NSMenuItem *blink1serial;
 
 @property (assign) IBOutlet NSMenu *statusMenu;
