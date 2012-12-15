@@ -42,6 +42,7 @@ $(document).ready(function(){
     $('#color-1').addClass('currently-picking');
 
 	$('#navbar li').live('click', function(e) {
+$("#tabs #navbar a").removeData("cache.tabs");
 	// settings tab
 		if($(this).attr('id') == 'settings-tab') {
 			// if settings tab already active, close it
@@ -620,6 +621,8 @@ $(document).ready(function(){
                 } else if( type == 'file' ) {
                     $('.file #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'ifttt' ) {
+                    //console.log("ifttt result");
+                    //console.log(result);
                     var possibleVals = result.input.possibleVals;
                     var lastVal = result.input.lastVal;
                     console.log("lastVal: "+ lastVal);
