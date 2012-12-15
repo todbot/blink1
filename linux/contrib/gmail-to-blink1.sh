@@ -242,7 +242,7 @@ while true; do
         # DELAY_MAIL_CHECK once we complete the loop
         #
         # We could try to get fancy or go with some date/time math, but
-        # we're going to just stick with a horseshoes and hand grenages
+        # we're going to just stick with a horseshoes and hand grenades
         # method here... close will do the job!
         N=$((${DELAY_MAIL_CHECK}/2/${DELAY_BLINK}))
 
