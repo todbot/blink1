@@ -1647,6 +1647,11 @@ box-shadow: inset 0px 0px 10px 1px #222;
 
 }
 
+#tabs {
+    height: 100%;
+    overflow-y: auto;
+}
+    
 	
 /*************************************************
 
