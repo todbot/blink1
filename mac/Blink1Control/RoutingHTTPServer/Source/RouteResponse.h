@@ -5,7 +5,7 @@
 
 @interface RouteResponse : NSObject
 
-@property (nonatomic, weak, readonly) HTTPConnection *connection;
+@property (nonatomic, assign, readonly) HTTPConnection *connection;
 @property (nonatomic, readonly) NSDictionary *headers;
 @property (nonatomic, strong) NSObject<HTTPResponse> *response;
 @property (nonatomic, readonly) NSObject<HTTPResponse> *proxiedResponse;

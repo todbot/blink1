@@ -4,7 +4,7 @@
 #import "HTTPResponseProxy.h"
 
 @implementation RoutingConnection {
-	__weak RoutingHTTPServer *http;
+	__unsafe_unretained RoutingHTTPServer *http;
 	NSDictionary *headers;
 }
 
