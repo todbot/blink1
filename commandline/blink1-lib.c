@@ -46,13 +46,26 @@ static int blink1_cached_count = 0;
 static wchar_t blink1_cached_serials[pathmax][serialmax];
 
 static int blink1_enable_degamma = 1;
+static int blink1_initialized = 0;
+
+static void blink1_exit (void) {
+  hid_exit();
+}
+
+static void blink1_init (void) {
+  if (!blink1_initialized) {
+    atexit (blink1_exit);
+    blink1_initialized = 1;
+  }
+}
 
 //----------------------------------------------------------------------------
 
 //
 int blink1_enumerate(void)
 {
-    return blink1_enumerateByVidPid( blink1_vid(), blink1_pid() );
+  blink1_init ();
+  return blink1_enumerateByVidPid( blink1_vid(), blink1_pid() );
 }
 
 // get all matching devices by VID/PID pair
@@ -61,6 +74,7 @@ int blink1_enumerateByVidPid(int vid, int pid)
     struct hid_device_info *devs, *cur_dev;
 
     int p = 0;
+    blink1_init ();
     devs = hid_enumerate(vid, pid);
     cur_dev = devs;    
     while (cur_dev) {
@@ -103,6 +117,7 @@ const wchar_t* blink1_getCachedSerial(int i)
 //
 hid_device* blink1_openByPath(const char* path)
 {
+    blink1_init ();
     if( path == NULL || strlen(path) == 0 ) return NULL;
     hid_device* handle = hid_open_path( path ); 
     return handle;
@@ -111,6 +126,7 @@ hid_device* blink1_openByPath(const char* path)
 //
 hid_device* blink1_openBySerial(const wchar_t* serial)
 {
+    blink1_init ();
     if( serial == NULL || wcslen(serial) == 0 ) return NULL;
     int vid = blink1_vid();
     int pid = blink1_pid();
@@ -123,6 +139,7 @@ hid_device* blink1_openBySerial(const wchar_t* serial)
 //
 hid_device* blink1_openById( int i ) 
 { 
+    blink1_init ();
     //return blink1_openByPath( blink1_getCachedPath(i) );
     return blink1_openBySerial( blink1_getCachedSerial(i) );
 }
@@ -133,6 +150,7 @@ hid_device* blink1_open(void)
     int vid = blink1_vid();
     int pid = blink1_pid();
 
+    blink1_init ();
     hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
 
     return handle;
@@ -145,7 +163,6 @@ void blink1_close( hid_device* dev )
     if( dev != NULL ) 
         hid_close(dev);
     dev = NULL;
-    hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
 }
 
 //
