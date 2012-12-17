@@ -153,16 +153,14 @@ function show_help
 
 
 ##signal trapping
-CTRL_c()
-## run if user hits CTRL-c
+cleanup()
 {
     # Turn the Blink(1) off
-    led_off
-    rm --force $GMAILOUT
+    $TOOL --off > /dev/null 2>&1
     exit $?
 }
-# trap keyboard interrupt (CTRL-c)
-trap CTRL_c SIGINT
+# trap keyboard interrupt (CTRL-c) or a SIGTERM (kill)
+trap cleanup SIGINT SIGTERM
 
 
 ################
