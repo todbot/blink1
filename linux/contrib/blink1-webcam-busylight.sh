@@ -63,16 +63,16 @@ BUSY=0
 # Start out as being available/free
 $TOOL --rgb $COLOR_FREE > /dev/null 2>&1
 
-#signal trapping
-CTRL_c()
-# run if user hits CTRL-c
+##signal trapping
+cleanup()
 {
     # Turn the Blink(1) off
     $TOOL --off > /dev/null 2>&1
     exit $?
 }
-# trap keyboard interrupt (CTRL-c)
-trap CTRL_c SIGINT
+# trap keyboard interrupt (CTRL-c) or a SIGTERM (kill)
+trap cleanup SIGINT SIGTERM
+
 
 #infinite loop, stop with CTRL-c
 while true; do
