@@ -12,6 +12,8 @@ namespace blink1
         private static System.Threading.AutoResetEvent listenForNextRequest = new System.Threading.AutoResetEvent(false);
 
         public HttpListener _httpListener = new HttpListener();
+        blinkHttpInterface bhi = new blinkHttpInterface();
+        blinkServer bs = new blinkServer();
         public bool disposeTime = false;
         public Window1()
         {
@@ -27,6 +29,7 @@ namespace blink1
                 //webView.LoadURL("/html/index.html");
                 // Enable "minimize to tray" behavior for this Window
                 MinimizeToTray.Enable(this);
+                BrowserObject.Source = new Uri("http://localhost:8080/html/blink_1/index.html");
             }
             catch (Exception e)
             {

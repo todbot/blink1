@@ -111,7 +111,7 @@ namespace MiniHttpd
 			CheckExistence(file.Name);
 
 			if(file.Parent != this)
-				throw new DirectoryException("The file's must be the directory to which it is added.");
+				throw new DirectoryException("The file's parent must be the directory to which it is added.");
 
 			files.Add(file.Name, file);
 		}

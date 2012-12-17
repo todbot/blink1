@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("blink1-tool.exe")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("blink1.dll")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/ajax/demo.html")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/ajax/help.html")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/css/jquery-ui-1.9.0.custom.min.css")]
@@ -15,9 +17,11 @@
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/index.html")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/blink_1.js")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/color-picker.js")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/demo_page.js")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/jquery-1.8.2.js")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/jquery-ui-1.9.0.js")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/modernizr.js")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/blink_1/js/rgb_hsv.js")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("html/index.html")]
 
 
