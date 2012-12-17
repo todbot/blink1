@@ -19,4 +19,15 @@ Checks your Gmail account and blinks the Blink(1) with a definable flash of colo
 
 Additionally, adds a quick initial burst of a second color (default: red) before the regular flash to indicate when you have more unread mail than a definable amount (default: 10 but can also be disabled)
 
+load-to-blink1.sh
+------------------
+Automatically change a Blink(1)'s color based on system load.
+
+Sets the Blink(1) to user definable colors based on user definable thresholds for loads 1, 5 and 15. In order of precedence, the defaults (which you probably want to change to something appropriate for the system) are:
+
+* Below thresholds (Blue)
+* >2.00 Load 15 (Red)
+* >3.00 Load 5 (Orange)
+* >4.00 Load 1 (Yellow)
+
 -eof-
