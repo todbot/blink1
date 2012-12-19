@@ -115,7 +115,7 @@ CFLAGS += `pkg-config libusb-1.0 --cflags`
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl -static
 OBJS = ./hidapi/libusb/hid.o
 
-LIBFLAGS = -o $(LIBTARGET) $(LIBS)
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 
 EXE=
 endif
