@@ -1,5 +1,7 @@
 Blink1Lib -- .NET C# library for blink(1) USB RGB LED
 =====================================================
+(part of the blink(1) project: https://github.com/todbot/blink1/ )
+
 
 This is a very simple wrapper of the blink1-lib C library.
 Thus, it requires a blink1-lib.dll (included in the Blink1Lib project).
