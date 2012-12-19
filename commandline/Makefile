@@ -125,7 +125,7 @@ ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
 LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
 OBJS = ./hidapi/libusb/hid.o
-LIBFLAGS = -o $(LIBTARGET) $(LIBS)
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 endif
 
