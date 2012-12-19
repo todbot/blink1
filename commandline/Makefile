@@ -95,14 +95,11 @@ endif
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
 LIBTARGET = blink1-lib.dll
-#CFLAGS += 
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 LIBS +=  -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
 OBJS = ./hidapi/windows/hid.o
 
-#LIBFLAGS = -shared $(LIBS)
-#LIBFLAGS = -s -shared -Wl,--export-all-symbols -Wl,--kill-a $(LIBS)
 LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a
 
 EXE= .exe
