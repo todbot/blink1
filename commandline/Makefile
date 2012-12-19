@@ -81,44 +81,51 @@ CC=gcc
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
-
+LIBTARGET = libBlink1.dylib
 CFLAGS += -arch i386 -arch x86_64
 CFLAGS += -pthread
 LIBS += -framework IOKit -framework CoreFoundation
-
 OBJS = ./hidapi/mac/hid.o
+
+LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
+
 EXE=
 endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
+LIBTARGET = blink1-lib.dll
 #CFLAGS += 
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 LIBS +=  -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
 OBJS = ./hidapi/windows/hid.o
+
+#LIBFLAGS = -shared $(LIBS)
+#LIBFLAGS = -s -shared -Wl,--export-all-symbols -Wl,--kill-a $(LIBS)
+LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a
+
 EXE= .exe
 endif
 
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
-#LIBS   += `pkg-config libudev --libs` -lrt
-#CFLAGS += `pkg-config libusb-1.0 --cflags`
-#CFLAGS += -m32
+LIBTARGET = blink1-lib.so
 CFLAGS += `pkg-config libusb-1.0 --cflags`
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl -static
 OBJS = ./hidapi/libusb/hid.o
+
+LIBFLAGS = -o $(LIBTARGET) $(LIBS)
+
 EXE=
 endif
 
 #################  Freebsd  ###################################################
 ifeq "$(OS)" "freebsd"
-#LIBS   += `pkg-config libudev --libs` -lrt
-#CFLAGS += `pkg-config libusb-1.0 --cflags`
-#CFLAGS += -m32
-#CFLAGS += `pkg-config libusb-1.0 --cflags`
+LIBTARGET = blink1-lib.so
 LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
 OBJS = ./hidapi/libusb/hid.o
+LIBFLAGS = -o $(LIBTARGET) $(LIBS)
 EXE=
 endif
 
@@ -134,7 +141,6 @@ CFLAGS += -I./hidapi/hidapi -I./mongoose -g
 #CFLAGS += -DDEBUG_PRINTF
 
 OBJS +=  blink1-lib.o 
-
 
 #all: msg blink1-tool blink1-server-simple
 all: msg blink1-tool 
@@ -164,6 +170,14 @@ blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
 	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
 	$(CC) -g $(OBJS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+
+lib: $(OBJS)
+	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) 
+
+# FIXME: only works for windows, and even then only inside 
+# Start->All Programs-> MS Visual Studio 2012 -> VS Tools -> Devel. Cmd Prompt
+dumplib: 
+	dumpbin.exe /exports $(LIBTARGET)
 
 package: blink1-tool
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
