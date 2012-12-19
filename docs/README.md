@@ -13,17 +13,24 @@ There are multiple ways to communicate with a blink(1) device.
 Raw HID SetFeature & GetFeature reports
 ---------------------------------------
 If you like doing down-to-the-metal SetFeature and GetFeature USB HID reports,
-blink(1) speaks a simple 8-byte report for both.  See the C API for details.
+blink(1) speaks a simple 8-byte report for both.  
+
+See the C API for details.
 
 
 C API
 -----
-For the C API, check out the [blink1-lib.h](../commandline/blink1-lib.h) and [blink1-lib.c](../commandline/blink1-lib.c) files.  
+For the C API, check out the [blink1-lib.h](https://github.com/todbot/blink1/blob/master/commandline/blink1-lib.h) 
+and [blink1-lib.c](https://github.com/todbot/blink1/blob/master/commandline/blink1-lib.c) files 
+in the "commandline" directory.
 
 
 Java / Processing API
 ---------------------
 Check out the set of Java / Processing examples in the "processing" directory.
+
+For ready-to-run Processing examples using the Java library, download and install:
+[blink1-java-processing-lib.zip](http://thingm.com/blink1/downloads/blink1-java-processing-lib.zip)
 
 
 Command-line API
