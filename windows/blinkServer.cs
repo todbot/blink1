@@ -10,12 +10,14 @@ using System.Diagnostics;
 using MiniHttpd;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Blink1Lib;
 
 namespace blink1
 {
 
     class blinkHttpInterface
     {
+
         HttpWebServer bhI = new HttpWebServer(8080);
         JTokenWriter jtw = new JTokenWriter();
         blinkServer bs = new blinkServer();
@@ -171,11 +173,10 @@ namespace blink1
 
     public class blinkServer
     {
-        
+        Blink1 blink1;
         public blinkServer()
-        {            
-            
-            
+        {
+            blink1 = new Blink1();            
         }
 //        "Usage: \n"
 //"  %s <cmd> [options]\n"
@@ -206,6 +207,11 @@ namespace blink1
 //"  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 //"  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 //"  -v, --verbose               verbose debugging msgs\n"
+        /// <summary>
+        /// DEPRECATED: use blink1Lib object instead where possible
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         string runBlinkProcess(string args)
         {
             try
@@ -231,9 +237,12 @@ namespace blink1
             return "";
         }
 
-        public string getId(){            
-            string re = runBlinkProcess("--list");
-            if (re.Contains("serialnum:")) return re.Substring(re.IndexOf("serialnum:"));
+        public string getId(){
+            if (blink1.enumerate() > 0)
+            {
+                string re = blink1.getCachedSerial(0);
+                return re;
+            }
             else return "";
         }
 
@@ -243,7 +252,8 @@ namespace blink1
             for (int i = 0; i < param.Length; i++)
             {
                 Color c = param[i];
-                runBlinkProcess(string.Format("-- savergb {0} {1} {2} {3}", c.R, c.G, c.B, i));
+                //runBlinkProcess(string.Format("-- savergb {0} {1} {2} {3}", c.R, c.G, c.B, i));
+                blink1.setPatternAtPosition(c.R, c.G, c.B, 500, i);
             }
         }
 
@@ -268,7 +278,7 @@ namespace blink1
 
         public void sendSingleColor(Color c)
         {
-
+            blink1.setRGB(c.R, c.G, c.B);
         }
 
 
