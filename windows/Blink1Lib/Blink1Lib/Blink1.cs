@@ -87,13 +87,15 @@ namespace Blink1Lib
 
         public string getCachedSerial(int i)
         {
-            //Marshal.PtrToStringAuto
             IntPtr wcstr = blink1_getCachedSerial(i);
             string result = Marshal.PtrToStringAuto(wcstr);
             return result;
         }
 
         // see: http://msdn.microsoft.com/en-us/magazine/cc164123.aspx#S7
+        // and: http://msdn.microsoft.com/en-us/library/aa446532.aspx
+        // and: http://www.codeguru.com/csharp/csharp/cs_data/article.php/c4217/Calling-Unmanaged-Code-Part-1--simple-DLLImport.htm
+
         private const string DllName = "blink1-lib.dll";
         private System.IntPtr dev;
 
