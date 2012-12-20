@@ -29,21 +29,22 @@ namespace Blink1LibDemo
 
             Console.WriteLine("setting white");
             blink1.setRGB(255, 255, 255);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
             Console.WriteLine("fading cyan");
-            blink1.fadeToRGB(500, 0, 255, 255);
-            Thread.Sleep(1000);
+            blink1.fadeToRGB(1000, 0, 255, 255);
+            Thread.Sleep(2000);
 
             Console.WriteLine("fading red");
-            blink1.fadeToRGB(500, 255, 0, 0);
-            Thread.Sleep(1000);
+            blink1.fadeToRGB(1000, 255, 0, 0);
+            Thread.Sleep(2000);
 
             Console.WriteLine("fading black");
-            blink1.fadeToRGB(1000, 0, 0, 0);
+            blink1.fadeToRGB(1500, 0, 0, 0);
+            Thread.Sleep(2000);
 
             Console.WriteLine("------------Blink1LibDemo End --------------");
-            Thread.Sleep(3000);
+            Thread.Sleep(2000);
 
         }
 
