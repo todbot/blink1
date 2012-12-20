@@ -3,11 +3,16 @@
 @class HTTPConnection;
 @class HTTPResponseProxy;
 
-@interface RouteResponse : NSObject
 
-@property (nonatomic, assign, readonly) HTTPConnection *connection;
+@interface RouteResponse : NSObject {
+	HTTPConnection *connection;
+	NSMutableDictionary *headers;
+	HTTPResponseProxy *proxy;
+}
+
+@property (nonatomic, readonly) HTTPConnection *connection;
 @property (nonatomic, readonly) NSDictionary *headers;
-@property (nonatomic, strong) NSObject<HTTPResponse> *response;
+@property (nonatomic, retain) NSObject<HTTPResponse> *response;
 @property (nonatomic, readonly) NSObject<HTTPResponse> *proxiedResponse;
 @property (nonatomic) NSInteger statusCode;
 

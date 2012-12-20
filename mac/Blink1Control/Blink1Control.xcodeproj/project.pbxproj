@@ -37,12 +37,12 @@
 		DE30984C15F1CCD300B84287 /* DDTTYLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30982A15F1CCD300B84287 /* DDTTYLogger.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE30984D15F1CCD300B84287 /* ContextFilterLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30982D15F1CCD300B84287 /* ContextFilterLogFormatter.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE30984E15F1CCD300B84287 /* DispatchQueueLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30982F15F1CCD300B84287 /* DispatchQueueLogFormatter.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE30985E15F1CD1900B84287 /* HTTPResponseProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985315F1CD1900B84287 /* HTTPResponseProxy.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE30985F15F1CD1900B84287 /* Route.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985515F1CD1900B84287 /* Route.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE30986015F1CD1900B84287 /* RouteRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985715F1CD1900B84287 /* RouteRequest.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE30986115F1CD1900B84287 /* RouteResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985915F1CD1900B84287 /* RouteResponse.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE30986215F1CD1900B84287 /* RoutingConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985B15F1CD1900B84287 /* RoutingConnection.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		DE30986315F1CD1900B84287 /* RoutingHTTPServer.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985D15F1CD1900B84287 /* RoutingHTTPServer.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		DE30985E15F1CD1900B84287 /* HTTPResponseProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985315F1CD1900B84287 /* HTTPResponseProxy.m */; };
+		DE30985F15F1CD1900B84287 /* Route.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985515F1CD1900B84287 /* Route.m */; };
+		DE30986015F1CD1900B84287 /* RouteRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985715F1CD1900B84287 /* RouteRequest.m */; };
+		DE30986115F1CD1900B84287 /* RouteResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985915F1CD1900B84287 /* RouteResponse.m */; };
+		DE30986215F1CD1900B84287 /* RoutingConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985B15F1CD1900B84287 /* RoutingConnection.m */; };
+		DE30986315F1CD1900B84287 /* RoutingHTTPServer.m in Sources */ = {isa = PBXBuildFile; fileRef = DE30985D15F1CD1900B84287 /* RoutingHTTPServer.m */; };
 		DE30986815F1DE8F00B84287 /* blink1-lib.c in Sources */ = {isa = PBXBuildFile; fileRef = DE30986615F1DE8F00B84287 /* blink1-lib.c */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE30986A15F1DEC400B84287 /* hid.c in Sources */ = {isa = PBXBuildFile; fileRef = DE30986915F1DEC400B84287 /* hid.c */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		DE30986E15F1DF8A00B84287 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE30986D15F1DF8A00B84287 /* IOKit.framework */; };
@@ -72,6 +72,7 @@
 		DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB261630BA7C008B26D8 /* Blink1Input.m */; };
 		DEB0CB2A16328E29008B26D8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEB0CB2916328E29008B26D8 /* QuartzCore.framework */; };
 		DEB0CB2D16331C54008B26D8 /* Netuse.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB2C16331C54008B26D8 /* Netuse.m */; };
+		DED88D281683A25A001808BA /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = DED88D251683A25A001808BA /* RegexKitLite.m */; };
 		DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEFABAE015F47F59006E4BB7 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -201,6 +202,8 @@
 		DEB0CB2916328E29008B26D8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		DEB0CB2B16331C54008B26D8 /* Netuse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = Netuse.h; sourceTree = "<group>"; };
 		DEB0CB2C16331C54008B26D8 /* Netuse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = Netuse.m; sourceTree = "<group>"; };
+		DED88D241683A25A001808BA /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
+		DED88D251683A25A001808BA /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
 		DEFABAE015F47F59006E4BB7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -482,6 +485,7 @@
 		DE9CDD7915F862FE003F584C /* Utility Code */ = {
 			isa = PBXGroup;
 			children = (
+				DED88D211683A25A001808BA /* RegexKitLite */,
 				DE9CDDC515F9CA3C003F584C /* VDKQueue */,
 				DE9CDD8115F86D36003F584C /* PLWeakCompatibilityStubs.m */,
 				DE30985115F1CD1900B84287 /* RoutingHTTPServer */,
@@ -514,6 +518,16 @@
 				DE9CDDC815F9CA3C003F584C /* VDKQueue.m */,
 			);
 			path = VDKQueue;
+			sourceTree = "<group>";
+		};
+		DED88D211683A25A001808BA /* RegexKitLite */ = {
+			isa = PBXGroup;
+			children = (
+				DED88D241683A25A001808BA /* RegexKitLite.h */,
+				DED88D251683A25A001808BA /* RegexKitLite.m */,
+			);
+			name = RegexKitLite;
+			path = RoutingHTTPServer/External/RegexKitLite;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -638,6 +652,7 @@
 				DE3C79DE1626787000104F4D /* Blink1Pattern.m in Sources */,
 				DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */,
 				DEB0CB2D16331C54008B26D8 /* Netuse.m in Sources */,
+				DED88D281683A25A001808BA /* RegexKitLite.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -696,6 +711,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-licucore";
 				SDKROOT = macosx10.7;
 			};
 			name = Debug;
@@ -719,6 +735,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-licucore";
 				SDKROOT = macosx10.7;
 			};
 			name = Release;

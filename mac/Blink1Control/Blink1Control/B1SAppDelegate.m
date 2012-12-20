@@ -52,6 +52,7 @@
 @synthesize http;
 @synthesize blink1;
 
+const Boolean updateStatusbarIcon = false;
 
 const NSInteger http_port_default = 8934;
 
@@ -448,7 +449,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     NSDictionary *inputspref  = [prefs dictionaryForKey:@"inputs"];
     NSData *patternspref      = [prefs objectForKey:@"patterns"];
-    NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
+    //NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
     NSString* host_id_prefs   = [prefs stringForKey:@"host_id"];
     http_port                 = [prefs integerForKey:@"http_port"];
     //BOOL first_run            = [prefs boolForKey:@"first_run"];
@@ -500,14 +501,16 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     blink1 = [[Blink1 alloc] init];      // set up blink(1) library
     [blink1 enumerate];
     
-    __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
-    blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
-    {
-        NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
-        [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
-        [weakSelf updateStatusImageHue:lastColor];
-    };
-     
+    if( updateStatusbarIcon ) {
+        __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
+        blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
+        {
+            NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
+            [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
+            [weakSelf updateStatusImageHue:lastColor];
+        };
+    }
+    
     // set up json parser
     _jsonparser = [[SBJsonParser alloc] init];
     _jsonwriter = [[SBJsonWriter alloc] init];

@@ -5,10 +5,8 @@
 #import "HTTPAsyncFileResponse.h"
 #import "HTTPResponseProxy.h"
 
-@implementation RouteResponse {
-	NSMutableDictionary *headers;
-	HTTPResponseProxy *proxy;
-}
+
+@implementation RouteResponse
 
 @synthesize connection;
 @synthesize headers;
@@ -20,6 +18,12 @@
 		proxy = [[HTTPResponseProxy alloc] init];
 	}
 	return self;
+}
+
+- (void)dealloc {
+	[proxy release];
+	[headers release];
+	[super dealloc];
 }
 
 - (NSObject <HTTPResponse>*)response {
@@ -59,7 +63,7 @@
 }
 
 - (void)respondWithData:(NSData *)data {
-	self.response = [[HTTPDataResponse alloc] initWithData:data];
+	self.response = [[[HTTPDataResponse alloc] initWithData:data] autorelease];
 }
 
 - (void)respondWithFile:(NSString *)path {
@@ -68,9 +72,9 @@
 
 - (void)respondWithFile:(NSString *)path async:(BOOL)async {
 	if (async) {
-		self.response = [[HTTPAsyncFileResponse alloc] initWithFilePath:path forConnection:connection];
+		self.response = [[[HTTPAsyncFileResponse alloc] initWithFilePath:path forConnection:connection] autorelease];
 	} else {
-		self.response = [[HTTPFileResponse alloc] initWithFilePath:path forConnection:connection];
+		self.response = [[[HTTPFileResponse alloc] initWithFilePath:path forConnection:connection] autorelease];
 	}
 }
 
