@@ -3,9 +3,15 @@
 #import "RouteRequest.h"
 #import "RouteResponse.h"
 
-typedef void (^RequestHandler)(RouteRequest *request, RouteResponse *response);
 
-@interface RoutingHTTPServer : HTTPServer
+@interface RoutingHTTPServer : HTTPServer {
+	NSMutableDictionary *routes;
+	NSMutableDictionary *defaultHeaders;
+	NSMutableDictionary *mimeTypes;
+	dispatch_queue_t routeQueue;
+}
+
+typedef void (^RequestHandler)(RouteRequest *request, RouteResponse *response);
 
 @property (nonatomic, readonly) NSDictionary *defaultHeaders;
 

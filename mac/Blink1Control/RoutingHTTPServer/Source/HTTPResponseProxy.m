@@ -1,9 +1,14 @@
 #import "HTTPResponseProxy.h"
 
+
 @implementation HTTPResponseProxy
 
 @synthesize response;
-@synthesize status;
+
+- (void)dealloc {
+	self.response = nil;
+	[super dealloc];
+}
 
 - (NSInteger)status {
 	if (status != 0) {

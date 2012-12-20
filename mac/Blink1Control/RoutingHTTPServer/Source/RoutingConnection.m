@@ -3,10 +3,8 @@
 #import "HTTPMessage.h"
 #import "HTTPResponseProxy.h"
 
-@implementation RoutingConnection {
-	__unsafe_unretained RoutingHTTPServer *http;
-	NSDictionary *headers;
-}
+
+@implementation RoutingConnection
 
 - (id)initWithAsyncSocket:(GCDAsyncSocket *)newSocket configuration:(HTTPConfig *)aConfig {
 	if (self = [super initWithAsyncSocket:newSocket configuration:aConfig]) {
@@ -16,6 +14,11 @@
 		http = (RoutingHTTPServer *)config.server;
 	}
 	return self;
+}
+
+- (void)dealloc {
+	[headers release];
+	[super dealloc];
 }
 
 - (BOOL)supportsMethod:(NSString *)method atPath:(NSString *)path {
@@ -35,7 +38,7 @@
 	return YES;
 }
 
-- (void)processBodyData:(NSData *)postDataChunk {
+- (void)processDataChunk:(NSData *)postDataChunk {
 	BOOL result = [request appendData:postDataChunk];
 	if (!result) {
 		// TODO: Log
@@ -46,6 +49,7 @@
 	NSURL *url = [request url];
 	NSString *query = nil;
 	NSDictionary *params = [NSDictionary dictionary];
+	[headers release];
 	headers = nil;
 
 	if (url) {
@@ -58,7 +62,7 @@
 
 	RouteResponse *response = [http routeMethod:method withPath:path parameters:params request:request connection:self];
 	if (response != nil) {
-		headers = response.headers;
+		headers = [response.headers retain];
 		return response.proxiedResponse;
 	}
 
@@ -67,7 +71,7 @@
 	if (staticResponse && [staticResponse respondsToSelector:@selector(filePath)]) {
 		NSString *mimeType = [http mimeTypeForPath:[staticResponse performSelector:@selector(filePath)]];
 		if (mimeType) {
-			headers = [NSDictionary dictionaryWithObject:mimeType forKey:@"Content-Type"];
+			headers = [[NSDictionary dictionaryWithObject:mimeType forKey:@"Content-Type"] retain];
 		}
 	}
 	return staticResponse;

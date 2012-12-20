@@ -1,13 +1,17 @@
 #import "RoutingHTTPServer.h"
 #import "RoutingConnection.h"
 #import "Route.h"
+#import "RegexKitLite.h"
 
-@implementation RoutingHTTPServer {
-	NSMutableDictionary *routes;
-	NSMutableDictionary *defaultHeaders;
-	NSMutableDictionary *mimeTypes;
-	dispatch_queue_t routeQueue;
-}
+@interface RoutingHTTPServer ()
+
+- (Route *)routeWithPath:(NSString *)path;
+- (void)addRoute:(Route *)route forMethod:(NSString *)method;
+- (void)setupMIMETypes;
+
+@end
+
+@implementation RoutingHTTPServer
 
 @synthesize defaultHeaders;
 
@@ -21,19 +25,28 @@
 	return self;
 }
 
-#if !OS_OBJECT_USE_OBJC_RETAIN_RELEASE
 - (void)dealloc {
 	if (routeQueue)
 		dispatch_release(routeQueue);
+
+	[routes release];
+	[defaultHeaders release];
+	[mimeTypes release];
+	[super dealloc];
 }
-#endif
 
 - (void)setDefaultHeaders:(NSDictionary *)headers {
+	NSMutableDictionary *newHeaders;
 	if (headers) {
-		defaultHeaders = [headers mutableCopy];
+		newHeaders = [headers mutableCopy];
 	} else {
-		defaultHeaders = [[NSMutableDictionary alloc] init];
+		newHeaders = [[NSMutableDictionary alloc] init];
 	}
+
+	if (defaultHeaders) {
+		[defaultHeaders release];
+	}
+	defaultHeaders = newHeaders;
 }
 
 - (void)setDefaultHeader:(NSString *)field value:(NSString *)value {
@@ -45,13 +58,11 @@
 }
 
 - (void)setRouteQueue:(dispatch_queue_t)queue {
-#if !OS_OBJECT_USE_OBJC_RETAIN_RELEASE
 	if (queue)
 		dispatch_retain(queue);
 
 	if (routeQueue)
 		dispatch_release(routeQueue);
-#endif
 
 	routeQueue = queue;
 }
@@ -68,6 +79,7 @@
 		newTypes = [[NSMutableDictionary alloc] init];
 	}
 
+	[mimeTypes release];
 	mimeTypes = newTypes;
 }
 
@@ -139,48 +151,35 @@
 }
 
 - (Route *)routeWithPath:(NSString *)path {
-	Route *route = [[Route alloc] init];
+	Route *route = [[[Route alloc] init] autorelease];
 	NSMutableArray *keys = [NSMutableArray array];
 
 	if ([path length] > 2 && [path characterAtIndex:0] == '{') {
 		// This is a custom regular expression, just remove the {}
 		path = [path substringWithRange:NSMakeRange(1, [path length] - 2)];
 	} else {
-		NSRegularExpression *regex = nil;
-
 		// Escape regex characters
-		regex = [NSRegularExpression regularExpressionWithPattern:@"[.+()]" options:0 error:nil];
-		path = [regex stringByReplacingMatchesInString:path options:0 range:NSMakeRange(0, path.length) withTemplate:@"\\\\$0"];
+		path = [path stringByReplacingOccurrencesOfRegex:@"[.+()]" usingBlock:
+				^NSString *(NSInteger captureCount, NSString *const capturedStrings[captureCount], const NSRange capturedRanges[captureCount], volatile BOOL *const stop) {
+					return [NSString stringWithFormat:@"\\%@", capturedStrings[0]];
+				}];
 
-		// Parse any :parameters and * in the path
-		regex = [NSRegularExpression regularExpressionWithPattern:@"(:(\\w+)|\\*)"
-														  options:0
-															error:nil];
-		NSMutableString *regexPath = [NSMutableString stringWithString:path];
-		__block NSInteger diff = 0;
-		[regex enumerateMatchesInString:path options:0 range:NSMakeRange(0, path.length)
-			usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-				NSRange replacementRange = NSMakeRange(diff + result.range.location, result.range.length);
-				NSString *replacementString;
+		// Parse any :parameters in the path
+		path = [path stringByReplacingOccurrencesOfRegex:@"(:(\\w+)|\\*)" usingBlock:
+				^NSString *(NSInteger captureCount, NSString *const capturedStrings[captureCount], const NSRange capturedRanges[captureCount], volatile BOOL *const stop) {
+					if ([capturedStrings[1] isEqualToString:@"*"]) {
+						[keys addObject:@"wildcards"];
+						return @"(.*?)";
+					}
 
-				NSString *capturedString = [path substringWithRange:result.range];
-				if ([capturedString isEqualToString:@"*"]) {
-					[keys addObject:@"wildcards"];
-					replacementString = @"(.*?)";
-				} else {
-					NSString *keyString = [path substringWithRange:[result rangeAtIndex:2]];
-					[keys addObject:keyString];
-					replacementString = @"([^/]+)";
-				}
+					[keys addObject:capturedStrings[2]];
+					return @"([^/]+)";
+				}];
 
-				[regexPath replaceCharactersInRange:replacementRange withString:replacementString];
-				diff += replacementString.length - result.range.length;
-			}];
-
-		path = [NSString stringWithFormat:@"^%@$", regexPath];
+		path = [NSString stringWithFormat:@"^%@$", path];
 	}
 
-	route.regex = [NSRegularExpression regularExpressionWithPattern:path options:NSRegularExpressionCaseInsensitive error:nil];
+	route.path = path;
 	if ([keys count] > 0) {
 		route.keys = keys;
 	}
@@ -196,10 +195,7 @@
 	if (route.handler) {
 		route.handler(request, response);
 	} else {
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 		[route.target performSelector:route.selector withObject:request withObject:response];
-		#pragma clang diagnostic pop
 	}
 }
 
@@ -209,22 +205,21 @@
 		return nil;
 
 	for (Route *route in methodRoutes) {
-		NSTextCheckingResult *result = [route.regex firstMatchInString:path options:0 range:NSMakeRange(0, path.length)];
-		if (!result)
+		// The first element in the captures array is all of the text matched by the regex.
+		// If there is nothing in the array the regex did not match.
+		NSArray *captures = [path captureComponentsMatchedByRegex:route.path];
+		if ([captures count] < 1)
 			continue;
-
-		// The first range is all of the text matched by the regex.
-		NSUInteger captureCount = [result numberOfRanges];
 
 		if (route.keys) {
 			// Add the route's parameters to the parameter dictionary, accounting for
-			// the first range containing the matched text.
-			if (captureCount == [route.keys count] + 1) {
-				NSMutableDictionary *newParams = [params mutableCopy];
+			// the first element containing the matched text.
+			if ([captures count] == [route.keys count] + 1) {
+				NSMutableDictionary *newParams = [[params mutableCopy] autorelease];
 				NSUInteger index = 1;
 				BOOL firstWildcard = YES;
 				for (NSString *key in route.keys) {
-					NSString *capture = [path substringWithRange:[result rangeAtIndex:index]];
+					NSString *capture = [captures objectAtIndex:index];
 					if ([key isEqualToString:@"wildcards"]) {
 						NSMutableArray *wildcards = [newParams objectForKey:key];
 						if (firstWildcard) {
@@ -241,27 +236,24 @@
 				}
 				params = newParams;
 			}
-		} else if (captureCount > 1) {
+		} else if ([captures count] > 1) {
 			// For custom regular expressions place the anonymous captures in the captures parameter
-			NSMutableDictionary *newParams = [params mutableCopy];
-			NSMutableArray *captures = [NSMutableArray array];
-			for (NSUInteger i = 1; i < captureCount; i++) {
-				[captures addObject:[path substringWithRange:[result rangeAtIndex:i]]];
-			}
-			[newParams setObject:captures forKey:@"captures"];
+			NSMutableDictionary *newParams = [[params mutableCopy] autorelease];
+			[newParams setObject:[captures subarrayWithRange:NSMakeRange(1, [captures count] - 1)] forKey:@"captures"];
 			params = newParams;
 		}
 
-		RouteRequest *request = [[RouteRequest alloc] initWithHTTPMessage:httpMessage parameters:params];
-		RouteResponse *response = [[RouteResponse alloc] initWithConnection:connection];
+		RouteRequest *request = [[[RouteRequest alloc] initWithHTTPMessage:httpMessage parameters:params] autorelease];
+		RouteResponse *response = [[[RouteResponse alloc] initWithConnection:connection] autorelease];
 		if (!routeQueue) {
 			[self handleRoute:route withRequest:request response:response];
 		} else {
 			// Process the route on the specified queue
+			__block RoutingHTTPServer *blockSelf = self;
 			dispatch_sync(routeQueue, ^{
-				@autoreleasepool {
-					[self handleRoute:route withRequest:request response:response];
-				}
+				NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+				[blockSelf handleRoute:route withRequest:request response:response];
+				[pool drain];
 			});
 		}
 		return response;
