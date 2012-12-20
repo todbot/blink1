@@ -87,6 +87,7 @@ CFLAGS += -pthread
 LIBS += -framework IOKit -framework CoreFoundation
 OBJS = ./hidapi/mac/hid.o
 
+EXEFLAGS =
 LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 
 EXE=
@@ -100,6 +101,7 @@ LIBTARGET = blink1-lib.dll
 LIBS +=  -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
 OBJS = ./hidapi/windows/hid.o
 
+EXEFLAGS =
 LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a
 
 EXE= .exe
@@ -108,10 +110,12 @@ endif
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
 LIBTARGET = blink1-lib.so
-CFLAGS += `pkg-config libusb-1.0 --cflags`
-LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl -static
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+
 OBJS = ./hidapi/libusb/hid.o
 
+EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 
 EXE=
@@ -122,6 +126,7 @@ ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
 LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
 OBJS = ./hidapi/libusb/hid.o
+EXEFLAGS=
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 endif
@@ -161,12 +166,12 @@ $(OBJS): %.o: %.c
 
 blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
-	$(CC) $(CFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
+	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
 blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
 	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
-	$(CC) -g $(OBJS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+	$(CC) -g $(OBJS) $(EXEFLAGS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
 
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) 
