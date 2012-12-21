@@ -20,8 +20,8 @@
 	<body>
 		<div id="container">
 			<div id="header">
-				<h1>blink(1)</h1>
-				<a href="http://thingm.com">by ThingM</a>
+				<a href="."><h1>blink(1)</h1></a>
+				<a href=".">by ThingM</a>
 			</div> <!-- #header -->
 			<div id="main-content">
 				<div id="tabs">
@@ -88,7 +88,7 @@
 				</div> <!-- #tabs -->
 			</div> <!-- #main-content -->
 			
-			<a id="thingm-logo" href="http://thingm.com"></a>
+			<a id="thingm-logo" href="#"></a>
 			<div id="gray-out">&nbsp;</div>
 			<div id="configuration-popup" class="popup-window">
 				<div class="popup-header">
@@ -125,45 +125,66 @@
                              <p class="description">
 Add rule name and IFTTT Key<br />
 <span style="font-weight:bold; color:#666; font-size: 16px; line-height: 20px;" id="ifttt-uid">DEADBEEF12341234</span><br />
- to your IFTTT.com recipe!
+ to your IFTTT.com recipe! </p>
+                             <p class="description">
+IFTTT checked every 15 secs.
 							</p>
 						</div>
 
 						<div id="url-options-selector" class="url">
 							<h4>URL</h4>
 							<input id="web-page-url" type="text" class="arg1" placeholder="enter url here" />
-                              <p>
-								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/ checked="checked" ><label for="url-color-options-user-specified">Specify color pattern</label> <br />
+<!-- 
+                               <p>
+								<input type="radio" name="url-color-options" value="user-specified" id="url-color-options-user-specified"/ checked="checked" ><label for="url-color-options-user-specified">Use color pattern</label> <br />
 								<input type="radio" name="url-color-options" value="url-specified" id="url-color-options-url-specified"/><label for="url-color-options-url-specified">Use value from URL</label>
 							</p>
+-->
 							<p>
 								<label for="value-retrieved-text-box">Value Retrieved</label>
 								<input id="value-retrieved-text-box" type="text" value="color value retrieved…"/>
+							</p>
+                             <p class="description">
+URL response is searched for hex color code. First one found is played on blink(1). <br/>
+URLs checked every 15 secs.
 							</p>
 						</div>
 						<div id="file-options-selector" class="file">
 							<h4>FILE</h4>
 							<input type="text" id="file-path" class="arg1" placeholder="enter file path here" />
+<!-- 
 							<p>
-								<input type="radio" name="file-color-options" value="user-specified" id="file-color-options-user-specified"/ checked="checked" ><label for="file-color-options-user-specified">Specify color pattern</label><br />
-								<input type="radio" name="file-color-options" value="file-specified" id="file-color-options-file-specified"/><label for="file-color-options-file-specified">Use color pattern in file</label>
+								<input type="radio" name="file-color-options" value="user-specified" id="file-color-options-user-specified"/ checked="checked" ><label for="file-color-options-user-specified">Use color pattern</label><br />
+								<input type="radio" name="file-color-options" value="file-specified" id="file-color-options-file-specified"/><label for="file-color-options-file-specified">Use color in file</label>
 							</p>
+-->
 							<p>
 								<label for="value-retrieved-text-box">Value Retrieved</label>
 								<input id="value-retrieved-text-box" type="text" value="color value retrieved…"/>
+							</p>
+                             <p class="description">
+File content is inspected for hex color code. First one found is played on blink(1). <br/>
+Files checked every 15 secs.
 							</p>
 						</div>
 						<div id="script-options-selector" class="script">
 							<h4>SCRIPT</h4>
 							<input type="text" id="script-path" class="arg1" placeholder="enter script path here" />
+<!-- 
 							<p>
 								<input type="radio" name="script-color-options" value="user-specified" id="script-color-options-user-specified"/ checked="checked" ><label for="script-color-options-user-specified">Specify color pattern</label><br />
 								<input type="radio" name="script-color-options" value="file-specified" id="script-color-options-file-specified"/><label for="script-color-options-file-specified">Use color pattern in file</label>
 							</p>
+-->
 							<p>
 								<label for="value-retrieved-text-box">Value Retrieved</label>
 								<input id="value-retrieved-text-box" type="text" value="color value retrieved…"/>
-							</p>
+                            </p>
+							<p class="description">
+Script is executed and inspected for hex color code to play on blink(1). </p>
+							<p class="description">
+Scripts must live in ~/Documents/blink1-scripts <br/>
+Scripts executed every 5 secs. </p>
 						</div>
 					</div>	<!-- .column-2 -->				
 					<div class="column column-3">
@@ -247,10 +268,11 @@ Add rule name and IFTTT Key<br />
 					<p class="about-info">IFTTT Key: <span id="about-ifttt-uid">CAFEBABE56785678</span><p>
 
 					<h3>LICENSE AND SOURCE CODE</h3>
-					<p>blink(1) is an Open Source Hardware product licensed under the [TBD TBD] license.</p>
+					<p>blink(1) is an Open Source Hardware product licensed under the LGPL license.</p>
 					<p>You may obtain the source code to all the software used in it and digital files for the hardware components on github.</p>
 					<p>We are totally not responsible for anything you do with it.</p>
 					<p>blink(1) is a registered trademark of ThingM Corporation.</p>
+                    <p><br/><a id="delete-all-triggers">[delete all triggers]</a></p>
 				</div><!-- .popup-content -->
 			</div> <!-- #settings-popup -->
 			<div id="picker">
