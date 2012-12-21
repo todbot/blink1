@@ -47,7 +47,7 @@
 # counterproductive.
 
 # The threshold for load15
-THRESHOLD_15="1.10"
+THRESHOLD_15="1.50"
 
 # The threshold for load5
 THRESHOLD_5="1.20"
