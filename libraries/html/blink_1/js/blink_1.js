@@ -107,6 +107,8 @@ $("#tabs #navbar a").removeData("cache.tabs");
 		var $triggerObject = $(this).parents('.trigger-options');
 		var index = $(this).closest('.trigger-options').index();
 
+        backendDeleteInput( triggerObjects[index] );        
+
 		// hide the deleted trigger from the view
 		$triggerObject.slideUp('normal', function() {
 			$triggerObject.remove();
@@ -121,7 +123,6 @@ $("#tabs #navbar a").removeData("cache.tabs");
 		});
 
 		// and then delete that trigger's object from the triggers array
-        backendDeleteInput( triggerObjects[index] );        
 		triggerObjects.splice( ((index==0)?0:(index-1)), 1);
         console.log("delete-trigger");
 		console.log(triggerObjects);
@@ -920,12 +921,22 @@ function backendDeleteInput(triggerObject) {
             }); 
 }
 
+//
+function backendDeleteAllInputs() {
+    var iurl = '../blink1/input/delall';
+    var purl = '../blink1/pattern/delall';
+    $.getJSON( iurl );
+    $.getJSON( purl );
+}
+
 // Send the new configuration to blink1 back-end server
 // by traversing the 'triggerObects' array and constructing
 // appropriate Ajax commands for the back-end
 //
 function backendUpdateInputsAndPatterns(triggerObjects) {
     console.log("updateBlink1InputsAndPatterns");
+    console.log(triggerObjects);
+    backendDeleteAllInputs();
     for( var i=0; i<triggerObjects.length; i++ ) {
         var trigObj = triggerObjects[i];
         var source = trigObj.source;
