@@ -107,7 +107,7 @@ $("#tabs #navbar a").removeData("cache.tabs");
 		var $triggerObject = $(this).parents('.trigger-options');
 		var index = $(this).closest('.trigger-options').index();
 
-        backendDeleteInput( triggerObjects[index] );        
+        backendDeleteTrigger( triggerObjects[index] );
 
 		// hide the deleted trigger from the view
 		$triggerObject.slideUp('normal', function() {
@@ -271,7 +271,7 @@ $("#tabs #navbar a").removeData("cache.tabs");
 		}
 
 		//console.log(triggerObjects);
-        backendUpdateInputsAndPatterns(triggerObjects); 
+        backendUpdateTriggers(triggerObjects); 
 	});
 	
 	
@@ -435,7 +435,11 @@ $("#tabs #navbar a").removeData("cache.tabs");
 		$('#container').addClass($('.active').attr('id').split('-')[0]);	
 	});
 	
-	
+    $('#delete-all-triggers').live('click', function(e) {
+        console.log('delete all triggers');
+        backendDeleteAllTriggers();
+        window.location.reload();
+    });
 
 		
 
@@ -553,9 +557,6 @@ $("#tabs #navbar a").removeData("cache.tabs");
 	/*-------------------------
 		SAVE/CLOSE FUNCTIONS
 	--------------------------*/
-	
-
-
 
 
 
@@ -571,13 +572,13 @@ $("#tabs #navbar a").removeData("cache.tabs");
 	}
 
     //
-    // ---------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     //
 
     /*------------------------------
       BLINK1 BACK-END FUNCTIONS
       (note: if they are declared outside of document.ready they can be used
-      in other .js files. This also means they can't use any of the 'globals' above)
+      in other .js files. This also means they can't use any 'globals' above)
       --------------------------------*/
 
     //
@@ -621,6 +622,8 @@ $("#tabs #navbar a").removeData("cache.tabs");
                     $('.url #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'file' ) {
                     $('.file #value-retrieved-text-box').val( result.input.lastVal );
+                } else if( type == 'script' ) {
+                    $('.script #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'ifttt' ) {
                     //console.log("ifttt result");
                     //console.log(result);
@@ -629,7 +632,7 @@ $("#tabs #navbar a").removeData("cache.tabs");
                     console.log("lastVal: "+ lastVal);
                     console.log(possibleVals);
                     var minsago = ((new Date().getTime()/1000 - result.input.lastTime )/60).toFixed(1);
-                    minsago = (isNaN(minsago)) ? '-never-' : minsago;
+                    minsago = (isNaN(minsago)) ? 'n/a' : minsago;
                     possibleVals = (possibleVals.length) ? possibleVals.toString() : '-none-';
 
                     $('.ifttt #value-retrieved-timestamp').text( "last seen " + minsago + " minutes ago" );
@@ -898,7 +901,7 @@ function compileSettings() {
 //                success: fuction() 
 //                });        
 //
-function backendDeleteInput(triggerObject) { 
+function backendDeleteTrigger(triggerObject) { 
     var parms = {};
     parms.iname = triggerObject.title;
     parms.pname = triggerObject.title;
@@ -922,7 +925,7 @@ function backendDeleteInput(triggerObject) {
 }
 
 //
-function backendDeleteAllInputs() {
+function backendDeleteAllTriggers() {
     var iurl = '../blink1/input/delall';
     var purl = '../blink1/pattern/delall';
     $.getJSON( iurl );
@@ -933,10 +936,10 @@ function backendDeleteAllInputs() {
 // by traversing the 'triggerObects' array and constructing
 // appropriate Ajax commands for the back-end
 //
-function backendUpdateInputsAndPatterns(triggerObjects) {
-    console.log("updateBlink1InputsAndPatterns");
+function backendUpdateTriggers(triggerObjects) {
+    console.log("backendUpdateTriggers");
     console.log(triggerObjects);
-    backendDeleteAllInputs();
+    backendDeleteAllTriggers();
     for( var i=0; i<triggerObjects.length; i++ ) {
         var trigObj = triggerObjects[i];
         var source = trigObj.source;
@@ -961,7 +964,7 @@ function backendUpdateInputsAndPatterns(triggerObjects) {
                     //console.log(result);
                 } )
                 .error( function() { 
-                        console.log("error on input upate!");
+                        console.log("error on input update!");
                     });
         }
         
