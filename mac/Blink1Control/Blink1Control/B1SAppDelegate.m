@@ -69,7 +69,7 @@ NSString* scriptsPath = @"~/Documents/blink1-scripts";
 NSTimeInterval inputInterval       = 5.0f;  // in seconds
 
 NSTimeInterval iftttUpdateInterval = 15.0f;
-NSTimeInterval urlUpdateInterval   = 30.0f;
+NSTimeInterval urlUpdateInterval   = 15.0f;
 
 
 // play pattern with restart
@@ -328,12 +328,12 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 - (void) updateScriptInput: (NSMutableDictionary*)input
 {
     DLog(@"updateScriptInput");
-    //NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
-    //NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    //if( (now - lastTime) < 30 ) {     // only update URLs every 30 secs
-    //    return;
-    //}
-    //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
+    NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    if( (now - lastTime) < 15 ) {     // only update URLs every 15 secs
+        return;
+    }
+    [input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
 
     
     NSString* path = [input objectForKey:@"arg1"];
@@ -392,7 +392,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 // ----------------------------------------------------------------------------
 // the main deal for triggering color patterns
 // ----------------------------------------------------------------------------
-// this is called every 10 secs via an NSTimer
+// this is called every 5 secs via an NSTimer
 - (void) updateInputs
 {
     //DLog(@"updateInputs");
