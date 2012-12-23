@@ -305,7 +305,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
         NSString * ev_source  = [event objectForKey:@"source"];
         NSString * ev_datestr = [event objectForKey:@"date"];
         NSTimeInterval ev_date = [ev_datestr integerValue];
-
+        
         //[possible_vals setObject:ev_source forKey:ev_name];
         [possible_vals addObject:ev_name];
         
@@ -481,6 +481,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 //
 - (void) savePrefs
 {
+    //@synchronized(self) {
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     [prefs setObject:inputs forKey:@"inputs"];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:patterns];
@@ -489,6 +490,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     [prefs setObject:[blink1 host_id]       forKey:@"host_id"];
     [prefs setInteger:http_port             forKey:@"http_port"];
     [prefs synchronize];
+    //}
 }
 
 // ----------------------------------------------------------------------------
@@ -663,8 +665,9 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
-    
+    //
     // color patterns
+    //
     
     // list patterns
     [http get:@"/blink1/pattern" withBlock:^(RouteRequest *request, RouteResponse *response) {
@@ -676,7 +679,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     
     // add a pattern
     [http get:@"/blink1/pattern/add" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname      = [request param:@"pname"];
+        NSString* pname      = [self trimString: [request param:@"pname"]];
         NSString* patternstr = [request param:@"pattern"];
         DLog(@"pattern add: %@", pname);
         Blink1Pattern* pattern = nil;
@@ -684,10 +687,13 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
         
         if( pname != nil && patternstr != nil ) {
             pattern = [[Blink1Pattern alloc] initWithPatternString:patternstr name:pname];
-            [patterns setObject:pattern forKey:pname];
+            if( pattern != nil)
+                [patterns setObject:pattern forKey:pname];
+            else
+                statusstr = @"error: pattern badly formatted";
         }
         else {
-            statusstr = @"error: need 'pname' and 'pattern' arguments to make pattern";
+            statusstr = @"error: need 'pname' and 'pattern' (e.g. '2,#ff00ff,0.5,#00ff00,0.5') arguments to make pattern";
         }
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
@@ -700,7 +706,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     
     // delete a pattern
     [http get:@"/blink1/pattern/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname   = [request param:@"pname"];
+        NSString* pname   = [self trimString:[request param:@"pname"]];
+
         NSString* statusstr = @"no pattern by that pname";
         if( pname != nil ) {
             Blink1Pattern* pattern = [patterns objectForKey:pname];
@@ -732,7 +739,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     
     // play a pattern
     [http get:@"/blink1/pattern/play" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname   = [request param:@"pname"];
+        NSString* pname   = [self trimString: [request param:@"pname"]];
         NSString* statusstr = @"no pattern by that pname";
         if( [self playPattern: pname] ) {
             statusstr = [NSString stringWithFormat:@"pattern '%@' playing",pname];
@@ -745,7 +752,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     // stop a pattern
     [http get:@"/blink1/pattern/stop" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname   = [request param:@"pname"];
+        NSString* pname   = [self trimString: [request param:@"pname"]];
         NSString* statusstr = @"no pattern by that pname";
         if( [self stopPattern:pname] ) {
             statusstr = [NSString stringWithFormat:@"pattern '%@' stopped",pname];
@@ -769,7 +776,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     
     // list all inputs
     [http get:@"/blink1/input" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* enable = [request param:@"enabled"];
+        NSString* enable = [self trimString: [request param:@"enabled"]];
         if( enable != nil ) {   // i.e. param was specified
             inputsEnable = ([enable isEqualToString:@"on"] || [enable isEqualToString:@"true"] );
         }
@@ -784,7 +791,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     
     // delete an input
     [http get:@"/blink1/input/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
         
         NSString* statusstr = @"no such input";
         if( iname != nil ) {
@@ -812,22 +819,22 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
         
     // add the ifttt watching input
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
-        NSString* chan  = [request param:@"arg1"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
+        NSString* rule  = [self trimString: [request param:@"arg1"]];
         NSString* test  = [request param:@"test"];
         
         Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
         
-        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (channel)";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (rulename)";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        if( iname != nil && chan != nil ) { // the minimum requirements for this input type
+        if( iname != nil && rule != nil ) { // the minimum requirements for this input type
             if( !pname )  pname = [iname copy];
             [input setObject:pname     forKey:@"pname"];
             [input setObject:iname     forKey:@"iname"];
             [input setObject:@"ifttt"  forKey:@"type"];
-            [input setObject:chan      forKey:@"arg1"];
+            [input setObject:rule      forKey:@"arg1"];
             
             if( testmode ) {
                 [self getIftttResponse:false];
@@ -851,8 +858,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     // add a URL watching input
     [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* url   = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
@@ -885,8 +892,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     // add a file watching input
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
@@ -919,8 +926,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
             
     // add a script execing input
     [http get:@"/blink1/input/script" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
         
@@ -969,8 +976,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     // add a cpu load watching input
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* min   = [request param:@"arg1"];
         NSString* max   = [request param:@"arg2"];
         NSString* test  = [request param:@"test"];
@@ -1006,8 +1013,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     // add a network load watching input
     [http get:@"/blink1/input/netload" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"] ];
+        NSString* pname = [self trimString: [request param:@"pname"] ];
         NSString* min   = [request param:@"arg1"];
         NSString* max   = [request param:@"arg2"];
         NSString* test  = [request param:@"test"];
@@ -1214,6 +1221,11 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 }
 
 
+// little utility to trim 
+- (NSString* ) trimString: (NSString*)str
+{
+    return [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
 
 @end
 
