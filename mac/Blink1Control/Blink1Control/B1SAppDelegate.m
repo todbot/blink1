@@ -43,6 +43,8 @@
 @synthesize blink1status = _blink1status;
 @synthesize blink1id     = _blink1id;
 @synthesize blink1serial = _blink1serial;
+@synthesize showDockIcon = _showDockIcon;
+@synthesize matchMenuIcon = _matchMenuIcon;
 
 @synthesize statusItem;
 @synthesize statusMenu;
@@ -52,7 +54,8 @@
 @synthesize http;
 @synthesize blink1;
 
-const Boolean updateStatusbarIcon = false;
+@synthesize updateMenubarIcon;
+
 
 const NSInteger http_port_default = 8934;
 
@@ -452,8 +455,15 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     //NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
     NSString* host_id_prefs   = [prefs stringForKey:@"host_id"];
     http_port                 = [prefs integerForKey:@"http_port"];
-    //BOOL first_run            = [prefs boolForKey:@"first_run"];
 
+    updateMenubarIcon         = [prefs boolForKey:@"updateMenubarIcon"];
+    iconInDock                = [prefs boolForKey:@"iconInDock"];
+    if (iconInDock) {
+        ProcessSerialNumber psn = { 0, kCurrentProcess };
+        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+    }
+    // above from: http://stackoverflow.com/questions/1082374/making-a-checkbox-toggle-the-dock-icon-on-and-off
+    
     if( http_port == 0 ) {
         http_port = http_port_default;
     }
@@ -474,8 +484,6 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     
     DLog(@"blink1_id:%@",[blink1 blink1_id]);
     
-    //if( !first_run ) {
-    //}
 }
 
 //
@@ -489,6 +497,8 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     [prefs setObject:[blink1 blink1_id]     forKey:@"blink1_id"];
     [prefs setObject:[blink1 host_id]       forKey:@"host_id"];
     [prefs setInteger:http_port             forKey:@"http_port"];
+    [prefs setBool:iconInDock               forKey:@"iconInDock"];
+    [prefs setBool:updateMenubarIcon        forKey:@"updateMenubarIcon"];
     [prefs synchronize];
     //}
 }
@@ -503,15 +513,15 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     blink1 = [[Blink1 alloc] init];      // set up blink(1) library
     [blink1 enumerate];
     
-    if( updateStatusbarIcon ) {
-        __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
-        blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
-        {
-            NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
-            [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
+    __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
+    blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
+    {
+        if( [weakSelf updateMenubarIcon] ) {
             [weakSelf updateStatusImageHue:lastColor];
-        };
-    }
+            //NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
+            //[[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
+        }
+    };
     
     // set up json parser
     _jsonparser = [[SBJsonParser alloc] init];
@@ -1072,7 +1082,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
 
     //Allocates and loads the images into the application which will be used for our NSStatusItem
-    NSBundle *bundle = [NSBundle mainBundle];    
+    NSBundle *bundle = [NSBundle mainBundle];
     statusImageBase = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1" ofType:@"png"]];
     
     [statusItem setImage:statusImageBase];
@@ -1136,6 +1146,9 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 //FIXME: what's the better way of doing this?
 - (void) updateUI
 {
+    [_showDockIcon setState: (iconInDock) ? NSOnState : NSOffState];
+    [_matchMenuIcon setState: (updateMenubarIcon) ? NSOnState : NSOffState];
+
     if( [[blink1 serialnums] count] ) {
         NSString* serstr = [[blink1 serialnums] objectAtIndex:0];
         [_blink1serial setTitle: [NSString stringWithFormat:@"serial:%@",serstr]]; // FIXME: just use [blink1 serial]?
@@ -1211,6 +1224,24 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     [statusItem popUpStatusItemMenu:statusMenu];
 }
 
+// GUI action: toggle whether menubar icon is colored like blink1
+- (IBAction) matchMenuIconToggle: (id) sender
+{
+    updateMenubarIcon = ([_matchMenuIcon state] == NSOffState);  // toggle
+    [_matchMenuIcon setState: (updateMenubarIcon) ? NSOnState : NSOffState];
+    NSLog(@"matchMenuIconToggle: %d",updateMenubarIcon);
+    [self savePrefs];
+}
+
+// GUI action: toggle whether app has a dock icon or not
+- (IBAction) dockIconToggle: (id) sender
+{
+    iconInDock = ([_showDockIcon state] == NSOffState); // toggle
+    [_showDockIcon setState: (iconInDock) ? NSOnState : NSOffState];
+    NSLog(@"dockIconToggle: %d",iconInDock);
+    [self savePrefs];
+}
+
 // GUI action: quit the app
 - (IBAction) quit: (id) sender
 {
@@ -1221,75 +1252,16 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 }
 
 
+
 // little utility to trim 
 - (NSString* ) trimString: (NSString*)str
 {
     return [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
+
 @end
 
 
-
-
-/*
-
- //[self performSelectorOnMainThread:@selector(updateWatchFile:)
- //                       withObject:fpath
- //                    waitUntilDone:NO];
- //DLog(@"watching file %@",fpath);
- //}
- //else {
- //path = watchPath;
- //}
- 
- *
- NSString* filecontents = @"";
- if( watchFileChanged ) {
- filecontents = [NSString stringWithContentsOfFile:path
- encoding:NSUTF8StringEncoding error:nil];
- watchFileChanged = false;
- }
- 
- // set up file watcher
- myVDKQ = [[VDKQueue alloc] init];
- [myVDKQ setDelegate:self];
- [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];  //FIXME: test
- 
-
- // for "watchfile" functionality, should be put in its own class
- -(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
- {
- DLog(@"watch file: %@ %@", noteName, fpath);
- if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
- DLog(@"watcher: file written %@ %@", noteName, fpath);
- watchFileChanged = true;
- }
- // FIXME: this doesn't work
- if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
- DLog(@"re-adding deleted file");
- [self updateWatchFile:fpath];
- }
- }
- 
- // for "watchfile" functionality, should be put in its own class
- - (void)updateWatchFile:(NSString*)wPath
- {
- DLog(@"updateWatchFile %@",wPath);
- BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:wPath];
- if( !fileExists ) { // if no file, make one to watch, with dummy content
- NSString *content = @"Put this in a file please.";
- NSData *fileContents = [content dataUsingEncoding:NSUTF8StringEncoding];
- [[NSFileManager defaultManager] createFileAtPath:wPath
- contents:fileContents
- attributes:nil];
- }
- 
- if( myVDKQ != nil ) [myVDKQ removePath:wPath];
- [myVDKQ addPath:wPath];
- watchFileChanged = true;
- }
- 
-*/
 
 
