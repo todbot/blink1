@@ -103,11 +103,12 @@ ifeq "$(OS)" "windows"
 LIBTARGET = blink1-lib.dll
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
-LIBS +=  -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
+LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
 OBJS = ./hidapi/windows/hid.o
 
 EXEFLAGS =
-LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a
+#LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a $(LIBS)
+LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
 
 EXE= .exe
 endif
@@ -180,7 +181,7 @@ blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) -g $(OBJS) $(EXEFLAGS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
 
 lib: $(OBJS)
-	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) 
+	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
 
 package: blink1-tool
