@@ -21,6 +21,8 @@
 @synthesize blink1;
 
 
+// parse color pattern text format
+//
 - (Boolean) setupFromPatternString:(NSString*)patternstr
 {
     NSArray* parts = [patternstr componentsSeparatedByString:@","];
@@ -39,6 +41,7 @@
             NSString* timestr  = [parts objectAtIndex:1+i+1];
             NSColor* color = [Blink1 colorFromHexRGB:colorstr];
             NSNumber* secs = [NSNumber numberWithFloat:[timestr floatValue]];
+            if( color == nil ) color = [Blink1 colorFromInt:0]; // default to black
             [colors addObject: color];
             [times  addObject: secs];
         }
