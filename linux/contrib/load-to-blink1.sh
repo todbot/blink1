@@ -127,9 +127,9 @@ while true; do
     # but this makes it handy if you want to echo or do something
     # with the actual load values later, either here or via
     # copy-paste elsewhere ;)
-    load1=$(uptime | awk '{ print $10 }' | cut -c1-4)
-    load5=$(uptime | awk '{ print $11 }' | cut -c1-4)
-    load15=$(uptime | awk '{ print $12 }' | cut -c1-4)
+    load1=$(uptime | awk '{ n = NF - 2; print $n }' | cut -c1-4)
+    load5=$(uptime | awk '{ n = NF - 1; print $n }' | cut -c1-4)
+    load15=$(uptime | awk '{ print $NF }' | cut -c1-4)
 
     res1=$(echo "$load1 > $THRESHOLD_1" | bc)
     res5=$(echo "$load5 > $THRESHOLD_5" | bc)
