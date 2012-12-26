@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 namespace Blink1Lib
 {
     public class Blink1
     {
-        static void Main(string[] args)
-        {
-        }
-
         /// <summary>
         /// Library for communicating with blink(1) USB RGB LEDs.
         /// On instantiation, enumerates the USB and records any plugged in blink(1) devices. 
@@ -26,11 +18,11 @@ namespace Blink1Lib
         /// Open blink(1) device for use.  If multiple blink(1)s, opens the first device. use OpenById for a specific device
         /// </summary>
         /// <returns>true if device was opened, false if no device available.</returns>
+        /// <remarks>http://msdn.microsoft.com/en-us/library/system.intptr.zero(v=vs.100).aspx</remarks>
         public Boolean open()
         {
             dev = blink1_open();
-            if (dev == null) return false;
-            return true;
+            return dev != IntPtr.Zero;
         }
 
         /// <summary>
@@ -38,11 +30,11 @@ namespace Blink1Lib
         /// </summary>
         /// <param name="i">integer id (0,1,2...) of device to open</param>
         /// <returns>true if device was opened, false otherwise</returns>
+        /// <remarks>http://msdn.microsoft.com/en-us/library/system.intptr.zero(v=vs.100).aspx</remarks>
         public Boolean openById(int i)
         {
             dev = blink1_openById(i);
-            if (dev == null) return false;
-            return true;
+            return dev != IntPtr.Zero;
         }
 
         /// <summary>
@@ -100,12 +92,7 @@ namespace Blink1Lib
         public bool setPatternAtPosition(int r, int g, int b, int millis, int pos)
         {
             int ret = blink1_writePatternLine(dev, millis, r, g, b, pos);
-            if (ret > -1)
-            {
-                return true;
-            }
-            else
-                return false;
+            return ret > -1;
         }
 
         // see: http://msdn.microsoft.com/en-us/magazine/cc164123.aspx#S7
@@ -116,22 +103,22 @@ namespace Blink1Lib
         /// <summary>
         /// pointer for last device opened
         /// </summary>
-        private System.IntPtr dev;
+        private IntPtr dev;
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern System.IntPtr blink1_open();
+        public static extern IntPtr blink1_open();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern System.IntPtr blink1_openById(int i);
+        public static extern IntPtr blink1_openById(int i);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void blink1_close(System.IntPtr dev);
+        public static extern void blink1_close(IntPtr dev);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern System.IntPtr blink1_setRGB(System.IntPtr dev, int r, int g, int b);
+        public static extern IntPtr blink1_setRGB(IntPtr dev, int r, int g, int b);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern System.IntPtr blink1_fadeToRGB(System.IntPtr dev, int millis, int r, int g, int b);
+        public static extern IntPtr blink1_fadeToRGB(IntPtr dev, int millis, int r, int g, int b);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int blink1_enumerate();
@@ -140,16 +127,16 @@ namespace Blink1Lib
         public static extern IntPtr blink1_getCachedSerial(int i);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int blink1_play(System.IntPtr dev, int play, int pos);
+        public static extern int blink1_play(IntPtr dev, int play, int pos);
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int blink1_writePatternLine(System.IntPtr dev, int fadeMillis,
+        public static extern int blink1_writePatternLine(IntPtr dev, int fadeMillis,
                                     int r, int g, int b,
                                     int pos);
 
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int blink1_readPatternLine(System.IntPtr dev, ref int fadeMillis,
+        public static extern int blink1_readPatternLine(IntPtr dev, ref int fadeMillis,
                                    ref int r, ref int g, ref int b,
                                    int pos);
 
