@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Timers;
@@ -7,9 +9,11 @@ using System.Drawing;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
+using System.Configuration;
+using System.Globalization;
 using MiniHttpd;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json.Linq;
 using Blink1Lib;
 
 namespace Blink1Control
@@ -18,11 +22,16 @@ namespace Blink1Control
     class blink1HttpInterface
     {
         HttpWebServer bhI = new HttpWebServer(8934);
-        JTokenWriter jtw = new JTokenWriter();
-        blink1Server bs = new blink1Server();
+        //JTokenWriter jtw = new JTokenWriter();
+        Blink1 blink1 = new Blink1();
+
         //J bhIJW = new JsonTextWriter(new System.IO.TextWriter());
         public blink1HttpInterface()
         {
+            blink1.hostId = (string) Properties.Settings.Default["hostId"];
+            blink1.regenerateBlink1Id();
+            blink1.open();
+
             try
             {
                 VirtualDirectory root = new VirtualDirectory();
@@ -31,17 +40,30 @@ namespace Blink1Control
                 {
                     root.AddDirectory(d.Path);
                 }
-                VirtualDirectory blink1 = new VirtualDirectory("blink1",root);
+                VirtualDirectory blink1dir = new VirtualDirectory("blink1",root);
 
-                Blink1JSONFile id = new Blink1JSONFile("id", blink1, bs);
+                // FIXME: the below is completely gross, how to do HTTP routing in .NET?
+                Blink1JSONFile id        = new Blink1JSONFile("id", blink1dir, blink1);
                 id.GetStringResponse = blink1Id;
-                blink1.AddFile(id);   //add a virtual file for each json method
+                blink1dir.AddFile(id);   //add a virtual file for each json method
 
-                Blink1JSONFile id2 = new Blink1JSONFile("id2", blink1, bs);
+                Blink1JSONFile enumerate = new Blink1JSONFile("enumerate", blink1dir, blink1);
+                enumerate.GetStringResponse = blink1Enumerate;
+                blink1dir.AddFile(enumerate);   //add a virtual file for each json method
+
+                Blink1JSONFile regen     = new Blink1JSONFile("regenerateblink1id", blink1dir, blink1);
+                regen.GetStringResponse  = blink1RegenerateBlink1Id;
+                blink1dir.AddFile(regen);
+
+                Blink1JSONFile fadeToRGB = new Blink1JSONFile("fadeToRGB", blink1dir, blink1);
+                fadeToRGB.GetStringResponse = blink1FadeToRGB;
+                blink1dir.AddFile(fadeToRGB);
+
+                Blink1JSONFile id2       = new Blink1JSONFile("id2", blink1dir, blink1);
                 id2.GetStringResponse = blink1Id2;
-                blink1.AddFile(id2);   //add a virtual file for each json method
+                blink1dir.AddFile(id2);   //add a virtual file for each json method
 
-                root.AddDirectory(blink1);
+                root.AddDirectory(blink1dir);
                 bhI.Root = root;
                 bhI.Start();
             }
@@ -51,32 +73,89 @@ namespace Blink1Control
             }
         }
 
-        public delegate string GetJSONStringResponse(HttpRequest request, blink1Server bs);
+        public delegate string GetJSONStringResponse(HttpRequest request, Blink1 aBlink1);
 
-//    /blink1/id -- Display blink1_id and blink1 serial numbers (if any)
-
-        static string blink1Id(HttpRequest request, blink1Server bs)//example
+        //    /blink1/id -- Display blink1_id and blink1 serial numbers (if any)
+        static string blink1Id(HttpRequest request, Blink1 blink1)
         {
-            string serial = bs.getId();
-            return @"{
-""blink1_id"": ""44288083" + serial + @""",
-  ""blink1_serialnums"": [
-    """ + serial + @"""
-  ],
-  ""status"": ""blink1 id  "+  DateTime.Now + @"""
-}";
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("blink1_id", blink1.getBlink1Id());
+            List<string> serialnums = new List<string>();
+            for( int i=0; i < blink1.getCachedCount(); i++ ) {  // FIXME: surely a smarter way to do this
+                serialnums.Add( blink1.getCachedSerial(i) );
+            }
+            result.Add("blink1_serialnums", serialnums);
+            result.Add("status", "blink1 id");
+            string resultstr = JsonConvert.SerializeObject(result, Formatting.Indented);
+            return resultstr;
         }
 
-        static string blink1Id2(HttpRequest request, blink1Server bs)//example
+        //    /blink1/enumerate -- Re-enumerate and List available blink(1) devices
+        static string blink1Enumerate(HttpRequest request, Blink1 blink1)
         {
-            return @"\n\n{ suck it }\n\n";
+            string blink1Id_old = blink1.getBlink1Id();
+
+            blink1.enumerate();
+            blink1.regenerateBlink1Id();
+
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("blink1_id_old", blink1Id_old);
+            result.Add("blink1_id", blink1.getBlink1Id());
+            List<string> serialnums = new List<string>();
+            for (int i = 0; i < blink1.getCachedCount(); i++)
+            {  // FIXME: surely a smarter way to do this
+                serialnums.Add(blink1.getCachedSerial(i));
+            }
+            result.Add("blink1_serialnums", serialnums);
+            result.Add("status", "enumerate");
+            string resultstr = JsonConvert.SerializeObject(result, Formatting.Indented);
+            return resultstr;
         }
 
-//    /blink1/regenerateblinkid -- Generate, save, and return new blink1_id
+        //    /blink1/regenerateblinkid -- Generate, save, and return new blink1_id
+        static string blink1RegenerateBlink1Id(HttpRequest request, Blink1 blink1)
+        {
+            string blink1Id_old = blink1.getBlink1Id();
 
-//    /blink1/enumerate -- Re-enumerate and List available blink(1) devices
+            blink1.hostId = null;
+            blink1.enumerate();
+            blink1.regenerateBlink1Id();
 
-//    /blink1/fadeToRGB -- Send fadeToRGB command to blink(1) with hex color & fade time
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("blink1_id_old", blink1Id_old);
+            result.Add("blink1_id", blink1.getBlink1Id());
+            List<string> serialnums = new List<string>();
+            for (int i = 0; i < blink1.getCachedCount(); i++)
+            {  // FIXME: surely a smarter way to do this
+                serialnums.Add(blink1.getCachedSerial(i));
+            }
+            result.Add("blink1_serialnums", serialnums);
+            result.Add("status", "regenrateblink1id");
+            string resultstr = JsonConvert.SerializeObject(result, Formatting.Indented);
+            return resultstr;
+        }
+
+        //    /blink1/fadeToRGB -- Send fadeToRGB command to blink(1) with hex color & fade time
+        static string blink1FadeToRGB(HttpRequest request, Blink1 blink1)
+        {
+            // FIXME: stop pattern player
+            NameValueCollection query = request.Query;
+            string rgbstr  = query.Get("rgb");
+            string timestr = query.Get("time");
+            Color colr = System.Drawing.ColorTranslator.FromHtml(rgbstr);
+            float secs = float.Parse(timestr, CultureInfo.InvariantCulture);
+
+            blink1.fadeToRGB((int)(secs*1000), colr.R, colr.G, colr.B);
+
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", "fadeToRGB");
+            result.Add("rgb", System.Drawing.ColorTranslator.ToHtml(colr));
+            result.Add("time", secs.ToString("F3", CultureInfo.InvariantCulture));
+            string resultstr = JsonConvert.SerializeObject(result, Formatting.Indented);
+            return resultstr;
+ 
+        }
+
 
 //    /blink1/on -- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
 
@@ -119,21 +198,30 @@ namespace Blink1Control
 //    /blink1/pattern/play -- Play/test a specific color pattern
 
 //    /blink1/pattern/stop -- Stop a pattern playback, for a given pattern or all patterns
-        
+
+
+        static string blink1Id2(HttpRequest request, Blink1 blink1)//example
+        {
+            Properties.Settings.Default["blink1Id"] = blink1.getBlink1Id();
+            Properties.Settings.Default.Save();
+            //Settings.Default["blink1Id"] = blink1.getBlink1Id();
+            //Settings.Default.Save(); // Saves settings in application configuration file
+            return @"\n\n{ suck it }\n\n";
+        }
+
 
         public class Blink1JSONFile : IFile
         {
-            public blink1Server bs;
-            public Blink1JSONFile(string name, IDirectory parent, blink1Server bsp)
+            public Blink1 blink1;
+            public Blink1JSONFile(string name, IDirectory parent, Blink1 aBlink1)
             {
                 this.name = name;
                 this.parent = parent;
-                this.bs = bsp;
-                GetStringResponse = delegate(HttpRequest input, blink1Server bsa)
+                this.blink1 = aBlink1;
+                GetStringResponse = delegate(HttpRequest input, Blink1 ab)
                 {
                     return input.ToString();
                 };
-
             }
 
             string name;
@@ -146,14 +234,10 @@ namespace Blink1Control
             {
                 // Assign a MemoryStream to hold the response content.
                 request.Response.ResponseContent = new MemoryStream();
-
                 // Create a StreamWriter to which we
                 // can write some text, and write to it.
-                StreamWriter writer =
-                  new StreamWriter(request.Response.ResponseContent);
-
-                writer.WriteLine(GetStringResponse(request, bs));
-
+                StreamWriter writer = new StreamWriter(request.Response.ResponseContent);
+                writer.WriteLine(GetStringResponse(request, blink1));
                 // Don't forget to flush!
                 writer.Flush();
             }
@@ -169,118 +253,4 @@ namespace Blink1Control
 
     }
 
-    public class blink1Server
-    {
-        Blink1 blink1;
-        public blink1Server()
-        {
-            blink1 = new Blink1();            
-        }
-//        "Usage: \n"
-//"  %s <cmd> [options]\n"
-//"where <cmd> is one of:\n"
-//"  --blink <numtimes>          Blink on/off (specify --rgb before to blink a color)\n"
-//"  --random <numtimes>         Flash a number of random colors \n"
-//"  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
-//"  --on                        Turn blink(1) full-on white \n"
-//"  --red                       Turn blink(1) off \n"
-//"  --green                     Turn blink(1) red \n"
-//"  --blue                      Turn blink(1) green \n"
-//"  --off                       Turn blink(1) blue \n"
-//"  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
-//"  --readrgb <pos>             Read pattern RGB value at pos\n" 
-//"  --play <1/0,pos>            Start playing color sequence (at pos)\n"
-//"  --servertickle <1/0>        Turn on/off servertickle (uses -t msec) \n"
-//"  --list                      List connected blink(1) devices \n"
-//" Nerd functions: (not used normally) \n"
-//"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
-//"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
-//"  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
-//"  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
-//"  --version                   Display blink(1) firmware version \n"
-//"and [options] are: \n"
-//"  -g -nogamma                 Disable autogamma correction\n"
-//"  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
-//"  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
-//"  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
-//"  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
-//"  -v, --verbose               verbose debugging msgs\n"
-        /// <summary>
-        /// DEPRECATED: use blink1Lib object instead where possible
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        string runBlinkProcess(string args)
-        {
-            try
-            {
-                Process serverSideProcess = new Process();
-                serverSideProcess.StartInfo = new ProcessStartInfo("blink1-tool.exe");
-                serverSideProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                serverSideProcess.StartInfo.Arguments = args;
-                serverSideProcess.StartInfo.UseShellExecute = false;
-                serverSideProcess.StartInfo.RedirectStandardOutput = true;
-                serverSideProcess.Start();
-                string output = serverSideProcess.StandardOutput.ReadToEnd();
-                serverSideProcess.WaitForExit();
-                if (output != null && output != "")
-                {
-                    return output;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            return "";
-        }
-
-        public string getId(){
-            if (blink1.enumerate() > 0)
-            {
-                string re = blink1.getCachedSerial(0);
-                return re;
-            }
-            else return "";
-        }
-
-
-        public void sendPatternToBlink1(Color[] param)
-        {
-            for (int i = 0; i < param.Length; i++)
-            {
-                Color c = param[i];
-                //runBlinkProcess(string.Format("-- savergb {0} {1} {2} {3}", c.R, c.G, c.B, i));
-                blink1.setPatternAtPosition(c.R, c.G, c.B, 500, i);
-            }
-        }
-
-        Timer delayTrigger = new Timer();
-        Timer blink1Poll = new Timer();
-
-
-
-        public enum IFTTT
-        {
-        }
-
-        public void parseIFTTT()
-        {
-        }
-
-
-
-        interface json
-        {
-        }
-
-        public void sendSingleColor(Color c)
-        {
-            blink1.setRGB(c.R, c.G, c.B);
-        }
-
-
-
-
-    }
 }

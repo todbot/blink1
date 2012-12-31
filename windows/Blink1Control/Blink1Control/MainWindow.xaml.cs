@@ -22,10 +22,7 @@ namespace Blink1Control
     /// </summary>
     public partial class MainWindow : Window
     {
-        //public HttpListener _httpListener = new HttpListener();
         blink1HttpInterface bhi = new blink1HttpInterface();
-        blink1Server bs = new blink1Server();
-        //public bool disposeTime = false;
 
         public MainWindow()
         {
