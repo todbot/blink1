@@ -9,6 +9,8 @@ namespace Blink1Lib
 {
     public class Blink1
     {
+        string blink1Id;
+
         static void Main(string[] args)
         {
         }
@@ -20,6 +22,42 @@ namespace Blink1Lib
         public Blink1()
         {
             enumerate();
+        }
+
+        /// <summary>
+        /// hostid is a component of the blink1Id (aka IFTT key) 
+        /// </summary>
+        public string hostId { get; set; }
+
+        /// <summary>
+        /// Returns the blink(1) uid (aka IFTTT key) 
+        /// </summary>
+        /// <returns>blink1_uid</returns>
+        public string getBlink1Id()
+        { 
+            return blink1Id; // FIXME: how to make this get-only?
+        }
+
+        /// <summary>
+        // Create a blink1_id (aka "IFTTT Key" and other names)
+        // If no blink1 device is present, create a fake blink1_id with zerod serial
+        /// </summary>
+        /// <returns>blink1_id</returns>
+        public string regenerateBlink1Id()
+        {
+            if (hostId == null || hostId.Equals("00000000") )
+            {
+                Random rand = new Random();
+                int rval = rand.Next();
+                hostId = rval.ToString("X8");
+            }
+            string blink1_serial = "00000000"; // 8-digit hexnum
+            if (getCachedCount() > 0 )
+            {
+                blink1_serial = getCachedSerial(0);
+            }
+            blink1Id = hostId + blink1_serial;
+            return blink1Id;
         }
 
         /// <summary>
@@ -86,6 +124,15 @@ namespace Blink1Lib
         }
 
         /// <summary>
+        /// get count of cached serial numbers of currently connected blink(1) devices
+        /// </summary>
+        /// <returns>number of blink(1) devices</returns>
+        public int getCachedCount()
+        {
+           return blink1_getCachedCount();
+        }
+
+        /// <summary>
         /// get serial number of blink1 device at index
         /// </summary>
         /// <param name="i"></param>
@@ -135,6 +182,9 @@ namespace Blink1Lib
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int blink1_enumerate();
+
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int blink1_getCachedCount();
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr blink1_getCachedSerial(int i);
