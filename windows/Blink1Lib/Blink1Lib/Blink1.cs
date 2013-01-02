@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
@@ -36,6 +37,11 @@ namespace Blink1Lib
         public string getBlink1Id()
         { 
             return blink1Id; // FIXME: how to make this get-only?
+        }
+
+        public Color getLastColor()
+        {
+            return Color.Black;
         }
 
         /// <summary>
@@ -112,6 +118,16 @@ namespace Blink1Lib
         public void fadeToRGB(int millis, int r, int g, int b)
         {
             blink1_fadeToRGB(dev, millis, r, g, b);
+        }
+
+        /// <summary>
+        /// Same as fadeToRGB, but does an open/close around it
+        /// </summary>
+        public void simpleFadeToRGB(double secs, Color c)
+        {
+            open();
+            fadeToRGB((int)(secs*1000), c.R, c.G, c.B);
+            close();
         }
 
         /// <summary>
