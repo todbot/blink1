@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.Globalization;
+using Blink1Lib;
 
 
 namespace Blink1Control
@@ -20,6 +22,7 @@ namespace Blink1Control
 
         List<Color> colors;
         List<float> times;
+        Timer timer;
 
         /// <summary>
         /// number of repeats for this pattern (0=play forever) 
@@ -33,20 +36,31 @@ namespace Blink1Control
         /// <summary>
         /// Is this pattern playing 
         /// </summary>
-        public Boolean playing { get; set; }
+        public Boolean playing { get; set; } // FIXME: how to make this read-only except in this class?
+        /// <summary>
+        /// String representation of pattern repeats, colors & times
+        /// </summary>
         public string pattern
         {
             get
             {
                 List<string> sa = new List<string>();
                 for (int i = 0; i < colors.Count; i++) {
-                    sa.Add(System.Drawing.ColorTranslator.ToHtml(colors[i]));
+                    sa.Add(ColorTranslator.ToHtml(colors[i]));
                     sa.Add(times[i].ToString("F2", CultureInfo.InvariantCulture));
                 }
                 return String.Join(",", sa);
             }
         }
+        
+        public Blink1Server blink1Server { get; set; } //
 
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="aName"></param>
+        /// <param name="patternstr"></param>
         public Blink1Pattern(string aName, string patternstr)
         {
             name = aName;
@@ -79,7 +93,7 @@ namespace Blink1Control
                     try {
                         string rgbstr = values[1 + i + 0];
                         string secstr = values[1 + i + 1];
-                        colr = System.Drawing.ColorTranslator.FromHtml(rgbstr);
+                        colr = ColorTranslator.FromHtml(rgbstr);
                         secs = float.Parse(secstr, CultureInfo.InvariantCulture);
                     }
                     catch (Exception e) { Console.WriteLine(e.ToString()); }
@@ -96,15 +110,59 @@ namespace Blink1Control
         /// </summary>
         public void play()
         {
+            playpos = 0;
+            playcount = 0;
+            playing = true;
 
+            Color colr = colors[playpos];
+            float nextTime = times[playpos];
+
+            float fadeTime = nextTime / 2;
+            blink1Server.fadeToRGB(fadeTime, colr);
+
+            timer = new Timer( update, null, (int)(nextTime*1000), 0);
         }
+
+        /// <summary>
+        /// Called whenever a new color needs to be played, via timer
+        /// </summary>
+        public void update(Object stateInfo)
+        {
+            if (!playing) return;
+            Console.WriteLine("update! "+name);
+
+            Boolean scheduleNext = true;
+            playpos++;
+            if( playpos == times.Count() ) {
+                playpos = 0;
+                if( repeats != 0 ) {  // infinite
+                    playcount++;
+                    if( playcount == repeats ) {
+                        scheduleNext = false;
+                    }
+                }
+            }
+    
+            if( scheduleNext ) {
+                float nextTime = times[playpos];
+                Color color = colors[playpos];
+                Console.WriteLine("update: scheduleNext: "+nextTime);
+                //DLog(@"%@ updt p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 hexStringFromColor:color],nextTime);
+                blink1Server.fadeToRGB(nextTime/2, color);
+                timer = new Timer( update, null, (int)(nextTime*1000), 0);
+            } else {
+                playing = false;
+            }
+        }
+
         /// <summary>
         /// Stop a pattern playing
         /// </summary>
         public void stop()
         {
-
+            playing = false;
         }
+
 
         public override string ToString()
         {
