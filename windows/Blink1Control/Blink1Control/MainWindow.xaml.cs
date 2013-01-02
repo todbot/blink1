@@ -22,7 +22,7 @@ namespace Blink1Control
     /// </summary>
     public partial class MainWindow : Window
     {
-        blink1HttpInterface bhi = new blink1HttpInterface();
+        Blink1Server blink1Server = new Blink1Server();
 
         public MainWindow()
         {
