@@ -84,11 +84,28 @@ namespace Blink1Control
                 pattadd.GetStringResponse = blink1PatternAdd;
                 blink1dir.AddFile(pattadd);
 
+                Blink1JSONFile pattdel = new Blink1JSONFile("patterndel", blink1dir, this);
+                pattdel.GetStringResponse = blink1PatternDel;
+                blink1dir.AddFile(pattdel);
+
+                Blink1JSONFile pattdelall = new Blink1JSONFile("patterndelall", blink1dir, this);
+                pattdelall.GetStringResponse = blink1PatternDelAll;
+                blink1dir.AddFile(pattdelall);
+
+                Blink1JSONFile pattplay = new Blink1JSONFile("patternplay", blink1dir, this);
+                pattplay.GetStringResponse = blink1PatternPlay;
+                blink1dir.AddFile(pattplay);
+
+                Blink1JSONFile pattstop = new Blink1JSONFile("patternstop", blink1dir, this);
+                pattstop.GetStringResponse = blink1PatternStop;
+                blink1dir.AddFile(pattstop);
+
+
                 /*
-                Blink1JSONFile id2       = new Blink1JSONFile("id2", blink1dir, blink1);
-                id2.GetStringResponse = blink1Id2;
-                blink1dir.AddFile(id2);   //add a virtual file for each json method
-                */
+                                Blink1JSONFile id2       = new Blink1JSONFile("id2", blink1dir, blink1);
+                                id2.GetStringResponse = blink1Id2;
+                                blink1dir.AddFile(id2);   //add a virtual file for each json method
+                                */
 
                 root.AddDirectory(blink1dir);
 
@@ -101,6 +118,18 @@ namespace Blink1Control
             }
         }
 
+        /// <summary>
+        /// Same as Blink1.fadeToRGB, but does an open/close around it
+        /// </summary>
+        public void fadeToRGB(double secs, Color c)
+        {
+            Console.WriteLine("fadeToRGB: rgb:" + ColorTranslator.ToHtml(c) + " secs:" + secs);
+            blink1.open();
+            blink1.fadeToRGB((int)(secs * 1000), c.R, c.G, c.B);
+            blink1.close();
+        }
+
+        // why do we need this?
         public delegate string GetJSONStringResponse(HttpRequest request, Blink1Server aBlink1Server);
 
         //    /blink1/id -- Display blink1_id and blink1 serial numbers (if any)
@@ -166,7 +195,6 @@ namespace Blink1Control
         //    /blink1/fadeToRGB -- Send fadeToRGB command to blink(1) with hex color & fade time
         static string blink1FadeToRGB(HttpRequest request, Blink1Server blink1Server)
         {
-            Blink1 blink1 = blink1Server.blink1;
             // FIXME: stop pattern player
             //NameValueCollection query = request.Query;
             string rgbstr  = request.Query.Get("rgb");
@@ -176,7 +204,7 @@ namespace Blink1Control
             Color colr = System.Drawing.ColorTranslator.FromHtml(rgbstr);
             float secs = float.Parse(timestr, CultureInfo.InvariantCulture);
 
-            blink1.simpleFadeToRGB(secs, colr);
+            blink1Server.fadeToRGB(secs, colr);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "fadeToRGB");
@@ -188,8 +216,7 @@ namespace Blink1Control
         //    /blink1/on -- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
         static string blink1On(HttpRequest request, Blink1Server blink1Server)
         {
-            Blink1 blink1 = blink1Server.blink1;
-            blink1.simpleFadeToRGB(0.1, Color.White);
+            blink1Server.fadeToRGB(0.1, Color.White);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "on");
@@ -199,8 +226,7 @@ namespace Blink1Control
         //    /blink1/off -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
         static string blink1Off(HttpRequest request, Blink1Server blink1Server)
         {
-            Blink1 blink1 = blink1Server.blink1;
-            blink1.simpleFadeToRGB(0.1, Color.Black);
+            blink1Server.fadeToRGB(0.1, Color.Black);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "off");
@@ -250,10 +276,57 @@ namespace Blink1Control
    
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
-            result.Add("pattern", patt.ToString());
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
+        //    /blink1/pattern/delall -- Remove all color patterns from color pattern list
+        static string blink1PatternDelAll(HttpRequest request, Blink1Server blink1Server)
+        {
+            foreach (KeyValuePair<string, Blink1Pattern> kvp in blink1Server.patterns) {
+                kvp.Value.stop();
+            }
+            blink1Server.patterns.Clear();
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", "all patterns removed");
+            return JsonConvert.SerializeObject(result, Formatting.Indented);
+        }
+
+        //    /blink1/pattern/play -- Play/test a specific color pattern
+        static string blink1PatternPlay(HttpRequest request, Blink1Server blink1Server)
+        {
+            string pname = request.Query.Get("pname");
+            string statusstr = "no pattern by that name";
+            if (pname != null) {
+                Blink1Pattern patt = null ;     
+                if( blink1Server.patterns.TryGetValue(pname, out patt)) {
+                    patt.blink1Server = blink1Server; // justin case
+                    patt.play();
+                    statusstr = "pattern '" + pname + "' playing";
+                }
+            }
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", statusstr);
+            return JsonConvert.SerializeObject(result, Formatting.Indented);
+        }
+
+        //    /blink1/pattern/stop -- Stop a pattern playback, for a given pattern or all patterns
+        static string blink1PatternStop(HttpRequest request, Blink1Server blink1Server)
+        {
+            string pname = request.Query.Get("pname");
+            string statusstr = "no pattern by that name";
+            if (pname != null) {
+                Blink1Pattern patt = null ;
+                if( blink1Server.patterns.TryGetValue(pname, out patt) ) {
+                    patt.stop();
+                    statusstr = "pattern '" + pname + "' stopped";
+                }
+            }
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", statusstr);
+            return JsonConvert.SerializeObject(result, Formatting.Indented);
+        }
+
+        
 //    /blink1/lastColor -- Return the last color command sent to blink(1)
 
 //Input Selection  //interface methods to patterns and watchers
@@ -281,13 +354,8 @@ namespace Blink1Control
 
 
 
-//    /blink1/pattern/delall -- Remove all color patterns from color pattern list
 
-//    /blink1/pattern/play -- Play/test a specific color pattern
-
-//    /blink1/pattern/stop -- Stop a pattern playback, for a given pattern or all patterns
-
-
+        // testing
         static string blink1Id2(HttpRequest request, Blink1 blink1)//example
         {
             Properties.Settings.Default["blink1Id"] = blink1.getBlink1Id();
@@ -297,7 +365,9 @@ namespace Blink1Control
             return @"\n\n{ suck it }\n\n";
         }
 
-
+        /// <summary>
+        /// Weirdass wrapper for binding urls to funcblocks, why do we need this?
+        /// </summary>
         public class Blink1JSONFile : IFile
         {
             public Blink1Server blink1Server;

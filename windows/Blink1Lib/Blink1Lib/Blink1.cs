@@ -121,16 +121,6 @@ namespace Blink1Lib
         }
 
         /// <summary>
-        /// Same as fadeToRGB, but does an open/close around it
-        /// </summary>
-        public void simpleFadeToRGB(double secs, Color c)
-        {
-            open();
-            fadeToRGB((int)(secs*1000), c.R, c.G, c.B);
-            close();
-        }
-
-        /// <summary>
         /// FIXME: make more like Blink1.m enumerate
         /// </summary>
         /// <returns>number of blink1 devices</returns>
