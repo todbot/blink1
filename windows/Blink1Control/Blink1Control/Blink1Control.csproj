@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Settings.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -64,6 +65,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="blink1ControlServer.cs" />
+    <Compile Include="Blink1Input.cs" />
     <Compile Include="Blink1Pattern.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
