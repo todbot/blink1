@@ -16,14 +16,19 @@ using MiniHttpd;
 using Newtonsoft.Json;
 using Blink1Lib;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 
 namespace Blink1Control
 {
-
     class Blink1Server
     {
-        HttpWebServer bhI = new HttpWebServer(8934);
+        static int httpPortDefault = 8934;
+        static string iftttEventUrl = "http://api.thingm.com/blink1/events";
+        static float iftttUpdateInterval = 15.0F;
+        static float urlUpdateInterval = 15.0F;
+
+        HttpWebServer bhI = new HttpWebServer( httpPortDefault );
         //JTokenWriter jtw = new JTokenWriter();
         Blink1 blink1 = new Blink1();
 
@@ -40,7 +45,20 @@ namespace Blink1Control
             
             blink1.regenerateBlink1Id();
 
-            
+            //MySettings.Instance.Parameters["foo"] = "bar";
+            //MySettings.Instance.Save();
+            //MySettings.Instance.Reload();
+
+            //MySettings mysettings = new MySettings();
+            //Blink1Input ainput = new Blink1Input("foobee", "url", "http://shut.up/now", null, null);
+            //ainput.pname = "gosh!";
+            //inputs["golly"] = ainput; // NOTE: this replaces input if already exists
+            //mysettings.Parameters["todgod"] = "jorby";
+            //MySettings.saveSettings(mysettings);
+
+            //string todid = (string) Properties.Settings.Default["todId"];
+            //if (todid != null) {
+            //}
             /*
             if (Properties.Settings.Default.TheInputs == null) {
                 Console.WriteLine("*** New Settings! ****\n");
@@ -130,7 +148,6 @@ namespace Blink1Control
                                 id2.GetStringResponse = blink1Id2;
                                 blink1dir.AddFile(id2);   //add a virtual file for each json method
                                 */
-
                 root.AddDirectory(blink1dir);
 
                 bhI.Root = root;
@@ -393,15 +410,17 @@ namespace Blink1Control
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string url   = request.Query.Get("url");
+            string url   = request.Query.Get("arg1");
             string test  = request.Query.Get("test");
-            if (iname == null) iname = pname;
-            Boolean testmode = (test.Equals("on") || test.Equals("true"));
+            if (pname == null) pname = iname;
+            Boolean testmode = (test==null) ? false : (test.Equals("on") || test.Equals("true"));
 
             string statusstr = "must specifiy 'iname' and 'arg1' (url)";
 
+            Blink1Input input = null;
             if( url != null && iname != null ) {
-                Blink1Input input = new Blink1Input(iname, "url", url, null, null);
+                statusstr = "input url";
+                input = new Blink1Input(iname, "url", url, null, null);
                 input.pname = pname;
                 blink1Server.updateUrlInput(input);
                 if (!testmode) {
@@ -411,6 +430,7 @@ namespace Blink1Control
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
+            result.Add("input", input);
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
@@ -421,7 +441,8 @@ namespace Blink1Control
             string iname = request.Query.Get("iname");
             string url = request.Query.Get("url");
             string test = request.Query.Get("test");
-            if (iname == null) iname = pname;
+            if (pname == null) pname = iname;
+            Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
 
             // FIXME: insert magic here
 
@@ -470,6 +491,7 @@ namespace Blink1Control
                 return;
             }
             string patternstr = parsePatternOrColorString(resp);
+
             if (patternstr != null && !patternstr.Equals(input.lastVal)) {
                 input.lastVal = patternstr;
                 playPattern(patternstr);
@@ -535,7 +557,21 @@ namespace Blink1Control
         /// <returns></returns>
         public string parsePatternOrColorString(string str)
         {
-            return str;
+            // read color pattern, can be of form: pattern: "my pattern"
+            Regex patternregex = new Regex(@"\""*pattern\""*:\s*\""(.+?)\""");
+            Match matchp = patternregex.Match(str);
+            if( matchp.Success ) { 
+                return matchp.Groups[1].Value;
+            }
+            //
+            Regex hexcoderegex = new Regex(@"(#[A-Fa-f0-9]{6})");
+            Match matchc = hexcoderegex.Match(str.ToUpper());
+            if( matchc.Success ) {
+                return matchc.Groups[1].Value;
+            }
+
+            //Color c = ColorTranslator.FromHtml(str);
+            return null;
         }
 
         /// <summary>
