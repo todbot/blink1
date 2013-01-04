@@ -8,5 +8,8 @@
     <Setting Name="hostId" Type="System.String" Scope="User">
       <Value Profile="(Default)">00000000</Value>
     </Setting>
+    <Setting Name="todtest" Type="System.String" Scope="User">
+      <Value Profile="(Default)">hello</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
