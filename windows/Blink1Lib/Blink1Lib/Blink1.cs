@@ -10,7 +10,21 @@ namespace Blink1Lib
 {
     public class Blink1
     {
-        string blink1Id;
+        /// <summary>
+        /// Returns the blink(1) uid (aka IFTTT key) 
+        /// </summary>
+        /// <returns>blink1_uid</returns>
+        public string blink1Id { get; private set; }
+        /// <summary>
+        /// hostid is a component of the blink1Id (aka IFTT key) 
+        /// </summary>
+        public string hostId { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Color lastColor { get; private set; }
+
+        public string lastColorString { get { return Blink1.colorToHexCode(lastColor); } }
 
         static void Main(string[] args)
         {
@@ -23,25 +37,7 @@ namespace Blink1Lib
         public Blink1()
         {
             enumerate();
-        }
-
-        /// <summary>
-        /// hostid is a component of the blink1Id (aka IFTT key) 
-        /// </summary>
-        public string hostId { get; set; }
-
-        /// <summary>
-        /// Returns the blink(1) uid (aka IFTTT key) 
-        /// </summary>
-        /// <returns>blink1_uid</returns>
-        public string getBlink1Id()
-        { 
-            return blink1Id; // FIXME: how to make this get-only?
-        }
-
-        public Color getLastColor()
-        {
-            return Color.Black;
+            lastColor = Color.Black;
         }
 
         /// <summary>
@@ -51,6 +47,7 @@ namespace Blink1Lib
         /// <returns>blink1_id</returns>
         public string regenerateBlink1Id()
         {
+            Console.WriteLine("hostId:" + hostId);
             if (hostId == null || hostId.Equals("00000000") )
             {
                 Random rand = new Random();
@@ -105,6 +102,7 @@ namespace Blink1Lib
         /// <param name="b">blue component</param>
         public void setRGB(int r, int g, int b)
         {
+            lastColor = Color.FromArgb(r, g, b);
             blink1_setRGB(dev, r, g, b);
         }
 
@@ -117,7 +115,18 @@ namespace Blink1Lib
         /// <param name="b">blue component</param>
         public void fadeToRGB(int millis, int r, int g, int b)
         {
+            lastColor = Color.FromArgb(r, g, b);
             blink1_fadeToRGB(dev, millis, r, g, b);
+        }
+
+        /// <summary>
+        /// Convert a Color to a HTML hex code (e.g."#FFCC33")
+        /// </summary>
+        /// <param name="c">color to convert</param>
+        /// <returns>hex code string</returns>
+        public static String colorToHexCode(Color c)
+        {
+            return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
         }
 
         /// <summary>

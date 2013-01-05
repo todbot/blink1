@@ -11,38 +11,38 @@ using System.IO;
 using System.Diagnostics;
 using System.Configuration;
 using System.Globalization;
-using System.Net;
+using System.Collections.ObjectModel;
 using MiniHttpd;
 using Newtonsoft.Json;
 using Blink1Lib;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
 
 
 namespace Blink1Control
 {
-    class Blink1Server
+    public class Blink1Server
     {
         static int httpPortDefault = 8934;
-        static string iftttEventUrl = "http://api.thingm.com/blink1/events";
-        static float iftttUpdateInterval = 15.0F;
-        static float urlUpdateInterval = 15.0F;
+        public static string iftttEventUrl = "http://api.thingm.com/blink1/events";
+        public static float iftttUpdateInterval = 15.0F;
+        public static float urlUpdateInterval = 15.0F;
 
         HttpWebServer bhI = new HttpWebServer( httpPortDefault );
         //JTokenWriter jtw = new JTokenWriter();
-        Blink1 blink1 = new Blink1();
+        static Blink1 Sblink1 = new Blink1();
 
         Dictionary<string, Blink1Input> inputs   = new Dictionary<string, Blink1Input>();
         Dictionary<string, Blink1Pattern> patterns = new Dictionary<string, Blink1Pattern>();
 
-        // constructor
-        public Blink1Server()
-        {
-            inputs = new Dictionary<string, Blink1Input>();
-            patterns = new Dictionary<string, Blink1Pattern>();
+        static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
 
+        public void loadSettings()
+        {
+            // we assume hostId is always set, it defaults to "00000000" on fresh installation
+            // (or we could not set it in Properties and check for KeyNotFoundException)
             blink1.hostId = (string)Properties.Settings.Default["hostId"];
-            
+
+            Console.WriteLine("blink1.hostId:" + blink1.hostId);
+
             blink1.regenerateBlink1Id();
 
             //MySettings.Instance.Parameters["foo"] = "bar";
@@ -75,7 +75,27 @@ namespace Blink1Control
                 Console.WriteLine(Properties.Settings.Default.TheInputs.Count.ToString());
             }
 */
+        }
+
+        public void saveSettings()
+        {
+            Properties.Settings.Default["hostId"] = blink1.hostId;
+            Properties.Settings.Default.Save();
+        }
+
+        // constructor
+        public Blink1Server()
+        {
+            inputs = new Dictionary<string, Blink1Input>();
+            patterns = new Dictionary<string, Blink1Pattern>();
+
+            loadSettings();
+
             Console.WriteLine("Blink1Server!");
+            Console.WriteLine("Running on port "+httpPortDefault);
+            Console.WriteLine("blink1Id:"+blink1Id);
+
+            saveSettings();
 
             try {
                 VirtualDirectory root = new VirtualDirectory();
@@ -88,61 +108,68 @@ namespace Blink1Control
 
                 // FIXME: the below is completely gross, how to do HTTP routing in .NET?
                 Blink1JSONFile id = new Blink1JSONFile("id", blink1dir, this);
-                id.GetStringResponse = blink1Id;
+                id.GetStringResponse = Ublink1Id;
                 blink1dir.AddFile(id);   //add a virtual file for each json method
 
                 Blink1JSONFile enumerate = new Blink1JSONFile("enumerate", blink1dir, this);
-                enumerate.GetStringResponse = blink1Enumerate;
+                enumerate.GetStringResponse = Ublink1Enumerate;
                 blink1dir.AddFile(enumerate);   //add a virtual file for each json method
 
                 Blink1JSONFile regen = new Blink1JSONFile("regenerateblink1id", blink1dir, this);
-                regen.GetStringResponse = blink1RegenerateBlink1Id;
+                regen.GetStringResponse = Ublink1RegenerateBlink1Id;
                 blink1dir.AddFile(regen);
 
                 Blink1JSONFile fadeToRGB = new Blink1JSONFile("fadeToRGB", blink1dir, this);
-                fadeToRGB.GetStringResponse = blink1FadeToRGB;
+                fadeToRGB.GetStringResponse = Ublink1FadeToRGB;
                 blink1dir.AddFile(fadeToRGB);
 
                 Blink1JSONFile on = new Blink1JSONFile("on", blink1dir, this);
-                on.GetStringResponse = blink1On;
+                on.GetStringResponse = Ublink1On;
                 blink1dir.AddFile(on);
 
                 Blink1JSONFile off = new Blink1JSONFile("off", blink1dir, this);
-                off.GetStringResponse = blink1Off;
+                off.GetStringResponse = Ublink1Off;
                 blink1dir.AddFile(off);
 
+                Blink1JSONFile lastColor = new Blink1JSONFile("lastColor", blink1dir, this);
+                lastColor.GetStringResponse = Ublink1LastColor;
+                blink1dir.AddFile(lastColor);
+
                 Blink1JSONFile pattern = new Blink1JSONFile("pattern", blink1dir, this);
-                pattern.GetStringResponse = blink1Pattern;
+                pattern.GetStringResponse = Ublink1Pattern;
                 blink1dir.AddFile(pattern);
 
                 Blink1JSONFile pattadd = new Blink1JSONFile("patternadd", blink1dir, this);
-                pattadd.GetStringResponse = blink1PatternAdd;
+                pattadd.GetStringResponse = Ublink1PatternAdd;
                 blink1dir.AddFile(pattadd);
 
                 Blink1JSONFile pattdel = new Blink1JSONFile("patterndel", blink1dir, this);
-                pattdel.GetStringResponse = blink1PatternDel;
+                pattdel.GetStringResponse = Ublink1PatternDel;
                 blink1dir.AddFile(pattdel);
 
                 Blink1JSONFile pattdelall = new Blink1JSONFile("patterndelall", blink1dir, this);
-                pattdelall.GetStringResponse = blink1PatternDelAll;
+                pattdelall.GetStringResponse = Ublink1PatternDelAll;
                 blink1dir.AddFile(pattdelall);
 
                 Blink1JSONFile input = new Blink1JSONFile("input", blink1dir, this);
-                input.GetStringResponse = blink1Input;
+                input.GetStringResponse = Ublink1Input;
                 blink1dir.AddFile(input);
 
                 Blink1JSONFile inputdel = new Blink1JSONFile("inputdel", blink1dir, this);
-                inputdel.GetStringResponse = blink1InputDel;
+                inputdel.GetStringResponse = Ublink1InputDel;
                 blink1dir.AddFile(inputdel);
 
                 Blink1JSONFile inputdelall = new Blink1JSONFile("inputdelall", blink1dir, this);
-                inputdelall.GetStringResponse = blink1InputDelAll;
+                inputdelall.GetStringResponse = Ublink1InputDelAll;
                 blink1dir.AddFile(inputdelall);
 
                 Blink1JSONFile inputurl = new Blink1JSONFile("inputurl", blink1dir, this);
-                inputurl.GetStringResponse = blink1InputUrl;
+                inputurl.GetStringResponse = Ublink1InputUrl;
                 blink1dir.AddFile(inputurl);
 
+                Blink1JSONFile inputifttt = new Blink1JSONFile("inputifttt", blink1dir, this);
+                inputifttt.GetStringResponse = Ublink1InputIfttt;
+                blink1dir.AddFile(inputifttt);
                 /*
                                 Blink1JSONFile id2       = new Blink1JSONFile("id2", blink1dir, blink1);
                                 id2.GetStringResponse = blink1Id2;
@@ -170,11 +197,11 @@ namespace Blink1Control
         //
         
         //    /blink1/id -- Display blink1_id and blink1 serial numbers (if any)
-        static string blink1Id(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1Id(HttpRequest request, Blink1Server blink1Server)
         {
             Blink1 blink1 = blink1Server.blink1;
             Dictionary<string, object> result = new Dictionary<string, object>();
-            result.Add("blink1_id", blink1.getBlink1Id());
+            result.Add("blink1_id", blink1.blink1Id);
             List<string> serialnums = new List<string>();
             for( int i=0; i < blink1.getCachedCount(); i++ ) {  // FIXME: surely a smarter way to do this
                 serialnums.Add( blink1.getCachedSerial(i) );
@@ -185,17 +212,17 @@ namespace Blink1Control
         }
 
         //    /blink1/enumerate -- Re-enumerate and List available blink(1) devices
-        static string blink1Enumerate(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1Enumerate(HttpRequest request, Blink1Server blink1Server)
         {
             Blink1 blink1 = blink1Server.blink1;
-            string blink1Id_old = blink1.getBlink1Id();
+            string blink1Id_old = blink1.blink1Id;
 
             blink1.enumerate();
             blink1.regenerateBlink1Id();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("blink1_id_old", blink1Id_old);
-            result.Add("blink1_id", blink1.getBlink1Id());
+            result.Add("blink1_id", blink1.blink1Id);
             List<string> serialnums = new List<string>();
             for (int i = 0; i < blink1.getCachedCount(); i++)
             {  // FIXME: surely a smarter way to do this
@@ -207,10 +234,10 @@ namespace Blink1Control
         }
 
         //    /blink1/regenerateblinkid -- Generate, save, and return new blink1_id
-        static string blink1RegenerateBlink1Id(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1RegenerateBlink1Id(HttpRequest request, Blink1Server blink1Server)
         {
             Blink1 blink1 = blink1Server.blink1;
-            string blink1Id_old = blink1.getBlink1Id();
+            string blink1Id_old = blink1.blink1Id;
 
             blink1.hostId = null;
             blink1.enumerate();
@@ -218,7 +245,7 @@ namespace Blink1Control
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("blink1_id_old", blink1Id_old);
-            result.Add("blink1_id", blink1.getBlink1Id());
+            result.Add("blink1_id", blink1.blink1Id);
             List<string> serialnums = new List<string>();
             for (int i = 0; i < blink1.getCachedCount(); i++)
             {  // FIXME: surely a smarter way to do this
@@ -230,12 +257,13 @@ namespace Blink1Control
         }
 
         //    /blink1/fadeToRGB -- Send fadeToRGB command to blink(1) with hex color & fade time
-        static string blink1FadeToRGB(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1FadeToRGB(HttpRequest request, Blink1Server blink1Server)
         {
             // FIXME: stop pattern player
             //NameValueCollection query = request.Query;
             string rgbstr  = request.Query.Get("rgb");
             string timestr = request.Query.Get("time");
+            Console.WriteLine("rgb: " + rgbstr);
             if (rgbstr == null) rgbstr = "#000000";
             if (timestr == null) timestr = "0.1";   
             Color colr = ColorTranslator.FromHtml(rgbstr);
@@ -245,13 +273,13 @@ namespace Blink1Control
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "fadeToRGB");
-            result.Add("rgb", ColorTranslator.ToHtml(colr));
+            result.Add("rgb", Blink1.colorToHexCode(colr) );
             result.Add("time", secs.ToString("F2", CultureInfo.InvariantCulture));
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
         //    /blink1/on -- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
-        static string blink1On(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1On(HttpRequest request, Blink1Server blink1Server)
         {
             blink1Server.fadeToRGB(0.1, Color.White);
 
@@ -261,7 +289,7 @@ namespace Blink1Control
         }
 
         //    /blink1/off -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
-        static string blink1Off(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1Off(HttpRequest request, Blink1Server blink1Server)
         {
             blink1Server.fadeToRGB(0.1, Color.Black);
 
@@ -270,12 +298,22 @@ namespace Blink1Control
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
+        //    /blink1/lastColor -- Return the last color command sent to blink(1)
+        static string Ublink1LastColor(HttpRequest request, Blink1Server blink1Server)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", "lastColor");
+            result.Add("lastColor", blink1Server.blink1.lastColorString);
+            return JsonConvert.SerializeObject(result, Formatting.Indented);
+        }
+
+
         // -----------------------------------------------------------------------------------------------
         // color patterns url handling
         //
 
         //    /blink1/pattern/ -- List saved color patterns
-        static string blink1Pattern(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1Pattern(HttpRequest request, Blink1Server blink1Server)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "pattern results");
@@ -284,7 +322,7 @@ namespace Blink1Control
         }
 
         //    /blink1/pattern/add -- Add color pattern to color pattern list
-        static string blink1PatternAdd(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1PatternAdd(HttpRequest request, Blink1Server blink1Server)
         {
             string pname      = request.Query.Get("pname");
             string patternstr = request.Query.Get("pattern");
@@ -299,7 +337,7 @@ namespace Blink1Control
         }
 
         //    /blink1/pattern/del -- Remove color pattern from color pattern list
-        static string blink1PatternDel(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1PatternDel(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string statusstr = "no pattern by that name";
@@ -317,7 +355,7 @@ namespace Blink1Control
         }
 
         //    /blink1/pattern/delall -- Remove all color patterns from color pattern list
-        static string blink1PatternDelAll(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1PatternDelAll(HttpRequest request, Blink1Server blink1Server)
         {
             foreach (KeyValuePair<string, Blink1Pattern> kvp in blink1Server.patterns) {
                 kvp.Value.stop();
@@ -329,7 +367,7 @@ namespace Blink1Control
         }
 
         //    /blink1/pattern/play -- Play/test a specific color pattern
-        static string blink1PatternPlay(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1PatternPlay(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string statusstr = "no pattern by that name";
@@ -347,7 +385,7 @@ namespace Blink1Control
         }
 
         //    /blink1/pattern/stop -- Stop a pattern playback, for a given pattern or all patterns
-        static string blink1PatternStop(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1PatternStop(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string statusstr = "no pattern by that name";
@@ -368,7 +406,7 @@ namespace Blink1Control
         //
 
         //    /blink1/input/ -- List configured inputs, enable or disable input watching
-        static string blink1Input(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1Input(HttpRequest request, Blink1Server blink1Server)
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "input results");
@@ -376,7 +414,7 @@ namespace Blink1Control
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
         //    /blink1/input/del -- Remove a configured input
-        static string blink1InputDel(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1InputDel(HttpRequest request, Blink1Server blink1Server)
         {
             string iname = request.Query.Get("iname");
             string statusstr = "no input by that name";
@@ -394,7 +432,7 @@ namespace Blink1Control
         }
 
         //    /blink1/input/delall -- Remove all configured inputs
-        static string blink1InputDelAll(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1InputDelAll(HttpRequest request, Blink1Server blink1Server)
         {
             foreach (KeyValuePair<string, Blink1Input> kvp in blink1Server.inputs) {
                 kvp.Value.stop();
@@ -406,7 +444,7 @@ namespace Blink1Control
         }
 
         //    /blink1/input/url -- Add and Start URL watcher on given URL
-        static string blink1InputUrl(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1InputUrl(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
@@ -421,8 +459,10 @@ namespace Blink1Control
             if( url != null && iname != null ) {
                 statusstr = "input url";
                 input = new Blink1Input(iname, "url", url, null, null);
+                input.blink1Server = blink1Server;
                 input.pname = pname;
-                blink1Server.updateUrlInput(input);
+
+                input.updateUrlInput();
                 if (!testmode) {
                     blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
                 }
@@ -431,23 +471,43 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
             result.Add("input", input);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/input/ifttt -- Add and Start watching messages from IFTTT webservice
-        static string blink1InputIfttt(HttpRequest request, Blink1Server blink1Server)
+        static string Ublink1InputIfttt(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string url = request.Query.Get("url");
+            string rulename = request.Query.Get("arg1");
             string test = request.Query.Get("test");
             if (pname == null) pname = iname;
             Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
 
-            // FIXME: insert magic here
+            string statusstr = "must specifiy 'iname' and 'arg1' (rulename)";
+
+            Blink1Input input = null;
+            if (rulename != null && iname != null) {
+                input = new Blink1Input(iname, "ifttt", rulename, null, null);
+                input.blink1Server = blink1Server;
+                input.pname = pname;
+
+                // FIXME: insert magic here
+                //if (testmode) {
+                Blink1Input.getIftttResponse(false);
+                //}
+
+                input.updateIftttInput();
+                if (!testmode) {
+                    blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
+                }
+
+                statusstr = "input ifttt";
+            }
 
             Dictionary<string, object> result = new Dictionary<string, object>();
-            result.Add("status", "not implemented yet");
+            result.Add("status", statusstr);
+            result.Add("input", input);
             return JsonConvert.SerializeObject(result, Formatting.Indented);
         }
 
@@ -463,62 +523,10 @@ namespace Blink1Control
         {
             foreach (var pair in inputs) {
                 Blink1Input input = pair.Value;
-                if (input.type.Equals("ifttt")) { // FIXME: there's totally a better way of doing this
-                    updateIftttInput(input);
-                }
-                else if (input.type.Equals("url")) {
-                    updateUrlInput(input);
-                }
-                else if (input.type.Equals("file")) {
-                }
-                else if (input.type.Equals("script")) {
-                }
+                input.update();
             }
         }
 
-        public void updateIftttInput(Blink1Input input)
-        {
-
-        }
-
-        public void updateUrlInput(Blink1Input input)
-        {
-            string url = input.arg1;
-
-            string resp = getContentOfUrl(url);
-            if (resp == null) {
-                input.lastVal = "bad url";
-                return;
-            }
-            string patternstr = parsePatternOrColorString(resp);
-
-            if (patternstr != null && !patternstr.Equals(input.lastVal)) {
-                input.lastVal = patternstr;
-                playPattern(patternstr);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        public string getContentOfUrl(string url)
-        {
-            string content = null;
-            WebClient webclient = new WebClient();
-            try {
-                content = webclient.DownloadString(url);
-            }
-            catch (WebException we) {
-                // WebException.Status holds useful information
-                Console.WriteLine(we.Message + "\n" + we.Status.ToString());
-            }
-            catch (NotSupportedException ne) {
-                Console.WriteLine(ne.Message);   // other errors
-            } 
-            return content;
-        }
 
         // ----------------------------------------------------------------------------------------
         // pattern handling
@@ -551,30 +559,6 @@ namespace Blink1Control
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public string parsePatternOrColorString(string str)
-        {
-            // read color pattern, can be of form: pattern: "my pattern"
-            Regex patternregex = new Regex(@"\""*pattern\""*:\s*\""(.+?)\""");
-            Match matchp = patternregex.Match(str);
-            if( matchp.Success ) { 
-                return matchp.Groups[1].Value;
-            }
-            //
-            Regex hexcoderegex = new Regex(@"(#[A-Fa-f0-9]{6})");
-            Match matchc = hexcoderegex.Match(str.ToUpper());
-            if( matchc.Success ) {
-                return matchc.Groups[1].Value;
-            }
-
-            //Color c = ColorTranslator.FromHtml(str);
-            return null;
-        }
-
-        /// <summary>
         /// Same as Blink1.fadeToRGB, but does an open/close around it.
         /// Called by Blink1Patterns to send colors to blink(1)
         /// </summary>
@@ -586,8 +570,9 @@ namespace Blink1Control
             blink1.close();
         }
 
+        public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
+        public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
-//    /blink1/lastColor -- Return the last color command sent to blink(1)
 
 
 //    /blink1/input/file -- Add and Start file watcher on given filepath
@@ -601,17 +586,19 @@ namespace Blink1Control
 
 //    /blink1/input/netload -- Start network load watching input
 
-
-
         // testing
-        static string blink1Id2(HttpRequest request, Blink1 blink1)//example
+        static string Ublink1Id2(HttpRequest request, Blink1Server blink1Server)//example
         {
-            Properties.Settings.Default["blink1Id"] = blink1.getBlink1Id();
+            //Properties.Settings.Default["blink1Id"] = blink1Server.blink1Id;
             Properties.Settings.Default.Save();
             //Settings.Default["blink1Id"] = blink1.getBlink1Id();
             //Settings.Default.Save(); // Saves settings in application configuration file
             return @"\n\n{ suck it }\n\n";
         }
+
+        //
+        // ---------------------------------------------------------------------------------------
+        //
 
         /// <summary>
         /// Weirdass wrapper for binding urls to funcblocks, why do we need this?
