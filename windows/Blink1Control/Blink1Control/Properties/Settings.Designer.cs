@@ -46,17 +46,5 @@ namespace Blink1Control.Properties {
                 this["hostId"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("hello")]
-        public string todtest {
-            get {
-                return ((string)(this["todtest"]));
-            }
-            set {
-                this["todtest"] = value;
-            }
-        }
     }
 }
