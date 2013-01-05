@@ -27,16 +27,21 @@ namespace Blink1Control
         public static float urlUpdateInterval = 15.0F;
 
         HttpWebServer bhI = new HttpWebServer( httpPortDefault );
-        //JTokenWriter jtw = new JTokenWriter();
-        static Blink1 Sblink1 = new Blink1();
 
         Dictionary<string, Blink1Input> inputs   = new Dictionary<string, Blink1Input>();
         Dictionary<string, Blink1Pattern> patterns = new Dictionary<string, Blink1Pattern>();
 
+        // stolen from: http://stackoverflow.com/questions/7427909/how-to-tell-json-net-globally-to-apply-the-stringenumconverter-to-all-enums
         static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+
+        static Blink1 Sblink1 = new Blink1();
 
         public void loadSettings()
         {
+            // some notes:
+            // http://stackoverflow.com/questions/1804302/where-is-the-data-for-properties-settings-default-saved
+            // http://stackoverflow.com/questions/4647796/c-how-to-make-sure-a-settings-variable-exists-before-attempting-to-use-it-from
+            
             // we assume hostId is always set, it defaults to "00000000" on fresh installation
             // (or we could not set it in Properties and check for KeyNotFoundException)
             blink1.hostId = (string)Properties.Settings.Default["hostId"];

@@ -121,11 +121,14 @@ namespace Blink1Lib
 
         /// <summary>
         /// Convert a Color to a HTML hex code (e.g."#FFCC33")
+        ///
         /// </summary>
         /// <param name="c">color to convert</param>
         /// <returns>hex code string</returns>
         public static String colorToHexCode(Color c)
         {
+            // stolen from: http://stackoverflow.com/questions/2395438/convert-system-drawing-color-to-rgb-and-hex-value
+            // because ColorTranslator.ToHtml() can return color names (e.g. "Blue")
             return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
         }
 
