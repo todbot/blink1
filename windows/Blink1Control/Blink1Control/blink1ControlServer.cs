@@ -104,10 +104,12 @@ namespace Blink1Control
 
             try {
                 VirtualDirectory root = new VirtualDirectory();
-                DriveDirectory homeDir = new DriveDirectory(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                foreach (DriveDirectory d in homeDir.GetDirectories()) {
-                    root.AddDirectory(d.Path);
-                }
+                // note: this works because there is an xcopy as a post build-build event
+                string baseDir = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                baseDir += "\\html\\blink_1";
+                DriveDirectory htmlDir = new DriveDirectory(baseDir);
+                Console.WriteLine("htmlDir: " + htmlDir.Path);
+                root.AddDirectory(htmlDir.Path);
 
                 VirtualDirectory blink1dir = new VirtualDirectory("blink1", root);
 
