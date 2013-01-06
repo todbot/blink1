@@ -680,7 +680,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     //
     
     // list patterns
-    [http get:@"/blink1/pattern" withBlock:^(RouteRequest *request, RouteResponse *response) {
+    [http get:@"/blink1/patterns" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];//[NSMutableDictionary dictionaryWithDictionary:patterns];
         [respdict setObject:@"pattern results" forKey:@"status"];
         [respdict setObject:[patterns allValues] forKey:@"patterns"];
@@ -785,7 +785,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     //
     
     // list all inputs
-    [http get:@"/blink1/input" withBlock:^(RouteRequest *request, RouteResponse *response) {
+    [http get:@"/blink1/inputs" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSString* enable = [self trimString: [request param:@"enabled"]];
         if( enable != nil ) {   // i.e. param was specified
             inputsEnable = ([enable isEqualToString:@"on"] || [enable isEqualToString:@"true"] );

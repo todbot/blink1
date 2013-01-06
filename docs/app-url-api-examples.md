@@ -258,7 +258,7 @@ First let's add a view inputs, same as before:
 
 Now look at the list:
 
-    $ curl 'http://localhost:8934/blink1/input/'
+    $ curl 'http://localhost:8934/blink1/inputs'
     {
       "enabled": true,
       "inputs": [

@@ -36,7 +36,7 @@ namespace Blink1Control
 
         // each input can have an independent update interval that's greater than master interval
         public DateTime lastTime;
-        private int updateInterval;
+        //private int updateInterval;
         // holder of last valid response/content
         private string lastContent;
 

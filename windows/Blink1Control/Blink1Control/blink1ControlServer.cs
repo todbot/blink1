@@ -26,9 +26,9 @@ namespace Blink1Control
         public static float iftttUpdateInterval = 15.0F;
         public static float urlUpdateInterval = 15.0F;
 
-        HttpWebServer bhI = new HttpWebServer( httpPortDefault );
+        HttpWebServer bhI = new HttpWebServer(httpPortDefault);
 
-        Dictionary<string, Blink1Input> inputs   = new Dictionary<string, Blink1Input>();
+        Dictionary<string, Blink1Input> inputs = new Dictionary<string, Blink1Input>();
         Dictionary<string, Blink1Pattern> patterns = new Dictionary<string, Blink1Pattern>();
 
         // stolen from: http://stackoverflow.com/questions/7427909/how-to-tell-json-net-globally-to-apply-the-stringenumconverter-to-all-enums
@@ -41,7 +41,7 @@ namespace Blink1Control
             // some notes:
             // http://stackoverflow.com/questions/1804302/where-is-the-data-for-properties-settings-default-saved
             // http://stackoverflow.com/questions/4647796/c-how-to-make-sure-a-settings-variable-exists-before-attempting-to-use-it-from
-            
+
             // we assume hostId is always set, it defaults to "00000000" on fresh installation
             // (or we could not set it in Properties and check for KeyNotFoundException)
             blink1.hostId = (string)Properties.Settings.Default["hostId"];
@@ -97,8 +97,8 @@ namespace Blink1Control
             loadSettings();
 
             Console.WriteLine("Blink1Server!");
-            Console.WriteLine("Running on port "+httpPortDefault);
-            Console.WriteLine("blink1Id:"+blink1Id);
+            Console.WriteLine("Running on port " + httpPortDefault);
+            Console.WriteLine("blink1Id:" + blink1Id);
 
             saveSettings();
 
@@ -112,6 +112,8 @@ namespace Blink1Control
                 root.AddDirectory(htmlDir.Path);
 
                 VirtualDirectory blink1dir = new VirtualDirectory("blink1", root);
+                VirtualDirectory inputdir  = new VirtualDirectory("input", blink1dir);
+                VirtualDirectory patterndir = new VirtualDirectory("pattern", blink1dir);
 
                 // FIXME: the below is completely gross, how to do HTTP routing in .NET?
                 Blink1JSONFile id = new Blink1JSONFile("id", blink1dir, this);
@@ -142,48 +144,71 @@ namespace Blink1Control
                 lastColor.GetStringResponse = Ublink1LastColor;
                 blink1dir.AddFile(lastColor);
 
-                Blink1JSONFile pattern = new Blink1JSONFile("pattern", blink1dir, this);
+
+                Blink1JSONFile pattern = new Blink1JSONFile("patterns", blink1dir, this);
                 pattern.GetStringResponse = Ublink1Pattern;
                 blink1dir.AddFile(pattern);
 
-                Blink1JSONFile pattadd = new Blink1JSONFile("patternadd", blink1dir, this);
+                Blink1JSONFile pattadd = new Blink1JSONFile("add", patterndir, this);
                 pattadd.GetStringResponse = Ublink1PatternAdd;
-                blink1dir.AddFile(pattadd);
+                patterndir.AddFile(pattadd);
 
-                Blink1JSONFile pattdel = new Blink1JSONFile("patterndel", blink1dir, this);
+                Blink1JSONFile pattdel = new Blink1JSONFile("del", patterndir, this);
                 pattdel.GetStringResponse = Ublink1PatternDel;
-                blink1dir.AddFile(pattdel);
+                patterndir.AddFile(pattdel);
 
-                Blink1JSONFile pattdelall = new Blink1JSONFile("patterndelall", blink1dir, this);
+                Blink1JSONFile pattdelall = new Blink1JSONFile("delall", patterndir, this);
                 pattdelall.GetStringResponse = Ublink1PatternDelAll;
-                blink1dir.AddFile(pattdelall);
+                patterndir.AddFile(pattdelall);
 
-                Blink1JSONFile input = new Blink1JSONFile("input", blink1dir, this);
+                Blink1JSONFile pattplay = new Blink1JSONFile("play", patterndir, this);
+                pattplay.GetStringResponse = Ublink1PatternPlay;
+                patterndir.AddFile(pattplay);
+
+                Blink1JSONFile pattstop = new Blink1JSONFile("stop", patterndir, this);
+                pattstop.GetStringResponse = Ublink1PatternStop;
+                patterndir.AddFile(pattstop);
+
+                Blink1JSONFile pattstopall = new Blink1JSONFile("stopall", patterndir, this);
+                pattstopall.GetStringResponse = Ublink1PatternStopAll;
+                patterndir.AddFile(pattstopall);
+
+
+                Blink1JSONFile input = new Blink1JSONFile("inputs", blink1dir, this);
                 input.GetStringResponse = Ublink1Input;
                 blink1dir.AddFile(input);
 
-                Blink1JSONFile inputdel = new Blink1JSONFile("inputdel", blink1dir, this);
+                Blink1JSONFile inputdel = new Blink1JSONFile("del", inputdir, this);
                 inputdel.GetStringResponse = Ublink1InputDel;
-                blink1dir.AddFile(inputdel);
+                inputdir.AddFile(inputdel);
 
-                Blink1JSONFile inputdelall = new Blink1JSONFile("inputdelall", blink1dir, this);
+                Blink1JSONFile inputdelall = new Blink1JSONFile("delall", inputdir, this);
                 inputdelall.GetStringResponse = Ublink1InputDelAll;
-                blink1dir.AddFile(inputdelall);
+                inputdir.AddFile(inputdelall);
 
-                Blink1JSONFile inputurl = new Blink1JSONFile("inputurl", blink1dir, this);
+                Blink1JSONFile inputurl = new Blink1JSONFile("url", inputdir, this);
                 inputurl.GetStringResponse = Ublink1InputUrl;
-                blink1dir.AddFile(inputurl);
+                inputdir.AddFile(inputurl);
 
-                Blink1JSONFile inputifttt = new Blink1JSONFile("inputifttt", blink1dir, this);
+                Blink1JSONFile inputifttt = new Blink1JSONFile("ifttt", inputdir, this);
                 inputifttt.GetStringResponse = Ublink1InputIfttt;
-                blink1dir.AddFile(inputifttt);
-                /*
-                                Blink1JSONFile id2       = new Blink1JSONFile("id2", blink1dir, blink1);
-                                id2.GetStringResponse = blink1Id2;
-                                blink1dir.AddFile(id2);   //add a virtual file for each json method
-                                */
-                root.AddDirectory(blink1dir);
+                inputdir.AddFile(inputifttt);
 
+                // TESTING
+                // embedding slashes in path name does not work
+                //Blink1JSONFile foobar = new Blink1JSONFile("foo/bar", blink1dir, this);
+                Blink1JSONFile foobar = new Blink1JSONFile("foo/bar", blink1dir, this);
+                foobar.GetStringResponse = Ufoobar;
+                blink1dir.AddFile(foobar);   //add a virtual file for each json method
+                VirtualDirectory blarg = new VirtualDirectory();
+                Blink1Directory bd = new Blink1Directory("floop", root);
+                // TESTING END
+
+                blink1dir.AddDirectory(inputdir);
+                blink1dir.AddDirectory(patterndir);
+                root.AddDirectory(bd);
+
+                root.AddDirectory(blink1dir);
                 bhI.Root = root;
                 bhI.Start();
             }
@@ -199,10 +224,20 @@ namespace Blink1Control
         // why do we need this?
         public delegate string GetJSONStringResponse(HttpRequest request, Blink1Server aBlink1Server);
 
+        // TESTING
+        static string Ufoobar(HttpRequest request, Blink1Server blink1Server)//example
+        {
+            //Properties.Settings.Default["blink1Id"] = blink1Server.blink1Id;
+            //Properties.Settings.Default.Save();
+            //Settings.Default["blink1Id"] = blink1.getBlink1Id();
+            //Settings.Default.Save(); // Saves settings in application configuration file
+            return "\n\n{ suck it whitey }\n\n";
+        }
+
         //
         // direct blink(1) control url handling
         //
-        
+
         //    /blink1/id -- Display blink1_id and blink1 serial numbers (if any)
         static string Ublink1Id(HttpRequest request, Blink1Server blink1Server)
         {
@@ -210,12 +245,12 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("blink1_id", blink1.blink1Id);
             List<string> serialnums = new List<string>();
-            for( int i=0; i < blink1.getCachedCount(); i++ ) {  // FIXME: surely a smarter way to do this
-                serialnums.Add( blink1.getCachedSerial(i) );
+            for (int i = 0; i < blink1.getCachedCount(); i++) {  // FIXME: surely a smarter way to do this
+                serialnums.Add(blink1.getCachedSerial(i));
             }
             result.Add("blink1_serialnums", serialnums);
             result.Add("status", "blink1 id");
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/enumerate -- Re-enumerate and List available blink(1) devices
@@ -231,13 +266,12 @@ namespace Blink1Control
             result.Add("blink1_id_old", blink1Id_old);
             result.Add("blink1_id", blink1.blink1Id);
             List<string> serialnums = new List<string>();
-            for (int i = 0; i < blink1.getCachedCount(); i++)
-            {  // FIXME: surely a smarter way to do this
+            for (int i = 0; i < blink1.getCachedCount(); i++) {  // FIXME: surely a smarter way to do this
                 serialnums.Add(blink1.getCachedSerial(i));
             }
             result.Add("blink1_serialnums", serialnums);
             result.Add("status", "enumerate");
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/regenerateblinkid -- Generate, save, and return new blink1_id
@@ -254,13 +288,12 @@ namespace Blink1Control
             result.Add("blink1_id_old", blink1Id_old);
             result.Add("blink1_id", blink1.blink1Id);
             List<string> serialnums = new List<string>();
-            for (int i = 0; i < blink1.getCachedCount(); i++)
-            {  // FIXME: surely a smarter way to do this
+            for (int i = 0; i < blink1.getCachedCount(); i++) {  // FIXME: surely a smarter way to do this
                 serialnums.Add(blink1.getCachedSerial(i));
             }
             result.Add("blink1_serialnums", serialnums);
             result.Add("status", "regenrateblink1id");
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/fadeToRGB -- Send fadeToRGB command to blink(1) with hex color & fade time
@@ -268,11 +301,11 @@ namespace Blink1Control
         {
             // FIXME: stop pattern player
             //NameValueCollection query = request.Query;
-            string rgbstr  = request.Query.Get("rgb");
+            string rgbstr = request.Query.Get("rgb");
             string timestr = request.Query.Get("time");
             Console.WriteLine("rgb: " + rgbstr);
             if (rgbstr == null) rgbstr = "#000000";
-            if (timestr == null) timestr = "0.1";   
+            if (timestr == null) timestr = "0.1";
             Color colr = ColorTranslator.FromHtml(rgbstr);
             float secs = float.Parse(timestr, CultureInfo.InvariantCulture);
 
@@ -280,9 +313,9 @@ namespace Blink1Control
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "fadeToRGB");
-            result.Add("rgb", Blink1.colorToHexCode(colr) );
+            result.Add("rgb", Blink1.colorToHexCode(colr));
             result.Add("time", secs.ToString("F2", CultureInfo.InvariantCulture));
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/on -- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
@@ -292,7 +325,7 @@ namespace Blink1Control
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "on");
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/off -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
@@ -311,7 +344,7 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "lastColor");
             result.Add("lastColor", blink1Server.blink1.lastColorString);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
 
@@ -325,22 +358,35 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "pattern results");
             result.Add("patterns", blink1Server.patterns);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/pattern/add -- Add color pattern to color pattern list
         static string Ublink1PatternAdd(HttpRequest request, Blink1Server blink1Server)
         {
-            string pname      = request.Query.Get("pname");
+            string pname = request.Query.Get("pname");
             string patternstr = request.Query.Get("pattern");
+            string statusstr = "pattern add";
 
-            Blink1Pattern pattern = new Blink1Pattern(pname, patternstr);
-            blink1Server.patterns[pname] = pattern; // NOTE: this replaces pattern if already exists
+            Blink1Pattern pattern = null;
+            if (pname != null && patternstr != null) {
+                pattern = new Blink1Pattern(pname);
+                Boolean goodpattern = pattern.parsePatternStr(patternstr);
+                if (goodpattern) {
+                    blink1Server.patterns[pname] = pattern; // NOTE: this replaces pattern if already exists
+                }
+                else {
+                    statusstr = "error: pattern badly formatted";
+                }
+            }
+            else {
+                statusstr = "error: need 'pname' and 'pattern' (e.g. '2,#ff00ff,0.5,#00ff00,0.5') argument";
+            }
 
             Dictionary<string, object> result = new Dictionary<string, object>();
-            result.Add("status", "pattern add");
-            result.Add("pattern", pattern.ToString());
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            result.Add("status", statusstr);
+            result.Add("pattern", pattern);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/pattern/del -- Remove color pattern from color pattern list
@@ -348,29 +394,27 @@ namespace Blink1Control
         {
             string pname = request.Query.Get("pname");
             string statusstr = "no pattern by that name";
-            Blink1Pattern patt = null ;
+            Blink1Pattern patt = null;
             if (pname != null) {
                 patt = blink1Server.patterns[pname];
                 patt.stop();
                 blink1Server.patterns.Remove(pname);
                 statusstr = "pattern '" + pname + "' removed";
             }
-   
+
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/pattern/delall -- Remove all color patterns from color pattern list
         static string Ublink1PatternDelAll(HttpRequest request, Blink1Server blink1Server)
         {
-            foreach (KeyValuePair<string, Blink1Pattern> kvp in blink1Server.patterns) {
-                kvp.Value.stop();
-            }
+            blink1Server.stopAllPatterns();
             blink1Server.patterns.Clear();
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "all patterns removed");
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/pattern/play -- Play/test a specific color pattern
@@ -379,8 +423,8 @@ namespace Blink1Control
             string pname = request.Query.Get("pname");
             string statusstr = "no pattern by that name";
             if (pname != null) {
-                Blink1Pattern patt = null ;
-                if( blink1Server.patterns.TryGetValue(pname, out patt)) {
+                Blink1Pattern patt = null;
+                if (blink1Server.patterns.TryGetValue(pname, out patt)) {
                     patt.blink1Server = blink1Server; // justin case
                     patt.play();
                     statusstr = "pattern '" + pname + "' playing";
@@ -388,24 +432,33 @@ namespace Blink1Control
             }
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
-        //    /blink1/pattern/stop -- Stop a pattern playback, for a given pattern or all patterns
+        //    /blink1/pattern/stop -- Stop a pattern playback for a given pattern
         static string Ublink1PatternStop(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string statusstr = "no pattern by that name";
             if (pname != null) {
-                Blink1Pattern patt = null ;
-                if( blink1Server.patterns.TryGetValue(pname, out patt) ) {
+                Blink1Pattern patt = null;
+                if (blink1Server.patterns.TryGetValue(pname, out patt)) {
                     patt.stop();
                     statusstr = "pattern '" + pname + "' stopped";
                 }
             }
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
+        }
+
+        //    /blink1/pattern/stopall -- Stop all pattern playback
+        static string Ublink1PatternStopAll(HttpRequest request, Blink1Server blink1Server)
+        {
+            blink1Server.stopAllPatterns();
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", "all patterns stopped");
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         // 
@@ -418,7 +471,7 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "input results");
             result.Add("inputs", blink1Server.inputs);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
         //    /blink1/input/del -- Remove a configured input
         static string Ublink1InputDel(HttpRequest request, Blink1Server blink1Server)
@@ -435,7 +488,7 @@ namespace Blink1Control
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/input/delall -- Remove all configured inputs
@@ -447,7 +500,7 @@ namespace Blink1Control
             blink1Server.patterns.Clear();
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "all patterns removed");
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         //    /blink1/input/url -- Add and Start URL watcher on given URL
@@ -455,15 +508,15 @@ namespace Blink1Control
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string url   = request.Query.Get("arg1");
-            string test  = request.Query.Get("test");
+            string url = request.Query.Get("arg1");
+            string test = request.Query.Get("test");
             if (pname == null) pname = iname;
-            Boolean testmode = (test==null) ? false : (test.Equals("on") || test.Equals("true"));
+            Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
 
             string statusstr = "must specifiy 'iname' and 'arg1' (url)";
 
             Blink1Input input = null;
-            if( url != null && iname != null ) {
+            if (url != null && iname != null) {
                 statusstr = "input url";
                 input = new Blink1Input(iname, "url", url, null, null);
                 input.blink1Server = blink1Server;
@@ -478,7 +531,7 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
             result.Add("input", input);
-            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
+            return JsonConvert.SerializeObject(result, Formatting.Indented,jsonSerializerSettings);
         }
 
         //    /blink1/input/ifttt -- Add and Start watching messages from IFTTT webservice
@@ -515,7 +568,7 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
             result.Add("input", input);
-            return JsonConvert.SerializeObject(result, Formatting.Indented);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
         // ----------------------------------------------------------------------------------------
@@ -565,6 +618,24 @@ namespace Blink1Control
             return false;
         }
 
+        public Boolean stopPattern(string pname)
+        {
+            if (pname == null) return false;
+            Blink1Pattern patt = null;
+            if (patterns.TryGetValue(pname, out patt)) {
+                patt.stop();
+                return true;
+            }
+            return false;
+        }
+
+        public void stopAllPatterns()
+        {
+            foreach (KeyValuePair<string, Blink1Pattern> kvp in patterns) {
+                kvp.Value.stop();
+            }
+        }
+
         /// <summary>
         /// Same as Blink1.fadeToRGB, but does an open/close around it.
         /// Called by Blink1Patterns to send colors to blink(1)
@@ -582,26 +653,17 @@ namespace Blink1Control
 
 
 
-//    /blink1/input/file -- Add and Start file watcher on given filepath
+        //    /blink1/input/file -- Add and Start file watcher on given filepath
 
 
-//    /blink1/input/script -- Add and Start command-line script executer
+        //    /blink1/input/script -- Add and Start command-line script executer
 
-//    /blink1/input/scriptlist -- List available scripts to run
+        //    /blink1/input/scriptlist -- List available scripts to run
 
-//    /blink1/input/cpuload -- Add and Start CPU load watching input
+        //    /blink1/input/cpuload -- Add and Start CPU load watching input
 
-//    /blink1/input/netload -- Start network load watching input
+        //    /blink1/input/netload -- Start network load watching input
 
-        // testing
-        static string Ublink1Id2(HttpRequest request, Blink1Server blink1Server)//example
-        {
-            //Properties.Settings.Default["blink1Id"] = blink1Server.blink1Id;
-            Properties.Settings.Default.Save();
-            //Settings.Default["blink1Id"] = blink1.getBlink1Id();
-            //Settings.Default.Save(); // Saves settings in application configuration file
-            return @"\n\n{ suck it }\n\n";
-        }
 
         //
         // ---------------------------------------------------------------------------------------
@@ -651,18 +713,13 @@ namespace Blink1Control
             }
         }
 
-    }
 
-}
-
-
-        /*
-        // this is for tod testing, trying to figure otu httpwebserver class
-        public class Blink1IDir : IDirectory
+        // this is for tod testing, trying to figure out httpwebserver class
+        public class Blink1Directory : IDirectory
         {
             string name;
             IDirectory parent;
-            public Blink1IDir(string name, IDirectory parent)
+            public Blink1Directory(string name, IDirectory parent)
             {
                 this.name = name;
                 this.parent = parent;
@@ -681,7 +738,7 @@ namespace Blink1Control
             public ICollection GetDirectories()
             {
                 Console.WriteLine("getDirectories");
-                return null;    
+                return null;
             }
             public ICollection GetFiles()
             {
@@ -699,6 +756,6 @@ namespace Blink1Control
             {
             }
         }  // end testing class
-        */
 
-        //J bhIJW = new JsonTextWriter(new System.IO.TextWriter());
+    }
+}
