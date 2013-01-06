@@ -56,8 +56,11 @@ namespace Blink1Control
             blink1.hostId = (string)Properties.Settings.Default["hostId"];
 
             String patternsstr = (string)Properties.Settings.Default["patterns"];
+            String inputsstr = (string)Properties.Settings.Default["inputs"];
             Console.WriteLine("patterns: " + patternsstr);
+            Console.WriteLine("inputs: " + inputsstr);
             patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
+            inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
 
             blink1.regenerateBlink1Id();
 
@@ -79,8 +82,8 @@ namespace Blink1Control
         // constructor
         public Blink1Server()
         {
-            inputs = new Dictionary<string, Blink1Input>();
-            patterns = new Dictionary<string, Blink1Pattern>();
+            //inputs = new Dictionary<string, Blink1Input>();
+            //patterns = new Dictionary<string, Blink1Pattern>();
 
             Console.WriteLine("Blink1Server!");
 
@@ -492,7 +495,7 @@ namespace Blink1Control
             foreach (KeyValuePair<string, Blink1Input> kvp in blink1Server.inputs) {
                 kvp.Value.stop();
             }
-            blink1Server.patterns.Clear();
+            blink1Server.inputs.Clear();
             blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -703,7 +706,7 @@ namespace Blink1Control
                 writer.Flush();
             }
 
-            public string ContentType { get { return ContentTypes.GetExtensionType(".txt"); } }
+            public string ContentType { get { return "application/json"; } }
             public string Name { get { return name; } }
             public IDirectory Parent { get { return parent; } }
 
