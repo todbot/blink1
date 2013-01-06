@@ -42,7 +42,7 @@ namespace Blink1Control
 
         // FIXME: hacks
         public static DateTime iftttLastTime;
-        public static int iftttUpdateInterval;
+        public static int iftttUpdateInterval = 15;
         public static string iftttLastContent;
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Blink1Control
 
 
         /// <summary>
-        /// This is called peridically, but only once for all IFTTT inputs. 
+        /// Static metho callled peridically, but only once for all IFTTT inputs. 
         /// FIXE: This whole method is a super hack
         /// </summary>
         /// <param name="input"></param>
@@ -166,8 +166,9 @@ namespace Blink1Control
         {
             // only update URLs every 30 secs
             DateTime now = DateTime.Now; ; //[[NSDate date] timeIntervalSince1970];
-            TimeSpan diff = now - iftttLastTime;            
-            if( normalmode && (diff.Seconds < iftttUpdateInterval) ) { 
+            TimeSpan diff = now - iftttLastTime;
+            //Console.WriteLine("getIftttResponse now:"+now+", diff:" + diff);
+            if( normalmode && (diff.Seconds < iftttUpdateInterval) ) {
                 return;
             }
             iftttLastTime = now;
