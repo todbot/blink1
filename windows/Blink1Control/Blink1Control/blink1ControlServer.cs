@@ -598,6 +598,9 @@ namespace Blink1Control
         {
             Console.WriteLine("updateInputs");
             if (!inputsEnable) return;
+            
+            Blink1Input.getIftttResponse(true);
+
             foreach (var pair in inputs) {
                 Blink1Input input = pair.Value;
                 input.update();
@@ -666,7 +669,7 @@ namespace Blink1Control
         }
 
         /// <summary>
-        /// Shut down EVERYTHING
+        /// Shut down EVERYTHING.  Called right before app exit.
         /// </summary>
         public void shutdown()
         {

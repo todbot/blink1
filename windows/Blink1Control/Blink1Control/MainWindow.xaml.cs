@@ -39,7 +39,6 @@ namespace Blink1Control
         {
             if (disposeTime) {
                 //close it
-                Console.WriteLine("disposeTime!");
                 blink1Server.shutdown();
                 // FIXME: is this the right thing to do?
                 System.Windows.Forms.Application.Exit();
