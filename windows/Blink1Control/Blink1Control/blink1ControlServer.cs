@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
-using System.Timers;
+using System.Threading;
+using System.Threading.Tasks;
+//using System.Timers;
 using System.Drawing;
 using System.Reflection;
 using System.IO;
@@ -25,11 +27,15 @@ namespace Blink1Control
         public static string iftttEventUrl = "http://api.thingm.com/blink1/events";
         public static float iftttUpdateInterval = 15.0F;
         public static float urlUpdateInterval = 15.0F;
-
+        
         HttpWebServer bhI = new HttpWebServer(httpPortDefault);
 
         Dictionary<string, Blink1Input> inputs = new Dictionary<string, Blink1Input>();
         Dictionary<string, Blink1Pattern> patterns = new Dictionary<string, Blink1Pattern>();
+
+        Timer inputsTimer;
+        Boolean inputsEnable = true;
+        float inputUpdateInterval = 5.0F;
 
         // stolen from: http://stackoverflow.com/questions/7427909/how-to-tell-json-net-globally-to-apply-the-stringenumconverter-to-all-enums
         static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
@@ -82,15 +88,14 @@ namespace Blink1Control
         // constructor
         public Blink1Server()
         {
-            //inputs = new Dictionary<string, Blink1Input>();
-            //patterns = new Dictionary<string, Blink1Pattern>();
-
             Console.WriteLine("Blink1Server!");
 
             loadSettings();
 
             Console.WriteLine("Running on port " + httpPortDefault);
             Console.WriteLine("blink1Id:" + blink1Id);
+            long updateMillis = (long)(inputUpdateInterval * 1000);
+            inputsTimer = new Timer( updateInputs, null, updateMillis, updateMillis);
 
             saveSettings();
 
@@ -464,8 +469,13 @@ namespace Blink1Control
         //    /blink1/input/ -- List configured inputs, enable or disable input watching
         static string Ublink1Input(HttpRequest request, Blink1Server blink1Server)
         {
+            string enabled = request.Query.Get("enabled");
+            if (enabled != null) {
+                blink1Server.inputsEnable = (enabled.Equals("on") || enabled.Equals("true"));
+            }
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "input results");
+            result.Add("enabled", blink1Server.inputsEnable);
             result.Add("inputs", blink1Server.inputs);
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
@@ -579,12 +589,15 @@ namespace Blink1Control
         // input update url handling
         //
 
+
         /// <summary>
         /// Periodically update the inputs, triggering color patterns if needed
         /// Runs every 15(?) seconds
         /// </summary>
-        public void updateInputs()
+        public void updateInputs(Object stateInfo)
         {
+            Console.WriteLine("updateInputs");
+            if (!inputsEnable) return;
             foreach (var pair in inputs) {
                 Blink1Input input = pair.Value;
                 input.update();
@@ -652,6 +665,16 @@ namespace Blink1Control
             blink1.close();
         }
 
+        /// <summary>
+        /// Shut down EVERYTHING
+        /// </summary>
+        public void shutdown()
+        {
+            stopAllPatterns();
+            inputsEnable = false;
+            inputsTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            inputsTimer.Dispose();
+        }
 
 
         // currently unimplemented URL API calls

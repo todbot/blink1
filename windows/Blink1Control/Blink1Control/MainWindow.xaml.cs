@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,9 +25,31 @@ namespace Blink1Control
     {
         Blink1Server blink1Server = new Blink1Server();
 
+        public bool disposeTime = false;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            MinimizeToTray.Enable(this);
+
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (disposeTime) {
+                //close it
+                Console.WriteLine("disposeTime!");
+                blink1Server.shutdown();
+                // FIXME: is this the right thing to do?
+                System.Windows.Forms.Application.Exit();
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+            else {
+                base.OnClosing(e);
+                e.Cancel = true;
+                this.WindowState = WindowState.Minimized;
+            }
         }
     }
 }

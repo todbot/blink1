@@ -210,17 +210,24 @@ namespace Blink1Control
             // stolen from: http://stackoverflow.com/questions/9961220/webclient-read-content-of-error-page
             Console.WriteLine("getContentsOfUrl:" + url);  // FIXME: how to do debug logging better?
             string content = null;
+            if (url == null) return null;
             WebClient webclient = new WebClient();
             try {
                 content = webclient.DownloadString(url);
             }
             catch (WebException we) {
                 // WebException.Status holds useful information
-                Console.WriteLine(we.Message + "\n" + we.Status.ToString());  // FIXME:
+                Console.WriteLine(we.Message); // + "\n" + we.Status.ToString());  // FIXME:
+                /*
                 Stream receiveStream = we.Response.GetResponseStream();
                 Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
                 StreamReader readStream = new StreamReader(receiveStream, encode);
                 content = readStream.ReadToEnd();
+                Console.WriteLine("content: " + content);
+                 */
+                content = null;
+            }
+            catch (System.ArgumentException sae) {
             }
             catch (NotSupportedException ne) {
                 Console.WriteLine(ne.Message);   // other errors
