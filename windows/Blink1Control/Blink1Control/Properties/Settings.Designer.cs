@@ -46,5 +46,29 @@ namespace Blink1Control.Properties {
                 this["hostId"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string inputs {
+            get {
+                return ((string)(this["inputs"]));
+            }
+            set {
+                this["inputs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string patterns {
+            get {
+                return ((string)(this["patterns"]));
+            }
+            set {
+                this["patterns"] = value;
+            }
+        }
     }
 }

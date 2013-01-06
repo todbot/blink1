@@ -51,6 +51,10 @@ namespace Blink1Control
                 }
                 return String.Join(",", sa);
             }
+            set
+            {
+                parsePatternStr(value);
+            }
         }
         
         public Blink1Server blink1Server { get; set; } //
@@ -71,6 +75,40 @@ namespace Blink1Control
         /// <param name="patternstr">patternstr format "repeats,color1,color1time,color2,c2time,..."</param>
         /// <returns>true if parsing worked, false otherwise</returns>
         public Boolean parsePatternStr(string patternstr)
+        {
+            List<string> values = patternstr.Split(',').ToList();
+            if ((values.Count() % 2) != 0) { // odd number of elements, so has repeats head value presumably
+                repeats = 0;
+                try { repeats = int.Parse(values[0]); }
+                catch (Exception e) { Console.WriteLine(e.ToString()); }
+                values.RemoveAt(0); // skip over used first element
+            }
+
+            for (int i = 0; i < values.Count(); i += 2) {
+                Color colr = Color.Black;
+                float secs = 0.1F;
+                try {
+                    string rgbstr = values[i + 0];
+                    string secstr = values[i + 1];
+                    colr = ColorTranslator.FromHtml(rgbstr);
+                    secs = float.Parse(secstr, CultureInfo.InvariantCulture);
+                }
+                catch (Exception e) { 
+                    Console.WriteLine(e.ToString()); 
+                    return false; 
+                }
+                colors.Add(colr);
+                times.Add(secs);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Parse a pattern string, setting internal vars as needed
+        /// </summary>
+        /// <param name="patternstr">patternstr format "repeats,color1,color1time,color2,c2time,..."</param>
+        /// <returns>true if parsing worked, false otherwise</returns>
+        public Boolean parsePatternStrOrig(string patternstr)
         {
             string[] values = patternstr.Split(',');
             repeats = 0;
