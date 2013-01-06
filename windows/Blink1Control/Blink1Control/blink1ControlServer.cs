@@ -36,55 +36,43 @@ namespace Blink1Control
 
         static Blink1 Sblink1 = new Blink1();
 
+        public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
+        public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public void loadSettings()
         {
-            // some notes:
+            // some notes on settings:
             // http://stackoverflow.com/questions/1804302/where-is-the-data-for-properties-settings-default-saved
             // http://stackoverflow.com/questions/4647796/c-how-to-make-sure-a-settings-variable-exists-before-attempting-to-use-it-from
+            // http://stackoverflow.com/questions/469742/where-are-user-mode-net-settings-stored
+            // On my Win7 box, the settings are stored at:
+            // /c/Users/biff/AppData/Local/ThingM/Blink1Control.vshost.exe_Url_0icskbpuzcclllscwtnuhj23qahf4mn1/1.0.0.0/
 
             // we assume hostId is always set, it defaults to "00000000" on fresh installation
             // (or we could not set it in Properties and check for KeyNotFoundException)
             blink1.hostId = (string)Properties.Settings.Default["hostId"];
 
-            Console.WriteLine("blink1.hostId:" + blink1.hostId);
+            String patternsstr = (string)Properties.Settings.Default["patterns"];
+            Console.WriteLine("patterns: " + patternsstr);
+            patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
 
             blink1.regenerateBlink1Id();
 
-            //MySettings.Instance.Parameters["foo"] = "bar";
-            //MySettings.Instance.Save();
-            //MySettings.Instance.Reload();
-
-            //MySettings mysettings = new MySettings();
-            //Blink1Input ainput = new Blink1Input("foobee", "url", "http://shut.up/now", null, null);
-            //ainput.pname = "gosh!";
-            //inputs["golly"] = ainput; // NOTE: this replaces input if already exists
-            //mysettings.Parameters["todgod"] = "jorby";
-            //MySettings.saveSettings(mysettings);
-
-            //string todid = (string) Properties.Settings.Default["todId"];
-            //if (todid != null) {
-            //}
-            /*
-            if (Properties.Settings.Default.TheInputs == null) {
-                Console.WriteLine("*** New Settings! ****\n");
-                Properties.Settings.Default.TheInputs = new ObservableCollection<Blink1Input>
-                {
-                    new Blink1Input("bob","url",null,null,null),
-                    new Blink1Input("sue","file",null,null,null),
-                    new Blink1Input("joe","script",null,null,null)
-                };
-                Properties.Settings.Default.Save();
-            }
-            else {
-                Console.WriteLine("****\n\n found TheInputs Settings!\n\n **********");
-                Console.WriteLine(Properties.Settings.Default.TheInputs.Count.ToString());
-            }
-*/
+            Console.WriteLine("blink1.hostId:" + blink1.hostId);
+            Console.WriteLine("blink1.blink1Id:" + blink1.blink1Id);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void saveSettings()
         {
             Properties.Settings.Default["hostId"] = blink1.hostId;
+            Properties.Settings.Default["inputs"] =  JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings);
+            Properties.Settings.Default["patterns"] = JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings);
             Properties.Settings.Default.Save();
         }
 
@@ -94,9 +82,10 @@ namespace Blink1Control
             inputs = new Dictionary<string, Blink1Input>();
             patterns = new Dictionary<string, Blink1Pattern>();
 
+            Console.WriteLine("Blink1Server!");
+
             loadSettings();
 
-            Console.WriteLine("Blink1Server!");
             Console.WriteLine("Running on port " + httpPortDefault);
             Console.WriteLine("blink1Id:" + blink1Id);
 
@@ -115,7 +104,7 @@ namespace Blink1Control
                 VirtualDirectory inputdir  = new VirtualDirectory("input", blink1dir);
                 VirtualDirectory patterndir = new VirtualDirectory("pattern", blink1dir);
 
-                // FIXME: the below is completely gross, how to do HTTP routing in .NET?
+                // FIXME: the below is completely gross, how to do good HTTP routing with MiniHttpd?
                 Blink1JSONFile id = new Blink1JSONFile("id", blink1dir, this);
                 id.GetStringResponse = Ublink1Id;
                 blink1dir.AddFile(id);   //add a virtual file for each json method
@@ -382,6 +371,7 @@ namespace Blink1Control
             else {
                 statusstr = "error: need 'pname' and 'pattern' (e.g. '2,#ff00ff,0.5,#00ff00,0.5') argument";
             }
+            blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
@@ -401,6 +391,7 @@ namespace Blink1Control
                 blink1Server.patterns.Remove(pname);
                 statusstr = "pattern '" + pname + "' removed";
             }
+            blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
@@ -412,6 +403,8 @@ namespace Blink1Control
         {
             blink1Server.stopAllPatterns();
             blink1Server.patterns.Clear();
+            blink1Server.saveSettings();
+
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "all patterns removed");
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
@@ -486,6 +479,8 @@ namespace Blink1Control
                 statusstr = "input '" + iname + "' removed";
             }
 
+            blink1Server.saveSettings();
+
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
@@ -498,6 +493,8 @@ namespace Blink1Control
                 kvp.Value.stop();
             }
             blink1Server.patterns.Clear();
+            blink1Server.saveSettings();
+
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "all patterns removed");
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
@@ -527,6 +524,8 @@ namespace Blink1Control
                     blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
                 }
             }
+
+            blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
@@ -564,6 +563,8 @@ namespace Blink1Control
 
                 statusstr = "input ifttt";
             }
+
+            blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", statusstr);
@@ -648,13 +649,11 @@ namespace Blink1Control
             blink1.close();
         }
 
-        public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
-        public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
 
+        // currently unimplemented URL API calls
 
         //    /blink1/input/file -- Add and Start file watcher on given filepath
-
 
         //    /blink1/input/script -- Add and Start command-line script executer
 
@@ -685,7 +684,7 @@ namespace Blink1Control
                 this.blink1Server = aBlink1Server;
                 GetStringResponse = delegate(HttpRequest input, Blink1Server bs)
                 {
-                    return input.ToString();
+                    return input.ToString(); //placeholder
                 };
             }
 
@@ -714,7 +713,7 @@ namespace Blink1Control
         }
 
 
-        // this is for tod testing, trying to figure out httpwebserver class
+        // TESTING: this is for tod testing, trying to figure out httpwebserver class
         public class Blink1Directory : IDirectory
         {
             string name;
@@ -755,7 +754,40 @@ namespace Blink1Control
             public void Dispose()
             {
             }
-        }  // end testing class
+        }  //TESTING: end testing class
 
     }
+
+
 }
+
+//MySettings.Instance.Parameters["foo"] = "bar";
+//MySettings.Instance.Save();
+//MySettings.Instance.Reload();
+
+//MySettings mysettings = new MySettings();
+//Blink1Input ainput = new Blink1Input("foobee", "url", "http://shut.up/now", null, null);
+//ainput.pname = "gosh!";
+//inputs["golly"] = ainput; // NOTE: this replaces input if already exists
+//mysettings.Parameters["todgod"] = "jorby";
+//MySettings.saveSettings(mysettings);
+
+//string todid = (string) Properties.Settings.Default["todId"];
+//if (todid != null) {
+//}
+/*
+if (Properties.Settings.Default.TheInputs == null) {
+    Console.WriteLine("*** New Settings! ****\n");
+    Properties.Settings.Default.TheInputs = new ObservableCollection<Blink1Input>
+    {
+        new Blink1Input("bob","url",null,null,null),
+        new Blink1Input("sue","file",null,null,null),
+        new Blink1Input("joe","script",null,null,null)
+    };
+    Properties.Settings.Default.Save();
+}
+else {
+    Console.WriteLine("****\n\n found TheInputs Settings!\n\n **********");
+    Console.WriteLine(Properties.Settings.Default.TheInputs.Count.ToString());
+}
+*/

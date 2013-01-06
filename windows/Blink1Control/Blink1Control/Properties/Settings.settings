@@ -8,5 +8,11 @@
     <Setting Name="hostId" Type="System.String" Scope="User">
       <Value Profile="(Default)">00000000</Value>
     </Setting>
+    <Setting Name="inputs" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="patterns" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
