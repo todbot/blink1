@@ -108,11 +108,11 @@
       <Project>{4fe2ae76-ba05-44bc-a04e-5caf5d7a7d2f}</Project>
       <Name>Blink1Lib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\JSON\Newtonsoft.Json\Newtonsoft.Json.csproj">
+    <ProjectReference Include="..\JSON\Newtonsoft.Json\Newtonsoft.Json.csproj">
       <Project>{a9ae40ff-1a21-414a-9fe7-3be13644cc6d}</Project>
       <Name>Newtonsoft.Json</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\MiniHttpd\MiniHttpd.csproj">
+    <ProjectReference Include="..\MiniHttpd\MiniHttpd.csproj">
       <Project>{3e1bef4c-cc09-4c31-afb5-15a951811ac6}</Project>
       <Name>MiniHttpd</Name>
     </ProjectReference>
