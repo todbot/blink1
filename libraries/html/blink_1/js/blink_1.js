@@ -660,7 +660,7 @@ console.log("save click!");
 
     //
     function backendStopInputs() {
-        var b1url = '../blink1/input';
+        var b1url = '../blink1/inputs';
         var parms = { 'enabled' : false };
         $.getJSON( b1url, parms, function(result) {
             });
@@ -668,7 +668,7 @@ console.log("save click!");
     }
     //
     function backendStartInputs() {
-        var b1url = '../blink1/input';
+        var b1url = '../blink1/inputs';
         var parms = { 'enabled' : true };
         $.getJSON( b1url, parms, function(result) {
             });
@@ -1002,7 +1002,7 @@ function backendLoadTriggers() {
     $.ajaxSetup({ cache: false, async: false  });
     
     // first, load up the info from the input side of things
-    $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
+    $.getJSON( '../blink1/inputs', function(result) { // FIXME: don't use '..'
             //console.log("input data status '"+ result.status+"'");
             //console.log(result);
             var inputs = result.inputs;
@@ -1021,7 +1021,7 @@ function backendLoadTriggers() {
             });
     
     // then add in the color patterns for each input
-    $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
+    $.getJSON( '../blink1/patterns', function(result) {  // FIXME: don't use '..'
             //console.log("pattern data status '"+ result.status+"'");
             //console.log(result);
             var patterns = result.patterns;

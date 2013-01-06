@@ -194,7 +194,7 @@ Base URL: `http://localhost:8934/blink1`
 
 ### Input Selection ###
 
-* `/blink1/input/` 
+* `/blink1/inputs` 
 -- List configured inputs, enable or disable input watching
 
 * `/blink1/input/del` 
@@ -227,7 +227,7 @@ Base URL: `http://localhost:8934/blink1`
 
 ### Color Patterns ###
 
-* `/blink1/pattern/`
+* `/blink1/patterns`
 -- List saved color patterns
 
 * `/blink1/pattern/add`
@@ -364,7 +364,7 @@ __Response:__
     }
     
 
-`/blink1/input`
+`/blink1/inputs`
 --------------
 __Description:__ List configured inputs
 
@@ -372,7 +372,7 @@ __Query args:__ 'enable' : "on" == enable all configured inputs, "off" == off
 
 __Example:__ 
 
-`http://localhost:8934/blink1/input`
+`http://localhost:8934/blink1/inputs`
 
 __Response:__ 
 (example with several inputs configured)
@@ -582,7 +582,7 @@ __Response:__  Standard JSON 'status' response
 
 
 
-`/blink1/pattern`
+`/blink1/patterns`
 ----------------
 __Description:__
 List saved color patterns

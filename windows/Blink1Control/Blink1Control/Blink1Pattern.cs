@@ -55,19 +55,14 @@ namespace Blink1Control
         
         public Blink1Server blink1Server { get; set; } //
 
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="aName"></param>
-        /// <param name="patternstr"></param>
-        public Blink1Pattern(string aName, string patternstr)
+        public Blink1Pattern(string aName)
         {
             name = aName;
             playpos = 0;
             playcount = 0;
             playing = false;
-            parsePatternStr(patternstr);  // FIXME: check for bad patternstr vals
+            colors = new List<Color>();
+            times = new List<float>();
         }
 
         /// <summary>
@@ -77,8 +72,6 @@ namespace Blink1Control
         /// <returns>true if parsing worked, false otherwise</returns>
         public Boolean parsePatternStr(string patternstr)
         {
-            colors = new List<Color>();
-            times = new List<float>();
             string[] values = patternstr.Split(',');
             repeats = 0;
             try { repeats = int.Parse(values[0]); }
@@ -163,7 +156,7 @@ namespace Blink1Control
             playing = false;
         }
 
-
+        // FIXME: maybe use real JSON serializer
         public override string ToString()
         {
             return "{name:"+name+",pattern:"+pattern+",repeats:"+repeats+",playing:"+playing+"}";
