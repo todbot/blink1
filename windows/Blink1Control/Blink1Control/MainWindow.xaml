@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Blink1Control" Height="350" Width="525">
     <Grid>
-        
+        <Label Content="Point browser at http://localhost:8934/" HorizontalAlignment="Left" Margin="134,47,0,0" VerticalAlignment="Top" Width="246" HorizontalContentAlignment="Center"/>
+
     </Grid>
 </Window>
