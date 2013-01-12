@@ -28,7 +28,7 @@ namespace Blink1Control
         public static float iftttUpdateInterval = 15.0F;
         public static float urlUpdateInterval = 15.0F;
         
-        HttpWebServer bhI = new HttpWebServer(httpPortDefault);
+        HttpWebServer httpServer = new HttpWebServer(httpPortDefault);
 
         Dictionary<string, Blink1Input> inputs = new Dictionary<string, Blink1Input>();
         Dictionary<string, Blink1Pattern> patterns = new Dictionary<string, Blink1Pattern>();
@@ -44,6 +44,8 @@ namespace Blink1Control
 
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
+
+        public Boolean logToScreen = true;
 
         /// <summary>
         /// 
@@ -67,6 +69,9 @@ namespace Blink1Control
             Console.WriteLine("inputs: " + inputsstr);
             patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
             inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
+
+            Console.WriteLine("inputs:"+   JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings));
+            Console.WriteLine("patterns:"+   JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings));
 
             blink1.regenerateBlink1Id();
 
@@ -206,8 +211,14 @@ namespace Blink1Control
                 root.AddDirectory(bd);
 
                 root.AddDirectory(blink1dir);
-                bhI.Root = root;
-                bhI.Start();
+                httpServer.Root = root;
+
+                ConsoleWriter writer = new ConsoleWriter();
+                httpServer.Log = writer;
+                httpServer.LogRequests = true;
+                writer.OnWrite += new ConsoleWriter.WriteEventHandler(writer_OnWrite);
+
+                httpServer.Start();
             }
             catch (Exception e) {
                 Console.WriteLine(e.ToString());
@@ -354,7 +365,7 @@ namespace Blink1Control
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "pattern results");
-            result.Add("patterns", blink1Server.patterns);
+            result.Add("patterns", blink1Server.patterns.Values);
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
@@ -476,7 +487,7 @@ namespace Blink1Control
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("status", "input results");
             result.Add("enabled", blink1Server.inputsEnable);
-            result.Add("inputs", blink1Server.inputs);
+            result.Add("inputs", blink1Server.inputs.Values);
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
         //    /blink1/input/del -- Remove a configured input
@@ -697,6 +708,35 @@ namespace Blink1Control
         // ---------------------------------------------------------------------------------------
         //
 
+        // used to log http requests to console
+        void writer_OnWrite(char[] buffer, int index, int count)
+        {
+            //if (logToScreen) {
+                String text = new string(buffer, index, count);
+                Console.Write(text);
+            //}
+        }
+        /// <summary>
+        /// Summary description for ConsoleWriter.
+        /// </summary>
+        public class ConsoleWriter : TextWriter
+        {
+            public override System.Text.Encoding Encoding
+            {
+                get { return System.Text.Encoding.Default; }
+            }
+            public override void Write(char[] buffer, int index, int count)
+            {
+                if (OnWrite != null) OnWrite(buffer, index, count);
+            }
+            public override void Write(char value)
+            {
+                Write(new char[] { value }, 0, 1);
+            }
+            public delegate void WriteEventHandler(char[] buffer, int index, int count);
+            public event WriteEventHandler OnWrite;
+        }
+
         /// <summary>
         /// Weirdass wrapper for binding urls to funcblocks, why do we need this?
         /// </summary>
@@ -786,6 +826,8 @@ namespace Blink1Control
         }  //TESTING: end testing class
 
     }
+    
+
 
 
 }
