@@ -1,9 +1,10 @@
-﻿<Window x:Class="Blink1Control.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Blink1Control" Height="350" Width="525">
+        xmlns:Custom="http://schemas.awesomium.com/winfx" 
+        x:Class="Blink1Control.MainWindow"
+        Title="Blink1Control" Height="655" Width="855">
     <Grid>
-        <Label Content="Point browser at http://localhost:8934/" HorizontalAlignment="Left" Margin="134,47,0,0" VerticalAlignment="Top" Width="246" HorizontalContentAlignment="Center"/>
-
+        <Custom:WebControl x:Name="webControl1"/>
     </Grid>
 </Window>

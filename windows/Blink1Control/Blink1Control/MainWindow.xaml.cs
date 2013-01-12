@@ -31,6 +31,8 @@ namespace Blink1Control
         {
             InitializeComponent();
 
+            this.webControl1.Source = new System.Uri("http://127.0.0.1:8934/blink_1/", System.UriKind.Absolute);
+
             MinimizeToTray.Enable(this);
 
         }
