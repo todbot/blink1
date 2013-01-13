@@ -14,8 +14,6 @@ namespace Blink1Control
     {
         Blink1Server blink1Server = new Blink1Server();
 
-        public bool disposeTime = false;
-
         public Form1()
         {
             InitializeComponent();
@@ -23,23 +21,33 @@ namespace Blink1Control
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            notifyIcon1.BalloonTipTitle = "Minimize to Tray App";
-            notifyIcon1.BalloonTipText = "You have successfully minimized your form.";
+            notifyIcon1.BalloonTipTitle = "Blink1Control";
+            notifyIcon1.BalloonTipText = "Alerts are running. Double-click to show settings.";
 
-            if (FormWindowState.Minimized == this.WindowState) {
+            if (FormWindowState.Minimized == WindowState) {
+                Hide();
                 notifyIcon1.Visible = true;
                 notifyIcon1.ShowBalloonTip(500);
-                this.Hide();
             }
             else if (FormWindowState.Normal == this.WindowState) {
                 notifyIcon1.Visible = false;
             }
         }
 
-        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void notifyIcon1_DoubleClick(object sender, EventArgs e)
         {
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
+            Show();
+            WindowState = FormWindowState.Normal;
+        }
+
+        private void notifyIcon1_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("notifyIcon1 SingleClick! "+e);
+        }
+
+        private void Awesomium_Windows_Forms_WebControl_Resize(object sender, EventArgs e)
+        {
+            Console.WriteLine("HELLO THERE");
         }
 
         /*
