@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-//using System.Timers;
 using System.Drawing;
 using System.Reflection;
 using System.IO;
@@ -45,7 +44,16 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
-        public Boolean logToScreen = true;
+        public static bool logToScreen;
+
+        /// <summary>
+        /// Extremely simplistic logging system. one method only!
+        /// </summary>
+        /// <param name="s"></param>
+        public static void Log(string s)
+        {
+            if (logToScreen) Console.WriteLine(s);
+        }
 
         /// <summary>
         /// 
@@ -63,20 +71,27 @@ namespace Blink1Control
             // (or we could not set it in Properties and check for KeyNotFoundException)
             blink1.hostId = (string)Properties.Settings.Default["hostId"];
 
+            logToScreen = (bool) Properties.Settings.Default["logToScreen"];
+
             String patternsstr = (string)Properties.Settings.Default["patterns"];
             String inputsstr = (string)Properties.Settings.Default["inputs"];
-            Console.WriteLine("patterns: " + patternsstr);
-            Console.WriteLine("inputs: " + inputsstr);
+            Log("patterns: " + patternsstr);
+            Log("inputs: " + inputsstr);
             patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
             inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
-
-            Console.WriteLine("inputs:"+   JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings));
-            Console.WriteLine("patterns:"+   JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings));
+            if (patterns == null) {
+                patterns = new Dictionary<string, Blink1Pattern>();
+            }
+            if (inputs == null) {
+                inputs = new Dictionary<string, Blink1Input>();
+            }
+            Log("inputs:"+   JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings));
+            Log("patterns:"+   JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings));
 
             blink1.regenerateBlink1Id();
 
-            Console.WriteLine("blink1.hostId:" + blink1.hostId);
-            Console.WriteLine("blink1.blink1Id:" + blink1.blink1Id);
+            Log("blink1.hostId:" + blink1.hostId);
+            Log("blink1.blink1Id:" + blink1.blink1Id);
         }
 
         /// <summary>
@@ -93,12 +108,12 @@ namespace Blink1Control
         // constructor
         public Blink1Server()
         {
-            Console.WriteLine("Blink1Server!");
+            Log("Blink1Server!");
 
             loadSettings();
 
-            Console.WriteLine("Running on port " + httpPortDefault);
-            Console.WriteLine("blink1Id:" + blink1Id);
+            Log("Running on port " + httpPortDefault);
+            Log("blink1Id:" + blink1Id);
             long updateMillis = (long)(inputUpdateInterval * 1000);
             inputsTimer = new Timer( updateInputs, null, updateMillis, updateMillis);
 
@@ -110,7 +125,7 @@ namespace Blink1Control
                 string baseDir = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 baseDir += "\\html\\blink_1";
                 DriveDirectory htmlDir = new DriveDirectory(baseDir);
-                Console.WriteLine("htmlDir: " + htmlDir.Path);
+                Log("htmlDir: " + htmlDir.Path);
                 root.AddDirectory(htmlDir.Path);
 
                 VirtualDirectory blink1dir = new VirtualDirectory("blink1", root);
@@ -221,7 +236,7 @@ namespace Blink1Control
                 httpServer.Start();
             }
             catch (Exception e) {
-                Console.WriteLine(e.ToString());
+                Log(e.ToString());
             }
         }
 
@@ -311,7 +326,7 @@ namespace Blink1Control
             //NameValueCollection query = request.Query;
             string rgbstr = request.Query.Get("rgb");
             string timestr = request.Query.Get("time");
-            Console.WriteLine("rgb: " + rgbstr);
+            Log("rgb: " + rgbstr);
             if (rgbstr == null) rgbstr = "#000000";
             if (timestr == null) timestr = "0.1";
             Color colr = ColorTranslator.FromHtml(rgbstr);
@@ -607,7 +622,7 @@ namespace Blink1Control
         /// </summary>
         public void updateInputs(Object stateInfo)
         {
-            Console.WriteLine("updateInputs");
+            Log("updateInputs");
             if (!inputsEnable) return;
             
             Blink1Input.getIftttResponse(true);
@@ -673,7 +688,7 @@ namespace Blink1Control
         /// </summary>
         public void fadeToRGB(double secs, Color c)
         {
-            Console.WriteLine("fadeToRGB: rgb:" + ColorTranslator.ToHtml(c) + " secs:" + secs);
+            Log("fadeToRGB: rgb:" + ColorTranslator.ToHtml(c) + " secs:" + secs);
             blink1.open();
             blink1.fadeToRGB((int)(secs * 1000), c.R, c.G, c.B);
             blink1.close();
@@ -711,10 +726,10 @@ namespace Blink1Control
         // used to log http requests to console
         void writer_OnWrite(char[] buffer, int index, int count)
         {
-            //if (logToScreen) {
+            if (logToScreen) {
                 String text = new string(buffer, index, count);
                 Console.Write(text);
-            //}
+            }
         }
         /// <summary>
         /// Summary description for ConsoleWriter.
@@ -827,38 +842,4 @@ namespace Blink1Control
 
     }
     
-
-
-
 }
-
-//MySettings.Instance.Parameters["foo"] = "bar";
-//MySettings.Instance.Save();
-//MySettings.Instance.Reload();
-
-//MySettings mysettings = new MySettings();
-//Blink1Input ainput = new Blink1Input("foobee", "url", "http://shut.up/now", null, null);
-//ainput.pname = "gosh!";
-//inputs["golly"] = ainput; // NOTE: this replaces input if already exists
-//mysettings.Parameters["todgod"] = "jorby";
-//MySettings.saveSettings(mysettings);
-
-//string todid = (string) Properties.Settings.Default["todId"];
-//if (todid != null) {
-//}
-/*
-if (Properties.Settings.Default.TheInputs == null) {
-    Console.WriteLine("*** New Settings! ****\n");
-    Properties.Settings.Default.TheInputs = new ObservableCollection<Blink1Input>
-    {
-        new Blink1Input("bob","url",null,null,null),
-        new Blink1Input("sue","file",null,null,null),
-        new Blink1Input("joe","script",null,null,null)
-    };
-    Properties.Settings.Default.Save();
-}
-else {
-    Console.WriteLine("****\n\n found TheInputs Settings!\n\n **********");
-    Console.WriteLine(Properties.Settings.Default.TheInputs.Count.ToString());
-}
-*/

@@ -1,10 +1,7 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Blink1Control.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="SomeSettings" Type="System.String" Scope="User">
-      <Value Profile="(Default)">hello there why are you looking here</Value>
-    </Setting>
     <Setting Name="hostId" Type="System.String" Scope="User">
       <Value Profile="(Default)">00000000</Value>
     </Setting>
@@ -13,6 +10,9 @@
     </Setting>
     <Setting Name="patterns" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="logToScreen" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>
