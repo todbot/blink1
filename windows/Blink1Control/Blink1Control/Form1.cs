@@ -1,42 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Web;
-using System.Net;
+using System.Windows.Forms;
 
 namespace Blink1Control
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public partial class Form1 : Form
     {
         Blink1Server blink1Server = new Blink1Server();
 
         public bool disposeTime = false;
 
-        public MainWindow()
+        public Form1()
         {
             InitializeComponent();
-
-            this.webControl1.Source = new System.Uri("http://127.0.0.1:8934/blink_1/", System.UriKind.Absolute);
-
-            MinimizeToTray.Enable(this);
-
         }
 
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            notifyIcon1.BalloonTipTitle = "Minimize to Tray App";
+            notifyIcon1.BalloonTipText = "You have successfully minimized your form.";
+
+            if (FormWindowState.Minimized == this.WindowState) {
+                notifyIcon1.Visible = true;
+                notifyIcon1.ShowBalloonTip(500);
+                this.Hide();
+            }
+            else if (FormWindowState.Normal == this.WindowState) {
+                notifyIcon1.Visible = false;
+            }
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+        }
+
+        /*
         protected override void OnClosing(CancelEventArgs e)
         {
             if (disposeTime) {
@@ -52,5 +58,6 @@ namespace Blink1Control
                 this.WindowState = WindowState.Minimized;
             }
         }
+         */
     }
 }

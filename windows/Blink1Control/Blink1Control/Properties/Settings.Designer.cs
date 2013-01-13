@@ -25,18 +25,6 @@ namespace Blink1Control.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("hello there why are you looking here")]
-        public string SomeSettings {
-            get {
-                return ((string)(this["SomeSettings"]));
-            }
-            set {
-                this["SomeSettings"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00000000")]
         public string hostId {
             get {
@@ -68,6 +56,18 @@ namespace Blink1Control.Properties {
             }
             set {
                 this["patterns"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool logToScreen {
+            get {
+                return ((bool)(this["logToScreen"]));
+            }
+            set {
+                this["logToScreen"] = value;
             }
         }
     }
