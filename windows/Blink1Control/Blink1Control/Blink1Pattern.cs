@@ -49,7 +49,7 @@ namespace Blink1Control
                     sa.Add(ColorTranslator.ToHtml(colors[i]));
                     sa.Add(times[i].ToString("F2", CultureInfo.InvariantCulture));
                 }
-                return String.Join(",", sa);
+                return repeats+","+String.Join(",", sa);  // the repeats is for the GUI, really
             }
             set
             {
@@ -104,39 +104,6 @@ namespace Blink1Control
         }
 
         /// <summary>
-        /// Parse a pattern string, setting internal vars as needed
-        /// </summary>
-        /// <param name="patternstr">patternstr format "repeats,color1,color1time,color2,c2time,..."</param>
-        /// <returns>true if parsing worked, false otherwise</returns>
-        public Boolean parsePatternStrOrig(string patternstr)
-        {
-            string[] values = patternstr.Split(',');
-            repeats = 0;
-            try { repeats = int.Parse(values[0]); }
-            catch (Exception e) { Console.WriteLine(e.ToString()); }
-            int len2x = values.Length - 1;
-            if ((len2x % 2) == 0)
-            {  // even number, so good
-                for (int i = 0; i < len2x; i += 2)
-                {
-                    Color colr = Color.Black;
-                    float secs = 0.1F;
-                    try {
-                        string rgbstr = values[1 + i + 0];
-                        string secstr = values[1 + i + 1];
-                        colr = ColorTranslator.FromHtml(rgbstr);
-                        secs = float.Parse(secstr, CultureInfo.InvariantCulture);
-                    }
-                    catch (Exception e) { Console.WriteLine(e.ToString()); }
-                    colors.Add(colr);
-                    times.Add(secs);
-                }
-            }
-            else { return false; }
-            return true;
-        }
-
-        /// <summary>
         /// Start a pattern playing
         /// </summary>
         public void play()
@@ -160,7 +127,7 @@ namespace Blink1Control
         public void update(Object stateInfo)
         {
             if (!playing) return;
-            Console.WriteLine("update! "+name);
+            Blink1Server.Log("update! "+name);
 
             Boolean scheduleNext = true;
             playpos++;
@@ -177,7 +144,7 @@ namespace Blink1Control
             if( scheduleNext ) {
                 float nextTime = times[playpos];
                 Color color = colors[playpos];
-                Console.WriteLine("update: scheduleNext: "+nextTime);
+                Blink1Server.Log("update: scheduleNext: "+nextTime);
                 //DLog(@"%@ updt p:%d c:%d %@ nextTime:%f",name,playpos,playcount,[Blink1 hexStringFromColor:color],nextTime);
                 blink1Server.fadeToRGB(nextTime/2, color);
                 timer = new Timer( update, null, (int)(nextTime*1000), 0);

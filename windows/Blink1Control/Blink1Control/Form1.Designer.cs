@@ -39,7 +39,7 @@
             this.webControl1.Name = "webControl1";
 // TODO: Code generation for '' failed because of Exception 'Invalid Primitive Type: System.IntPtr. Consider using CodeObjectCreateExpression.'.
             this.webControl1.Size = new System.Drawing.Size(839, 617);
-            this.webControl1.Source = new System.Uri("http://172.16.17.1/~tod/blink1control/blink_1", System.UriKind.Absolute);
+            this.webControl1.Source = new System.Uri("http://127.0.0.1:8934/blink_1", System.UriKind.Absolute);
             this.webControl1.TabIndex = 0;
             // 
             // notifyIcon1

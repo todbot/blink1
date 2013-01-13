@@ -70,7 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blink1ControlServer.cs" />
+    <Compile Include="Blink1Server.cs" />
     <Compile Include="Blink1Event.cs" />
     <Compile Include="Blink1Input.cs" />
     <Compile Include="Blink1Pattern.cs" />
