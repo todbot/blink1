@@ -41,6 +41,7 @@ char  deviceIds[blink1_max_devices];
 char  cmdbuf[9]; 
 char rgbbuf[4];
 int verbose;
+int quiet;
 
 
 //---------------------------------------------------------------------------- 
@@ -120,9 +121,10 @@ static void usage(char *myName)
 "  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
 "  --version                   Display blink(1) firmware version \n"
 "and [options] are: \n"
-"  -g -nogamma                 Disable autogamma correction\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
+"  -g -nogamma                 Disable autogamma correction\n"
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
+"  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 "  -v, --verbose               verbose debugging msgs\n"
@@ -180,10 +182,11 @@ int main(int argc, char** argv)
 
     // parse options
     int option_index = 0, opt;
-    char* opt_str = "avm:t:d:U:u:g";
+    char* opt_str = "aqvm:t:d:U:u:g";
     static struct option loptions[] = {
         {"all",        no_argument,       0,      'a'},
         {"verbose",    optional_argument, 0,      'v'},
+        {"quiet",      optional_argument, 0,      'q'},
         {"millis",     required_argument, 0,      'm'},
         {"delay",      required_argument, 0,      't'},
         {"id",         required_argument, 0,      'd'},
@@ -267,6 +270,10 @@ int main(int argc, char** argv)
         case 't':
             delayMillis = strtol(optarg,NULL,10);
             break;
+        case 'q':
+            if( optarg==NULL ) quiet++;
+            else quiet = strtol(optarg,NULL,0);
+            break;
         case 'v':
             if( optarg==NULL ) verbose++;
             else verbose = strtol(optarg,NULL,0);
@@ -297,7 +304,9 @@ int main(int argc, char** argv)
 
     //FIXME: confusing
     if( nogamma ) { 
-        printf("disabling auto degamma\n");
+        if ( !quiet ) {
+        	printf("disabling auto degamma\n");
+	}
         blink1_disableDegamma();  
     }
 
@@ -316,8 +325,10 @@ int main(int argc, char** argv)
 
     // get a list of all devices and their paths
     int count = blink1_enumerateByVidPid(vid,pid);
-    if( count == 0 ) { 
-        printf("no blink(1) devices found\n");
+    if( count == 0 ) {
+        if ( !quiet ) {
+            printf("no blink(1) devices found\n");
+        }
         exit(1);
     }
 
@@ -326,7 +337,7 @@ int main(int argc, char** argv)
     //if( !dev_serial ) 
     //    dev_serial = blink1_getCachedSerial( deviceIds[0] );
 
-    if( verbose ) { 
+    if( verbose && !quiet ) { 
         printf("deviceId[0] = %d\n", deviceIds[0]);
         //printf("cached path = '%ls'\n", dev_serial);
         for( int i=0; i< count; i++ ) { 
@@ -337,7 +348,9 @@ int main(int argc, char** argv)
     // actually open up the device to start talking to it
     dev = blink1_openById( deviceIds[0] );
     if( dev == NULL ) { 
-        printf("cannot open blink(1), bad serial number\n");
+        if ( !quiet ) {
+            printf("cannot open blink(1), bad serial number\n");
+        }
         exit(1);
     }
 
@@ -356,8 +369,10 @@ int main(int argc, char** argv)
             hexdump(cmdbuf, sizeof(cmdbuf));
         }
     } 
-    else if( cmd == CMD_HIDWRITE ) { 
-        printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
+    else if( cmd == CMD_HIDWRITE ) {
+        if ( !quiet ) {
+            printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
+        }
         if((rc = hid_send_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1) {
             fprintf(stderr,"error writing data: %d\n",rc);
         }
@@ -373,9 +388,9 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_EEWRITE ) {  // FIXME
-        printf("eewrite: \n");
+        if ( !quiet ) { printf("eewrite: \n"); }
         rc = blink1_eewrite(dev, cmdbuf[0], cmdbuf[1] );
-        if( rc==-1 ) { // error
+        if( rc==-1  && !quiet ) { // error
             printf("error\n");
         }
     }
@@ -398,10 +413,12 @@ int main(int argc, char** argv)
         for( int i=0; i< numDevicesToUse; i++ ) {
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
-            printf("set dev:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
-                   deviceIds[i],r,g,b,millis);
+            if ( !quiet ) {
+                printf("set dev:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+                       deviceIds[i],r,g,b,millis);
+            }
             rc = blink1_fadeToRGB(dev,millis, r,g,b);
-            if( rc == -1 ) { // on error, do something, anything. come on.
+            if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
                 printf("error on fadeToRGB\n");
             }
             blink1_close( dev );
@@ -411,9 +428,9 @@ int main(int argc, char** argv)
         uint8_t play = cmdbuf[0];
         uint8_t pos = cmdbuf[1];
 
-        printf("%s color pattern at pos %d\n", ((play)?"playing":"stopping"),pos);
+        if ( !quiet ) { printf("%s color pattern at pos %d\n", ((play)?"playing":"stopping"),pos); }
         rc = blink1_play(dev, play, pos);
-        if( rc == -1 ) { 
+        if( rc == -1 && !quiet ) { 
         }
     }
     else if( cmd == CMD_SAVERGB ) {
@@ -421,9 +438,9 @@ int main(int argc, char** argv)
         uint8_t g = cmdbuf[1];
         uint8_t b = cmdbuf[2];
         uint8_t p = cmdbuf[3];
-        printf("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x to pos %d\n", r,g,b,p );
+        if ( !quiet ) { printf("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x to pos %d\n", r,g,b,p ); }
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
-        if( rc==-1 ) {
+        if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
         }
     }
@@ -433,7 +450,7 @@ int main(int argc, char** argv)
         uint16_t msecs;
         printf("reading rgb at pos %d: ", p );
         rc = blink1_readPatternLine(dev, &msecs, &r,&g,&b, p );
-        if( rc==-1 ) {
+        if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
         }
         printf("r,g,b = %x,%x,%x millis:%d\n", r,g,b, msecs);
@@ -441,20 +458,22 @@ int main(int argc, char** argv)
     else if( cmd == CMD_RANDOM ) { 
         int cnt = blink1_getCachedCount();
         if( cnt>1 ) blink1_close(dev); // close global device, open as needed
-        printf("random %d times: \n", arg);
+        if ( !quiet ) { printf("random %d times: \n", arg); }
         for( int i=0; i<arg; i++ ) { 
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
             uint8_t id = rand() % blink1_getCachedCount();
 
-            printf("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
-                   i, id, blink1_getCachedCount(), r,g,b);
+            if ( !quiet ) {
+                printf("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
+                       i, id, blink1_getCachedCount(), r,g,b);
+            }
 
             hid_device* mydev = dev;
             if( cnt > 1 ) mydev = blink1_openById( id );
             rc = blink1_fadeToRGB(mydev, millis,r,g,b);
-            if( rc == -1 ) { // on error, do something, anything. come on.
+            if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
 	        printf("error during random\n");
                 //break;
             }
@@ -471,7 +490,7 @@ int main(int argc, char** argv)
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 255;
         }
-        printf("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
+        if ( !quiet ) { printf("blink %d times rgb:%x,%x,%x: \n", n,r,g,b); }
         for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGB(dev, millis,r,g,b);
             blink1_sleep(delayMillis);
@@ -481,14 +500,17 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_SERVERDOWN ) { 
         int on  = arg;
-        printf("setting serverdown %s (at %d millis)\n", 
-               ((on)?"ON":"OFF"), delayMillis);
+        if ( !quiet ) {
+            printf("setting serverdown %s (at %d millis)\n", 
+                   ((on)?"ON":"OFF"), delayMillis);
+        }
         blink1_serverdown( dev, on, delayMillis );
     }
     // use caution with this, could make your blink(1) unusable
     // --serialnumwrite abcd1234
     else if( cmd == CMD_SERIALNUMWRITE ) { 
-        printf("serial number write: %s\n",tmpstr);
+        if ( !quiet ) { printf("serial number write: %s\n",tmpstr); }
+
         //for( int i=0; i<4; i++)  printf("%2.2X,",cmdbuf[i]);
         //printf("\n");
         if( (rc = blink1_serialnumwrite( dev, tmpstr)) == -1 ) { 
