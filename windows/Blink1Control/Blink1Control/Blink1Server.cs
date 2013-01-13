@@ -647,6 +647,7 @@ namespace Blink1Control
         /// <returns> true if pattern was played, false if not</returns>
         public Boolean playPattern(string pname)
         {
+            Log("playPattern:"+pname);
             if (pname == null) return false;
             // if rgb hex code, just do it
             if (pname.StartsWith("#")) {
@@ -728,7 +729,7 @@ namespace Blink1Control
         {
             if (logToScreen) {
                 String text = new string(buffer, index, count);
-                Console.Write(text);
+                //Log(text);
             }
         }
         /// <summary>
