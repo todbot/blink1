@@ -28,6 +28,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.webControl1 = new Awesomium.Windows.Forms.WebControl();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.SuspendLayout();
@@ -41,11 +42,15 @@
             this.webControl1.Size = new System.Drawing.Size(839, 617);
             this.webControl1.Source = new System.Uri("http://127.0.0.1:8934/blink_1", System.UriKind.Absolute);
             this.webControl1.TabIndex = 0;
+            this.webControl1.Resize += new System.EventHandler(this.Awesomium_Windows_Forms_WebControl_Resize);
             // 
             // notifyIcon1
             // 
-            this.notifyIcon1.Text = "notifyIcon1";
+            this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
+            this.notifyIcon1.Text = "Blink1Control";
             this.notifyIcon1.Visible = true;
+            this.notifyIcon1.Click += new System.EventHandler(this.notifyIcon1_Click);
+            this.notifyIcon1.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
             // 
             // Form1
             // 
@@ -55,6 +60,7 @@
             this.Controls.Add(this.webControl1);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.ResumeLayout(false);
 
         }
