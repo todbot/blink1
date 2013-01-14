@@ -84,11 +84,11 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Awesomium.Core">
-      <HintPath>..\Awesomium\Awesomium.Core.dll</HintPath>
+    <Reference Include="CefSharp">
+      <HintPath>..\CefSharp\CefSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Awesomium.Windows.Forms">
-      <HintPath>..\Awesomium\Awesomium.Windows.Forms.dll</HintPath>
+    <Reference Include="CefSharp.WinForms">
+      <HintPath>..\CefSharp\CefSharp.WinForms.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -181,7 +181,8 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>xcopy /i /e /y $(SolutionDir)\..\..\libraries\html html</PreBuildEvent>
+    <PreBuildEvent>xcopy /i /e /y $(SolutionDir)\..\..\libraries\html html
+xcopy /i /e /y $(SolutionDir)\CefSharp\* .</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
