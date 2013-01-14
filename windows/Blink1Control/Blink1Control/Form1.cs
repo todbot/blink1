@@ -97,6 +97,7 @@ namespace Blink1Control
         private void doExit()
         {
             blink1Server.shutdown();
+            notifyIcon1.Visible = false;
             System.Windows.Forms.Application.Exit();
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
