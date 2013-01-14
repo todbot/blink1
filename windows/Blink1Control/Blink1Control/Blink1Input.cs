@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-//using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.IO;
@@ -11,10 +10,15 @@ using Newtonsoft.Json;
 
 namespace Blink1Control
 {
-//    [Serializable]
+    /// <summary>
+    /// A representation of a data input mechanism/technique (e.g. IFTTT, URL, script,etc.)
+    /// This could be implemented as many subclasses ("Blink1InputUrl") but instead
+    /// all inputs are the same and have a "type".
+    /// In addition to a type, inputs can have up to 3 arguments (arg1,arg2,arg3)
+    /// 
+    /// </summary>
     public class Blink1Input
     {
-
         public Blink1Server blink1Server { private get; set; }
         /// <summary>
         /// Name of the input 
@@ -35,8 +39,23 @@ namespace Blink1Control
         public string possibleVals { get; set; }
 
         // each input can have an independent update interval that's greater than master interval
-        public DateTime lastTime;
+        private DateTime lastDateTime;
+        public string lastTime
+        {
+            get
+            {
+                return ConvertToUnixTimestamp(lastDateTime).ToString();
+            }
+            set
+            {
+                double v=0;
+                Double.TryParse(value, out v);
+                lastDateTime = ConvertFromUnixTimestamp(v);
+            }
+        }
+
         //private int updateInterval;
+
         // holder of last valid response/content
         private string lastContent;
 
@@ -54,9 +73,27 @@ namespace Blink1Control
         /// <param name="arg2"></param>
         /// <param name="arg3"></param>
         public Blink1Input(string name, string type, string arg1, string arg2, string arg3)
+            : this(null, name, null, type, arg1, arg2, arg3)
         {
-            this.iname = name; this.type = type;
+        }
+
+        public Blink1Input(Blink1Server b1s, string iname, string pname, string type, string arg1)
+            : this(b1s, iname, pname, type, arg1, null, null)
+        {
+        }
+
+        public Blink1Input(Blink1Server b1s, string iname, string pname, string type, string arg1, string arg2, string arg3)
+        {
+            this.blink1Server = b1s;
+            this.iname = iname; 
+            this.pname = pname;
+            this.type = type;
             this.arg1 = arg1; this.arg2 = arg2; this.arg3 = arg3;
+            this.lastDateTime = DateTime.Now;
+        }
+
+        public Blink1Input()
+        {
         }
 
         /// <summary>
@@ -69,30 +106,39 @@ namespace Blink1Control
         /// <summary>
         /// Called periodically by blink1Server
         /// </summary>
-        public void update()
+        public Boolean update()
         {
+            // only update every xx secs
+            DateTime now = DateTime.Now;
+            /*
+            TimeSpan diff = now - lastTime;
+            if (diff.Seconds < updateInterval) {
+                return false;
+            }*/
+            lastDateTime = now;
+
+            Boolean wasTriggered = false;
             if (type.Equals("ifttt")) { // FIXME: there's totally a better way of doing this
-                updateIftttInput();
+                wasTriggered = updateIftttInput();
             }
             else if (type.Equals("url")) {
-                updateUrlInput();
+                wasTriggered = updateUrlInput();
             }
             else if (type.Equals("file")) {
-                updateFileInput();
+                wasTriggered = updateFileInput();
             }
             else if (type.Equals("script")) {
-                updateScriptInput();
+                wasTriggered = updateScriptInput();
             }
 
+            return wasTriggered;
         }
 
         // periodically fetch events from IFTTT gateway
-        public void updateIftttInput()
+        public Boolean updateIftttInput()
         {
-            if (iftttLastContent==null) return;
+            if (iftttLastContent==null) return false;
             
-            // add interval checking
-
             string rulename = arg1;
 
             IftttResponse iftttResponse = JsonConvert.DeserializeObject<IftttResponse>( iftttLastContent );
@@ -102,59 +148,84 @@ namespace Blink1Control
                     lastVal = ev.source;
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Periodically fetch URL, looking for color patern name or color code 
         /// </summary>
-        public void updateUrlInput()
+        public Boolean updateUrlInput()
         {
             string url = arg1;
             string resp = getContentsOfUrl(url);
             lastContent = resp;
             if (resp == null) {
                 lastVal = "bad url";
-                return;
+                return false;
             }
             string patternstr = parsePatternOrColorString(resp);
-
             if (patternstr != null && !patternstr.Equals(lastVal)) {
                 lastVal = patternstr;
                 blink1Server.playPattern(patternstr);
+                return true;
             }
+            else {
+                lastVal = "no color or pattern in output";
+            }
+            return false;
         }
 
         /// <summary>
         /// Periodically check file, looking for color pattern name or color code
         ///
         /// </summary>
-        public void updateFileInput()
+        public Boolean updateFileInput()
         {
             string filepath = arg1;
             string resp = getContentsOfFile(filepath);
             lastContent = resp;
             if (resp == null) {
                 lastVal = "bad filename";
-                return;
+                return false;
             }
             string patternstr = parsePatternOrColorString(resp);
             if (patternstr != null && !patternstr.Equals(lastVal)) {
                 lastVal = patternstr;
                 blink1Server.playPattern(patternstr);
+                return true;
             }
+            else {
+                lastVal = "no color or pattern in output";
+            }
+            return false;
         }
 
         /// <summary>
         /// Periodically excecute script, looking for color pattern name or color cod
         /// </summary>
-        public void updateScriptInput()
+        public Boolean updateScriptInput()
         {
             string scriptname = arg1;
+            string resp = execScript(scriptname);
+            lastContent = resp;
+            if (resp == null) {
+                lastVal = "bad scriptname";
+                return false;
+            }
+            string patternstr = parsePatternOrColorString(resp);
+            if (patternstr != null && !patternstr.Equals(lastVal)) {
+                lastVal = patternstr;
+                blink1Server.playPattern(patternstr);
+                return true;
+            }
+            else {
+              lastVal = "no color or pattern in output";
+            }
+            return false;
         }
 
         // ---------------------------------------------------------------------------------------
         // static utility methods 
-
 
         /// <summary>
         /// Static metho callled peridically, but only once for all IFTTT inputs. 
@@ -235,6 +306,7 @@ namespace Blink1Control
             }
             return content;
         }
+
         /// <summary>
         /// Get contents of file into string
         /// </summary>
@@ -255,6 +327,31 @@ namespace Blink1Control
             }
             return null;
         }
+
+        /// <summary>
+        /// Execute a script 
+        /// </summary>
+        /// <param name="scriptpath"></param>
+        /// <returns></returns>
+        public static string execScript(string scriptpath)
+        {
+            //stolen from: http://stackoverflow.com/questions/878632/best-way-to-call-external-program-in-c-sharp-and-parse-output
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.Arguments = "/c " + scriptpath; // dir *.cs";
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.Start();
+
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            Console.WriteLine("Output:"+output);
+
+            return output;
+        }
+
 
         // stolen from http://stackoverflow.com/questions/3354893/how-can-i-convert-a-datetime-to-the-number-of-seconds-since-1970
         public static DateTime ConvertFromUnixTimestamp(double timestamp)

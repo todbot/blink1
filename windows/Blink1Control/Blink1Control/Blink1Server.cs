@@ -44,10 +44,23 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
+        /*
+        public static Blink1Server staticBlink1Server;
+        public static void setBlink1Server(Blink1Server b1s)
+        {
+            staticBlink1Server = b1s;
+        }
+        public static Blink1Server getBlink1Server(Blink1Server b1s)
+        {
+            return staticBlink1Server;
+        }
+        */
+
         public static bool logToScreen;
 
         /// <summary>
         /// Extremely simplistic logging system. one method only!
+        /// FIXME: need to investigate System.Diagnostics.Debug.WriteLine()
         /// </summary>
         /// <param name="s"></param>
         public static void Log(string s)
@@ -207,6 +220,14 @@ namespace Blink1Control
                 inputurl.GetStringResponse = Ublink1InputUrl;
                 inputdir.AddFile(inputurl);
 
+                Blink1JSONFile inputfile = new Blink1JSONFile("file", inputdir, this);
+                inputfile.GetStringResponse = Ublink1InputFile;
+                inputdir.AddFile(inputfile);
+
+                Blink1JSONFile inputscript = new Blink1JSONFile("script", inputdir, this);
+                inputscript.GetStringResponse = Ublink1InputScript;
+                inputdir.AddFile(inputscript);
+
                 Blink1JSONFile inputifttt = new Blink1JSONFile("ifttt", inputdir, this);
                 inputifttt.GetStringResponse = Ublink1InputIfttt;
                 inputdir.AddFile(inputifttt);
@@ -239,6 +260,8 @@ namespace Blink1Control
                 Log(e.ToString());
             }
         }
+
+        #region URL Methods
 
         // -----------------------------------------------------------------------------------------------
         // url methods
@@ -544,7 +567,7 @@ namespace Blink1Control
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string url = request.Query.Get("arg1");
+            string url = request.Query.Get("arg1").Trim();
             string test = request.Query.Get("test");
             if (pname == null) pname = iname;
             Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
@@ -554,16 +577,13 @@ namespace Blink1Control
             Blink1Input input = null;
             if (url != null && iname != null) {
                 statusstr = "input url";
-                input = new Blink1Input(iname, "url", url, null, null);
-                input.blink1Server = blink1Server;
-                input.pname = pname;
+                input = new Blink1Input(blink1Server, iname, pname, "url", url);
 
                 input.updateUrlInput();
                 if (!testmode) {
                     blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
                 }
             }
-
             blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -572,12 +592,72 @@ namespace Blink1Control
             return JsonConvert.SerializeObject(result, Formatting.Indented,jsonSerializerSettings);
         }
 
+        //    /blink1/input/file -- Add and Start File watcher on given filepath
+        static string Ublink1InputFile(HttpRequest request, Blink1Server blink1Server)
+        {
+            string pname = request.Query.Get("pname");
+            string iname = request.Query.Get("iname");
+            string fpath = request.Query.Get("arg1").Trim();
+            string test = request.Query.Get("test");
+            if (pname == null) pname = iname;
+            Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
+
+            string statusstr = "must specifiy 'iname' and 'arg1' (filepath)";
+
+            Blink1Input input = null;
+            if (fpath != null && iname != null) {
+                statusstr = "input file";
+                input = new Blink1Input(blink1Server, iname, pname, "file", fpath);
+
+                input.updateFileInput();
+                if (!testmode) {
+                    blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
+                }
+            }
+            blink1Server.saveSettings();
+
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", statusstr);
+            result.Add("input", input);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
+        }
+
+        //    /blink1/input/script -- Add and Start command-line script executer
+        static string Ublink1InputScript(HttpRequest request, Blink1Server blink1Server)
+        {
+            string pname = request.Query.Get("pname");
+            string iname = request.Query.Get("iname");
+            string fpath = request.Query.Get("arg1").Trim();
+            string test = request.Query.Get("test");
+            if (pname == null) pname = iname;
+            Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
+
+            string statusstr = "must specifiy 'iname' and 'arg1' (script filepath)";
+
+            Blink1Input input = null;
+            if (fpath != null && iname != null) {
+                statusstr = "input script";
+                input = new Blink1Input(blink1Server, iname, pname, "script", fpath);
+
+                input.updateScriptInput();
+                if (!testmode) {
+                    blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
+                }
+            }
+            blink1Server.saveSettings();
+
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", statusstr);
+            result.Add("input", input);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
+        }
+
         //    /blink1/input/ifttt -- Add and Start watching messages from IFTTT webservice
         static string Ublink1InputIfttt(HttpRequest request, Blink1Server blink1Server)
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string rulename = request.Query.Get("arg1");
+            string rulename = request.Query.Get("arg1").Trim();
             string test = request.Query.Get("test");
             if (pname == null) pname = iname;
             Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
@@ -586,23 +666,17 @@ namespace Blink1Control
 
             Blink1Input input = null;
             if (rulename != null && iname != null) {
-                input = new Blink1Input(iname, "ifttt", rulename, null, null);
-                input.blink1Server = blink1Server;
-                input.pname = pname;
+                statusstr = "input ifttt";
+                input = new Blink1Input(blink1Server, iname, pname, "ifttt", rulename);
 
-                // FIXME: insert magic here
-                //if (testmode) {
-                Blink1Input.getIftttResponse(false);
-                //}
-
+                if (testmode) { // override periodic fetch for immediate fetch
+                    Blink1Input.getIftttResponse(false);
+                }
                 input.updateIftttInput();
                 if (!testmode) {
                     blink1Server.inputs[iname] = input; // NOTE: this replaces input if already exists
                 }
-
-                statusstr = "input ifttt";
             }
-
             blink1Server.saveSettings();
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -610,6 +684,8 @@ namespace Blink1Control
             result.Add("input", input);
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
+
+        #endregion
 
         // ----------------------------------------------------------------------------------------
         // input update url handling
@@ -622,14 +698,19 @@ namespace Blink1Control
         /// </summary>
         public void updateInputs(Object stateInfo)
         {
-            Log("updateInputs");
             if (!inputsEnable) return;
-            
+            Log("updateInputs");
+
             Blink1Input.getIftttResponse(true);
 
             foreach (var pair in inputs) {
                 Blink1Input input = pair.Value;
                 input.update();
+                // FIXME: maybe do a logging of inputs that cause triggers like:
+                // if( input.update() ) {
+                //   alertLog.Add( Now(), input.name );
+                // }
+                // and then have a "/blink1/alertlog" URL
             }
         }
 
@@ -708,10 +789,6 @@ namespace Blink1Control
 
 
         // currently unimplemented URL API calls
-
-        //    /blink1/input/file -- Add and Start file watcher on given filepath
-
-        //    /blink1/input/script -- Add and Start command-line script executer
 
         //    /blink1/input/scriptlist -- List available scripts to run
 

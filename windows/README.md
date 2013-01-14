@@ -1,5 +1,5 @@
-Windows Software blink(1) 
-==========================
+Windows Software for blink(1) 
+==============================
 
 
 In addition to the cross-platform "blink1-tool" available in the blink1/commandline directory, 
