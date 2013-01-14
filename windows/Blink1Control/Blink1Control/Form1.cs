@@ -63,21 +63,26 @@ namespace Blink1Control
         private void stripMenuExit_Click(object sender, EventArgs e)
         {
             Close();
-            blink1Server.shutdown();
-            System.Windows.Forms.Application.Exit();
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+            doExit();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             Console.WriteLine("FormClosed!");
+            doExit();
         }
+
         private void Awesomium_Windows_Forms_WebControl_Resize(object sender, EventArgs e)
         {
             Console.WriteLine("HELLO THERE");
         }
 
-
+        private void doExit()
+        {
+            blink1Server.shutdown();
+            System.Windows.Forms.Application.Exit();
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+        }
 
     }
 }
