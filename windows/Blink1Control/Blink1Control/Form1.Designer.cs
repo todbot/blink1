@@ -71,7 +71,7 @@
             this.stripMenuResetAlerts,
             this.stripMenuExit});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 142);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(139, 120);
             // 
             // stripMenuBlink1Status
             // 
