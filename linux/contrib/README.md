@@ -30,4 +30,10 @@ Sets the Blink(1) to user definable colors based on user definable thresholds fo
 * >3.00 Load 5 (Orange)
 * >4.00 Load 1 (Yellow)
 
+travisci-to-blink1.sh
+---------------------
+Shows the status of your travis-ci.org project on your Blink(1).
+
+Polls the status of any public project on travis-ci.org and sets your Blink(1) to red, green, or yellow to match.
+
 -eof-
