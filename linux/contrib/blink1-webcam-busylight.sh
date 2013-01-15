@@ -76,17 +76,25 @@ trap cleanup SIGINT SIGTERM
 
 #infinite loop, stop with CTRL-c
 while true; do
-    CAM=`lsof $CAMERA`;
+    # Check the video device and determine if it is being used
+    #
+    # The original CAM=`lsof $CAMERA` worked fine until I found
+    # out that Bodhi Linux (and therefore perhaps others)
+    # returned quite a few processes. So we are more acurate with
+    # this test and are looking specifically for the 'mem' File
+    # Descriptor (FD) being listed in the return of lsof
+    CAM=`lsof $CAMERA | awk '{print $4}' | grep 'mem' | wc -l`
+
 
     # If the camera is in use and we're not already "busy"
-    if [[ $CAM && $BUSY -eq 0 ]]; then
+    if [[ $CAM -ne 0 && $BUSY -eq 0 ]]; then
         BUSY=1 # We're busy now, so...
         # set the Blink(1) to COLOR_CAM
         $TOOL --rgb $COLOR_CAM > /dev/null 2>&1
 
     # Otherwise if the camera is not on,
     # check if the microphone is being used
-    elif [[ ! $CAM ]]; then
+    elif [[ $CAM -eq 0 ]]; then
         MIC=`lsof $MICROPHONE`
 
         # If the microphone is being used and we're not already "busy"
