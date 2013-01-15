@@ -10,6 +10,8 @@ namespace Blink1Lib
 {
     public class Blink1
     {
+        private readonly object lock_ = new object();
+
         /// <summary>
         /// Returns the blink(1) uid (aka IFTTT key) 
         /// </summary>
@@ -69,7 +71,9 @@ namespace Blink1Lib
         /// <returns>true if device was opened, false if no device available.</returns>
         public Boolean open()
         {
-            dev = blink1_open();
+            lock (lock_) {
+                dev = blink1_open();
+            }
             if (dev == null) return false;
             return true;
         }
@@ -81,7 +85,9 @@ namespace Blink1Lib
         /// <returns>true if device was opened, false otherwise</returns>
         public Boolean openById(int i)
         {
-            dev = blink1_openById(i);
+            lock (lock_) {
+                dev = blink1_openById(i);
+            }
             if (dev == null) return false;
             return true;
         }
@@ -91,7 +97,9 @@ namespace Blink1Lib
         /// </summary>
         public void close()
         {
-            blink1_close(dev);
+            lock (lock_) {
+                blink1_close(dev);
+            }
         }
 
         /// <summary>
@@ -103,7 +111,9 @@ namespace Blink1Lib
         public void setRGB(int r, int g, int b)
         {
             lastColor = Color.FromArgb(r, g, b);
-            blink1_setRGB(dev, r, g, b);
+            lock (lock_) {
+                blink1_setRGB(dev, r, g, b);
+            }
         }
 
         /// <summary>
@@ -116,7 +126,9 @@ namespace Blink1Lib
         public void fadeToRGB(int millis, int r, int g, int b)
         {
             lastColor = Color.FromArgb(r, g, b);
-            blink1_fadeToRGB(dev, millis, r, g, b);
+            lock (lock_) {
+                blink1_fadeToRGB(dev, millis, r, g, b);
+            }
         }
 
         /// <summary>
@@ -138,7 +150,11 @@ namespace Blink1Lib
         /// <returns>number of blink1 devices</returns>
         public int enumerate()
         {
-            return blink1_enumerate();
+            int n = 0;
+            lock (lock_) {
+                n = blink1_enumerate();
+            }
+            return n;
         }
 
         /// <summary>
@@ -164,13 +180,14 @@ namespace Blink1Lib
 
         public bool setPatternAtPosition(int r, int g, int b, int millis, int pos)
         {
-            int ret = blink1_writePatternLine(dev, millis, r, g, b, pos);
-            if (ret > -1)
-            {
+            int ret = -1;
+            lock (lock_) {
+                blink1_writePatternLine(dev, millis, r, g, b, pos);
+            }
+            if (ret > -1) {
                 return true;
             }
-            else
-                return false;
+            return false;
         }
 
         // see: http://msdn.microsoft.com/en-us/magazine/cc164123.aspx#S7

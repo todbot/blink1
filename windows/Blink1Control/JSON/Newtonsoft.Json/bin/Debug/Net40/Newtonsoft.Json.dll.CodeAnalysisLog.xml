@@ -12,14 +12,14 @@
          <Members>
           <Member Name="#op_Explicit(Newtonsoft.Json.Linq.JToken):System.DateTimeOffset" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message Id="System.DateTimeOffset.Parse(System.String)" TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305" Status="Active" Created="2013-01-13 00:17:01Z" FixCategory="NonBreaking">
+            <Message Id="System.DateTimeOffset.Parse(System.String)" TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305" Status="Active" Created="2013-01-15 03:52:50Z" FixCategory="NonBreaking">
              <Issue Name="IFormatProviderAlternate" Certainty="95" Level="Error" Path="y:\blink1\windows\Blink1Control\JSON\Newtonsoft.Json\Linq" File="JToken.cs" Line="426">Because the behavior of 'DateTimeOffset.Parse(string)' could vary based on the current user's locale settings, replace this call in 'JToken.explicit operator DateTimeOffset(JToken)' with a call to 'DateTimeOffset.Parse(string, IFormatProvider)'. If the result of 'DateTimeOffset.Parse(string, IFormatProvider)' will be based on input from the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider' parameter. Otherwise, if the result will based on input stored and accessed by software, such as when it is loaded from disk or from a database, specify 'CultureInfo.InvariantCulture'.</Issue>
             </Message>
            </Messages>
           </Member>
           <Member Name="#op_Explicit(Newtonsoft.Json.Linq.JToken):System.Nullable`1&lt;System.DateTimeOffset&gt;" Kind="Method" Static="True" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message Id="System.DateTimeOffset.Parse(System.String)" TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305" Status="Active" Created="2013-01-13 00:17:01Z" FixCategory="NonBreaking">
+            <Message Id="System.DateTimeOffset.Parse(System.String)" TypeName="SpecifyIFormatProvider" Category="Microsoft.Globalization" CheckId="CA1305" Status="Active" Created="2013-01-15 03:52:50Z" FixCategory="NonBreaking">
              <Issue Name="IFormatProviderAlternate" Certainty="95" Level="Error" Path="y:\blink1\windows\Blink1Control\JSON\Newtonsoft.Json\Linq" File="JToken.cs" Line="499">Because the behavior of 'DateTimeOffset.Parse(string)' could vary based on the current user's locale settings, replace this call in 'JToken.explicit operator DateTimeOffset?(JToken)' with a call to 'DateTimeOffset.Parse(string, IFormatProvider)'. If the result of 'DateTimeOffset.Parse(string, IFormatProvider)' will be based on input from the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider' parameter. Otherwise, if the result will based on input stored and accessed by software, such as when it is loaded from disk or from a database, specify 'CultureInfo.InvariantCulture'.</Issue>
             </Message>
            </Messages>
