@@ -19,6 +19,10 @@ namespace Blink1Control
     /// </summary>
     public class Blink1Input
     {
+        public static string iftttEventUrl = "http://api.thingm.com/blink1/events";
+        //public static float iftttUpdateInterval = 15.0F;
+        //public static float urlUpdateInterval = 15.0F;
+
         public Blink1Server blink1Server { private get; set; }
         /// <summary>
         /// Name of the input 
@@ -142,7 +146,7 @@ namespace Blink1Control
                     string evname = ev.name;
                     lastVal = ev.source;
                     possibleVals = evname; // FIXME: should be array
-                    Blink1Server.Log("--ifttt ev.name:" + evname);
+                    //Blink1Server.Log("--ifttt ev.name:" + evname);
                     if (rulename.Equals(evname)) {
                         Blink1Server.Log("---ifttt match: evdate:"+evdate+", lastsecs:"+lastsecs+", dt:"+(evdate-lastsecs));
                         lastDateTime = ConvertFromUnixTimestamp(evdate);
@@ -255,7 +259,7 @@ namespace Blink1Control
             }
             iftttLastTime = now;
 
-            string eventUrl = Blink1Server.iftttEventUrl +"/"+ Blink1Server.blink1Id;  // FIXME: hack
+            string eventUrl = iftttEventUrl +"/"+ Blink1Server.blink1Id;  // FIXME: hack
             iftttLastContent = getContentsOfUrl(eventUrl);
             //Blink1Server.Log("iftttLastContent:" + iftttLastContent);
         }
