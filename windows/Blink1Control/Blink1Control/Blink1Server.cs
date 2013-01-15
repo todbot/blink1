@@ -98,6 +98,10 @@ namespace Blink1Control
             if (inputs == null) {
                 inputs = new Dictionary<string, Blink1Input>();
             }
+            foreach (KeyValuePair<string, Blink1Input> kvp in inputs) {
+                kvp.Value.blink1Server = this;
+            }
+
             Log("inputs:"+   JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings));
             Log("patterns:"+   JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings));
 
@@ -707,6 +711,7 @@ namespace Blink1Control
             foreach (var pair in inputs) {
                 Blink1Input input = pair.Value;
                 input.update();
+
                 // FIXME: maybe do a logging of inputs that cause triggers like:
                 // if( input.update() ) {
                 //   alertLog.Add( Now(), input.name );

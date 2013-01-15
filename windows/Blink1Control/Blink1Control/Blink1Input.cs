@@ -89,7 +89,7 @@ namespace Blink1Control
             this.pname = pname;
             this.type = type;
             this.arg1 = arg1; this.arg2 = arg2; this.arg3 = arg3;
-            this.lastDateTime = DateTime.Now;
+            this.lastDateTime = DateTime.Now;  // FIXME: what about UTC?
         }
 
         public Blink1Input()
@@ -108,15 +108,6 @@ namespace Blink1Control
         /// </summary>
         public Boolean update()
         {
-            // only update every xx secs
-            DateTime now = DateTime.Now;
-            /*
-            TimeSpan diff = now - lastTime;
-            if (diff.Seconds < updateInterval) {
-                return false;
-            }*/
-            lastDateTime = now;
-
             Boolean wasTriggered = false;
             if (type.Equals("ifttt")) { // FIXME: there's totally a better way of doing this
                 wasTriggered = updateIftttInput();
@@ -130,22 +121,36 @@ namespace Blink1Control
             else if (type.Equals("script")) {
                 wasTriggered = updateScriptInput();
             }
-
             return wasTriggered;
         }
 
-        // periodically fetch events from IFTTT gateway
+        /// <summary>
+        /// periodically fetch events from IFTTT gateway
+        /// </summary>
+        /// <returns>true if pattern was played from input match</returns>
         public Boolean updateIftttInput()
         {
             if (iftttLastContent==null) return false;
             
             string rulename = arg1;
-
+            
             IftttResponse iftttResponse = JsonConvert.DeserializeObject<IftttResponse>( iftttLastContent );
             if (iftttResponse.event_count > 0) {
+                long lastsecs = (long) ConvertToUnixTimestamp(lastDateTime);
                 foreach (IftttEvent ev in iftttResponse.events) {
-                    possibleVals += ev.name;
+                    long evdate = long.Parse(ev.date);
+                    string evname = ev.name;
                     lastVal = ev.source;
+                    possibleVals = evname; // FIXME: should be array
+                    Blink1Server.Log("--ifttt ev.name:" + evname);
+                    if (rulename.Equals(evname)) {
+                        Blink1Server.Log("---ifttt match: evdate:"+evdate+", lastsecs:"+lastsecs+", dt:"+(evdate-lastsecs));
+                        lastDateTime = ConvertFromUnixTimestamp(evdate);
+                        if (evdate > lastsecs) {
+                            blink1Server.playPattern(pname);
+                            return true;
+                        }
+                    }
                 }
             }
             return false;
@@ -154,8 +159,10 @@ namespace Blink1Control
         /// <summary>
         /// Periodically fetch URL, looking for color patern name or color code 
         /// </summary>
+        /// <returns>true if pattern was played from input match</returns>
         public Boolean updateUrlInput()
         {
+            lastDateTime = DateTime.Now.ToUniversalTime();
             string url = arg1;
             string resp = getContentsOfUrl(url);
             lastContent = resp;
@@ -179,8 +186,10 @@ namespace Blink1Control
         /// Periodically check file, looking for color pattern name or color code
         ///
         /// </summary>
+        /// <returns>true if pattern was played from input match</returns>
         public Boolean updateFileInput()
         {
+            lastDateTime = DateTime.Now.ToUniversalTime();
             string filepath = arg1;
             string resp = getContentsOfFile(filepath);
             lastContent = resp;
@@ -201,10 +210,12 @@ namespace Blink1Control
         }
 
         /// <summary>
-        /// Periodically excecute script, looking for color pattern name or color cod
+        /// Periodically excecute script, looking for color pattern name or color code
         /// </summary>
+        /// <returns>true if pattern was played from input match</returns>
         public Boolean updateScriptInput()
         {
+            lastDateTime = DateTime.Now.ToUniversalTime();
             string scriptname = arg1;
             string resp = execScript(scriptname);
             lastContent = resp;
@@ -236,7 +247,7 @@ namespace Blink1Control
         public static void getIftttResponse(Boolean normalmode)
         {
             // only update URLs every 30 secs
-            DateTime now = DateTime.Now; ; //[[NSDate date] timeIntervalSince1970];
+            DateTime now = DateTime.Now; //.ToUniversalTime(); 
             TimeSpan diff = now - iftttLastTime;
             //Console.WriteLine("getIftttResponse now:"+now+", diff:" + diff);
             if( normalmode && (diff.Seconds < iftttUpdateInterval) ) {
@@ -246,6 +257,7 @@ namespace Blink1Control
 
             string eventUrl = Blink1Server.iftttEventUrl +"/"+ Blink1Server.blink1Id;  // FIXME: hack
             iftttLastContent = getContentsOfUrl(eventUrl);
+            //Blink1Server.Log("iftttLastContent:" + iftttLastContent);
         }
 
         /// <summary>
@@ -352,6 +364,13 @@ namespace Blink1Control
             return output;
         }
 
+        // from: http://www.epochconverter.com/
+        public static long epochSecs(DateTime date)
+        {
+            //epoch = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            long epochsecs = (date.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            return epochsecs;
+        }
 
         // stolen from http://stackoverflow.com/questions/3354893/how-can-i-convert-a-datetime-to-the-number-of-seconds-since-1970
         public static DateTime ConvertFromUnixTimestamp(double timestamp)
@@ -363,7 +382,8 @@ namespace Blink1Control
         public static double ConvertToUnixTimestamp(DateTime date)
         {
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            TimeSpan diff = date.ToUniversalTime() - origin;
+            //TimeSpan diff = date.ToUniversalTime() - origin;
+            TimeSpan diff = date - origin; // this works, but what about IFTTT's data?
             return Math.Floor(diff.TotalSeconds);
         }
 
