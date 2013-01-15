@@ -190,6 +190,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="blink1-icon.ico" />
+    <None Include="README.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

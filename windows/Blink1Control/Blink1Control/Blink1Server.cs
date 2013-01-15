@@ -786,6 +786,12 @@ namespace Blink1Control
             // FIXME: I think we can't close because I'm doing hid_exit() in blink1_close()
         }
 
+        public void resetAlerts()
+        {
+            stopAllPatterns();
+            fadeToRGB(0.1, Color.Black);
+        }
+
         /// <summary>
         /// Shut down EVERYTHING.  Called right before app exit.
         /// </summary>

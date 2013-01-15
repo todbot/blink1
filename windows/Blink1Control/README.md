@@ -36,3 +36,14 @@ Blink1Control currently targets x86 and .NET Framework 4.5.
 There may be a way of downgrading to .NET 4.0, but I don't know how to do it.
 The x86 dependency is because of the CefSharp library, which was compiled x86.
 
+
+
+Packaging Steps (notes to tod)
+===============
+% In VS2012: Build
+% cd blink1/windows/Blink1Control/Blink1Control/bin/x86/Debug
+% rm *xml *pdb *application *manifest
+% cd .. 
+% rm -rf Blink1Control # (in case already exists)
+% mv Debug Blink1Control 
+% zip -r Blink1Control-win-0.9.5.zip Blink1Control
