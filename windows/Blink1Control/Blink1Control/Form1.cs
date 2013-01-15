@@ -47,7 +47,7 @@ namespace Blink1Control
                 notifyIcon1.ShowBalloonTip(500);
             }
             else if (FormWindowState.Normal == this.WindowState) {
-                notifyIcon1.Visible = false;
+                //notifyIcon1.Visible = false;
             }
         }
 
@@ -75,8 +75,9 @@ namespace Blink1Control
 
         private void stripMenuResetAlerts_Click(object sender, EventArgs e)
         {
-
+            blink1Server.resetAlerts();
         }
+
         private void stripMenuExit_Click(object sender, EventArgs e)
         {
             Close();
@@ -87,11 +88,6 @@ namespace Blink1Control
         {
             Console.WriteLine("FormClosed!");
             doExit();
-        }
-
-        private void Awesomium_Windows_Forms_WebControl_Resize(object sender, EventArgs e)
-        {
-            Console.WriteLine("HELLO THERE");
         }
 
         private void doExit()
