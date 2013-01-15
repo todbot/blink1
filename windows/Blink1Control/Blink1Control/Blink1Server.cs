@@ -23,9 +23,6 @@ namespace Blink1Control
     public class Blink1Server
     {
         static int httpPortDefault = 8934;
-        public static string iftttEventUrl = "http://api.thingm.com/blink1/events";
-        public static float iftttUpdateInterval = 15.0F;
-        public static float urlUpdateInterval = 15.0F;
         
         HttpWebServer httpServer = new HttpWebServer(httpPortDefault);
 
@@ -44,16 +41,12 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
-        /*
+        /*  // idea for removing Blink1Server property from Blink1Input instances
         public static Blink1Server staticBlink1Server;
         public static void setBlink1Server(Blink1Server b1s)
-        {
-            staticBlink1Server = b1s;
-        }
+        { staticBlink1Server = b1s;        }
         public static Blink1Server getBlink1Server(Blink1Server b1s)
-        {
-            return staticBlink1Server;
-        }
+        {  return staticBlink1Server; }
         */
 
         public static bool logToScreen;
@@ -69,7 +62,7 @@ namespace Blink1Control
         }
 
         /// <summary>
-        /// 
+        /// Load saved hostId, input & pattern settings 
         /// </summary>
         public void loadSettings()
         {
@@ -112,7 +105,7 @@ namespace Blink1Control
         }
 
         /// <summary>
-        /// 
+        ///  Save current hostId, inputs, and patterns settings
         /// </summary>
         public void saveSettings()
         {
@@ -272,17 +265,13 @@ namespace Blink1Control
         // url methods
         //
 
-        // why do we need this?
+        // why do we need this?  How do I .NET?  I have no idea what I'm doing
         public delegate string GetJSONStringResponse(HttpRequest request, Blink1Server aBlink1Server);
 
         // TESTING
         static string Ufoobar(HttpRequest request, Blink1Server blink1Server)//example
         {
-            //Properties.Settings.Default["blink1Id"] = blink1Server.blink1Id;
-            //Properties.Settings.Default.Save();
-            //Settings.Default["blink1Id"] = blink1.getBlink1Id();
-            //Settings.Default.Save(); // Saves settings in application configuration file
-            return "\n\n{ suck it whitey }\n\n";
+            return "\n\n{ yup this works }\n\n";
         }
 
         //
@@ -397,7 +386,6 @@ namespace Blink1Control
             result.Add("lastColor", blink1Server.blink1.lastColorString);
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
-
 
         // -----------------------------------------------------------------------------------------------
         // color patterns url handling
@@ -516,7 +504,7 @@ namespace Blink1Control
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
-        // 
+        // ---------------------------------------------------------------------------
         // inputs
         //
 
@@ -690,12 +678,21 @@ namespace Blink1Control
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
+        // currently unimplemented URL API calls
+
+        //    /blink1/input/scriptlist -- List available scripts to run
+
+        //    /blink1/input/cpuload -- Add and Start CPU load watching input
+
+        //    /blink1/input/netload -- Start network load watching input
+
+
         #endregion
 
-        // ----------------------------------------------------------------------------------------
-        // input update url handling
-        //
 
+        // ----------------------------------------------------------------------------------------
+        // updates to inputs handling
+        //
 
         /// <summary>
         /// Periodically update the inputs, triggering color patterns if needed
@@ -752,6 +749,11 @@ namespace Blink1Control
             return false;
         }
 
+        /// <summary>
+        /// Stop a playing pattern
+        /// </summary>
+        /// <param name="pname"></param>
+        /// <returns></returns>
         public Boolean stopPattern(string pname)
         {
             if (pname == null) return false;
@@ -795,14 +797,6 @@ namespace Blink1Control
             inputsTimer.Dispose();
         }
 
-
-        // currently unimplemented URL API calls
-
-        //    /blink1/input/scriptlist -- List available scripts to run
-
-        //    /blink1/input/cpuload -- Add and Start CPU load watching input
-
-        //    /blink1/input/netload -- Start network load watching input
 
 
         //
