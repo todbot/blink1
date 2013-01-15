@@ -122,6 +122,7 @@ namespace Blink1Control
         public Blink1Server()
         {
             Log("Blink1Server!");
+            blink1.open();
 
             loadSettings();
 
@@ -770,10 +771,12 @@ namespace Blink1Control
         /// </summary>
         public void fadeToRGB(double secs, Color c)
         {
-            Log("fadeToRGB: rgb:" + ColorTranslator.ToHtml(c) + " secs:" + secs);
-            blink1.open();
+            Log("fadeToRGB: rgb:" + ColorTranslator.ToHtml(c) + " secs:" + secs.ToString("F2", CultureInfo.InvariantCulture));
+            //blink1.open();
             blink1.fadeToRGB((int)(secs * 1000), c.R, c.G, c.B);
-            blink1.close();
+            //blink1.close(); 
+            // FIXME: this method crashes when called successively.
+            // FIXME: I think we can't close because I'm doing hid_exit() in blink1_close()
         }
 
         /// <summary>
