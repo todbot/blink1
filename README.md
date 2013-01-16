@@ -12,7 +12,9 @@ websites or typing any commands."
 Ready-to-run Applications to play with
 ---------------------------------------
 
-- Blink1Control  -- -- Mac & Windows GUI for IFTTT and other blink(1) triggering [not ready yet]
+- Blink1Control  -- GUI for IFTTT and other data sources to blink(1) triggering Download:
+[(Mac OSX)](http://thingm.com/blink1/downloads/Blink1Control-mac.zip) /
+[(Windows)](http://thingm.com/blink1/downloads/Blink1Control-win.zip)
 
 - BlinkATweet -- Watch real-time Twitter stream for keywords, flash blink(1) when found.  Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/BlinkATweet-mac.zip) /
