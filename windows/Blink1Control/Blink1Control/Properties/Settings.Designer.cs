@@ -25,18 +25,6 @@ namespace Blink1Control.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("00000000")]
-        public string hostId {
-            get {
-                return ((string)(this["hostId"]));
-            }
-            set {
-                this["hostId"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string inputs {
             get {
@@ -61,13 +49,25 @@ namespace Blink1Control.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool logToScreen {
             get {
                 return ((bool)(this["logToScreen"]));
             }
             set {
                 this["logToScreen"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00000000")]
+        public string hostId {
+            get {
+                return ((string)(this["hostId"]));
+            }
+            set {
+                this["hostId"] = value;
             }
         }
     }
