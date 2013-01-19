@@ -22,8 +22,11 @@ namespace Blink1Control
         public static string iftttEventUrl = "http://api.thingm.com/blink1/events";
         //public static float iftttUpdateInterval = 15.0F;
         //public static float urlUpdateInterval = 15.0F;
+        // FIXME: hacks
+        public static DateTime iftttLastTime;
+        public static int iftttUpdateInterval = 15;
+        public static string iftttLastContent;
 
-        public Blink1Server blink1Server { private get; set; }
         /// <summary>
         /// Name of the input 
         /// </summary>
@@ -46,27 +49,19 @@ namespace Blink1Control
         private DateTime lastDateTime;
         public string lastTime
         {
-            get
-            {
-                return ConvertToUnixTimestamp(lastDateTime).ToString();
-            }
-            set
-            {
+            get { return ConvertToUnixTimestamp(lastDateTime).ToString();  }
+            set {
                 double v=0;
                 Double.TryParse(value, out v);
                 lastDateTime = ConvertFromUnixTimestamp(v);
             }
         }
 
-        //private int updateInterval;
-
         // holder of last valid response/content
         private string lastContent;
 
-        // FIXME: hacks
-        public static DateTime iftttLastTime;
-        public static int iftttUpdateInterval = 15;
-        public static string iftttLastContent;
+        [JsonIgnore]
+        public Blink1Server blink1Server { private get; set; }
 
         /// <summary>
         /// Constructor
@@ -134,13 +129,16 @@ namespace Blink1Control
         /// <returns>true if pattern was played from input match</returns>
         public Boolean updateIftttInput()
         {
-            if (iftttLastContent==null) return false;
-            
+            if (iftttLastContent==null ) {
+                lastVal = "could not connect";
+                return false;
+            }
+
             string rulename = arg1;
             
             IftttResponse iftttResponse = JsonConvert.DeserializeObject<IftttResponse>( iftttLastContent );
             if (iftttResponse.event_count > 0) {
-                long lastsecs = (long) ConvertToUnixTimestamp(lastDateTime);
+                long lastsecs = (long)ConvertToUnixTimestamp(lastDateTime);
                 foreach (IftttEvent ev in iftttResponse.events) {
                     long evdate = long.Parse(ev.date);
                     string evname = ev.name;
@@ -148,7 +146,7 @@ namespace Blink1Control
                     possibleVals = evname; // FIXME: should be array
                     //Blink1Server.Log("--ifttt ev.name:" + evname);
                     if (rulename.Equals(evname)) {
-                        Blink1Server.Log("---ifttt match: evdate:"+evdate+", lastsecs:"+lastsecs+", dt:"+(evdate-lastsecs));
+                        Blink1Server.Log("---ifttt match: evdate:" + evdate + ", lastsecs:" + lastsecs + ", dt:" + (evdate - lastsecs));
                         lastDateTime = ConvertFromUnixTimestamp(evdate);
                         if (evdate > lastsecs) {
                             blink1Server.playPattern(pname);
@@ -156,6 +154,9 @@ namespace Blink1Control
                         }
                     }
                 }
+            }
+            else {
+                lastVal = "no IFTTT data";
             }
             return false;
         }
