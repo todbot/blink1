@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.Globalization;
+using Newtonsoft.Json;
+
 using Blink1Lib;
 
 
@@ -57,6 +59,7 @@ namespace Blink1Control
             }
         }
         
+        [JsonIgnore]
         public Blink1Server blink1Server { get; set; } //
 
         public Blink1Pattern(string aName)

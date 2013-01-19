@@ -41,7 +41,9 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
-        /*  // idea for removing Blink1Server property from Blink1Input instances
+        /*
+        // idea for removing Blink1Server property from Blink1Input instances
+        // this seems ugly but I want to exclude the blink1Server property from Blink1Pattern & Blink1Input
         public static Blink1Server staticBlink1Server;
         public static void setBlink1Server(Blink1Server b1s)
         { staticBlink1Server = b1s;        }
@@ -49,7 +51,7 @@ namespace Blink1Control
         {  return staticBlink1Server; }
         */
 
-        public static bool logToScreen;
+        public static bool logToScreen;  // FIXME: this is the wrong (non-MS) way to do this
 
         /// <summary>
         /// Extremely simplistic logging system. one method only!
@@ -75,22 +77,28 @@ namespace Blink1Control
 
             // we assume hostId is always set, it defaults to "00000000" on fresh installation
             // (or we could not set it in Properties and check for KeyNotFoundException)
-            blink1.hostId = (string)Properties.Settings.Default["hostId"];
-
-            logToScreen = (bool) Properties.Settings.Default["logToScreen"];
-
-            String patternsstr = (string)Properties.Settings.Default["patterns"];
-            String inputsstr = (string)Properties.Settings.Default["inputs"];
-            Log("patterns: " + patternsstr);
-            Log("inputs: " + inputsstr);
-            patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
-            inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
-            if (patterns == null) {
-                patterns = new Dictionary<string, Blink1Pattern>();
+            try {
+                blink1.hostId = (string)Properties.Settings.Default["hostId"];
+                logToScreen = (bool)Properties.Settings.Default["logToScreen"];
+                String patternsstr = (string)Properties.Settings.Default["patterns"];
+                String inputsstr = (string)Properties.Settings.Default["inputs"];
+                Log("patterns: " + patternsstr);
+                Log("inputs: " + inputsstr);
+                patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
+                inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
+                if (patterns == null)
+                    patterns = new Dictionary<string, Blink1Pattern>();
+                if (inputs == null)
+                    inputs = new Dictionary<string, Blink1Input>();
             }
-            if (inputs == null) {
+            catch (SettingsPropertyNotFoundException spnfe) {
+                Console.Write("Settings not found: " + spnfe.Message);
+                blink1.hostId = "00000000";
+                logToScreen = true;
+                patterns = new Dictionary<string, Blink1Pattern>();
                 inputs = new Dictionary<string, Blink1Input>();
             }
+
             foreach (KeyValuePair<string, Blink1Input> kvp in inputs) {
                 kvp.Value.blink1Server = this;
             }
@@ -119,6 +127,7 @@ namespace Blink1Control
         public Blink1Server()
         {
             Log("Blink1Server!");
+            //Blink1Server.setBlink1Server(this);
             blink1.open();
 
             loadSettings();
