@@ -15,7 +15,9 @@ using System.Globalization;
 using System.Collections.ObjectModel;
 using MiniHttpd;
 using Newtonsoft.Json;
+using NLog;
 using Blink1Lib;
+ 
 
 
 namespace Blink1Control
@@ -41,17 +43,8 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
-        /*
-        // idea for removing Blink1Server property from Blink1Input instances
-        // this seems ugly but I want to exclude the blink1Server property from Blink1Pattern & Blink1Input
-        public static Blink1Server staticBlink1Server;
-        public static void setBlink1Server(Blink1Server b1s)
-        { staticBlink1Server = b1s;        }
-        public static Blink1Server getBlink1Server(Blink1Server b1s)
-        {  return staticBlink1Server; }
-        */
-
         public static bool logToScreen;  // FIXME: this is the wrong (non-MS) way to do this
+        static Logger logger = LogManager.GetLogger("Blink1Control");
 
         /// <summary>
         /// Extremely simplistic logging system. one method only!
@@ -60,7 +53,11 @@ namespace Blink1Control
         /// <param name="s"></param>
         public static void Log(string s)
         {
-            if (logToScreen) Console.WriteLine(s);
+            if (logToScreen) {
+                //Console.WriteLine(s);
+                //System.Diagnostics.Debug.WriteLine(s);
+                logger.Info(s);
+            }
         }
 
         /// <summary>
@@ -80,25 +77,25 @@ namespace Blink1Control
             try {
                 blink1.hostId = (string)Properties.Settings.Default["hostId"];
                 logToScreen = (bool)Properties.Settings.Default["logToScreen"];
-                String patternsstr = (string)Properties.Settings.Default["patterns"];
                 String inputsstr = (string)Properties.Settings.Default["inputs"];
-                Log("patterns: " + patternsstr);
+                String patternsstr = (string)Properties.Settings.Default["patterns"];
                 Log("inputs: " + inputsstr);
-                patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
+                Log("patterns: " + patternsstr);
                 inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
-                if (patterns == null)
-                    patterns = new Dictionary<string, Blink1Pattern>();
+                patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
                 if (inputs == null)
                     inputs = new Dictionary<string, Blink1Input>();
+                if (patterns == null)
+                    patterns = new Dictionary<string, Blink1Pattern>();
             }
             catch (SettingsPropertyNotFoundException spnfe) {
-                Console.Write("Settings not found: " + spnfe.Message);
+                Log("Settings not found: " + spnfe.Message);
                 blink1.hostId = "00000000";
                 logToScreen = true;
-                patterns = new Dictionary<string, Blink1Pattern>();
                 inputs = new Dictionary<string, Blink1Input>();
+                patterns = new Dictionary<string, Blink1Pattern>();
             }
-
+            // set the Blink1Server for each entry
             foreach (KeyValuePair<string, Blink1Input> kvp in inputs) {
                 kvp.Value.blink1Server = this;
             }
@@ -129,6 +126,9 @@ namespace Blink1Control
             Log("Blink1Server!");
             //Blink1Server.setBlink1Server(this);
             blink1.open();
+
+            logger.Info("Information is here");
+            logger.Info("Information sucks");
 
             loadSettings();
 
@@ -659,7 +659,7 @@ namespace Blink1Control
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string rulename = request.Query.Get("arg1").Trim();
+            string rulename = request.Query.Get("arg1");
             string test = request.Query.Get("test");
             if (pname == null) pname = iname;
             Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
@@ -669,6 +669,7 @@ namespace Blink1Control
             Blink1Input input = null;
             if (rulename != null && iname != null) {
                 statusstr = "input ifttt";
+                rulename = rulename.Trim();
                 input = new Blink1Input(blink1Server, iname, pname, "ifttt", rulename);
 
                 if (testmode) { // override periodic fetch for immediate fetch
@@ -938,3 +939,13 @@ namespace Blink1Control
     }
     
 }
+        /*
+        // idea for removing Blink1Server property from Blink1Input instances
+        // this seems ugly but I want to exclude the blink1Server property from Blink1Pattern & Blink1Input
+        public static Blink1Server staticBlink1Server;
+        public static void setBlink1Server(Blink1Server b1s)
+        { staticBlink1Server = b1s;        }
+        public static Blink1Server getBlink1Server(Blink1Server b1s)
+        {  return staticBlink1Server; }
+        */
+

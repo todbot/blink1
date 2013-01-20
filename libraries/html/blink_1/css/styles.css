@@ -813,9 +813,10 @@ display: block;
 		}	
 		
 		#configuration-popup .column-2 p.description {
-			margin-top: 18px;
+			margin-top: 10px;
 			color: #999;
 			font-weight: normal;
+            font-size: 12px;
 		}
 	
 	#configuration-popup .column-2 label {	
@@ -1036,6 +1037,7 @@ display: block;
 			float: right;
 			width: 128px;
 			margin-bottom: 6px;
+            visibility:hidden;
 		}
 		
 		#color-selector #transition-options label {
