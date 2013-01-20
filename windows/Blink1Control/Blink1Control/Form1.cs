@@ -19,21 +19,19 @@ namespace Blink1Control
         Blink1Server blink1Server = new Blink1Server();
 
         private readonly WebView web_view;
-
+        private Boolean showedBaloon = false;
+        
         public Form1()
         {
             InitializeComponent();
 
             BrowserSettings bs = new BrowserSettings();
-            Console.WriteLine("BrowserSettings: " + bs);
             bs.WebGlDisabled = true;
             bs.PluginsDisabled = true;
-            //web_view = new WebView("http://stackoverflow.com", bs);
             web_view = new WebView("http://127.0.0.1:8934/blink_1/", bs);
             web_view.Dock = DockStyle.Fill;
             web_view.RequestHandler = this;
             this.Controls.Add(web_view);
-            //containerControl1.Controls.Add(web_view);
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -44,7 +42,10 @@ namespace Blink1Control
             if (FormWindowState.Minimized == WindowState) {
                 Hide();
                 notifyIcon1.Visible = true;
-                notifyIcon1.ShowBalloonTip(500);
+                if (!showedBaloon) {
+                    notifyIcon1.ShowBalloonTip(500);
+                    showedBaloon = true;
+                }
             }
             else if (FormWindowState.Normal == this.WindowState) {
                 //notifyIcon1.Visible = false;
@@ -59,7 +60,7 @@ namespace Blink1Control
 
         private void notifyIcon1_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("notifyIcon1 SingleClick! "+e);
+            Blink1Server.Log("notifyIcon1 SingleClick! " + e);
             stripMenuBlink1Status.Text = "blink1 status: hello";
             if (blink1Server.blink1.getCachedCount() > 0) {
                 stripMenuBlink1Status.Text = "blink(1) found";
@@ -86,7 +87,7 @@ namespace Blink1Control
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Console.WriteLine("FormClosed!");
+            Blink1Server.Log("FormClosed!");
             doExit();
         }
 

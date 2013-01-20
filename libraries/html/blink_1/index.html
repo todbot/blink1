@@ -114,20 +114,18 @@
 						<div id="ifttt-options-selector" class="ifttt">
 							<h4>IFTTT Rule Name</h4>
 							<input id="ifttt-rulename" type="text" class="arg1" placeholder="enter rule name here" /> 
-                            <span id="value-retrieved-timestamp" class="light">tthis rule last seen n/a minutes ago</span><br/>
+                            <span class="medium"> Previous rule names seen: </span>
+                            <span id="value-retrieved-possibles" class="light" >-none-</span> <br/>
 							<span class="light">from source:</span>
-                            <span class="light" id="value-retrieved-text-box">[no source]</span>
-                            <span class="medium"> Previous rule names seen </span>
-                            <span id="value-retrieved-possibles" class="light" >-none-</span>
-
+                            <span class="light" id="value-retrieved-text-box">[no source]</span> <br/>
+                            <span id="value-retrieved-timestamp" class="light">received n/a mins ago</span><br/>
                      <!--<span id="ifttt-event-received-icon" ><img align="center" src="images/icon-ok.png" /></span>-->
                      <!-- <input id="value-retrieved-text-box" type="text" value="color value retrieved"/>-->
-                             <p class="description">
-Add rule name and IFTTT Key<br />
+                             <p class="description">Add rule name to your IFTTT.com recipe.</p>
+<p class="description">Configure IFTTT blink(1) channel with IFTTT Key
 <span style="font-weight:bold; color:#666; font-size: 16px; line-height: 20px;" id="ifttt-uid">DEADBEEF12341234</span><br />
- to your IFTTT.com recipe! </p>
-                             <p class="description">
-IFTTT checked every 15 secs.
+</p>
+                             <p class="description">IFTTT checked every 15 secs
 							</p>
 						</div>
 
@@ -189,12 +187,14 @@ Scripts executed every 5 secs. </p>
 					</div>	<!-- .column-2 -->				
 					<div class="column column-3">
 						<div id="behavior-selector">
-							<h4>Behavior</h4>						
+							<h4>Behavior</h4>
 							<select>
 								<option value="exact-color">Exact Color</option>
+<!--
 								<option value="change-brightness" disabled="disabled">Change Brightness</option>
 								<option value="change-hue" disabled="disabled">Change Hue</option>
 								<option value="blink-pattern" disabled="disabled">Blink Pattern</option>
+-->
 							</select>
 						</div> 
 						<div id="color-selector">

@@ -627,13 +627,16 @@ console.log("save click!");
                     //console.log("ifttt result"); console.log(result);
                     var possibleVals = result.input.possibleVals;
                     var lastVal      = result.input.lastVal;
+                    var lastTime     = result.input.lastTime;
+                    var nowTime = new Date().getTime()/1000;
                     //console.log("lastVal: "+ lastVal);  console.log(possibleVals);
-                    var minsago = ((new Date().getTime()/1000 - result.input.lastTime )/60).toFixed(1);
+                    console.log("lastTime: "+lastTime+", now: "+ nowTime +", dt:"+(nowTime-lastTime));
+                    var minsago = ((new Date().getTime()/1000 - lastTime )/60).toFixed(1);
                     minsago = (isNaN(minsago)) ? 'n/a' : minsago;
-                    possibleVals = (possibleVals.length) ? possibleVals.toString() : '-none-';
+                    possibleVals = (possibleVals!=null && possibleVals.length) ? possibleVals.toString() : '-none-';
 
-                    $('.ifttt #value-retrieved-timestamp').text( "last seen " + minsago + " minutes ago" );
-                    $('.ifttt #value-retrieved-text-box').text( result.input.lastVal );
+                    $('.ifttt #value-retrieved-timestamp').text("received " + minsago + " mins ago" );
+                    $('.ifttt #value-retrieved-text-box').text( lastVal );
                     $('.ifttt #value-retrieved-possibles').text( possibleVals );
                 }
             });
