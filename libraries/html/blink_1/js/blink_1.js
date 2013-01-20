@@ -6,7 +6,7 @@ $(document).ready(function(){
     var triggerObjects = [];
 
 	// load previously-saved triggerObjects from back-end 
-    var newTriggerObjects = backendLoadTriggerObjects();
+    var newTriggerObjects = backendLoadTriggers();
 
     // add them to the screen
     $(newTriggerObjects).each(function(index) {
@@ -42,6 +42,7 @@ $(document).ready(function(){
     $('#color-1').addClass('currently-picking');
 
 	$('#navbar li').live('click', function(e) {
+$("#tabs #navbar a").removeData("cache.tabs");
 	// settings tab
 		if($(this).attr('id') == 'settings-tab') {
 			// if settings tab already active, close it
@@ -106,6 +107,8 @@ $(document).ready(function(){
 		var $triggerObject = $(this).parents('.trigger-options');
 		var index = $(this).closest('.trigger-options').index();
 
+        backendDeleteTrigger( triggerObjects[index] );
+
 		// hide the deleted trigger from the view
 		$triggerObject.slideUp('normal', function() {
 			$triggerObject.remove();
@@ -114,13 +117,12 @@ $(document).ready(function(){
 				$('#trigger-headers li').css('opacity', .2);
 				
 			}
-			else if($('#trigger-list .trigger-options').length < 6) {
-				$('#scroll-for-more').fadeOut('fast');
-			}
+			//else if($('#trigger-list .trigger-options').length < 6) {
+			//	$('#scroll-for-more').fadeOut('fast');
+			//}
 		});
 
 		// and then delete that trigger's object from the triggers array
-        backendDeleteInput( triggerObjects[index] );        
 		triggerObjects.splice( ((index==0)?0:(index-1)), 1);
         console.log("delete-trigger");
 		console.log(triggerObjects);
@@ -198,9 +200,9 @@ $(document).ready(function(){
 			}
 
 			// and check for scroll reminder  (FIXME: this check belongs elsewhere)
-			if($('#trigger-list .trigger-options').length > 5) {
-				$('#scroll-for-more').fadeIn('slow');
-			}
+			//if($('#trigger-list .trigger-options').length > 5) {
+			//	$('#scroll-for-more').fadeIn('slow');
+			//}
 
 			if(settings.source.arg1) {
                 $('#trigger-list .trigger-options').last().find('.trigger-source').html('<span class="light">[' + settings.source.type.toUpperCase() + ']</span> ' + settings.source.arg1.replace('http://', '').replace('www.', ''));
@@ -212,6 +214,7 @@ $(document).ready(function(){
 
 
 	$('#configuration-popup .save-button').live('click', function(e) {
+console.log("save click!");
 		closeConfigurationPanel();
         
 		// get all the settings we just configured wrapped into a nice little object
@@ -269,7 +272,7 @@ $(document).ready(function(){
 		}
 
 		//console.log(triggerObjects);
-        backendUpdateInputsAndPatterns(triggerObjects); 
+        backendUpdateTriggers(triggerObjects); 
 	});
 	
 	
@@ -299,8 +302,6 @@ $(document).ready(function(){
 	var $currentSwatch;
 	
 	$('.color-swatch').click(function(e){
-       console.log("picker click");
-       //draw(e);
 
 		// store current color of the swatch
 		var currentColor = $(this).css('background-color');
@@ -320,23 +321,21 @@ $(document).ready(function(){
 		if(!$('#configuration-popup').hasClass('demo')) {
 			$('#configuration-popup').addClass('color-picker-open');
 		}
-		
+
 		// choose a preset value (white or off)
 		$('#picker .picker-swatch').live('click', function(e) {
 			$currentSwatch.css('background', $(e.target).css('background'));
 			$('#virtual-blink').css('background-color', $(e.target).css('background-color'));
 			$('#color-zoom').css('background', $(e.target).css('background')).css({'top': -190, 'left': 61});
 			if($(e.target).attr('id') != "light-off") {
-				//console.log($(e.target).css('background-color'));
                 backendSetColor("rgb(255, 255, 255)");
 				$('#color-display #rgb input').val('255');
 				$('#color-zoom').css('background-color', '#ffffff');
 				$('.currently-picking').css('background-color', '#ffffff');	
 				$('#color-zoom').css('background-image', 'none');											
-				$('.currently-picking').css('background-image', 'none');															
+				$('.currently-picking').css('background-image', 'none');
 			}
 			else {
-				//console.log('rgb(0, 0, 0)');
                 backendSetColor("rgb(0, 0, 0)");
 				$('#color-display #rgb input').val('0');
 				$('#color-zoom').css('background', '#999 url("images/no-light-bg-scalable.png") no-repeat center center');
@@ -392,16 +391,17 @@ $(document).ready(function(){
 	$('#source-selector .options-group input').change(function(e) {
 		var slug = $(this).attr('id').split('-')[2];
 
-		if($('.column-2').hasClass(slug)) {
-			// do nothing if already selected
-		}
-		else {
+        // why was this here at all?
+		//if($('.column-2').hasClass(slug)) { 
+		//	// do nothing if already selected
+		//}
+		//else {
 			$('.column-2 > div').hide();
 			
 			$('.column-2').attr('class', 'column column-2');
 			$('.column-2').addClass(slug);
 			$('.column-2 > div.' + slug).fadeIn();
-		}
+            //}
         
         // FIXME: how to get triggerObject in this section?
         var fakeTriggerObject = new Object;
@@ -433,7 +433,11 @@ $(document).ready(function(){
 		$('#container').addClass($('.active').attr('id').split('-')[0]);	
 	});
 	
-	
+    $('#delete-all-triggers').live('click', function(e) {
+        console.log('delete all triggers');
+        backendDeleteAllTriggers();
+        window.location.reload();
+    });
 
 		
 
@@ -504,7 +508,8 @@ $(document).ready(function(){
 			resetConfigurationPanel();
 			logSettings();
 			$('#configuration-popup').addClass('new');	
-			$('#configuration-popup #submit-options-buttons input.save-as-new').val('save');		
+			$('#configuration-popup #submit-options-buttons input.save-as-new').val('save');
+            setTimeout( "console.log('todfoo'); $('#source-option-ifttt').click();", 200); // FIXME: super hack to default to IFTTT on new 
 		}
 		// and finally, open the panel
 		$('#gray-out').fadeIn('fast');
@@ -525,7 +530,6 @@ $(document).ready(function(){
 		$('#popup-title > input').val(triggerObj.title); // set title
 		
 		$('#source-selector .options-group > input[value="' + triggerObj.source.type + '"] ').attr('checked', 'checked'); // input source
-
 		$('.column-2 div.' + triggerObj.source.type + ' .arg1').val(triggerObj.source.arg1); // input source path
 		if(triggerObj.source.colorOption) {
 			$('.column-2.url #url-options-selector input[value="' + triggerObj.source.colorOption + '"] ').attr('checked', 'checked');
@@ -551,9 +555,6 @@ $(document).ready(function(){
 	/*-------------------------
 		SAVE/CLOSE FUNCTIONS
 	--------------------------*/
-	
-
-
 
 
 
@@ -569,13 +570,13 @@ $(document).ready(function(){
 	}
 
     //
-    // ---------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     //
 
     /*------------------------------
       BLINK1 BACK-END FUNCTIONS
       (note: if they are declared outside of document.ready they can be used
-      in other .js files. This also means they can't use any of the 'globals' above)
+      in other .js files. This also means they can't use any 'globals' above)
       --------------------------------*/
 
     //
@@ -592,6 +593,7 @@ $(document).ready(function(){
     }
     //
     function backendLiveValueStop() {
+        console.log("backendLiveValueStop");
         if( liveValue.timer ) {
             clearTimeout( liveValue.timer );
         }
@@ -619,13 +621,15 @@ $(document).ready(function(){
                     $('.url #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'file' ) {
                     $('.file #value-retrieved-text-box').val( result.input.lastVal );
+                } else if( type == 'script' ) {
+                    $('.script #value-retrieved-text-box').val( result.input.lastVal );
                 } else if( type == 'ifttt' ) {
+                    //console.log("ifttt result"); console.log(result);
                     var possibleVals = result.input.possibleVals;
-                    var lastVal = result.input.lastVal;
-                    console.log("lastVal: "+ lastVal);
-                    console.log(possibleVals);
+                    var lastVal      = result.input.lastVal;
+                    //console.log("lastVal: "+ lastVal);  console.log(possibleVals);
                     var minsago = ((new Date().getTime()/1000 - result.input.lastTime )/60).toFixed(1);
-                    minsago = (isNaN(minsago)) ? '-never-' : minsago;
+                    minsago = (isNaN(minsago)) ? 'n/a' : minsago;
                     possibleVals = (possibleVals.length) ? possibleVals.toString() : '-none-';
 
                     $('.ifttt #value-retrieved-timestamp').text( "last seen " + minsago + " minutes ago" );
@@ -656,7 +660,7 @@ $(document).ready(function(){
 
     //
     function backendStopInputs() {
-        var b1url = '../blink1/input';
+        var b1url = '../blink1/inputs';
         var parms = { 'enabled' : false };
         $.getJSON( b1url, parms, function(result) {
             });
@@ -664,14 +668,14 @@ $(document).ready(function(){
     }
     //
     function backendStartInputs() {
-        var b1url = '../blink1/input';
+        var b1url = '../blink1/inputs';
         var parms = { 'enabled' : true };
         $.getJSON( b1url, parms, function(result) {
             });
     }
 
 	function logSettings() {
-		console.log("setting ifttt-uid "+ blink1Settings.blink1_id);
+		console.log("logSettings: setting ifttt-uid "+ blink1Settings.blink1_id);
         $('#ifttt-uid').text(    blink1Settings.blink1_id );
 	}
 
@@ -718,6 +722,7 @@ $(document).ready(function(){
 		$('#popup-title input').val('[Click to Edit Title]');		
 		// uncheck all source radio buttons
 		$('#configuration-popup #source-selector input[type="radio"] ').removeAttr('checked');
+
 		// set default color setting to fade and repeat times to 1		
 		$('#configuration-popup #transition-options #fade').attr('checked', 'checked');		
 		$('#configuration-popup #repeat-options-group').val('1');		
@@ -894,12 +899,14 @@ function compileSettings() {
 //                success: fuction() 
 //                });        
 //
-function backendDeleteInput(triggerObject) { 
+function backendDeleteTrigger(triggerObject) { 
     var parms = {};
     parms.iname = triggerObject.title;
     parms.pname = triggerObject.title;
     var iurl = '../blink1/input/del';
     var purl = '../blink1/pattern/del';
+
+    $.ajaxSetup({ cache: false, async: false  });
     
     // delete input
     $.getJSON( iurl, parms, function(result) { 
@@ -915,14 +922,28 @@ function backendDeleteInput(triggerObject) {
         .error( function() { 
                 console.log("error on pattern delete");                    
             }); 
+    $.ajaxSetup({ cache: true, async: true  });
+}
+
+//
+function backendDeleteAllTriggers() {
+    var iurl = '../blink1/input/delall';
+    var purl = '../blink1/pattern/delall';
+    $.ajaxSetup({ cache: false, async: false  });
+    $.getJSON( iurl );
+    $.getJSON( purl );
+    $.ajaxSetup({ cache: true, async: true  });
 }
 
 // Send the new configuration to blink1 back-end server
 // by traversing the 'triggerObects' array and constructing
 // appropriate Ajax commands for the back-end
 //
-function backendUpdateInputsAndPatterns(triggerObjects) {
-    console.log("updateBlink1InputsAndPatterns");
+function backendUpdateTriggers(triggerObjects) {
+    console.log("backendUpdateTriggers");
+    console.log(triggerObjects);
+    backendDeleteAllTriggers();
+    $.ajaxSetup({ cache: false, async: false  });
     for( var i=0; i<triggerObjects.length; i++ ) {
         var trigObj = triggerObjects[i];
         var source = trigObj.source;
@@ -937,8 +958,7 @@ function backendUpdateInputsAndPatterns(triggerObjects) {
         iparms.arg2  = source.arg2;
         iparms.arg3  = source.arg3;
         
-        console.log("title: "+trigObj.title);
-        console.log("arg1: "+source.arg1);
+        console.log("title: '"+trigObj.title +"' arg1: '"+ source.arg1 +"'");
 
         if( trigObj.type != "undefined" ) {
             var iurl = '/blink1/input/' + type;
@@ -947,7 +967,7 @@ function backendUpdateInputsAndPatterns(triggerObjects) {
                     //console.log(result);
                 } )
                 .error( function() { 
-                        console.log("error on input upate!");
+                        console.log("error on input update!");
                     });
         }
         
@@ -969,19 +989,20 @@ function backendUpdateInputsAndPatterns(triggerObjects) {
                 //console.log(result);
             } );
     } // for each triggerObject
+    $.ajaxSetup({ cache: true, async: true  });
 }
 
 // Retrieve input and pattern settings from the Blink1 backend server
 // parses JSON output from back-end and turns it into an array of triggerObjects
 //
-function backendLoadTriggerObjects() {
-    console.log("backendLoadTriggerObjects");
+function backendLoadTriggers() {
+    console.log("backendLoadTriggers");
     var newTriggerObjects = []; 
     
     $.ajaxSetup({ cache: false, async: false  });
     
     // first, load up the info from the input side of things
-    $.getJSON( '../blink1/input', function(result) { // FIXME: don't use '..'
+    $.getJSON( '../blink1/inputs', function(result) { // FIXME: don't use '..'
             //console.log("input data status '"+ result.status+"'");
             //console.log(result);
             var inputs = result.inputs;
@@ -1000,7 +1021,7 @@ function backendLoadTriggerObjects() {
             });
     
     // then add in the color patterns for each input
-    $.getJSON( '../blink1/pattern', function(result) {  // FIXME: don't use '..'
+    $.getJSON( '../blink1/patterns', function(result) {  // FIXME: don't use '..'
             //console.log("pattern data status '"+ result.status+"'");
             //console.log(result);
             var patterns = result.patterns;
@@ -1033,8 +1054,22 @@ function backendLoadTriggerObjects() {
                 console.log("error! could not read blink1/pattern json!"); 
             });
     
-    //console.log("newTriggerObjects:");
-    //console.log(newTriggerObjects);
+    for( var i=0; i< newTriggerObjects.length; i++ ) {
+        var obj = newTriggerObjects[i];
+        if( ! obj.colorSettings ) {
+            var colorSettings = new Object();
+            colorSettings.behavior = 'exact-color';
+            colorSettings.transition = 'fade';
+            colorSettings.repeatTimes = 1;
+            colorSettings.colors = [ hexToColor('#ff0000') ];
+            colorSettings.durations = [ 1.0 ];
+            obj.colorSettings = colorSettings;
+            console.log("no pattern for input "+ obj.title);
+        }
+    }
+
+    console.log("newTriggerObjects:");
+    console.log(newTriggerObjects);
     
     $.ajaxSetup({ cache: true, async: true  });
     

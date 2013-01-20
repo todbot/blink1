@@ -2,5 +2,9 @@
 #import "HTTPConnection.h"
 @class RoutingHTTPServer;
 
-@interface RoutingConnection : HTTPConnection
+@interface RoutingConnection : HTTPConnection {
+	RoutingHTTPServer *http;
+	NSDictionary *headers;
+}
+
 @end

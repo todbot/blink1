@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>7.10.3077</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3E1BEF4C-CC09-4C31-AFB5-15A951811AC6}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon />
+    <AssemblyKeyContainerName />
+    <AssemblyName>MiniHttpd</AssemblyName>
+    <AssemblyOriginatorKeyFile />
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MiniHttpd</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject />
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>0.0</OldToolsVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile />
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>MiniHttpdDocumentation.xml</DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn />
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile />
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>MiniHttpd.xml</DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn />
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.DirectoryServices">
+      <Name>System.DirectoryServices</Name>
+    </Reference>
+    <Reference Include="System.Web">
+      <Name>System.Web</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Aspx\AspxAppDirectory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Aspx\AspxAppHost.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Aspx\AspxWebServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Aspx\HttpHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Aspx\WorkerRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="BasicAuthenticator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ByteRange.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ChunkedStream.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ClientEventArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ContentTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\DirectoryException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\DriveDirectory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\DriveFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\HttpWebServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\IDirectory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\IFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\IndexPage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\IndexPageEx.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\IPhysicalResource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\IResource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\MovedException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FileSystem\VirtualDirectory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="HttpClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="HttpRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="HttpRequestException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="HttpResponse.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="HttpServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IAuthenticator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ImmediateResponseStream.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="LdapAuthenticator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReadableDataLength.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StatusCodes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UriQuery.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UrlEncoding.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+    <PostBuildEvent />
+  </PropertyGroup>
+</Project>

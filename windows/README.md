@@ -1,19 +1,15 @@
-Windows application for blink(1) 
-================================
-
-references a little squirrely, I need to go through this tomorrow and clean up. Using awesomium for now, until openwebkitsharp can be fixed. I'd stay with awesonium but I'm suspicious of their licensing and business model, I'd hate to get locked into something. gitignore file didn't want to play so build and debug files included for now. httplistener seems like an ok server, but I need to build out the event interaction. 
+Windows Software for blink(1) 
+=============================
 
 
-at the moment this project contains far too much, I need to go through here and cut down the references. 
+In addition to the cross-platform "blink1-tool" available in the blink1/commandline directory, 
+this directory contains additional Windows-related blink(1) items.
 
-we need a real .ico file, something that is small enough to fit but can be recognized. 
 
-not 100% sure about compatibility, I've been testing on windows 7 and very updated .NET references. everything should be internal to the produced binary, but I need to dig out my old windows images and start running this on some virtual machines. 
+- Blink1Control -- main Windows GUI for controlling blink(1), IFTTT integration, and the URL API
 
-better context menus for sure. 
+- Blink1Lib -- .NET library wrapper of blink1-lib to control blink(1) in your own apps
 
-fix the references to the basic library of blink1 interaction, we are missing some moves that look like they should work. 
+- scripts -- various scripts and batch files (which use blink1-tool.exe)
 
-I used WPF because it's the road ahead, but the style system requires some time cranking, it's UGLY depending on your desktop theme.
 
-no idea about windows 8 at all. (compatibility mode should work fine, need to find an image of it somewhere)

@@ -26,6 +26,8 @@
 //@interface B1SAppDelegate : NSObject <NSApplicationDelegate,VDKQueueDelegate> {
 @interface B1SAppDelegate : NSObject <NSApplicationDelegate> {
     
+    BOOL iconInDock;
+    
     CPUuse* cpuuse;
     Netuse* netuse;
 
@@ -50,6 +52,7 @@
     
 }
 
+@property BOOL updateMenubarIcon;
 @property (strong) RoutingHTTPServer *http;
 @property (strong) Blink1 *blink1;
 
@@ -57,7 +60,11 @@
 @property (strong) IBOutlet WebView *webView;
 
 @property (assign) IBOutlet NSMenuItem *blink1status;
+@property (assign) IBOutlet NSMenuItem *blink1id;
 @property (assign) IBOutlet NSMenuItem *blink1serial;
+@property (assign) IBOutlet NSMenuItem *showDockIcon;
+@property (assign) IBOutlet NSMenuItem *matchMenuIcon;
+
 
 @property (assign) IBOutlet NSMenu *statusMenu;
 @property (retain) NSStatusItem * statusItem;

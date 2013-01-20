@@ -10,7 +10,7 @@ to let you fetch the contents of URLs from the command-line)
 Is there a blink(1)?
 --------------------
 
-    $ curl 'http://localhost:8080/blink1/id'
+    $ curl 'http://localhost:8934/blink1/id'
 
     {
       "blink1_id": "3D52B69200000000",
@@ -27,7 +27,7 @@ Is there a blink(1)?
 Plug blink(1) in and check again.  Now is there a blink(1)?
 ----------------------------------------------------------
 
-    $ curl 'http://localhost:8080/blink1/enumerate'
+    $ curl 'http://localhost:8934/blink1/enumerate'
     {
       "blink1_id": "3D52B69201AA1A23",
       "blink1_id_old": "3D52B69200000000",
@@ -47,7 +47,7 @@ Plug blink(1) in and check again.  Now is there a blink(1)?
 Set the blink(1)'s color to #FFCC33
 -----------------------------------
 
-    $ curl 'http://localhost:8080/blink1/fadeToRGB?rgb=%23ffcc00'
+    $ curl 'http://localhost:8934/blink1/fadeToRGB?rgb=%23ffcc00'
     {
       "rgb": "#ffcc00",
       "status": "fadeToRGB: #FFCC00 t:0.100",
@@ -61,7 +61,7 @@ Set the blink(1)'s color to #FFCC33
 Get the last color sent to blink(1)
 -----------------------------------
 
-    $ curl 'http://localhost:8080/blink1/lastColor'
+    $ curl 'http://localhost:8934/blink1/lastColor'
     {
       "lastColor": "#FFCC00",
       "status": "lastColor"
@@ -80,7 +80,7 @@ Add some color patterns
 
 Let's create "blink3green" = "blink green 3 times, 1.5 secs on, 0.5 secs off".
 
-    $ curl 'http://localhost:8080/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,%23000000,0.5'
+    $ curl 'http://localhost:8934/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,%23000000,0.5'
     {
       "pattern": {
         "name": "blink3green",
@@ -95,7 +95,7 @@ Let's create "blink3green" = "blink green 3 times, 1.5 secs on, 0.5 secs off".
 
 And create "policeflash" = "alternate between red & blue, every second, repeat forever".
 
-    $ curl 'http://localhost:8080/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,%230000ff,0.5'
+    $ curl 'http://localhost:8934/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,%230000ff,0.5'
     {
       "pattern": {
         "name": "policeflash",
@@ -115,7 +115,7 @@ And create "policeflash" = "alternate between red & blue, every second, repeat f
 List color patterns
 -------------------
 
-    $ curl 'http://localhost:8080/blink1/pattern' 
+    $ curl 'http://localhost:8934/blink1/pattern' 
     {
       "patterns": [
         {
@@ -149,7 +149,7 @@ List color patterns
 Play a pattern
 --------------
 
-    $ curl 'http://localhost:8080/blink1/pattern/play?pname=policeflash'
+    $ curl 'http://localhost:8934/blink1/pattern/play?pname=policeflash'
     {
       "status": "pattern 'policeflash' playing"
     }
@@ -161,7 +161,7 @@ Play a pattern
 Stop a pattern
 --------------
 
-    $ curl 'http://localhost:8080/blink1/pattern/stop?pname=policeflash'
+    $ curl 'http://localhost:8934/blink1/pattern/stop?pname=policeflash'
     {
       "status": "pattern 'policeflash' stopped"
     }
@@ -172,7 +172,7 @@ Stop a pattern
 Delete a pattern
 ----------------
 
-    $ curl 'http://localhost:8080/blink1/pattern/del?pname=policeflash'
+    $ curl 'http://localhost:8934/blink1/pattern/del?pname=policeflash'
     {
       "status": "pattern 'policeflash' removed"
     }
@@ -192,7 +192,7 @@ Add an URL watching input
 Start watching URL "http://todbot.com/tst/color.txt".
 I'll call it "mycolorfile".
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt'
+    $ curl 'http://localhost:8934/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt'
     {
       "input": {
         "arg1": "http://todbot.com/tst/color.txt",
@@ -215,7 +215,7 @@ I'll call it "mycolorfile".
 Do a test watch of a hex RGB URL input
 ---------------------------------------
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt&test=true'
+    $ curl 'http://localhost:8934/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt&test=true'
     {
       "input": {
         "arg1": "http://todbot.com/tst/color.txt",
@@ -234,7 +234,7 @@ Do a test watch of a color pattern URL input
 
 Watch JSON URL "http://todbot.com/tst/pattern.txt" for "pattern" entry:
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt&test=on'
+    $ curl 'http://localhost:8934/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt&test=on'
     {
       "input": {
         "arg1": "http://todbot.com/tst/pattern.txt",
@@ -253,12 +253,12 @@ List all inputs
 
 First let's add a view inputs, same as before:
 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt' 
-    $ curl 'http://localhost:8080/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt'
+    $ curl 'http://localhost:8934/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt' 
+    $ curl 'http://localhost:8934/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt'
 
 Now look at the list:
 
-    $ curl 'http://localhost:8080/blink1/input/'
+    $ curl 'http://localhost:8934/blink1/inputs'
     {
       "enabled": true,
       "inputs": [
@@ -287,7 +287,7 @@ Now look at the list:
 Delete the input
 ----------------
 
-    $ curl 'http://localhost:8080/blink1/input/del?iname=mycolorfile'
+    $ curl 'http://localhost:8934/blink1/input/del?iname=mycolorfile'
     {
       "status": "input 'mycolorfile' removed"
     }

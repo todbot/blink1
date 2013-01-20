@@ -1,5 +1,5 @@
-Blink1Control - Mac OS X application for blink(1) 
-=================================================
+Blink1Control Mac OS X application for blink(1) 
+===============================================
 
 To build, open `blink1/mac/Blink1Control/Blink1Control.xcodeproj` in Xcode4.
 
@@ -9,54 +9,6 @@ All dependencies are included in the 'blink1' project.
 Local webserver URL API:
 
 See the document 'blink1/app-url-api.md'
-
-Older version:
-
-- /
-  -- docroot for static HTML files hosted in "html"
-
-- /blink1
-
-  -- general status page for blink(1) devices connected to system
-  -- returns:
-   
-- /blink1/list
-  -- list blink(1)s
-  -- response: list of blink(1) device ids
-  -- response example: { "status" : "ok", 
-                         "blink1_serialnums" : [ "FE0023","FD12CC" ] }
-                                   
-- /blink1/fadeToRGB
-  -- params
-      'rgb' = rgb hex color code
-      'time' = time in float seconds
-      'serialnum' = blink1 serial number to use, if omitted, use first blink(1)
-  -- returns:
-  -- example: ?rgb=#FF33dd&time=1.2
-  
-  
-- /blink1/addPattern
-
-- /blink1/listPatterns
-
-- /blink1/playPattern
-  - 
-
-- /blink1/input/watchfile/?path=<file>
-  -- can only watch one file at a time
-  -- file is watched on 3 second interval
-  -- when file changes (created or modified), it is parsed. 
-  -- valid parse values: "color: #ff00ff" & "pattern: patternname"
-  -- return: success or failure  (what is failure?  file non-exist?)
-
-- /blink1/input/runscript/?cmd=<scriptpath>
-  -- returns: output of script
-
-- /blink1/input/audio/
-  -- returns: audio output loudness 0-255
-
-- /blink1/input/cpuload/
-  -- returns: cpu load percent 0-255
 
 
 Open Source Software used in this application

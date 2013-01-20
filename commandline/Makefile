@@ -26,6 +26,11 @@
 #   - apt-get install libusb-1.0-0-dev
 #   - make
 #
+# FreeBSD
+#   - libusb is part of the OS so no pkg-config needed.
+#   - No -ldl on FreeBSD necessary.
+#   - iconv is a package that needs to be installed; it lives in /usr/local/lib/
+#
 # Linux Ubuntu 32-bit cross-compile on 64-bit
 #   To build 32-bit on 64-bit Ubuntu, try a chrooted build:
 #   (warning this will use up a lot of disk space)
@@ -67,6 +72,10 @@ ifeq "$(UNAME)" "Linux"
 	OS=linux
 endif
 
+ifeq "$(UNAME)" "FreeBSD"
+	OS=freebsd
+endif
+
 ifeq "$(PKGOS)" ""
    PKGOS = $(OS)
 endif
@@ -77,38 +86,59 @@ CC=gcc
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
-
+LIBTARGET = libBlink1.dylib
 CFLAGS += -arch i386 -arch x86_64
 CFLAGS += -pthread
 LIBS += -framework IOKit -framework CoreFoundation
-
 OBJS = ./hidapi/mac/hid.o
+
+EXEFLAGS = 
+LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
+
 EXE=
 endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
-#CFLAGS += 
+LIBTARGET = blink1-lib.dll
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
-LIBS +=  -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
+LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
 OBJS = ./hidapi/windows/hid.o
+
+EXEFLAGS =
+#LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a $(LIBS)
+LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
+
 EXE= .exe
 endif
 
-#################  Linux  ###################################################
+#################  Linux  ####################################################
 ifeq "$(OS)" "linux"
-#LIBS   += `pkg-config libudev --libs` -lrt
-#CFLAGS += `pkg-config libusb-1.0 --cflags`
-#CFLAGS += -m32
-CFLAGS += `pkg-config libusb-1.0 --cflags`
-LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl -static
+LIBTARGET = blink1-lib.so
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+
 OBJS = ./hidapi/libusb/hid.o
+
+EXEFLAGS = -static
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+
+EXE=
+endif
+
+################  FreeBSD  ###################################################
+ifeq "$(OS)" "freebsd"
+LIBTARGET = blink1-lib.so
+LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
+OBJS = ./hidapi/libusb/hid.o
+EXEFLAGS=
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 endif
 
 
-#####################  Common  ##############################################
+#####################  Common  ###############################################
 
 CC = gcc
 
@@ -119,7 +149,6 @@ CFLAGS += -I./hidapi/hidapi -I./mongoose -g
 #CFLAGS += -DDEBUG_PRINTF
 
 OBJS +=  blink1-lib.o blink1-common.o
-
 
 #all: msg blink1-tool blink1-server-simple
 all: msg blink1-tool 
@@ -132,7 +161,9 @@ help:
 	@echo "This Makefile works on multiple archs. Use one of the following:"
 	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
+	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
+	@echo "make lib        ... build blink1-lib shared library"
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
@@ -142,12 +173,16 @@ $(OBJS): %.o: %.c
 
 blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
-	$(CC) $(CFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
+	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
 blink1-server-simple: $(OBJS) blink1-server-simple.c
 	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
 	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
-	$(CC) -g $(OBJS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+	$(CC) -g $(OBJS) $(EXEFLAGS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+
+lib: $(OBJS)
+	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
+
 
 package: blink1-tool
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
@@ -161,10 +196,20 @@ clean:
 distclean: clean
 	rm -f blink1-tool$(EXE)
 	rm -f blink1-server-simple$(EXE)
+	rm -f $(LIBTARGET) $(LIBTARGET).a
 
 # shows shared lib usage on Mac OS X
 otool:
-	otool -L $(TARGET)
+	otool -L blink1-tool
+# show shared lib usage on Linux
+ldd:
+	ldd blink1-tool
+# show shared lib usage on Windows
+# FIXME: only works inside command prompt from
+# Start->All Programs-> MS Visual Studio 2012 -> VS Tools -> Devel. Cmd Prompt
+dumpbin: 
+	dumpbin.exe /exports $(LIBTARGET)
+	dumpbin.exe /exports blink1-tool.exe
 
 foo:
 	@echo "OS=$(OS), USBFLAGS=$(USBFLAGS)"

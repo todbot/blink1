@@ -13,7 +13,7 @@ var B=2*Math.PI;
 
 var drawMe = false;
 
-$('#gradient-circle').bind('mousedown', function(e){
+$('#gradient-circle,#color-zoom').bind('mousedown', function(e){
 	e.preventDefault();
 	drawMe = true;
 	draw(e);

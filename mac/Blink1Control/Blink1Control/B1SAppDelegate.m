@@ -41,7 +41,10 @@
 @synthesize window = _window;
 @synthesize webView = _webView;
 @synthesize blink1status = _blink1status;
+@synthesize blink1id     = _blink1id;
 @synthesize blink1serial = _blink1serial;
+@synthesize showDockIcon = _showDockIcon;
+@synthesize matchMenuIcon = _matchMenuIcon;
 
 @synthesize statusItem;
 @synthesize statusMenu;
@@ -51,13 +54,15 @@
 @synthesize http;
 @synthesize blink1;
 
+@synthesize updateMenubarIcon;
+
 
 const NSInteger http_port_default = 8934;
 
 //FIXME: what to do with these URLs?
 // solution: put them in the prefs, duh
 NSString* confURLbase =  @"http://localhost:%ld/blink_1/";
-NSString* playURLbase =  @"http://localhost:%ld/bootstrap/blink1.html";
+NSString* playURLbase =  @"http://localhost:%ld/blink_1/#tab-2";
 
 NSString* iftttEventUrl = @"http://api.thingm.com/blink1/events";
 //NSString* iftttEventUrl = @"http://localhost/~tod/blink1/events";
@@ -67,7 +72,7 @@ NSString* scriptsPath = @"~/Documents/blink1-scripts";
 NSTimeInterval inputInterval       = 5.0f;  // in seconds
 
 NSTimeInterval iftttUpdateInterval = 15.0f;
-NSTimeInterval urlUpdateInterval   = 30.0f;
+NSTimeInterval urlUpdateInterval   = 15.0f;
 
 
 // play pattern with restart
@@ -303,7 +308,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         NSString * ev_source  = [event objectForKey:@"source"];
         NSString * ev_datestr = [event objectForKey:@"date"];
         NSTimeInterval ev_date = [ev_datestr integerValue];
-
+        
         //[possible_vals setObject:ev_source forKey:ev_name];
         [possible_vals addObject:ev_name];
         
@@ -326,12 +331,12 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 - (void) updateScriptInput: (NSMutableDictionary*)input
 {
     DLog(@"updateScriptInput");
-    //NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
-    //NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    //if( (now - lastTime) < 30 ) {     // only update URLs every 30 secs
-    //    return;
-    //}
-    //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
+    NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    if( (now - lastTime) < 15 ) {     // only update URLs every 15 secs
+        return;
+    }
+    [input setObject:[NSNumber numberWithInt:now] forKey:@"lastTime"];
 
     
     NSString* path = [input objectForKey:@"arg1"];
@@ -390,7 +395,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 // ----------------------------------------------------------------------------
 // the main deal for triggering color patterns
 // ----------------------------------------------------------------------------
-// this is called every 10 secs via an NSTimer
+// this is called every 5 secs via an NSTimer
 - (void) updateInputs
 {
     //DLog(@"updateInputs");
@@ -436,6 +441,9 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
 
 //
+// to dump current saved prefs, do:
+// plutil -convert xml1  ~/Library/Preferences/com.thingm.Blink1Control.plist -o -
+//
 - (void) loadPrefs
 {
     inputs   = [[NSMutableDictionary alloc] init];
@@ -444,11 +452,18 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     NSDictionary *inputspref  = [prefs dictionaryForKey:@"inputs"];
     NSData *patternspref      = [prefs objectForKey:@"patterns"];
-    NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
+    //NSString* blink1_id_prefs = [prefs stringForKey:@"blink1_id"];
     NSString* host_id_prefs   = [prefs stringForKey:@"host_id"];
     http_port                 = [prefs integerForKey:@"http_port"];
-    //BOOL first_run            = [prefs boolForKey:@"first_run"];
 
+    updateMenubarIcon         = [prefs boolForKey:@"updateMenubarIcon"];
+    iconInDock                = [prefs boolForKey:@"iconInDock"];
+    if (iconInDock) {
+        ProcessSerialNumber psn = { 0, kCurrentProcess };
+        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+    }
+    // above from: http://stackoverflow.com/questions/1082374/making-a-checkbox-toggle-the-dock-icon-on-and-off
+    
     if( http_port == 0 ) {
         http_port = http_port_default;
     }
@@ -464,28 +479,28 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     }
 
     [blink1 setHost_id:host_id_prefs]; // accepts nil
-    if( blink1_id_prefs != nil ) {
-        [blink1 setBlink1_id:blink1_id_prefs];
-    } else {
-        [blink1 regenerateBlink1Id];
-    }
+    
+    [blink1 regenerateBlink1Id];
+    
     DLog(@"blink1_id:%@",[blink1 blink1_id]);
     
-    //if( !first_run ) {
-    //}
 }
 
 //
 - (void) savePrefs
 {
+    //@synchronized(self) {
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     [prefs setObject:inputs forKey:@"inputs"];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:patterns];
     [prefs setObject:data forKey:@"patterns"];
-    [prefs setObject:[blink1 blink1_id] forKey:@"blink1_id"];
-    [prefs setObject:[blink1 host_id]   forKey:@"host_id"];
-    [prefs setInteger:http_port         forKey:@"http_port"];
+    [prefs setObject:[blink1 blink1_id]     forKey:@"blink1_id"];
+    [prefs setObject:[blink1 host_id]       forKey:@"host_id"];
+    [prefs setInteger:http_port             forKey:@"http_port"];
+    [prefs setBool:iconInDock               forKey:@"iconInDock"];
+    [prefs setBool:updateMenubarIcon        forKey:@"updateMenubarIcon"];
     [prefs synchronize];
+    //}
 }
 
 // ----------------------------------------------------------------------------
@@ -501,11 +516,13 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
     blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
     {
-        NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
-        [[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
-        [weakSelf updateStatusImageHue:lastColor];
+        if( [weakSelf updateMenubarIcon] ) {
+            [weakSelf updateStatusImageHue:lastColor];
+            //NSString* lastcolorstr = [Blink1 hexStringFromColor:lastColor];
+            //[[weakSelf window] setTitle:[NSString stringWithFormat:@"blink(1) control - %@",lastcolorstr]];
+        }
     };
-     
+    
     // set up json parser
     _jsonparser = [[SBJsonParser alloc] init];
     _jsonwriter = [[SBJsonWriter alloc] init];
@@ -658,11 +675,12 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         [response respondWithString: [_jsonwriter stringWithObject:respdict]];
     }];
 
-    
+    //
     // color patterns
+    //
     
     // list patterns
-    [http get:@"/blink1/pattern" withBlock:^(RouteRequest *request, RouteResponse *response) {
+    [http get:@"/blink1/patterns" withBlock:^(RouteRequest *request, RouteResponse *response) {
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];//[NSMutableDictionary dictionaryWithDictionary:patterns];
         [respdict setObject:@"pattern results" forKey:@"status"];
         [respdict setObject:[patterns allValues] forKey:@"patterns"];
@@ -671,7 +689,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     
     // add a pattern
     [http get:@"/blink1/pattern/add" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname      = [request param:@"pname"];
+        NSString* pname      = [self trimString: [request param:@"pname"]];
         NSString* patternstr = [request param:@"pattern"];
         DLog(@"pattern add: %@", pname);
         Blink1Pattern* pattern = nil;
@@ -679,10 +697,13 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         
         if( pname != nil && patternstr != nil ) {
             pattern = [[Blink1Pattern alloc] initWithPatternString:patternstr name:pname];
-            [patterns setObject:pattern forKey:pname];
+            if( pattern != nil)
+                [patterns setObject:pattern forKey:pname];
+            else
+                statusstr = @"error: pattern badly formatted";
         }
         else {
-            statusstr = @"error: need 'pname' and 'pattern' arguments to make pattern";
+            statusstr = @"error: need 'pname' and 'pattern' (e.g. '2,#ff00ff,0.5,#00ff00,0.5') arguments to make pattern";
         }
         
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
@@ -695,7 +716,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     
     // delete a pattern
     [http get:@"/blink1/pattern/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname   = [request param:@"pname"];
+        NSString* pname   = [self trimString:[request param:@"pname"]];
+
         NSString* statusstr = @"no pattern by that pname";
         if( pname != nil ) {
             Blink1Pattern* pattern = [patterns objectForKey:pname];
@@ -727,7 +749,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     
     // play a pattern
     [http get:@"/blink1/pattern/play" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname   = [request param:@"pname"];
+        NSString* pname   = [self trimString: [request param:@"pname"]];
         NSString* statusstr = @"no pattern by that pname";
         if( [self playPattern: pname] ) {
             statusstr = [NSString stringWithFormat:@"pattern '%@' playing",pname];
@@ -740,7 +762,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
     // stop a pattern
     [http get:@"/blink1/pattern/stop" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* pname   = [request param:@"pname"];
+        NSString* pname   = [self trimString: [request param:@"pname"]];
         NSString* statusstr = @"no pattern by that pname";
         if( [self stopPattern:pname] ) {
             statusstr = [NSString stringWithFormat:@"pattern '%@' stopped",pname];
@@ -763,8 +785,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     //
     
     // list all inputs
-    [http get:@"/blink1/input" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* enable = [request param:@"enabled"];
+    [http get:@"/blink1/inputs" withBlock:^(RouteRequest *request, RouteResponse *response) {
+        NSString* enable = [self trimString: [request param:@"enabled"]];
         if( enable != nil ) {   // i.e. param was specified
             inputsEnable = ([enable isEqualToString:@"on"] || [enable isEqualToString:@"true"] );
         }
@@ -779,7 +801,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     
     // delete an input
     [http get:@"/blink1/input/del" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
         
         NSString* statusstr = @"no such input";
         if( iname != nil ) {
@@ -807,22 +829,22 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
         
     // add the ifttt watching input
     [http get:@"/blink1/input/ifttt" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
-        NSString* chan  = [request param:@"arg1"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
+        NSString* rule  = [self trimString: [request param:@"arg1"]];
         NSString* test  = [request param:@"test"];
         
         Boolean testmode = ([test isEqualToString:@"on"] || [test isEqualToString:@"true"]);
         
-        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (channel)";
+        NSString* statusstr = @"must specifiy 'iname' and 'arg1' (rulename)";
         
         NSMutableDictionary* input = [[NSMutableDictionary alloc] init];
-        if( iname != nil && chan != nil ) { // the minimum requirements for this input type
+        if( iname != nil && rule != nil ) { // the minimum requirements for this input type
             if( !pname )  pname = [iname copy];
             [input setObject:pname     forKey:@"pname"];
             [input setObject:iname     forKey:@"iname"];
             [input setObject:@"ifttt"  forKey:@"type"];
-            [input setObject:chan      forKey:@"arg1"];
+            [input setObject:rule      forKey:@"arg1"];
             
             if( testmode ) {
                 [self getIftttResponse:false];
@@ -846,8 +868,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
     // add a URL watching input
     [http get:@"/blink1/input/url" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* url   = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
@@ -880,8 +902,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
     // add a file watching input
     [http get:@"/blink1/input/file" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
 
@@ -914,8 +936,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
             
     // add a script execing input
     [http get:@"/blink1/input/script" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* path  = [request param:@"arg1"];
         NSString* test  = [request param:@"test"];
         
@@ -964,8 +986,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
     // add a cpu load watching input
     [http get:@"/blink1/input/cpuload" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"]];
+        NSString* pname = [self trimString: [request param:@"pname"]];
         NSString* min   = [request param:@"arg1"];
         NSString* max   = [request param:@"arg2"];
         NSString* test  = [request param:@"test"];
@@ -1001,8 +1023,8 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
     // add a network load watching input
     [http get:@"/blink1/input/netload" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        NSString* iname = [request param:@"iname"];
-        NSString* pname = [request param:@"pname"];
+        NSString* iname = [self trimString: [request param:@"iname"] ];
+        NSString* pname = [self trimString: [request param:@"pname"] ];
         NSString* min   = [request param:@"arg1"];
         NSString* max   = [request param:@"arg2"];
         NSString* test  = [request param:@"test"];
@@ -1060,7 +1082,7 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
 
     //Allocates and loads the images into the application which will be used for our NSStatusItem
-    NSBundle *bundle = [NSBundle mainBundle];    
+    NSBundle *bundle = [NSBundle mainBundle];
     statusImageBase = [[NSImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blink1iconA1" ofType:@"png"]];
     
     [statusItem setImage:statusImageBase];
@@ -1124,13 +1146,19 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 //FIXME: what's the better way of doing this?
 - (void) updateUI
 {
+    [_showDockIcon setState: (iconInDock) ? NSOnState : NSOffState];
+    [_matchMenuIcon setState: (updateMenubarIcon) ? NSOnState : NSOffState];
+
     if( [[blink1 serialnums] count] ) {
         NSString* serstr = [[blink1 serialnums] objectAtIndex:0];
-        [_blink1serial setTitle: [NSString stringWithFormat:@"serial:%@",serstr]];
+        [_blink1serial setTitle: [NSString stringWithFormat:@"serial:%@",serstr]]; // FIXME: just use [blink1 serial]?
+        [_blink1id     setTitle: [NSString stringWithFormat:@"key: %@",[blink1 blink1_id]]];
         [_blink1status setTitle: @"blink(1) found"];
     }
     else {
         [_blink1serial setTitle: @"serial:-none-"];
+        [_blink1id     setTitle: [blink1 blink1_id]];
+        [_blink1id     setTitle: [NSString stringWithFormat:@"key: %@",[blink1 blink1_id]]];
         [_blink1status setTitle: @"blink(1) not found"];
     }
 }
@@ -1194,7 +1222,24 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
     //[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(showMenu) userInfo:nil repeats:NO];
     //[NSApp activateIgnoringOtherApps:YES];
     [statusItem popUpStatusItemMenu:statusMenu];
-    
+}
+
+// GUI action: toggle whether menubar icon is colored like blink1
+- (IBAction) matchMenuIconToggle: (id) sender
+{
+    updateMenubarIcon = ([_matchMenuIcon state] == NSOffState);  // toggle
+    [_matchMenuIcon setState: (updateMenubarIcon) ? NSOnState : NSOffState];
+    NSLog(@"matchMenuIconToggle: %d",updateMenubarIcon);
+    [self savePrefs];
+}
+
+// GUI action: toggle whether app has a dock icon or not
+- (IBAction) dockIconToggle: (id) sender
+{
+    iconInDock = ([_showDockIcon state] == NSOffState); // toggle
+    [_showDockIcon setState: (iconInDock) ? NSOnState : NSOffState];
+    NSLog(@"dockIconToggle: %d",iconInDock);
+    [self savePrefs];
 }
 
 // GUI action: quit the app
@@ -1208,66 +1253,15 @@ NSTimeInterval urlUpdateInterval   = 30.0f;
 
 
 
+// little utility to trim 
+- (NSString* ) trimString: (NSString*)str
+{
+    return [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+
+
 @end
 
-/*
 
- //[self performSelectorOnMainThread:@selector(updateWatchFile:)
- //                       withObject:fpath
- //                    waitUntilDone:NO];
- //DLog(@"watching file %@",fpath);
- //}
- //else {
- //path = watchPath;
- //}
- 
- *
- NSString* filecontents = @"";
- if( watchFileChanged ) {
- filecontents = [NSString stringWithContentsOfFile:path
- encoding:NSUTF8StringEncoding error:nil];
- watchFileChanged = false;
- }
- 
- // set up file watcher
- myVDKQ = [[VDKQueue alloc] init];
- [myVDKQ setDelegate:self];
- [self updateWatchFile:@"/Users/tod/tmp/blink1-colors.txt"];  //FIXME: test
- 
-
- // for "watchfile" functionality, should be put in its own class
- -(void) VDKQueue:(VDKQueue *)queue receivedNotification:(NSString*)noteName forPath:(NSString*)fpath;
- {
- DLog(@"watch file: %@ %@", noteName, fpath);
- if( [noteName isEqualToString:@"VDKQueueFileWrittenToNotification"] ) {
- DLog(@"watcher: file written %@ %@", noteName, fpath);
- watchFileChanged = true;
- }
- // FIXME: this doesn't work
- if( [noteName isEqualToString:@"VDKQueueLinkCountChangedNotification"]) {
- DLog(@"re-adding deleted file");
- [self updateWatchFile:fpath];
- }
- }
- 
- // for "watchfile" functionality, should be put in its own class
- - (void)updateWatchFile:(NSString*)wPath
- {
- DLog(@"updateWatchFile %@",wPath);
- BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:wPath];
- if( !fileExists ) { // if no file, make one to watch, with dummy content
- NSString *content = @"Put this in a file please.";
- NSData *fileContents = [content dataUsingEncoding:NSUTF8StringEncoding];
- [[NSFileManager defaultManager] createFileAtPath:wPath
- contents:fileContents
- attributes:nil];
- }
- 
- if( myVDKQ != nil ) [myVDKQ removePath:wPath];
- [myVDKQ addPath:wPath];
- watchFileChanged = true;
- }
- 
-*/
 
 

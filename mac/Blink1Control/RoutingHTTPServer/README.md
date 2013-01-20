@@ -1,11 +1,12 @@
 # RoutingHTTPServer
 
-Adds a Sinatra-inspired routing API on top of [CocoaHTTPServer](https://github.com/robbiehanson/CocoaHTTPServer).
+Adds a Sinatra-inspired routing API on top of [CocoaHTTPServer](http://code.google.com/p/cocoahttpserver/).
 
 ## Installation
 
- 1. Add [CocoaHTTPServer](https://github.com/robbiehanson/CocoaHTTPServer) to your project
- 2. Add the files in the Source directory
+ 1. Add [CocoaHTTPServer](http://code.google.com/p/cocoahttpserver/) to your project
+ 2. Add [RegexKitLite](http://regexkit.sourceforge.net/RegexKitLite/), a copy is available in the External directory
+ 3. Add the files in the Source directory
 
 ## Usage
 
