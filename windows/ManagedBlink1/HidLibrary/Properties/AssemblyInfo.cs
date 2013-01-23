@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Blink1Control")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Hid Library")]
+[assembly: AssemblyDescription("Hid Device Communication Library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("ThingM")]
-[assembly: AssemblyProduct("Blink1Control")]
-[assembly: AssemblyCopyright("Copyright © ThingM 2013")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCompany("Ultraviolet Catastrophe")]
+[assembly: AssemblyProduct("HidLibrary")]
+[assembly: AssemblyCopyright("Copyright © 2011 Ultraviolet Catastrophe")]
+[assembly: AssemblyTrademark("HidLibrary")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b0859f05-9cf5-45bf-b2f4-6ca47911c9d3")]
+[assembly: Guid("d51e590e-e0ce-485f-8e64-d12abfbff2d6")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("0.9.7.0")]
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyFileVersion("3.0.0.0")]

@@ -1,15 +1,23 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AssemblyInfo.cs" company="None, it's free for all.">
+//   Copyright (c) None, it's free for all. All rights reserved.
+// </copyright>
+// <summary>
+//   AssemblyInfo.cs
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Blink1Control")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("ThingM.Blink1 managed library.")]
+[assembly: AssemblyDescription("Blink(1) library for .NET.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ThingM")]
-[assembly: AssemblyProduct("Blink1Control")]
+[assembly: AssemblyProduct("ThingM.Blink1")]
 [assembly: AssemblyCopyright("Copyright © ThingM 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +28,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b0859f05-9cf5-45bf-b2f4-6ca47911c9d3")]
+[assembly: Guid("de8836ad-893d-42a0-83d8-e3896c402752")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,4 +41,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("0.9.7.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
