@@ -43,7 +43,7 @@ namespace Blink1Control
         public string arg2 { get; set; }
         public string arg3 { get; set; }
         public string lastVal { get; set; }
-        public string possibleVals { get; set; }
+        public List<string> possibleVals { get; set; }
 
         // each input can have an independent update interval that's greater than master interval
         private DateTime lastDateTime;
@@ -95,10 +95,13 @@ namespace Blink1Control
             this.type = type;
             this.arg1 = arg1; this.arg2 = arg2; this.arg3 = arg3;
             this.lastDateTime = DateTime.Now.ToUniversalTime();  // FIXME: what about UTC?
+            this.possibleVals = new List<string>();
         }
 
         public Blink1Input()
         {
+            this.possibleVals = new List<string>();
+            this.lastDateTime = DateTime.Now.ToUniversalTime();  // FIXME: what about UTC?
         }
 
         /// <summary>
@@ -148,13 +151,14 @@ namespace Blink1Control
             if (iftttResponse.event_count > 0) {
                 long lastsecs = (long)ConvertToUnixTimestamp(lastDateTime);
                 //long lastsecs = epochSecs(lastDateTime);
+                possibleVals.Clear();
                 foreach (IftttEvent ev in iftttResponse.events) {  // FIXME: loop overwrites per-obj props
                     long evdate = long.Parse(ev.date);
                     //Blink1Server.Log("evdate: " + evdate + ", lastsecs:" + lastsecs);
                     lastDateTime = ConvertFromUnixTimestamp(evdate);
                     string evname = ev.name;
+                    possibleVals.Add( ev.name );
                     lastVal = ev.source;
-                    possibleVals = evname; // FIXME: should be array
                     if (rulename.Equals(evname)) {
                         Blink1Server.Log("---ifttt match: evdate:" + evdate + ", lastsecs:" + lastsecs + ", dt:" + (evdate - lastsecs));
                         if (evdate > lastsecs) {
@@ -162,13 +166,10 @@ namespace Blink1Control
                             return true;
                         }
                     }
-                    else {
-                        lastVal = "[no match]";
-                    }
                 }
             }
             else {
-                lastVal = "[no IFTTT data]";
+                lastVal = "[no events]";
                 lastDateTime = DateTime.Now.ToUniversalTime();
             }
             return false;

@@ -13,7 +13,7 @@ var rgbCurr = new Object();
 	rgbCurr.g = 0;
 	rgbCurr.b = 0;	
 	
-var intervalLength = 25;
+var intervalLength = 75;
 var cycleInterval;
 
 var	timeElapsed = 0;

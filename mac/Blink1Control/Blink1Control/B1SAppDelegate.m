@@ -287,17 +287,16 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    if( (now - lastTime) < urlUpdateInterval ) {   // only update URLs every 30 secs
+    if( (now - lastTime) < urlUpdateInterval ) {   // only update URLs every 15 secs
         return;
     }
-    //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTimeEval"];
     
     NSString* pname          = [input valueForKey:@"pname"];
     NSString* rulename       = [input valueForKey:@"arg1"];
 
     NSDictionary* list = [iftttResponse objectForKey:@"events"];
     if( !list ) {
-        [input setObject:@"no events" forKey:@"lastVal"];
+        [input setObject:@"[no events]" forKey:@"lastVal"];
     }
     
     NSMutableArray* possible_vals = [[NSMutableArray alloc] init];
@@ -311,13 +310,13 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
         
         //[possible_vals setObject:ev_source forKey:ev_name];
         [possible_vals addObject:ev_name];
+        [input setObject:ev_source forKey:@"lastVal"];
         
         //DLog(@"ev_id:%@, name:%@, source:%@ date: %@ lastTime:%f", ev_id, ev_name, ev_source, ev_datestr, iftttLastTime);
         
         if( [ev_name isEqualToString:rulename] ) {  // match
             if( ev_date > lastTime ) {
                 DLog(@"ifttt new event! %@", ev_name);
-                [input setObject:ev_source forKey:@"lastVal"];
                 [self playPattern: pname]; // trigger the pattern
             }
         

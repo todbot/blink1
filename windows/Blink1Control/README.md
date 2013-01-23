@@ -77,6 +77,6 @@ Packaging Steps (in lieu of real installer, these are mostly notes to tod)
 % cd blink1/windows/Blink1Control/Blink1Control/bin/x86/Debug
 % rm *xml *pdb *application *manifest *vshost*
 % cd .. 
-% rm -rf Blink1Control # (in case already exists)
+% rm -rf Blink1Control*  # (in case already exists)
 % mv Debug Blink1Control 
 % zip -r Blink1Control-win-0.9.5.zip Blink1Control

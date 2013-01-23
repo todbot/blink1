@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blink1.ConsoleDemo", "Blink1.ConsoleDemo\Blink1.ConsoleDemo.csproj", "{D7171DCB-5DB9-40AE-9B66-E7AC37682785}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blink1", "Blink1\Blink1.csproj", "{ACF2E926-F922-45A8-874B-967AD04BB837}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HidLibrary", "HidLibrary\HidLibrary.csproj", "{9E8F1D50-74EA-4C60-BD5C-AB2C5B53BC66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blink1.ColorManager", "Blink1.ColorPicker\Blink1.ColorManager.csproj", "{2E7A811A-2841-46FB-8251-A6AA19388390}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D7171DCB-5DB9-40AE-9B66-E7AC37682785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7171DCB-5DB9-40AE-9B66-E7AC37682785}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7171DCB-5DB9-40AE-9B66-E7AC37682785}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7171DCB-5DB9-40AE-9B66-E7AC37682785}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACF2E926-F922-45A8-874B-967AD04BB837}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF2E926-F922-45A8-874B-967AD04BB837}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF2E926-F922-45A8-874B-967AD04BB837}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF2E926-F922-45A8-874B-967AD04BB837}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E8F1D50-74EA-4C60-BD5C-AB2C5B53BC66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E8F1D50-74EA-4C60-BD5C-AB2C5B53BC66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E8F1D50-74EA-4C60-BD5C-AB2C5B53BC66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E8F1D50-74EA-4C60-BD5C-AB2C5B53BC66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E7A811A-2841-46FB-8251-A6AA19388390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E7A811A-2841-46FB-8251-A6AA19388390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E7A811A-2841-46FB-8251-A6AA19388390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E7A811A-2841-46FB-8251-A6AA19388390}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
