@@ -43,6 +43,7 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
+        public static bool startMinimized;
         public static bool logToScreen;  // FIXME: this is the wrong (non-MS) way to do this
         static Logger logger = LogManager.GetLogger("Blink1Control");
 
@@ -77,6 +78,7 @@ namespace Blink1Control
             try {
                 blink1.hostId = (string)Properties.Settings.Default["hostId"];
                 logToScreen = (bool)Properties.Settings.Default["logToScreen"];
+                startMinimized = (bool)Properties.Settings.Default["startMinimized"];
                 String inputsstr = (string)Properties.Settings.Default["inputs"];
                 String patternsstr = (string)Properties.Settings.Default["patterns"];
                 Log("inputs: " + inputsstr);
@@ -92,6 +94,7 @@ namespace Blink1Control
                 Log("Settings not found: " + spnfe.Message);
                 blink1.hostId = "00000000";
                 logToScreen = true;
+                startMinimized = false;
                 inputs = new Dictionary<string, Blink1Input>();
                 patterns = new Dictionary<string, Blink1Pattern>();
             }
@@ -117,6 +120,7 @@ namespace Blink1Control
             Properties.Settings.Default["hostId"] = blink1.hostId;
             Properties.Settings.Default["inputs"] =  JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings);
             Properties.Settings.Default["patterns"] = JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings);
+            Properties.Settings.Default["startMinimized"] = startMinimized;
             Properties.Settings.Default.Save();
         }
 
@@ -126,9 +130,7 @@ namespace Blink1Control
             Log("Blink1Server!");
             //Blink1Server.setBlink1Server(this);
             blink1.open();
-
-            logger.Info("Information is here");
-            logger.Info("Information sucks");
+            fadeToRGB(0.4, Color.Black);
 
             loadSettings();
 
@@ -165,9 +167,9 @@ namespace Blink1Control
                 regen.GetStringResponse = Ublink1RegenerateBlink1Id;
                 blink1dir.AddFile(regen);
 
-                Blink1JSONFile fadeToRGB = new Blink1JSONFile("fadeToRGB", blink1dir, this);
-                fadeToRGB.GetStringResponse = Ublink1FadeToRGB;
-                blink1dir.AddFile(fadeToRGB);
+                Blink1JSONFile fadeRGB = new Blink1JSONFile("fadeToRGB", blink1dir, this);
+                fadeRGB.GetStringResponse = Ublink1FadeToRGB;
+                blink1dir.AddFile(fadeRGB);
 
                 Blink1JSONFile on = new Blink1JSONFile("on", blink1dir, this);
                 on.GetStringResponse = Ublink1On;
@@ -242,17 +244,15 @@ namespace Blink1Control
                 // TESTING
                 // embedding slashes in path name does not work
                 //Blink1JSONFile foobar = new Blink1JSONFile("foo/bar", blink1dir, this);
-                Blink1JSONFile foobar = new Blink1JSONFile("foo/bar", blink1dir, this);
-                foobar.GetStringResponse = Ufoobar;
-                blink1dir.AddFile(foobar);   //add a virtual file for each json method
-                VirtualDirectory blarg = new VirtualDirectory();
-                Blink1Directory bd = new Blink1Directory("floop", root);
+                //foobar.GetStringResponse = Ufoobar;
+                //blink1dir.AddFile(foobar);   //add a virtual file for each json method
+                //VirtualDirectory blarg = new VirtualDirectory();
+                //Blink1Directory bd = new Blink1Directory("floop", root);
+                //root.AddDirectory(bd);
                 // TESTING END
 
                 blink1dir.AddDirectory(inputdir);
                 blink1dir.AddDirectory(patterndir);
-                root.AddDirectory(bd);
-
                 root.AddDirectory(blink1dir);
                 httpServer.Root = root;
 
@@ -799,7 +799,7 @@ namespace Blink1Control
         public void resetAlerts()
         {
             stopAllPatterns();
-            fadeToRGB(0.1, Color.Black);
+            fadeToRGB(0.3, Color.Black);
         }
 
         /// <summary>
@@ -811,6 +811,7 @@ namespace Blink1Control
             inputsEnable = false;
             inputsTimer.Change(Timeout.Infinite, Timeout.Infinite);
             inputsTimer.Dispose();
+            fadeToRGB(0.4, Color.Black);
         }
 
 
@@ -892,7 +893,7 @@ namespace Blink1Control
             }
         }
 
-
+        /*
         // TESTING: this is for tod testing, trying to figure out httpwebserver class
         public class Blink1Directory : IDirectory
         {
@@ -902,7 +903,7 @@ namespace Blink1Control
             {
                 this.name = name;
                 this.parent = parent;
-                Console.WriteLine("Blink1IDir Constructor");
+                Console.WriteLine("Blink1IDirectory Constructor");
             }
             public IDirectory GetDirectory(string dir)
             {
@@ -935,7 +936,7 @@ namespace Blink1Control
             {
             }
         }  //TESTING: end testing class
-
+        */
     }
     
 }

@@ -92,6 +92,8 @@
     //[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(update) object:nil];
     //[[NSRunLoop mainRunLoop] cancelPerformSelector:@selector(update) target:self argument:nil];
     playing = false;
+    [timer invalidate];
+    timer = nil;
 }
 
 // called by the player periodically

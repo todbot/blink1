@@ -511,6 +511,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     blink1 = [[Blink1 alloc] init];      // set up blink(1) library
     [blink1 enumerate];
+    [blink1 fadeToRGBstr:@"#000000" atTime:0.3];
     
     __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
     blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
@@ -1209,7 +1210,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 {
     DLog(@"allOff");
     [self stopAllPatterns];
-    [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
+    [blink1 fadeToRGBstr: @"#000000" atTime:0.3];
 }
 
 // GUI action: unused, rescan is done on config open now
@@ -1245,9 +1246,13 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 - (IBAction) quit: (id) sender
 {
     DLog(@"Quit!");
-    [self stopAllPatterns];
     [self savePrefs];
-    [NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0.0];
+    
+    [_webView close];
+    
+    [self allOff:nil];
+
+    [NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0.5];
 }
 
 
