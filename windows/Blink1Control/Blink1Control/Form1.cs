@@ -20,7 +20,10 @@ namespace Blink1Control
 
         private readonly WebView web_view;
         private Boolean showedBaloon = false;
-        
+        bool mAllowVisible;     // ContextMenu's Show command used
+        bool mAllowClose;       // ContextMenu's Exit command used
+        bool mLoadFired;        // Form was shown once
+
         public Form1()
         {
             InitializeComponent();
@@ -32,6 +35,37 @@ namespace Blink1Control
             web_view.Dock = DockStyle.Fill;
             web_view.RequestHandler = this;
             this.Controls.Add(web_view);
+
+            mAllowVisible = !Blink1Server.startMinimized;
+            stripMenuStartMinimized.Checked = !mAllowVisible;
+        }
+
+        //"Form Shown" event handler
+        private void Form_Shown(object sender, EventArgs e)
+        {
+            //to minimize window
+            this.WindowState = FormWindowState.Minimized;
+
+            //to hide from taskbar
+            this.Hide();
+        }
+
+        // to allow to start minimized
+        // see: http://stackoverflow.com/questions/1730731/how-to-start-winform-app-minimized-to-tray
+
+        protected override void SetVisibleCore(bool value)
+        {
+            if (!mAllowVisible) value = false;
+            base.SetVisibleCore(value);
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!mAllowClose) {
+                this.Hide();
+                e.Cancel = true;
+            }
+            base.OnFormClosing(e);
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -54,6 +88,8 @@ namespace Blink1Control
 
         private void notifyIcon1_DoubleClick(object sender, EventArgs e)
         {
+            mAllowVisible = true;
+            mLoadFired = true;
             Show();
             WindowState = FormWindowState.Normal;
         }
@@ -74,6 +110,13 @@ namespace Blink1Control
             }
         }
 
+        private void stripMenuStartMinimized_Click(object sender, EventArgs e)
+        {
+            Blink1Server.startMinimized = stripMenuStartMinimized.Checked;
+            mAllowVisible = !Blink1Server.startMinimized;
+            blink1Server.saveSettings();
+        }
+
         private void stripMenuResetAlerts_Click(object sender, EventArgs e)
         {
             blink1Server.resetAlerts();
@@ -81,6 +124,9 @@ namespace Blink1Control
 
         private void stripMenuExit_Click(object sender, EventArgs e)
         {
+            mAllowClose = mAllowVisible = true;
+            if (!mLoadFired) Show();
+
             Close();
             doExit();
         }
@@ -124,5 +170,6 @@ namespace Blink1Control
         }
 
         #endregion
+
     }
 }

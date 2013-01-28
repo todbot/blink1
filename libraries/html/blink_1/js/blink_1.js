@@ -41,6 +41,10 @@ $(document).ready(function(){
     $('.color-swatch').css('width', 126);
     $('#color-1').addClass('currently-picking');
 
+    $('#demo-tab').live('click', function(e) {
+            $('#demo-light-on').click(); 	// reset demo page back to default
+        });
+
 	$('#navbar li').live('click', function(e) {
 $("#tabs #navbar a").removeData("cache.tabs");
 	// settings tab
@@ -1086,10 +1090,14 @@ function backendLoadTriggers() {
 
 // 
 function backendSetColor(color) {
-    console.log("backendSetColor:"+color);
+    backendFadeColor(color,0.1);
+}
+
+function backendFadeColor(color,secs) { 
+    //console.log("backendFadeColor:"+color+","+secs);
     var colr = colorToHex(color); // convert to hex color if not
     var parms = { rgb : colr, 
-                  time : 0.1 };
+                  time : secs };
     $.getJSON( '../blink1/fadeToRGB', parms );
 }
 

@@ -91,8 +91,9 @@ function playColorCycle() {
 	demoColor.r = (1-pct)*fadeColors[currIndex1][0] + pct*fadeColors[currIndex2][0];
 	demoColor.g = (1-pct)*fadeColors[currIndex1][1] + pct*fadeColors[currIndex2][1];
 	demoColor.b = (1-pct)*fadeColors[currIndex1][2] + pct*fadeColors[currIndex2][2];	
-	increment = 1/(fadeDurations[currIndex1]*(1000/intervalLength));
-	
+	increment = 1 / (fadeDurations[currIndex1] * (1000/intervalLength));
+    //console.log("increment: "+increment+", pct: "+ pct.toFixed(2));
+
 	pct += increment;
 	
 	if(pct > (1 - increment)) {
@@ -138,20 +139,20 @@ function runDemoEffect(demoName) {
 			$('#virtual-blink-demo').css('background-color', 'white');
 			$('#virtual-blink-overlay-demo').removeClass('dark');
 			$('#main-content').attr('class', '').attr('style', '');
-            backendSetColor( 'rgb(255, 255, 255)' );
+            backendFadeColor( 'rgb(255, 255, 255)', 0.3 );
 			break;
 		case 'light-off':
 			//console.log('rgb(0, 0, 0)');
 			$('#virtual-blink-overlay-demo').addClass('dark');
 			$('#virtual-blink-demo').css('background-color', '#000');
 			$('#main-content').attr('style', '').attr('class', 'dark');
-            backendSetColor( 'rgb(0, 0, 0)' );
+            backendFadeColor( 'rgb(0, 0, 0)', 0.3 );
 			break;
 		case 'rgb':
 			$('#virtual-blink-overlay-demo').removeClass('dark');
 			$('#main-content').attr('class', '');
-			setCycleValues([[255, 0, 0],[0, 255, 0], [0, 0, 255]],[2, 2, 2]);
-			playColorCycle();											
+			setCycleValues([[255, 0, 0],[0, 255, 0], [0, 0, 255]],[5, 5, 5]);
+			playColorCycle();
 			break;	
 		case 'mood':
 			$('#virtual-blink-overlay-demo').removeClass('dark');
@@ -164,7 +165,7 @@ function runDemoEffect(demoName) {
                 var g = Math.floor( (Math.random()*255) );
                 var b = Math.floor( (Math.random()*255) );
                 moodColors.push( [r,g,b] );
-                moodDurations.push( 1 );
+                moodDurations.push( 2 );
             }
             console.log(moodColors);
             setCycleValues( moodColors, moodDurations );
