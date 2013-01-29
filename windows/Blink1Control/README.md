@@ -29,7 +29,13 @@ Releases
 
 0.9.6 -- 20 Jan 2013 
 - fixed some settings loading bugs
-- 
+
+0.9.7 -- 27 Jan 2013
+- .NET Framework requirement now 4.0 instead of 4.5
+- fixed up IFTTT event sources
+- added logging to logs/log.txt
+- added Start Minimized option
+- cleaned up HTML UI a little
 
 (to get version: right-click on Blink1Control.exe, go to Properties > Details)
 
