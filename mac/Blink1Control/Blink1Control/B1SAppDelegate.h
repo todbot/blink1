@@ -71,6 +71,9 @@
 @property (retain) NSImage *statusImage;
 //@property (retain) NSImage *statusHighlightImage;
 
+- (IBAction) playIt: (id) sender;
+
+//- (id)performDefaultImplementation;
 
 
 @end
