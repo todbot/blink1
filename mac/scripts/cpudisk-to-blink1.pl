@@ -77,7 +77,7 @@ while (local $_ = <PH>) {      # read a line from iostat
     my $cpuidle_pct = $loadvals[$valcnt-4];  # 4th from right is CPU idle pct
     my $disktps = $loadvals[2];              # 3rd from left is main disk trans/s
 
-    my $cpu_pct  = 100 - $cpuidle_percent;  # load is inverse of idle
+    my $cpu_pct  = 100 - $cpuidle_pct;      # load is inverse of idle
     my $disk_pct = 100 * ($disktps / 700);  # faking it, define 700 to be max tps
 
     my $cpu_pctf  = $cpu_pct * $cpu_scale;  # add fudge factor
