@@ -22,7 +22,7 @@ Options:
   -toolpath <path>      path to blink1-tool
 
 Example:
-  ./load-to-blink1.pl -v 1 -interval 3
+  load-to-blink1.pl -v 1 -interval 3
 
 EOF
    exit;
@@ -52,6 +52,9 @@ if( !defined($blink1toolpath) || ! -e $blink1toolpath ) { # no user-spec'd path
 die "no blink1-tool '$blink1toolpath'\n" if( ! -e $blink1toolpath );
 
 $interval_secs = 1 if( $interval_secs < 1 );
+
+print "Watching CPU & Disk stats every $interval_secs seconds\n";
+print "CPU usage maps to blink(1) red brightness, Disk usage to blink(1) green\n";
 
 my $iostatcmd = "iostat -w $interval_secs";
 open(PH,'-|',$iostatcmd) || die "Unable to open command '$iostatcmd': $!";
