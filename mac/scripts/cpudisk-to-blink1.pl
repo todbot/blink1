@@ -64,7 +64,7 @@ $interval_secs = 1 if( $interval_secs < 1 );
 
 print "Watching CPU & Disk stats every $interval_secs seconds\n";
 print "CPU  usage maps to blink(1) red brightness, cpu_scale $cpu_scale\n";
-print "Disk usage maps to blink(1) green brightness, disk_scale $disk_scale\n";
+print "Disk usage maps to blink(1) blue brightness, disk_scale $disk_scale\n";
 
 my $iostatcmd = "iostat -w $interval_secs";
 open(PH,'-|',$iostatcmd) || die "Unable to open command '$iostatcmd': $!";
