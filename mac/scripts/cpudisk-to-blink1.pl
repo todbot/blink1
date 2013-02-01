@@ -27,11 +27,11 @@ sub usage() {
 Usage: load-to-blink1.pl [options]
 
 Options:
-  -interval <n>         update interval in seconds (default $interval_secs)
-  -cpu_scale <num>    multipler when mapping CPU % (default $cpu_scale)
+  -interval <n>        update interval in seconds (default $interval_secs)
+  -cpu_scale <num>     multipler when mapping CPU % (default $cpu_scale)
   -disk_scale <num>    mulipler when mapping Disk % (default $disk_scale)
-  -toolpath <path>      path to blink1-tool (if not in PATH or same directory)
-  -verbose <n>          more verbose output
+  -toolpath <path>     path to blink1-tool (if not in PATH or same directory)
+  -verbose <n>         more verbose output
 
 Example:
   cpudisk-to-blink1.pl -v 1 -interval 3 -cpu_scale 2.1
