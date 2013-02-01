@@ -20,7 +20,7 @@ my $alertcolor = '#FF0000';
 my $blink1toolpath = './blink1-tool';
 my $help=0;
 my $cpu_scale = 1.5;
-my $disk_scale = 5.0;
+my $disk_scale = 2.5;
 
 sub usage() {
     print <<EOF;
