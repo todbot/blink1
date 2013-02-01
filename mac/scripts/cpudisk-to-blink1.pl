@@ -73,20 +73,20 @@ while (local $_ = <PH>) {      # read a line from iostat
     print "iostat: $_" if($verbose);
     next if( /cpu/ || /id/ );  # skip non-data lines
     my @loadvals = split(/\s+/, $_ );
-    my $valcnt = @loadvals;  # 
-    my $cpuidle_percent = $loadvals[$valcnt-4];  # 4th from right is CPU idle pct
-    my $disktps = $loadvals[2];                  # 3rd from left is main disk trans/s
+    my $valcnt = @loadvals;  # the count of fields 
+    my $cpuidle_pct = $loadvals[$valcnt-4];  # 4th from right is CPU idle pct
+    my $disktps = $loadvals[2];              # 3rd from left is main disk trans/s
 
-    my $cpu_pct = 100 - $cpuidle_percent;  # load is inverse of idle
+    my $cpu_pct  = 100 - $cpuidle_percent;  # load is inverse of idle
     my $disk_pct = 100 * ($disktps / 700);  # faking it, define 700 to be max tps
 
-    my $cpu_pctf = $cpu_pct * $cpu_scale;  # add fudge factor
+    my $cpu_pctf  = $cpu_pct * $cpu_scale;  # add fudge factor
     my $disk_pctf = $disk_pct * $disk_scale;
 
-    $cpu_pctf = ($cpu_pctf>100) ? 100 : $cpu_pctf;  # clip to 100
+    $cpu_pctf  = ($cpu_pctf>100)  ? 100 : $cpu_pctf;  # clip to 100
     $disk_pctf = ($disk_pctf>100) ? 100 : $disk_pctf;
    
-    my ($r,$g,$b) = ( int($cpu_pctf*255/100), 0, int($disk_pctf*255/100)) ;
+    my ($r,$g,$b) = ( int($cpu_pctf*255/100), 0, int($disk_pctf*255/100) );
     print "cpu: $cpu_pct %  disk: $disk_pct %   rgb: $r,$g,$b\n" if($verbose);
 
     my $fade_time = ($interval_secs/2.0) * 1000;
