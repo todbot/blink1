@@ -21,7 +21,6 @@
 
     NSString* cmd = [self directParameter];
     
-    //[((B1SAppDelegate*)[[NSApplication sharedApplication] delegate]) playIt:nil];
     B1SAppDelegate* b1sad = (B1SAppDelegate*)[[NSApplication sharedApplication] delegate];
     Blink1* blink1 = [b1sad blink1];
 
@@ -36,20 +35,7 @@
         [blink1 fadeToRGB:colr atTime:secs];
         respstr = [NSString stringWithFormat:@"fadeToRGB color %@ at time: %f",rgbstr,secs];
     }
-    
-    /*
-    NSString *stringToSearch = @"";
-    if(args.count) {
-        stringToSearch = [args valueForKey:@""];    // get the direct argument
-    } else {
-        // raise error
-        [self setScriptErrorNumber:-50];
-        [self setScriptErrorString:@"Parameter Error: A Parameter is expected for the verb 'lookup' (You have to specify _what_ you want to lookup!)."];
-    }
-    // Implement your code logic (in this example, I'm just posting an internal notification)
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"AppShouldLookupStringNotification" object:stringToSearch];
-     */
-    
+        
     return respstr;
 }
 

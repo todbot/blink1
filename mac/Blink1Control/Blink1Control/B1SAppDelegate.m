@@ -631,7 +631,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     }];
 
     [http get:@"/blink1/fadeToRGB" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        [self stopPattern:@"all"];
+        [self stopAllPatterns];
         NSString* rgbstr = [request param:@"rgb"];
         NSString* timestr = [request param:@"time"];
         if( rgbstr==nil ) rgbstr = @"";
@@ -651,7 +651,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 	}];
 
     [http get:@"/blink1/off" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        [self stopPattern:@"all"];
+        [self stopAllPatterns];
         [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
 
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
