@@ -1,5 +1,10 @@
 # blink(1) firmware Makefile
 #
+# To build the firmware, you need the avr-gcc compiler.
+# On Linux, that's: 
+#   - apt-get install gcc-avr avr-libc   (to build firmware files)
+#
+#
 # 2012, Tod E. Kurt, http://thingm.com/  http://todbot.com/blog/
 #
 # Originally from EasyLogger by Christian Starkjohann
