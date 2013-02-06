@@ -81,7 +81,7 @@ Packaging Steps (in lieu of real installer, these are mostly notes to tod)
 ===============
 % In VS2012: Build
 % cd blink1/windows/Blink1Control/Blink1Control/bin/x86/Debug
-% rm *xml *pdb *application *manifest *vshost*
+% rm -rf *xml *pdb *application *manifest *vshost* debug.log logs
 % cd .. 
 % rm -rf Blink1Control*  # (in case already exists)
 % mv Debug Blink1Control 
