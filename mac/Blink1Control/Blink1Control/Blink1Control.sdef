@@ -9,15 +9,8 @@
 
     <suite name="Blink1Control" code="B1cl" description="Terminology for Blink1Control.">
 
-        <class name="cmmdr" code="BCmd" description="Something goes here" plural="commands">
-            <cocoa class="Blink1AppleScriptCommands" />
-            <responds-to name="do it">
-                <cocoa method="doIt:" />
-            </responds-to>
-        </class>
-
-        <command name="do it" code="B1clAgCm" description="Do it, whatever that happens to be.">
-            <direct-parameter type="cmmdr" description="A thing." />
+        <command name="do it" code="You DOIT" description="Do it, whatever that happens to be.">
+            <cocoa class="Blink1AppleScriptCommands" method="doIt:" />
             <result description="it's done" type="text" />
         </command>
         
