@@ -51,6 +51,6 @@ that send commands to blink(1)
 
 - "blink1-ctypes.py"  - Stephen Youndt's script shows how to wrap the C library
 
-- "bliPi.py" - DPonts wrapper of blink1-tool, available at : https://github.com/DPontes/bliPy/blob/master/bliPy.py
+- "bliPi.py" - DPontes wrapper of blink1-tool, available at : https://github.com/DPontes/bliPy/blob/master/bliPy.py
 
 
