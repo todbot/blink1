@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
-@interface Blink1AppleScriptCommands : NSObject 
+@interface Blink1AppleScriptCommands : NSScriptCommand
 
 -(NSString*)doIt:(NSScriptCommand *)command;
 
