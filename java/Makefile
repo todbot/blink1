@@ -2,7 +2,9 @@
 #  
 # This makefile builds Java and native code for multiple OSes
 # To build the multi-platform Processing library, it's assumed that
-# this directory is shared between a Mac OS X, Windows, and Linux computer
+# this directory is shared between a Mac OS X, Windows, and Linux computers
+#
+# For base OS dependencies, see the blink1/commandline/Makefile
 #
 # Assumptions:
 # Mac OS X is at least 10.6 (Snow Leopard)
@@ -81,7 +83,7 @@ ifeq "$(OS)" "linux"
 LIBTARGET = lib$(TARGET).so  # for linux
 USBFLAGS += `pkg-config libusb-1.0 --cflags`
 USBLIBS  += `pkg-config libusb-1.0 --libs` 
-OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/java-6-openjdk/include -I/usr/lib/jvm/java-6-openjdk/include/linux
+OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/java-6-openjdk/include -I/usr/lib/jvm/default-java/include/linux
 OS_LDFLAGS = $(USBLIBS) 
 endif
 
@@ -105,7 +107,6 @@ help:
 	@echo "This Makefile has no default rule. Use one of the following:"
 	@echo "make javac ..... to build all java classes"
 	@echo "make jni ....... to build JNI stubs"
-	@echo "#make libprep ... to get libusb usable for compiling"
 	@echo "make compile ....to build the C code" 
 	@echo "make jar ....... to build the distribution jar"
 	@echo "make processing. to build the processing library (for current arch)"
