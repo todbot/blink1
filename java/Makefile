@@ -23,6 +23,7 @@ TARGET = Blink1
 LIBUSBA_DIR = libusb-static
 #PROCESSING_LIBDIR = blink1/library
 
+LIBZIPNAME = blink1-java-processing-lib.zip
 
 # try to do some autodetecting
 UNAME := $(shell uname -s)
@@ -152,7 +153,7 @@ jar: javac jni compile
 
 processing: processinglib
 processinglib: jar
-	rm -f blink1.zip
+	rm -f $(LIBZIPNAME)
 	rm -rf blink1/library
 	rm -rf blink1/examples
 	mkdir -p blink1/library
@@ -161,9 +162,10 @@ processinglib: jar
 	cp -r ../libraries/* blink1/library
 	rm -rf blink1/library/html
 	cp -r ../processing/* blink1/examples
-	zip --exclude \*application.\* --exclude \*~ --exclude .DS_Store -r blink1.zip blink1
+	zip --exclude \*application.\* --exclude \*~ --exclude .DS_Store -r $(LIBZIPNAME) blink1
+	cp $(LIBZIPNAME) ../libraries
 	@echo
-	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
+	@echo "now unzip $(LIBZIPNAME) into ~/Documents/Processing/libraries"
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
 
 
@@ -177,7 +179,7 @@ clean:
 	rm -f libtargets/blink1.jar
 	rm -f libtargets/$(LIBTARGET)
 	rm -f $(LIBTARGET) thingm_blink1_$(TARGET).h
-	rm -f blink1jar blink1.zip
+	rm -f blink1jar $(LIBZIPNAME)
 	rm -rf blink1
 
 distclean: clean
