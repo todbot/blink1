@@ -7,9 +7,12 @@
 # For base OS dependencies, see the blink1/commandline/Makefile
 #
 # Assumptions:
+#
 # Mac OS X is at least 10.6 (Snow Leopard)
+#
 # Windows is at least Windows XP with MinGW and MinSys installed
-# Linux is Ubuntu 9 or above
+#
+# Linux is Ubuntu 9 or above, with JDK installed (e.g. "sudo apt-get install openjdk-6-jdk")
 #
 # Attempts are made to make universal binary (i386 & x86_64) on Mac OS X
 #
@@ -156,7 +159,7 @@ processinglib: jar
 	cp -r ../libraries/* blink1/library
 	rm -rf blink1/library/html
 	cp -r ../processing/* blink1/examples
-	zip --exclude \*application.\* --exclude \*~ -r blink1.zip blink1
+	zip --exclude \*application.\* --exclude \*~ --exclude .DS_Store -r blink1.zip blink1
 	@echo
 	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
