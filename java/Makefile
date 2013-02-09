@@ -87,7 +87,8 @@ LIBTARGET = lib$(TARGET).so  # for linux
 USBFLAGS += `pkg-config libusb-1.0 --cflags`
 USBLIBS  += `pkg-config libusb-1.0 --libs` 
 OBJS = ../commandline/hidapi/libusb/hid.o
-OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/default-java/include
+# gotta find jni.h in here somewhere (is there a better way of doing this?)
+OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/java-6-openjdk-i386/include/
 OS_LDFLAGS = $(USBLIBS) 
 endif
 
