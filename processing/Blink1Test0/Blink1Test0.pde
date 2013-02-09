@@ -6,6 +6,7 @@
  */
 
 import thingm.blink1.*;
+import java.util.Random;
 
 Blink1 blink1;
 Random rand;
