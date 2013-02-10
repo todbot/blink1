@@ -76,6 +76,13 @@ public class Blink1 {
       Blink1.pause( 250 );
     }
 
+    System.out.println("Turn off all blink(1)s.");
+    for(int n=0; n < count; n++){
+        blink1.openById(n);
+        blink1.setRGB(Color.BLACK);
+        blink1.close();
+    }
+
     System.out.println("Done.");
   }
 
