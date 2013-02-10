@@ -1,14 +1,9 @@
-
-
 package thingm.blink1;
 
-import java.io.*;
 import java.util.*;
-import java.util.regex.*;
 import java.awt.Color;
 
-public class Blink1 
-{
+public class Blink1 {
   //java.nio.ByteBuffer hidDevicePtr;
   //long hidDevicePtr; // FIXME: unused currently, but should be
 
@@ -18,9 +13,7 @@ public class Blink1
 
 
   public static void usage() { 
-    println(""+
-"Usage: Blink1 <cmd> [options]\n" +
-            "");
+    println("Usage: Blink1 <cmd> [options]\n");
   }
 
   /**
@@ -92,8 +85,7 @@ public class Blink1
    * Constructor.  
    * Searches for plugged in blink(1) devices and populates internal caches.
    */
-  public Blink1() 
-  {
+  public Blink1() {
     enumerate();
   }
 
@@ -163,9 +155,7 @@ public class Blink1
    * @returns blink1_command response code, -1 == fail 
    * FIXME: this does not work correctly.  Use higher-level functions instead.
    */
-  public native synchronized int command(int cmd, 
-                                         byte[] buf_send, 
-                                         byte[] buf_recv);
+  public native synchronized int command(int cmd, byte[] buf_send, byte[] buf_recv);
 
   /**
    * Set blink(1) RGB color immediately
@@ -181,8 +171,7 @@ public class Blink1
    * @param c Color to set
    * @returns blink1_command response code, -1 == fail 
    */
-  public int setRGB(Color c) 
-  {
+  public int setRGB(Color c) {
     return setRGB( c.getRed(), c.getGreen(), c.getBlue() );
   }
 
@@ -203,8 +192,7 @@ public class Blink1
    * @param c Color to set
    * @returns blink1_command response code, -1 == fail 
    */
-  public int fadeToRGB(int fadeMillis, Color c) 
-  {
+  public int fadeToRGB(int fadeMillis, Color c) {
     return fadeToRGB( fadeMillis, c.getRed(), c.getGreen(), c.getBlue() );
   }
 
@@ -217,9 +205,8 @@ public class Blink1
    * @param pos entry position 0-patt_max
    * @returns blink1_command response code, -1 == fail 
    */
-  public native synchronized int writePatternLine(int fadeMillis, 
-                                                  int r, int g, int b,
-                                                  int pos);
+  public native synchronized int writePatternLine(int fadeMillis, int r, int g, int b, int pos);
+
   /**
    * @param play  true to play, false to stop
    * @param pos   starting position to play from, 0 = start
@@ -246,8 +233,7 @@ public class Blink1
    * one attempt at a degamma curve.
    * //FIXME: this is now in blink1-lib
    */
-  static final public int log2lin( int n )  
-  {
+  static final public int log2lin( int n ) {
     //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
     return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
   }
