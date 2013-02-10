@@ -13,7 +13,7 @@ public class Blink1 {
 
 
   public static void usage() { 
-    println("Usage: Blink1 <cmd> [options]\n");
+    System.out.println("Usage: Blink1 <cmd> [options]\n");
   }
 
   /**
@@ -73,7 +73,7 @@ public class Blink1 {
         System.out.println();
       }
 
-      blink1.pause( 250 );
+      Blink1.pause( 250 );
     }
 
     System.out.println("Done.");
@@ -208,6 +208,17 @@ public class Blink1 {
   public native synchronized int writePatternLine(int fadeMillis, int r, int g, int b, int pos);
 
   /**
+   * Write a blink(1) light pattern entry
+   * @param fadeMillis milliseconds to take to get to color
+   * @param c Color to set
+   * @param pos entry position 0-patt_max
+   * @returns blink1_command response code, -1 == fail 
+   */
+  public int writePatternLine(int fadeMillis, Color c, int pos) {
+    return writePatternLine(fadeMillis, c.getRed(), c.getGreen(), c.getBlue(), pos);
+  }
+
+  /**
    * @param play  true to play, false to stop
    * @param pos   starting position to play from, 0 = start
    */
@@ -233,7 +244,7 @@ public class Blink1 {
    * one attempt at a degamma curve.
    * //FIXME: this is now in blink1-lib
    */
-  static final public int log2lin( int n ) {
+  public static final int log2lin( int n ) {
     //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
     return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
   }
@@ -241,15 +252,11 @@ public class Blink1 {
   /**
    * Utility: A simple delay
    */
-  static final public void pause( int millis ) {
-      try { Thread.sleep(millis); } catch(Exception e) { }
-  }
-
-  static final public void println(String s) { 
-    System.out.println(s);
-  }
-  static final public void print(String s) { 
-    System.out.print(s);
+  public static final void pause(int millis) {
+    try {
+        Thread.sleep(millis);
+    } catch (Exception e) {
+    }
   }
 
 }
