@@ -47,11 +47,11 @@ static int  hexread(char *buffer, char *string, int buflen);
 static void usage(char *myName)
 {
     fprintf(stderr, "usage:\n");
+    fprintf(stderr, "  %s blink [<num>]\n", myName);
+    fprintf(stderr, "  %s random [<num>]\n", myName);
+    fprintf(stderr, "  %s rgb <red>,<green>,<blue> \n", myName);
     //fprintf(stderr, "  %s read\n", myName);
     //fprintf(stderr, "  %s write <listofbytes>\n", myName);
-    fprintf(stderr, "  %s blink \n", myName);
-    fprintf(stderr, "  %s random <num>\n", myName);
-    fprintf(stderr, "  %s rgb <red>,<green>,<blue> \n", myName);
 }
 
 
@@ -59,7 +59,6 @@ static void usage(char *myName)
 int main(int argc, char **argv)
 {
     usbDevice_t *dev;
-    //char        buffer[9];    /* room for dummy report ID */
     int         rc;
     
     char argbuf[8];  
@@ -70,14 +69,64 @@ int main(int argc, char **argv)
     }
     char* cmd = argv[1];
 
-    if(0) {
     if( blink1_open(&dev) ) {
         fprintf(stderr, "error: couldn't open blink1");
         exit(1);
     }
+
+    if( strcasecmp(cmd, "rgb") == 0 ) { 
+        hexread(argbuf, argv[2], sizeof(argbuf));  // cmd w/ hexlist arg
+        uint8_t r = argbuf[0];
+        uint8_t g = argbuf[1];
+        uint8_t b = argbuf[2];
+        printf("setting rgb: %2.2x,%2.2x,%2.2x\n", r,g,b );
+
+        rc = blink1_fadeToRGB(dev, millis, r,g,b);
+        if( rc ) { // on error, do something, anything. come on.
+            printf("error on fadeToRGB\n");
+        }
+    }
+    else if( strcasecmp(cmd, "blink") == 0 ) {
+        if( argc < 3 ) { 
+            argbuf[0] = 3;  // blink 3 times if none specified
+        } else {
+            hexread(argbuf, argv[2], sizeof(argbuf));
+        }
+        uint8_t v = 0;
+
+        for( int i=0; i< argbuf[0]*2; i++ ) {
+            rc = blink1_fadeToRGB( dev, millis, v,v,v );
+            if( rc ) { // on error, do something, anything. come on.
+                printf("error on fadeToRGB\n");
+            }
+            v = (v) ? 0 : 255;
+            //millis = millis * 100 / 110;
+            //if( millis < 10 ) millis = 250;
+
+            printf("%d: %x,%x,%x \n", millis, v,v,v );
+            usleep(millis * 1000 ); // sleep milliseconds
+        }
+    }
+    else if( strcasecmp(cmd, "random") == 0 ) { 
+        if( argc < 3 ) { 
+            argbuf[0] = 10;  // random 10 times if none specified
+        } else {
+            hexread(argbuf, argv[2], sizeof(argbuf));
+        }
+        hexread(argbuf, argv[2], sizeof(argbuf));
+        for( int i=0; i<argbuf[0]; i++ ) { 
+            uint8_t r = rand()%255;
+            uint8_t g = rand()%255;
+            uint8_t b = rand()%255 ;
+            printf("%d: %x,%x,%x \n", millis, r,g,b );
+            rc = blink1_fadeToRGB(dev, millis, r,g,b);
+            if( rc )  // on error, do something, anything. come on.
+                printf("error on fadeToRGB\n");
+            usleep(millis * 1000 ); // sleep milliseconds
+        }
     }
     /*
-    if(strcasecmp(cmd, "read") == 0){
+    else if(strcasecmp(cmd, "read") == 0){
         int len = sizeof(buffer);
         if((rc = usbhidGetReport(dev, 0, buffer, &len)) != 0){
             fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
@@ -99,46 +148,6 @@ int main(int argc, char **argv)
     }
     else 
     */
-    if( strcasecmp(cmd, "rgb") == 0 ) { 
-        hexread(argbuf, argv[2], sizeof(argbuf));  // cmd w/ hexlist arg
-        uint8_t r = argbuf[0];
-        uint8_t g = argbuf[1];
-        uint8_t b = argbuf[2];
-        printf("setting rgb: %2.2x,%2.2x,%2.2x\n", r,g,b );
-
-        rc = blink1_fadeToRGB(dev, millis, r,g,b);
-        if( rc ) { // on error, do something, anything. come on.
-            printf("error on fadeToRGB\n");
-        }
-    }
-    else if( strcasecmp(cmd, "blink") == 0 ) {
-        hexread(argbuf, argv[2], sizeof(argbuf));
-        uint8_t v = 0;
-
-        for( int i=0; i< argbuf[0]*2; i++ ) {
-            rc = blink1_fadeToRGB( dev, millis, v,v,v );
-            if( rc ) { // on error, do something, anything. come on.
-                printf("error on fadeToRGB\n");
-            }
-            v = (v) ? 0 : 255;
-            //millis = millis * 100 / 110;
-            //if( millis < 10 ) millis = 250;
-
-            printf("%d: %x,%x,%x \n", millis, v,v,v );
-            usleep(millis * 1000 ); // sleep milliseconds
-        }
-    }
-    else if( strcasecmp(cmd, "random") == 0 ) { 
-        hexread(argbuf, argv[2], sizeof(argbuf));
-        for( int i=0; i<argbuf[0]; i++ ) { 
-            uint8_t r = rand()%255;
-            uint8_t g = rand()%255;
-            uint8_t b = rand()%255 ;
-            rc = blink1_fadeToRGB(dev, millis, r,g,b);
-            if( rc )  // on error, do something, anything. come on.
-                printf("error on fadeToRGB\n");
-        }
-    }
 
 }
 
@@ -152,8 +161,8 @@ int main(int argc, char **argv)
 int blink1_open(usbDevice_t **dev)
 {
     return usbhidOpenDevice(dev, 
-                            IDENT_VENDOR_NUM,  IDENT_VENDOR_STRING,
-                            IDENT_PRODUCT_NUM, IDENT_PRODUCT_STRING,
+                            IDENT_VENDOR_NUM,  NULL,
+                            IDENT_PRODUCT_NUM, NULL,
                             1);  // NOTE: '0' means "not using report IDs"
 }
 
@@ -171,7 +180,7 @@ void blink1_close(usbDevice_t *dev)
 int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
                         uint8_t r, uint8_t g, uint8_t b )
 {
-    char buffer[9];
+    char buffer[8];
     int err;
 
     if( dev==NULL ) {
@@ -180,7 +189,7 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
 
     int dms = fadeMillis/10;  // millis_divided_by_10
 
-    buffer[0] = 0;
+    buffer[0] = 1;
     buffer[1] = 'c';
     buffer[2] = r;
     buffer[3] = g;
@@ -199,7 +208,7 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
  */
 int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
 {
-    char buffer[9];
+    char buffer[8];
     int err;
 
     if( dev==NULL ) {
