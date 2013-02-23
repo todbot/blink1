@@ -79,10 +79,10 @@ int main(int argc, char **argv)
         uint8_t r = argbuf[0];
         uint8_t g = argbuf[1];
         uint8_t b = argbuf[2];
-        printf("setting rgb: %2.2x,%2.2x,%2.2x\n", r,g,b );
+        printf("ms:%d: rgb:%2.2x,%2.2x,%2.2x\n", millis, r,g,b );
 
         rc = blink1_fadeToRGB(dev, millis, r,g,b);
-        if( rc ) { // on error, do something, anything. come on.
+        if( rc ) { // on error, do something
             printf("error on fadeToRGB\n");
         }
     }
@@ -96,31 +96,28 @@ int main(int argc, char **argv)
 
         for( int i=0; i< argbuf[0]*2; i++ ) {
             rc = blink1_fadeToRGB( dev, millis, v,v,v );
-            if( rc ) { // on error, do something, anything. come on.
+            if( rc ) { // on error, do something
                 printf("error on fadeToRGB\n");
             }
             v = (v) ? 0 : 255;
-            //millis = millis * 100 / 110;
-            //if( millis < 10 ) millis = 250;
 
-            printf("%d: %x,%x,%x \n", millis, v,v,v );
+            printf("ms:%d: rgb:%2.2x,%2.2x,%2.2x\n", millis, v,v,v );
             usleep(millis * 1000 ); // sleep milliseconds
         }
     }
     else if( strcasecmp(cmd, "random") == 0 ) { 
         if( argc < 3 ) { 
-            argbuf[0] = 10;  // random 10 times if none specified
+            argbuf[0] = 5;  // random 10 times if none specified
         } else {
             hexread(argbuf, argv[2], sizeof(argbuf));
         }
-        hexread(argbuf, argv[2], sizeof(argbuf));
         for( int i=0; i<argbuf[0]; i++ ) { 
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
-            printf("%d: %x,%x,%x \n", millis, r,g,b );
+            printf("ms:%d: rgb:%2.2x,%2.2x,%2.2x\n", millis, r,g,b );
             rc = blink1_fadeToRGB(dev, millis, r,g,b);
-            if( rc )  // on error, do something, anything. come on.
+            if( rc )  // on error, do something
                 printf("error on fadeToRGB\n");
             usleep(millis * 1000 ); // sleep milliseconds
         }
