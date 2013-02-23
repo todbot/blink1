@@ -54,7 +54,6 @@ static void usage(char *myName)
     //fprintf(stderr, "  %s write <listofbytes>\n", myName);
 }
 
-
 //
 int main(int argc, char **argv)
 {
@@ -79,8 +78,7 @@ int main(int argc, char **argv)
         uint8_t r = argbuf[0];
         uint8_t g = argbuf[1];
         uint8_t b = argbuf[2];
-        printf("ms:%d: rgb:%2.2x,%2.2x,%2.2x\n", millis, r,g,b );
-
+        printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n", cmd, r,g,b, millis );
         rc = blink1_fadeToRGB(dev, millis, r,g,b);
         if( rc ) { // on error, do something
             printf("error on fadeToRGB\n");
@@ -92,16 +90,18 @@ int main(int argc, char **argv)
         } else {
             hexread(argbuf, argv[2], sizeof(argbuf));
         }
-        uint8_t v = 0;
 
+        uint8_t v = 0;
         for( int i=0; i< argbuf[0]*2; i++ ) {
+            uint8_t r = v;
+            uint8_t g = v;
+            uint8_t b = v;
+            printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n", cmd, r,g,b, millis );
             rc = blink1_fadeToRGB( dev, millis, v,v,v );
             if( rc ) { // on error, do something
                 printf("error on fadeToRGB\n");
             }
             v = (v) ? 0 : 255;
-
-            printf("ms:%d: rgb:%2.2x,%2.2x,%2.2x\n", millis, v,v,v );
             usleep(millis * 1000 ); // sleep milliseconds
         }
     }
@@ -115,12 +115,16 @@ int main(int argc, char **argv)
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
-            printf("ms:%d: rgb:%2.2x,%2.2x,%2.2x\n", millis, r,g,b );
+            printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n", cmd, r,g,b, millis );
             rc = blink1_fadeToRGB(dev, millis, r,g,b);
             if( rc )  // on error, do something
                 printf("error on fadeToRGB\n");
             usleep(millis * 1000 ); // sleep milliseconds
         }
+    }
+    else { 
+        usage(argv[0]);
+        exit(1);
     }
     /*
     else if(strcasecmp(cmd, "read") == 0){
