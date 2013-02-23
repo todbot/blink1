@@ -215,7 +215,7 @@ int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
         return -1; // BLINK1_ERR_NOTOPEN;
     }
 
-    buffer[0] = 0;
+    buffer[0] = 1;
     buffer[1] = 'n';
     buffer[2] = r;
     buffer[3] = g;
