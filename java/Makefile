@@ -88,8 +88,17 @@ LIBTARGET = lib$(TARGET).so  # for linux
 USBFLAGS += `pkg-config libusb-1.0 --cflags`
 USBLIBS  += `pkg-config libusb-1.0 --libs` 
 OBJS = ../commandline/hidapi/libusb/hid.o
+
+# Two possible values for JAVA_HOME, there are probably more
+#JAVA_HOME=/usr/lib/jvm/java-6-openjdk
+#JAVA_HOME=/usr/lib/jvm/java-6-sun
+
+ifndef JAVA_HOME
+ ${error JAVA_HOME not set. Set it in the makefile or with 'export JAVA_HOME=<java dir>'}
+endif
+
 # gotta find jni.h in here somewhere (is there a better way of doing this?)
-OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/default-java/include -I/usr/lib/jvm/java-6-openjdk-i386/include/
+OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux
 OS_LDFLAGS = $(USBLIBS) 
 endif
 

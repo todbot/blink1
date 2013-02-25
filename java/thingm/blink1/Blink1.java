@@ -1,14 +1,9 @@
-
-
 package thingm.blink1;
 
-import java.io.*;
 import java.util.*;
-import java.util.regex.*;
 import java.awt.Color;
 
-public class Blink1 
-{
+public class Blink1 {
   //java.nio.ByteBuffer hidDevicePtr;
   //long hidDevicePtr; // FIXME: unused currently, but should be
 
@@ -18,9 +13,7 @@ public class Blink1
 
 
   public static void usage() { 
-    println(""+
-"Usage: Blink1 <cmd> [options]\n" +
-            "");
+    System.out.println("Usage: Blink1 <cmd> [options]\n");
   }
 
   /**
@@ -80,7 +73,14 @@ public class Blink1
         System.out.println();
       }
 
-      blink1.pause( 250 );
+      Blink1.pause( 250 );
+    }
+
+    System.out.println("Turn off all blink(1)s.");
+    for(int n=0; n < count; n++){
+        blink1.openById(n);
+        blink1.setRGB(Color.BLACK);
+        blink1.close();
     }
 
     System.out.println("Done.");
@@ -92,8 +92,7 @@ public class Blink1
    * Constructor.  
    * Searches for plugged in blink(1) devices and populates internal caches.
    */
-  public Blink1() 
-  {
+  public Blink1() {
     enumerate();
   }
 
@@ -163,9 +162,7 @@ public class Blink1
    * @returns blink1_command response code, -1 == fail 
    * FIXME: this does not work correctly.  Use higher-level functions instead.
    */
-  public native synchronized int command(int cmd, 
-                                         byte[] buf_send, 
-                                         byte[] buf_recv);
+  public native synchronized int command(int cmd, byte[] buf_send, byte[] buf_recv);
 
   /**
    * Set blink(1) RGB color immediately
@@ -181,8 +178,7 @@ public class Blink1
    * @param c Color to set
    * @returns blink1_command response code, -1 == fail 
    */
-  public int setRGB(Color c) 
-  {
+  public int setRGB(Color c) {
     return setRGB( c.getRed(), c.getGreen(), c.getBlue() );
   }
 
@@ -203,8 +199,7 @@ public class Blink1
    * @param c Color to set
    * @returns blink1_command response code, -1 == fail 
    */
-  public int fadeToRGB(int fadeMillis, Color c) 
-  {
+  public int fadeToRGB(int fadeMillis, Color c) {
     return fadeToRGB( fadeMillis, c.getRed(), c.getGreen(), c.getBlue() );
   }
 
@@ -217,9 +212,19 @@ public class Blink1
    * @param pos entry position 0-patt_max
    * @returns blink1_command response code, -1 == fail 
    */
-  public native synchronized int writePatternLine(int fadeMillis, 
-                                                  int r, int g, int b,
-                                                  int pos);
+  public native synchronized int writePatternLine(int fadeMillis, int r, int g, int b, int pos);
+
+  /**
+   * Write a blink(1) light pattern entry
+   * @param fadeMillis milliseconds to take to get to color
+   * @param c Color to set
+   * @param pos entry position 0-patt_max
+   * @returns blink1_command response code, -1 == fail 
+   */
+  public int writePatternLine(int fadeMillis, Color c, int pos) {
+    return writePatternLine(fadeMillis, c.getRed(), c.getGreen(), c.getBlue(), pos);
+  }
+
   /**
    * @param play  true to play, false to stop
    * @param pos   starting position to play from, 0 = start
@@ -246,8 +251,7 @@ public class Blink1
    * one attempt at a degamma curve.
    * //FIXME: this is now in blink1-lib
    */
-  static final public int log2lin( int n )  
-  {
+  public static final int log2lin( int n ) {
     //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
     return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
   }
@@ -255,15 +259,11 @@ public class Blink1
   /**
    * Utility: A simple delay
    */
-  static final public void pause( int millis ) {
-      try { Thread.sleep(millis); } catch(Exception e) { }
-  }
-
-  static final public void println(String s) { 
-    System.out.println(s);
-  }
-  static final public void print(String s) { 
-    System.out.print(s);
+  public static final void pause(int millis) {
+    try {
+        Thread.sleep(millis);
+    } catch (Exception e) {
+    }
   }
 
 }
