@@ -89,12 +89,13 @@ USBFLAGS += `pkg-config libusb-1.0 --cflags`
 USBLIBS  += `pkg-config libusb-1.0 --libs` 
 OBJS = ../commandline/hidapi/libusb/hid.o
 
-# Two possible values for JAVA_HOME, there are probably more
+# Possible values for JAVA_HOME, there are probably more
 #JAVA_HOME=/usr/lib/jvm/java-6-openjdk
 #JAVA_HOME=/usr/lib/jvm/java-6-sun
+#JAVA_HOME=/usr/lib/jvm/default-java
 
 ifndef JAVA_HOME
- ${error JAVA_HOME not set. Set it in the makefile or with 'export JAVA_HOME=<java dir>'}
+ ${error JAVA_HOME not set. Set it in the makefile or with 'export JAVA_HOME=<java dir>'. It is often in /usr/lib/jvm/default-java, so try 'export JAVA_HOME=/usr/lib/jvm/default-java'}
 endif
 
 # gotta find jni.h in here somewhere (is there a better way of doing this?)
