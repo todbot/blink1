@@ -8,7 +8,26 @@ All dependencies are included in the 'blink1' project.
 
 Local webserver URL API:
 
-See the document 'blink1/app-url-api.md'
+See the document 'blink1/docs/app-url-api.md'
+
+
+Releases 
+========
+
+0.990 -- 21 Dec 2012
+- initial release to public
+
+0.995 -- 23 Dec 2012
+- fixed bug that allows running on 10.6
+
+0.996 --
+- added "Show dock icon" and "Menu icon matches blink(1)" menu items
+
+0.997 -- 27 Jan 2013 
+- fixed up IFTTT event sources
+- cleaned up HTML UI a little
+
+
 
 
 Open Source Software used in this application

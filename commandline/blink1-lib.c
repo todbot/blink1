@@ -174,8 +174,6 @@ int blink1_getSerialNumber(hid_device *dev, char* buf)
     return -1;
 }
 
-//
-
 // FIXME: 
 int readUUID( hid_device* dev, uint8_t** uuid )
 {

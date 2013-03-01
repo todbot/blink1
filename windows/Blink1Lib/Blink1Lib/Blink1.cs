@@ -49,7 +49,6 @@ namespace Blink1Lib
         /// <returns>blink1_id</returns>
         public string regenerateBlink1Id()
         {
-            Console.WriteLine("hostId:" + hostId);
             if (hostId == null || hostId.Equals("00000000") )
             {
                 Random rand = new Random();

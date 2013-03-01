@@ -15,7 +15,9 @@ using System.Globalization;
 using System.Collections.ObjectModel;
 using MiniHttpd;
 using Newtonsoft.Json;
+using NLog;
 using Blink1Lib;
+ 
 
 
 namespace Blink1Control
@@ -41,17 +43,9 @@ namespace Blink1Control
         public Blink1 blink1 { get { return Blink1Server.Sblink1; } private set { } }
         public static string blink1Id { get { return Blink1Server.Sblink1.blink1Id; } }
 
-        /*
-        // idea for removing Blink1Server property from Blink1Input instances
-        // this seems ugly but I want to exclude the blink1Server property from Blink1Pattern & Blink1Input
-        public static Blink1Server staticBlink1Server;
-        public static void setBlink1Server(Blink1Server b1s)
-        { staticBlink1Server = b1s;        }
-        public static Blink1Server getBlink1Server(Blink1Server b1s)
-        {  return staticBlink1Server; }
-        */
-
+        public static bool startMinimized;
         public static bool logToScreen;  // FIXME: this is the wrong (non-MS) way to do this
+        static Logger logger = LogManager.GetLogger("Blink1Control");
 
         /// <summary>
         /// Extremely simplistic logging system. one method only!
@@ -60,7 +54,11 @@ namespace Blink1Control
         /// <param name="s"></param>
         public static void Log(string s)
         {
-            if (logToScreen) Console.WriteLine(s);
+            if (logToScreen) {
+                //Console.WriteLine(s);
+                //System.Diagnostics.Debug.WriteLine(s);
+                logger.Info(s);
+            }
         }
 
         /// <summary>
@@ -80,25 +78,27 @@ namespace Blink1Control
             try {
                 blink1.hostId = (string)Properties.Settings.Default["hostId"];
                 logToScreen = (bool)Properties.Settings.Default["logToScreen"];
-                String patternsstr = (string)Properties.Settings.Default["patterns"];
+                startMinimized = (bool)Properties.Settings.Default["startMinimized"];
                 String inputsstr = (string)Properties.Settings.Default["inputs"];
-                Log("patterns: " + patternsstr);
+                String patternsstr = (string)Properties.Settings.Default["patterns"];
                 Log("inputs: " + inputsstr);
-                patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
+                Log("patterns: " + patternsstr);
                 inputs = JsonConvert.DeserializeObject<Dictionary<string, Blink1Input>>(inputsstr);
-                if (patterns == null)
-                    patterns = new Dictionary<string, Blink1Pattern>();
+                patterns = JsonConvert.DeserializeObject<Dictionary<string, Blink1Pattern>>(patternsstr);
                 if (inputs == null)
                     inputs = new Dictionary<string, Blink1Input>();
+                if (patterns == null)
+                    patterns = new Dictionary<string, Blink1Pattern>();
             }
             catch (SettingsPropertyNotFoundException spnfe) {
-                Console.Write("Settings not found: " + spnfe.Message);
+                Log("Settings not found: " + spnfe.Message);
                 blink1.hostId = "00000000";
                 logToScreen = true;
-                patterns = new Dictionary<string, Blink1Pattern>();
+                startMinimized = false;
                 inputs = new Dictionary<string, Blink1Input>();
+                patterns = new Dictionary<string, Blink1Pattern>();
             }
-
+            // set the Blink1Server for each entry
             foreach (KeyValuePair<string, Blink1Input> kvp in inputs) {
                 kvp.Value.blink1Server = this;
             }
@@ -120,6 +120,7 @@ namespace Blink1Control
             Properties.Settings.Default["hostId"] = blink1.hostId;
             Properties.Settings.Default["inputs"] =  JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings);
             Properties.Settings.Default["patterns"] = JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings);
+            Properties.Settings.Default["startMinimized"] = startMinimized;
             Properties.Settings.Default.Save();
         }
 
@@ -129,6 +130,7 @@ namespace Blink1Control
             Log("Blink1Server!");
             //Blink1Server.setBlink1Server(this);
             blink1.open();
+            fadeToRGB(0.4, Color.Black);
 
             loadSettings();
 
@@ -165,9 +167,9 @@ namespace Blink1Control
                 regen.GetStringResponse = Ublink1RegenerateBlink1Id;
                 blink1dir.AddFile(regen);
 
-                Blink1JSONFile fadeToRGB = new Blink1JSONFile("fadeToRGB", blink1dir, this);
-                fadeToRGB.GetStringResponse = Ublink1FadeToRGB;
-                blink1dir.AddFile(fadeToRGB);
+                Blink1JSONFile fadeRGB = new Blink1JSONFile("fadeToRGB", blink1dir, this);
+                fadeRGB.GetStringResponse = Ublink1FadeToRGB;
+                blink1dir.AddFile(fadeRGB);
 
                 Blink1JSONFile on = new Blink1JSONFile("on", blink1dir, this);
                 on.GetStringResponse = Ublink1On;
@@ -242,17 +244,15 @@ namespace Blink1Control
                 // TESTING
                 // embedding slashes in path name does not work
                 //Blink1JSONFile foobar = new Blink1JSONFile("foo/bar", blink1dir, this);
-                Blink1JSONFile foobar = new Blink1JSONFile("foo/bar", blink1dir, this);
-                foobar.GetStringResponse = Ufoobar;
-                blink1dir.AddFile(foobar);   //add a virtual file for each json method
-                VirtualDirectory blarg = new VirtualDirectory();
-                Blink1Directory bd = new Blink1Directory("floop", root);
+                //foobar.GetStringResponse = Ufoobar;
+                //blink1dir.AddFile(foobar);   //add a virtual file for each json method
+                //VirtualDirectory blarg = new VirtualDirectory();
+                //Blink1Directory bd = new Blink1Directory("floop", root);
+                //root.AddDirectory(bd);
                 // TESTING END
 
                 blink1dir.AddDirectory(inputdir);
                 blink1dir.AddDirectory(patterndir);
-                root.AddDirectory(bd);
-
                 root.AddDirectory(blink1dir);
                 httpServer.Root = root;
 
@@ -370,6 +370,7 @@ namespace Blink1Control
         //    /blink1/on -- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
         static string Ublink1On(HttpRequest request, Blink1Server blink1Server)
         {
+            blink1Server.stopAllPatterns();
             blink1Server.fadeToRGB(0.1, Color.White);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -380,6 +381,7 @@ namespace Blink1Control
         //    /blink1/off -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
         static string Ublink1Off(HttpRequest request, Blink1Server blink1Server)
         {
+            blink1Server.stopAllPatterns();
             blink1Server.fadeToRGB(0.1, Color.Black);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -659,7 +661,7 @@ namespace Blink1Control
         {
             string pname = request.Query.Get("pname");
             string iname = request.Query.Get("iname");
-            string rulename = request.Query.Get("arg1").Trim();
+            string rulename = request.Query.Get("arg1");
             string test = request.Query.Get("test");
             if (pname == null) pname = iname;
             Boolean testmode = (test == null) ? false : (test.Equals("on") || test.Equals("true"));
@@ -669,6 +671,7 @@ namespace Blink1Control
             Blink1Input input = null;
             if (rulename != null && iname != null) {
                 statusstr = "input ifttt";
+                rulename = rulename.Trim();
                 input = new Blink1Input(blink1Server, iname, pname, "ifttt", rulename);
 
                 if (testmode) { // override periodic fetch for immediate fetch
@@ -798,7 +801,7 @@ namespace Blink1Control
         public void resetAlerts()
         {
             stopAllPatterns();
-            fadeToRGB(0.1, Color.Black);
+            fadeToRGB(0.3, Color.Black);
         }
 
         /// <summary>
@@ -810,6 +813,7 @@ namespace Blink1Control
             inputsEnable = false;
             inputsTimer.Change(Timeout.Infinite, Timeout.Infinite);
             inputsTimer.Dispose();
+            fadeToRGB(0.4, Color.Black);
         }
 
 
@@ -891,7 +895,7 @@ namespace Blink1Control
             }
         }
 
-
+        /*
         // TESTING: this is for tod testing, trying to figure out httpwebserver class
         public class Blink1Directory : IDirectory
         {
@@ -901,7 +905,7 @@ namespace Blink1Control
             {
                 this.name = name;
                 this.parent = parent;
-                Console.WriteLine("Blink1IDir Constructor");
+                Console.WriteLine("Blink1IDirectory Constructor");
             }
             public IDirectory GetDirectory(string dir)
             {
@@ -934,7 +938,17 @@ namespace Blink1Control
             {
             }
         }  //TESTING: end testing class
-
+        */
     }
     
 }
+        /*
+        // idea for removing Blink1Server property from Blink1Input instances
+        // this seems ugly but I want to exclude the blink1Server property from Blink1Pattern & Blink1Input
+        public static Blink1Server staticBlink1Server;
+        public static void setBlink1Server(Blink1Server b1s)
+        { staticBlink1Server = b1s;        }
+        public static Blink1Server getBlink1Server(Blink1Server b1s)
+        {  return staticBlink1Server; }
+        */
+

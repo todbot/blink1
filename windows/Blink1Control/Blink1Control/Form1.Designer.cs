@@ -37,6 +37,8 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.stripMenuResetAlerts = new System.Windows.Forms.ToolStripMenuItem();
             this.stripMenuExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.stripMenuStartMinimized = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,48 +57,63 @@
             this.stripMenuBlink1Status,
             this.stripMenuBlink1Id,
             this.stripMenuKey,
+            this.toolStripSeparator2,
+            this.stripMenuStartMinimized,
             this.toolStripSeparator1,
             this.stripMenuResetAlerts,
             this.stripMenuExit});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(139, 120);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(158, 170);
             // 
             // stripMenuBlink1Status
             // 
             this.stripMenuBlink1Status.Name = "stripMenuBlink1Status";
-            this.stripMenuBlink1Status.Size = new System.Drawing.Size(138, 22);
+            this.stripMenuBlink1Status.Size = new System.Drawing.Size(157, 22);
             this.stripMenuBlink1Status.Text = "blink1Status";
             // 
             // stripMenuBlink1Id
             // 
             this.stripMenuBlink1Id.Name = "stripMenuBlink1Id";
-            this.stripMenuBlink1Id.Size = new System.Drawing.Size(138, 22);
+            this.stripMenuBlink1Id.Size = new System.Drawing.Size(157, 22);
             this.stripMenuBlink1Id.Text = "serial";
             // 
             // stripMenuKey
             // 
             this.stripMenuKey.Name = "stripMenuKey";
-            this.stripMenuKey.Size = new System.Drawing.Size(138, 22);
+            this.stripMenuKey.Size = new System.Drawing.Size(157, 22);
             this.stripMenuKey.Text = "key";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(135, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(154, 6);
             // 
             // stripMenuResetAlerts
             // 
             this.stripMenuResetAlerts.Name = "stripMenuResetAlerts";
-            this.stripMenuResetAlerts.Size = new System.Drawing.Size(138, 22);
+            this.stripMenuResetAlerts.Size = new System.Drawing.Size(157, 22);
             this.stripMenuResetAlerts.Text = "Reset Alerts";
             this.stripMenuResetAlerts.Click += new System.EventHandler(this.stripMenuResetAlerts_Click);
             // 
             // stripMenuExit
             // 
             this.stripMenuExit.Name = "stripMenuExit";
-            this.stripMenuExit.Size = new System.Drawing.Size(138, 22);
+            this.stripMenuExit.Size = new System.Drawing.Size(157, 22);
             this.stripMenuExit.Text = "Exit";
             this.stripMenuExit.Click += new System.EventHandler(this.stripMenuExit_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(154, 6);
+            // 
+            // stripMenuStartMinimized
+            // 
+            this.stripMenuStartMinimized.CheckOnClick = true;
+            this.stripMenuStartMinimized.Name = "stripMenuStartMinimized";
+            this.stripMenuStartMinimized.Size = new System.Drawing.Size(157, 22);
+            this.stripMenuStartMinimized.Text = "Start Minimized";
+            this.stripMenuStartMinimized.Click += new System.EventHandler(this.stripMenuStartMinimized_Click);
             // 
             // Form1
             // 
@@ -104,7 +121,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(839, 617);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(855, 655);
+            this.MinimumSize = new System.Drawing.Size(855, 655);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Blink1Control";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Resize += new System.EventHandler(this.Form1_Resize);
@@ -123,6 +144,8 @@
         private System.Windows.Forms.ToolStripMenuItem stripMenuResetAlerts;
         private System.Windows.Forms.ToolStripMenuItem stripMenuKey;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem stripMenuStartMinimized;
     }
 }
 

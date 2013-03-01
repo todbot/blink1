@@ -287,17 +287,16 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     NSTimeInterval lastTime  = [[input valueForKey:@"lastTime"] doubleValue];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    if( (now - lastTime) < urlUpdateInterval ) {   // only update URLs every 30 secs
+    if( (now - lastTime) < urlUpdateInterval ) {   // only update URLs every 15 secs
         return;
     }
-    //[input setObject:[NSNumber numberWithInt:now] forKey:@"lastTimeEval"];
     
     NSString* pname          = [input valueForKey:@"pname"];
     NSString* rulename       = [input valueForKey:@"arg1"];
 
     NSDictionary* list = [iftttResponse objectForKey:@"events"];
     if( !list ) {
-        [input setObject:@"no events" forKey:@"lastVal"];
+        [input setObject:@"[no events]" forKey:@"lastVal"];
     }
     
     NSMutableArray* possible_vals = [[NSMutableArray alloc] init];
@@ -311,13 +310,13 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
         
         //[possible_vals setObject:ev_source forKey:ev_name];
         [possible_vals addObject:ev_name];
+        [input setObject:ev_source forKey:@"lastVal"];
         
         //DLog(@"ev_id:%@, name:%@, source:%@ date: %@ lastTime:%f", ev_id, ev_name, ev_source, ev_datestr, iftttLastTime);
         
         if( [ev_name isEqualToString:rulename] ) {  // match
             if( ev_date > lastTime ) {
                 DLog(@"ifttt new event! %@", ev_name);
-                [input setObject:ev_source forKey:@"lastVal"];
                 [self playPattern: pname]; // trigger the pattern
             }
         
@@ -512,6 +511,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 
     blink1 = [[Blink1 alloc] init];      // set up blink(1) library
     [blink1 enumerate];
+    [blink1 fadeToRGBstr:@"#000000" atTime:0.3];
     
     __weak id weakSelf = self; // FIXME: hmm, http://stackoverflow.com/questions/4352561/retain-cycle-on-self-with-blocks
     blink1.updateHandler = ^(NSColor *lastColor, float lastTime)
@@ -631,7 +631,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
     }];
 
     [http get:@"/blink1/fadeToRGB" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        [self stopPattern:@"all"];
+        [self stopAllPatterns];
         NSString* rgbstr = [request param:@"rgb"];
         NSString* timestr = [request param:@"time"];
         if( rgbstr==nil ) rgbstr = @"";
@@ -651,7 +651,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 	}];
 
     [http get:@"/blink1/off" withBlock:^(RouteRequest *request, RouteResponse *response) {
-        [self stopPattern:@"all"];
+        [self stopAllPatterns];
         [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
 
         NSMutableDictionary *respdict = [[NSMutableDictionary alloc] init];
@@ -1210,7 +1210,7 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 {
     DLog(@"allOff");
     [self stopAllPatterns];
-    [blink1 fadeToRGB:[Blink1 colorFromHexRGB: @"#000000"] atTime:0.1];
+    [blink1 fadeToRGBstr: @"#000000" atTime:0.3];
 }
 
 // GUI action: unused, rescan is done on config open now
@@ -1246,9 +1246,13 @@ NSTimeInterval urlUpdateInterval   = 15.0f;
 - (IBAction) quit: (id) sender
 {
     DLog(@"Quit!");
-    [self stopAllPatterns];
     [self savePrefs];
-    [NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0.0];
+    
+    [_webView close];
+    
+    [self allOff:nil];
+
+    [NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0.5];
 }
 
 

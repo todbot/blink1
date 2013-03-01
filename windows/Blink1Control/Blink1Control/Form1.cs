@@ -19,21 +19,53 @@ namespace Blink1Control
         Blink1Server blink1Server = new Blink1Server();
 
         private readonly WebView web_view;
+        private Boolean showedBaloon = false;
+        bool mAllowVisible;     // ContextMenu's Show command used
+        bool mAllowClose;       // ContextMenu's Exit command used
+        bool mLoadFired;        // Form was shown once
 
         public Form1()
         {
             InitializeComponent();
 
             BrowserSettings bs = new BrowserSettings();
-            Console.WriteLine("BrowserSettings: " + bs);
             bs.WebGlDisabled = true;
             bs.PluginsDisabled = true;
-            //web_view = new WebView("http://stackoverflow.com", bs);
             web_view = new WebView("http://127.0.0.1:8934/blink_1/", bs);
             web_view.Dock = DockStyle.Fill;
             web_view.RequestHandler = this;
             this.Controls.Add(web_view);
-            //containerControl1.Controls.Add(web_view);
+
+            mAllowVisible = !Blink1Server.startMinimized;
+            stripMenuStartMinimized.Checked = !mAllowVisible;
+        }
+
+        //"Form Shown" event handler
+        private void Form_Shown(object sender, EventArgs e)
+        {
+            //to minimize window
+            this.WindowState = FormWindowState.Minimized;
+
+            //to hide from taskbar
+            this.Hide();
+        }
+
+        // to allow to start minimized
+        // see: http://stackoverflow.com/questions/1730731/how-to-start-winform-app-minimized-to-tray
+
+        protected override void SetVisibleCore(bool value)
+        {
+            if (!mAllowVisible) value = false;
+            base.SetVisibleCore(value);
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!mAllowClose) {
+                this.Hide();
+                e.Cancel = true;
+            }
+            base.OnFormClosing(e);
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -44,7 +76,10 @@ namespace Blink1Control
             if (FormWindowState.Minimized == WindowState) {
                 Hide();
                 notifyIcon1.Visible = true;
-                notifyIcon1.ShowBalloonTip(500);
+                if (!showedBaloon) {
+                    notifyIcon1.ShowBalloonTip(500);
+                    showedBaloon = true;
+                }
             }
             else if (FormWindowState.Normal == this.WindowState) {
                 //notifyIcon1.Visible = false;
@@ -53,13 +88,15 @@ namespace Blink1Control
 
         private void notifyIcon1_DoubleClick(object sender, EventArgs e)
         {
+            mAllowVisible = true;
+            mLoadFired = true;
             Show();
             WindowState = FormWindowState.Normal;
         }
 
         private void notifyIcon1_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("notifyIcon1 SingleClick! "+e);
+            Blink1Server.Log("notifyIcon1 SingleClick! " + e);
             stripMenuBlink1Status.Text = "blink1 status: hello";
             if (blink1Server.blink1.getCachedCount() > 0) {
                 stripMenuBlink1Status.Text = "blink(1) found";
@@ -73,6 +110,13 @@ namespace Blink1Control
             }
         }
 
+        private void stripMenuStartMinimized_Click(object sender, EventArgs e)
+        {
+            Blink1Server.startMinimized = stripMenuStartMinimized.Checked;
+            mAllowVisible = !Blink1Server.startMinimized;
+            blink1Server.saveSettings();
+        }
+
         private void stripMenuResetAlerts_Click(object sender, EventArgs e)
         {
             blink1Server.resetAlerts();
@@ -80,13 +124,16 @@ namespace Blink1Control
 
         private void stripMenuExit_Click(object sender, EventArgs e)
         {
+            mAllowClose = mAllowVisible = true;
+            if (!mLoadFired) Show();
+
             Close();
             doExit();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Console.WriteLine("FormClosed!");
+            Blink1Server.Log("FormClosed!");
             doExit();
         }
 
@@ -123,5 +170,6 @@ namespace Blink1Control
         }
 
         #endregion
+
     }
 }

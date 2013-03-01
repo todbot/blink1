@@ -43,13 +43,19 @@ namespace Blink1Control
         public string arg2 { get; set; }
         public string arg3 { get; set; }
         public string lastVal { get; set; }
-        public string possibleVals { get; set; }
+        public List<string> possibleVals { get; set; }
 
         // each input can have an independent update interval that's greater than master interval
         private DateTime lastDateTime;
         public string lastTime
         {
-            get { return ConvertToUnixTimestamp(lastDateTime).ToString();  }
+            get {
+                //Blink1Server.Log("boop:" + lastDateTime + "," + 
+                //   ConvertFromUnixTimestamp(ConvertToUnixTimestamp(lastDateTime)) +","+ 
+                //  ConvertToUnixTimestamp(lastDateTime) +","+ 
+                //    epochSecs(lastDateTime));
+                return ConvertToUnixTimestamp(lastDateTime).ToString();  
+            }
             set {
                 double v=0;
                 Double.TryParse(value, out v);
@@ -88,11 +94,14 @@ namespace Blink1Control
             this.pname = pname;
             this.type = type;
             this.arg1 = arg1; this.arg2 = arg2; this.arg3 = arg3;
-            this.lastDateTime = DateTime.Now;  // FIXME: what about UTC?
+            this.lastDateTime = DateTime.Now.ToUniversalTime();  // FIXME: what about UTC?
+            this.possibleVals = new List<string>();
         }
 
         public Blink1Input()
         {
+            this.possibleVals = new List<string>();
+            this.lastDateTime = DateTime.Now.ToUniversalTime();  // FIXME: what about UTC?
         }
 
         /// <summary>
@@ -100,6 +109,7 @@ namespace Blink1Control
         /// </summary>
         public void stop()
         {
+            // does nothing yet, should stop timers
         }
 
         /// <summary>
@@ -130,7 +140,8 @@ namespace Blink1Control
         public Boolean updateIftttInput()
         {
             if (iftttLastContent==null ) {
-                lastVal = "could not connect";
+                lastVal = "[couldn't connect]";
+                lastDateTime = DateTime.Now.ToUniversalTime();
                 return false;
             }
 
@@ -139,15 +150,17 @@ namespace Blink1Control
             IftttResponse iftttResponse = JsonConvert.DeserializeObject<IftttResponse>( iftttLastContent );
             if (iftttResponse.event_count > 0) {
                 long lastsecs = (long)ConvertToUnixTimestamp(lastDateTime);
-                foreach (IftttEvent ev in iftttResponse.events) {
+                //long lastsecs = epochSecs(lastDateTime);
+                possibleVals.Clear();
+                foreach (IftttEvent ev in iftttResponse.events) {  // FIXME: loop overwrites per-obj props
                     long evdate = long.Parse(ev.date);
+                    //Blink1Server.Log("evdate: " + evdate + ", lastsecs:" + lastsecs);
+                    lastDateTime = ConvertFromUnixTimestamp(evdate);
                     string evname = ev.name;
+                    possibleVals.Add( ev.name );
                     lastVal = ev.source;
-                    possibleVals = evname; // FIXME: should be array
-                    //Blink1Server.Log("--ifttt ev.name:" + evname);
                     if (rulename.Equals(evname)) {
                         Blink1Server.Log("---ifttt match: evdate:" + evdate + ", lastsecs:" + lastsecs + ", dt:" + (evdate - lastsecs));
-                        lastDateTime = ConvertFromUnixTimestamp(evdate);
                         if (evdate > lastsecs) {
                             blink1Server.playPattern(pname);
                             return true;
@@ -156,7 +169,8 @@ namespace Blink1Control
                 }
             }
             else {
-                lastVal = "no IFTTT data";
+                lastVal = "[no events]";
+                lastDateTime = DateTime.Now.ToUniversalTime();
             }
             return false;
         }
@@ -254,7 +268,7 @@ namespace Blink1Control
             // only update URLs every 30 secs
             DateTime now = DateTime.Now; //.ToUniversalTime(); 
             TimeSpan diff = now - iftttLastTime;
-            //Console.WriteLine("getIftttResponse now:"+now+", diff:" + diff);
+            //Blink1Server.Log("getIftttResponse now:"+now+", diff:" + diff);
             if( normalmode && (diff.Seconds < iftttUpdateInterval) ) {
                 return;
             }
@@ -297,7 +311,7 @@ namespace Blink1Control
         public static string getContentsOfUrl(string url)
         {
             // stolen from: http://stackoverflow.com/questions/9961220/webclient-read-content-of-error-page
-            Console.WriteLine("getContentsOfUrl:" + url);  // FIXME: how to do debug logging better?
+            Blink1Server.Log("getContentsOfUrl:" + url);  // FIXME: how to do debug logging better?
             string content = null;
             if (url == null) return null;
             WebClient webclient = new WebClient();
@@ -306,20 +320,21 @@ namespace Blink1Control
             }
             catch (WebException we) {
                 // WebException.Status holds useful information
-                Console.WriteLine(we.Message); // + "\n" + we.Status.ToString());  // FIXME:
+                Blink1Server.Log("we:"+we.Message); // + "\n" + we.Status.ToString());  // FIXME:
                 /*
                 Stream receiveStream = we.Response.GetResponseStream();
                 Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
                 StreamReader readStream = new StreamReader(receiveStream, encode);
                 content = readStream.ReadToEnd();
-                Console.WriteLine("content: " + content);
+                Blink1Server.Log("content: " + content);
                  */
-                content = null;
+                content = "{\"lastVal\":\"url not found\"}";
             }
             catch (System.ArgumentException sae) {
+                Blink1Server.Log("sae:"+sae.Message);
             }
             catch (NotSupportedException ne) {
-                Console.WriteLine(ne.Message);   // other errors
+                Blink1Server.Log("ne:"+ne.Message);   // other errors
             }
             return content;
         }
@@ -334,13 +349,13 @@ namespace Blink1Control
             try {
                 using (StreamReader sr = new StreamReader(filepath)) {
                     String contents = sr.ReadToEnd();
-                    Console.WriteLine("file contents:" + contents);
+                    Blink1Server.Log("file contents:" + contents);
                     return contents;
                 }
             }
             catch (Exception e) {
-                Console.WriteLine("The file could not be read:");
-                Console.WriteLine(e.Message);
+                Blink1Server.Log("The file could not be read:");
+                Blink1Server.Log(e.Message);
             }
             return null;
         }
@@ -364,7 +379,7 @@ namespace Blink1Control
 
             string output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
-            Console.WriteLine("Output:"+output);
+            Blink1Server.Log("Output:" + output);
 
             return output;
         }
@@ -388,7 +403,7 @@ namespace Blink1Control
         {
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             //TimeSpan diff = date.ToUniversalTime() - origin;
-            TimeSpan diff = date - origin; // this works, but what about IFTTT's data?
+            TimeSpan diff = date - origin; // FIXME: why does this work? and but what about IFTTT's data?
             return Math.Floor(diff.TotalSeconds);
         }
 
