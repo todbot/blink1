@@ -40,7 +40,7 @@ For script-writers, programmers and hackers, there's the command-line tool:
 [(Mac OSX)](http://thingm.com/blink1/downloads/blink1-tool-mac.zip) / 
 [(Windows)](http://thingm.com/blink1/downloads/blink1-tool-win.zip) /
 [(Linux64)](http://thingm.com/blink1/downloads/blink1-tool-linux_x86_64.zip) /
-[(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-linux_raspi.zip)
+[(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-raspi.zip)
 
 What is in this repo
 --------------------
