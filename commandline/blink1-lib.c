@@ -286,6 +286,27 @@ int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr)
     return rc;
 }
 
+int blink1_fadeToRGBN(hid_device *dev,  uint16_t fadeMillis,
+                      uint8_t r, uint8_t g, uint8_t b, uint8_t n)
+{
+    int dms = fadeMillis/10;  // millis_divided_by_10
+
+    char buf[8];
+
+    buf[0] = blink1_report_id;     // report id
+    buf[1] = 'c';   // command code for 'fade to rgb'
+    buf[2] = ((blink1_enable_degamma) ? blink1_degamma(r) : r );
+    buf[3] = ((blink1_enable_degamma) ? blink1_degamma(g) : g );
+    buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );
+    buf[5] = (dms >> 8);
+    buf[6] = dms % 0xff;
+    buf[7] = n;
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+
+    return rc; 
+}
+
 
 //
 int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
@@ -302,6 +323,7 @@ int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
     buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );
     buf[5] = (dms >> 8);
     buf[6] = dms % 0xff;
+    buf[7] = 0;
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
 
@@ -318,6 +340,9 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
     buf[2] = ((blink1_enable_degamma) ? blink1_degamma(r) : r );     // red
     buf[3] = ((blink1_enable_degamma) ? blink1_degamma(g) : g );     // grn
     buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );     // blu
+    buf[5] = 0;
+    buf[6] = 0;
+    buf[7] = 0;
     
     int rc = blink1_write(dev, buf, sizeof(buf) );
 

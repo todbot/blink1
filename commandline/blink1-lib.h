@@ -47,6 +47,8 @@ int blink1_getVersion(hid_device *dev);
 
 int blink1_fadeToRGB(hid_device *dev, uint16_t fadeMillis,
                      uint8_t r, uint8_t g, uint8_t b );
+int blink1_fadeToRGBN(hid_device *dev, uint16_t fadeMillis,
+                      uint8_t r, uint8_t g, uint8_t b, uint8_t n );
 
 int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b );
 
