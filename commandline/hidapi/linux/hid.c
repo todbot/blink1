@@ -9,7 +9,7 @@
  Linux Version - 6/2/2009
 
  Copyright 2009, All Rights Reserved.
- 
+
  At the discretion of the user of this library,
  this software may be licensed under the terms of the
  GNU Public License v3, a BSD-Style license, or the
@@ -80,7 +80,7 @@ struct hid_device_ {
 
 static __u32 kernel_version = 0;
 
-hid_device *new_hid_device()
+static hid_device *new_hid_device(void)
 {
 	hid_device *dev = calloc(1, sizeof(hid_device));
 	dev->device_handle = -1;
@@ -90,10 +90,6 @@ hid_device *new_hid_device()
 	return dev;
 }
 
-static void register_error(hid_device *device, const char *op)
-{
-
-}
 
 /* The caller must free the returned string with free(). */
 static wchar_t *utf8_to_wchar_t(const char *utf8)
@@ -102,7 +98,7 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
 
 	if (utf8) {
 		size_t wlen = mbstowcs(NULL, utf8, 0);
-		if (wlen < 0) {
+		if ((size_t) -1 == wlen) {
 			return wcsdup(L"");
 		}
 		ret = calloc(wlen+1, sizeof(wchar_t));
@@ -121,12 +117,12 @@ static wchar_t *copy_udev_string(struct udev_device *dev, const char *udev_name)
 }
 
 /* uses_numbered_reports() returns 1 if report_descriptor describes a device
-   which contains numbered reports. */ 
+   which contains numbered reports. */
 static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
-	int i = 0;
+	unsigned int i = 0;
 	int size_code;
 	int data_len, key_size;
-	
+
 	while (i < size) {
 		int key = report_descriptor[i];
 
@@ -136,9 +132,9 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
 			   numbered reports. */
 			return 1;
 		}
-		
+
 		//printf("key: %02hhx\n", key);
-		
+
 		if ((key & 0xf0) == 0xf0) {
 			/* This is a Long Item. The next byte contains the
 			   length of the data section (value) for this key.
@@ -173,11 +169,11 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
 			};
 			key_size = 1;
 		}
-		
+
 		/* Skip over this key and it's associated data */
 		i += data_len + key_size;
 	}
-	
+
 	/* Didn't find a Report ID key. Device doesn't use numbered reports. */
 	return 0;
 }
@@ -186,7 +182,7 @@ static int uses_numbered_reports(__u8 *report_descriptor, __u32 size) {
  * The caller is responsible for free()ing the (newly-allocated) character
  * strings pointed to by serial_number_utf8 and product_name_utf8 after use.
  */
-int
+static int
 parse_uevent_info(const char *uevent, int *bus_type,
 	unsigned short *vendor_id, unsigned short *product_id,
 	char **serial_number_utf8, char **product_name_utf8)
@@ -246,6 +242,8 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 	struct udev_device *udev_dev, *parent, *hid_dev;
 	struct stat s;
 	int ret = -1;
+        char *serial_number_utf8 = NULL;
+        char *product_name_utf8 = NULL;
 
 	/* Create the udev object */
 	udev = udev_new();
@@ -266,9 +264,8 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 		if (hid_dev) {
 			unsigned short dev_vid;
 			unsigned short dev_pid;
-			char *serial_number_utf8 = NULL;
-			char *product_name_utf8 = NULL;
 			int bus_type;
+			size_t retm;
 
 			ret = parse_uevent_info(
 			           udev_device_get_sysattr_value(hid_dev, "uevent"),
@@ -285,13 +282,14 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 						ret = 0;
 						break;
 					case DEVICE_STRING_PRODUCT:
-						ret = mbstowcs(string, product_name_utf8, maxlen);
-						ret = (ret == (size_t)-1)? -1: 0;
+						retm = mbstowcs(string, product_name_utf8, maxlen);
+						ret = (retm == (size_t)-1)? -1: 0;
 						break;
 					case DEVICE_STRING_SERIAL:
-						ret = mbstowcs(string, serial_number_utf8, maxlen);
-						ret = (ret == (size_t)-1)? -1: 0;
+						retm = mbstowcs(string, serial_number_utf8, maxlen);
+						ret = (retm == (size_t)-1)? -1: 0;
 						break;
+					case DEVICE_STRING_COUNT:
 					default:
 						ret = -1;
 						break;
@@ -317,22 +315,22 @@ static int get_device_string(hid_device *dev, enum device_string_id key, wchar_t
 					str = udev_device_get_sysattr_value(parent, key_str);
 					if (str) {
 						/* Convert the string from UTF-8 to wchar_t */
-						ret = mbstowcs(string, str, maxlen);
-						ret = (ret == (size_t)-1)? -1: 0;
+						retm = mbstowcs(string, str, maxlen);
+						ret = (retm == (size_t)-1)? -1: 0;
 						goto end;
 					}
 				}
 			}
-
-			free(serial_number_utf8);
-			free(product_name_utf8);
 		}
 	}
 
 end:
+        free(serial_number_utf8);
+        free(product_name_utf8);
+
 	udev_device_unref(udev_dev);
-	// parent and hid_dev don't need to be (and can't be) unref'd.
-	// I'm not sure why, but they'll throw double-free() errors.
+	/* parent and hid_dev don't need to be (and can't be) unref'd.
+	   I'm not sure why, but they'll throw double-free() errors. */
 	udev_unref(udev);
 
 	return ret;
@@ -362,10 +360,10 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	struct udev *udev;
 	struct udev_enumerate *enumerate;
 	struct udev_list_entry *devices, *dev_list_entry;
-	
-	struct hid_device_info *root = NULL; // return object
+
+	struct hid_device_info *root = NULL; /* return object */
 	struct hid_device_info *cur_dev = NULL;
-	struct hid_device_info *prev_dev = NULL; // previous device
+	struct hid_device_info *prev_dev = NULL; /* previous device */
 
 	hid_init();
 
@@ -387,10 +385,10 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		const char *sysfs_path;
 		const char *dev_path;
 		const char *str;
-		struct udev_device *raw_dev; // The device's hidraw udev node.
-		struct udev_device *hid_dev; // The device's HID udev node.
-		struct udev_device *usb_dev; // The device's USB udev node.
-		struct udev_device *intf_dev; // The device's interface (in the USB sense).
+		struct udev_device *raw_dev; /* The device's hidraw udev node. */
+		struct udev_device *hid_dev; /* The device's HID udev node. */
+		struct udev_device *usb_dev; /* The device's USB udev node. */
+		struct udev_device *intf_dev; /* The device's interface (in the USB sense). */
 		unsigned short dev_vid;
 		unsigned short dev_pid;
 		char *serial_number_utf8 = NULL;
@@ -433,8 +431,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		}
 
 		/* Check the VID/PID against the arguments */
-		if ((vendor_id == 0x0 && product_id == 0x0) ||
-		    (vendor_id == dev_vid && product_id == dev_pid)) {
+		if ((vendor_id == 0x0 || vendor_id == dev_vid) &&
+		    (product_id == 0x0 || product_id == dev_pid)) {
 			struct hid_device_info *tmp;
 
 			/* VID/PID match. Create the record. */
@@ -541,7 +539,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	/* Free the enumerator and udev objects. */
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
-	
+
 	return root;
 }
 
@@ -564,7 +562,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 	struct hid_device_info *devs, *cur_dev;
 	const char *path_to_open = NULL;
 	hid_device *handle = NULL;
-	
+
 	devs = hid_enumerate(vendor_id, product_id);
 	cur_dev = devs;
 	while (cur_dev) {
@@ -590,7 +588,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
 	}
 
 	hid_free_enumeration(devs);
-	
+
 	return handle;
 }
 
@@ -617,10 +615,10 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 		}
 	}
 
-	// OPEN HERE //
+	/* OPEN HERE */
 	dev->device_handle = open(path, O_RDWR);
 
-	// If we have a good handle, return it.
+	/* If we have a good handle, return it. */
 	if (dev->device_handle > 0) {
 
 		/* Get the report descriptor */
@@ -646,11 +644,11 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
 				uses_numbered_reports(rpt_desc.value,
 				                      rpt_desc.size);
 		}
-		
+
 		return dev;
 	}
 	else {
-		// Unable to open any devices.
+		/* Unable to open any devices. */
 		free(dev);
 		return NULL;
 	}
@@ -671,10 +669,13 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 {
 	int bytes_read;
 
-	if (milliseconds != 0) {
-		/* milliseconds is -1 or > 0. In both cases, we want to
-		   call poll() and wait for data to arrive. -1 means
-		   INFINITE. */
+	if (milliseconds >= 0) {
+		/* Milliseconds is either 0 (non-blocking) or > 0 (contains
+		   a valid timeout). In both cases we want to call poll()
+		   and wait for data to arrive.  Don't rely on non-blocking
+		   operation (O_NONBLOCK) since some kernels don't seem to
+		   properly report device disconnection through read() when
+		   in non-blocking mode.  */
 		int ret;
 		struct pollfd fds;
 
@@ -682,15 +683,22 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		fds.events = POLLIN;
 		fds.revents = 0;
 		ret = poll(&fds, 1, milliseconds);
-		if (ret == -1 || ret == 0)
+		if (ret == -1 || ret == 0) {
 			/* Error or timeout */
 			return ret;
+		}
+		else {
+			/* Check for errors on the file descriptor. This will
+			   indicate a device disconnection. */
+			if (fds.revents & (POLLERR | POLLHUP | POLLNVAL))
+				return -1;
+		}
 	}
 
 	bytes_read = read(dev->device_handle, data, length);
-	if (bytes_read < 0 && errno == EAGAIN)
+	if (bytes_read < 0 && (errno == EAGAIN || errno == EINPROGRESS))
 		bytes_read = 0;
-	
+
 	if (bytes_read >= 0 &&
 	    kernel_version < KERNEL_VERSION(2,6,34) &&
 	    dev->uses_numbered_reports) {
@@ -709,25 +717,12 @@ int HID_API_EXPORT hid_read(hid_device *dev, unsigned char *data, size_t length)
 
 int HID_API_EXPORT hid_set_nonblocking(hid_device *dev, int nonblock)
 {
-	int flags, res;
+	/* Do all non-blocking in userspace using poll(), since it looks
+	   like there's a bug in the kernel in some versions where
+	   read() will not return -1 on disconnection of the USB device */
 
-	flags = fcntl(dev->device_handle, F_GETFL, 0);
-	if (flags >= 0) {
-		if (nonblock)
-			res = fcntl(dev->device_handle, F_SETFL, flags | O_NONBLOCK);
-		else
-			res = fcntl(dev->device_handle, F_SETFL, flags & ~O_NONBLOCK);
-	}
-	else
-		return -1;
-
-	if (res < 0) {
-		return -1;
-	}
-	else {
-		dev->blocking = !nonblock;
-		return 0; /* Success */
-	}
+	dev->blocking = !nonblock;
+	return 0; /* Success */
 }
 
 
