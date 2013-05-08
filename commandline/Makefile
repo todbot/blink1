@@ -81,7 +81,7 @@ endif
 
 
 CC=gcc
-
+#CC=clang
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
@@ -93,7 +93,8 @@ LIBS += -framework IOKit -framework CoreFoundation
 OBJS = ./hidapi/mac/hid.o
 
 EXEFLAGS = 
-LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
+#LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
+LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 
 EXE=
 endif
@@ -139,8 +140,6 @@ endif
 
 
 #####################  Common  ###############################################
-
-CC = gcc
 
 CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
