@@ -316,8 +316,8 @@ int main(int argc, char** argv)
     //FIXME: confusing
     if( nogamma ) { 
         if ( !quiet ) {
-        	printf("disabling auto degamma\n");
-	}
+            printf("disabling auto degamma\n");
+        }
         blink1_disableDegamma();  
     }
 
@@ -364,6 +364,12 @@ int main(int argc, char** argv)
         }
         exit(1);
     }
+
+    // an idea: 
+    // blink1 mk2 does gamma correction in hardware
+    //if( blink1_getVersion() >= 200 ) {
+    //    nogamma = 1;
+    //}
 
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
@@ -417,9 +423,6 @@ int main(int argc, char** argv)
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
-
-        //if( bink_count > 1 ) { 
-        // }
 
         for( int i=0; i< numDevicesToUse; i++ ) {
             dev = blink1_openById( deviceIds[i] );
@@ -479,7 +482,7 @@ int main(int argc, char** argv)
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
             uint8_t id = rand() % blink1_getCachedCount();
-            
+
             if ( !quiet ) {
                 printf("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
                        i, id, blink1_getCachedCount(), r,g,b);
@@ -487,7 +490,12 @@ int main(int argc, char** argv)
 
             hid_device* mydev = dev;
             if( cnt > 1 ) mydev = blink1_openById( id );
-            rc = blink1_fadeToRGB(mydev, millis,r,g,b);
+            if( ledn == 0 ) { 
+                rc = blink1_fadeToRGB(mydev, millis,r,g,b);
+            } else {
+                uint8_t n = 1 + rand() % ledn;
+                rc = blink1_fadeToRGBN(mydev, millis,r,g,b,n);
+            }
             if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
                 printf("error during random\n");
                 //break;
