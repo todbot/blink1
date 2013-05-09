@@ -77,3 +77,17 @@ Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages)
 More Info about blink(1)
 ------------------------
 http://blink1.thingm.com/
+
+
+Other
+-----
+
+blink(1) is open source hardware
+
+Copyright (c) ThingM, 2012-2013
+
+'blink(1)' is a trademark of ThingM Corporation
+
+License: CC BY-SA 3.0
+http://creativecommons.org/licenses/by-sa/3.0/
+
