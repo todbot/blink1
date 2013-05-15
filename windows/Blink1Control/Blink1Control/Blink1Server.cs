@@ -370,6 +370,7 @@ namespace Blink1Control
         //    /blink1/on -- Stop pattern playback and send fadeToRGB command to blink(1) with #FFFFFF & 0.1 sec fade time
         static string Ublink1On(HttpRequest request, Blink1Server blink1Server)
         {
+            blink1Server.stopAllPatterns();
             blink1Server.fadeToRGB(0.1, Color.White);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -380,6 +381,7 @@ namespace Blink1Control
         //    /blink1/off -- Stop pattern playback and send fadeToRGB command to blink(1) with #000000 & 0.1 sec fade time
         static string Ublink1Off(HttpRequest request, Blink1Server blink1Server)
         {
+            blink1Server.stopAllPatterns();
             blink1Server.fadeToRGB(0.1, Color.Black);
 
             Dictionary<string, object> result = new Dictionary<string, object>();

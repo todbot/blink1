@@ -40,22 +40,28 @@ For script-writers, programmers and hackers, there's the command-line tool:
 [(Mac OSX)](http://thingm.com/blink1/downloads/blink1-tool-mac.zip) / 
 [(Windows)](http://thingm.com/blink1/downloads/blink1-tool-win.zip) /
 [(Linux64)](http://thingm.com/blink1/downloads/blink1-tool-linux_x86_64.zip) /
-[(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-linux_raspi.zip)
+[(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-raspi.zip)
 
 What is in this repo
 --------------------
 The following directories exist:
 
-- builds      -- Compiled versions of popular blink(1) apps
-- docs        -- documentation about APIs and such
-- commandline -- C library and command-line tools
-- java        -- Java / Processing library
-- processing  -- Processing applications  (http://processing.org)
-- libraries   -- libraries common to all systems (including HTML app code)
-- mac         -- Mac OS X details and GUI control application
-- windows     -- Windows details and GUI control application
-- linux       -- Linux details 
-- hardware    -- all hardware-related info (firmware & schematic & enclosure)
+- docs             -- documentation about APIs and such
+- commandline      -- blink1-lib C library and blink1-tool command-line tools
+- java             -- Java / Processing library
+- processing       -- Processing applications  (http://processing.org)
+- python           -- Python APIs
+- go               -- Go library
+- libraries        -- libraries common to all systems (mostly just HTML app code)
+- mac              -- Mac OS X details and GUI control application
+- mac/scripts      -- command-line scripts to do cool things
+- windows          -- Windows details and GUI control application
+- windows/Blink1Lib     -- .NET library wrapping blink1-lib
+- windows/ManagedBlink1 -- 100% .NET library
+- windows/scripts  -- Windows command-line scripts to do cool things
+- linux            -- Linux details and scripts
+- linux/contrib    -- contributed Linux scripts
+- hardware         -- all hardware-related info (firmware & schematic & enclosure)
 
 
 Some docs that might be useful
@@ -71,3 +77,17 @@ Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages)
 More Info about blink(1)
 ------------------------
 http://blink1.thingm.com/
+
+
+Other
+-----
+
+blink(1) is open source hardware
+
+Copyright (c) ThingM, 2012-2013
+
+'blink(1)' is a trademark of ThingM Corporation
+
+License: CC BY-SA 3.0
+http://creativecommons.org/licenses/by-sa/3.0/
+

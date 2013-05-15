@@ -73,6 +73,9 @@
 		DEB0CB2A16328E29008B26D8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEB0CB2916328E29008B26D8 /* QuartzCore.framework */; };
 		DEB0CB2D16331C54008B26D8 /* Netuse.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB0CB2C16331C54008B26D8 /* Netuse.m */; };
 		DED88D281683A25A001808BA /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = DED88D251683A25A001808BA /* RegexKitLite.m */; };
+		DEDC856616BB1DEA00EA5FDA /* Blink1Control.sdef in Resources */ = {isa = PBXBuildFile; fileRef = DEDC856516BB1DEA00EA5FDA /* Blink1Control.sdef */; };
+		DEDC856A16BB1F4500EA5FDA /* Blink1AppleScriptCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = DEDC856916BB1F4500EA5FDA /* Blink1AppleScriptCommand.m */; };
+		DEDC856D16BBBCD500EA5FDA /* Blink1AppleScriptCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = DEDC856C16BBBCD500EA5FDA /* Blink1AppleScriptCommands.m */; };
 		DEFABAE115F47F59006E4BB7 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEFABAE015F47F59006E4BB7 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -204,6 +207,11 @@
 		DEB0CB2C16331C54008B26D8 /* Netuse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = Netuse.m; sourceTree = "<group>"; };
 		DED88D241683A25A001808BA /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		DED88D251683A25A001808BA /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
+		DEDC856516BB1DEA00EA5FDA /* Blink1Control.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Blink1Control.sdef; sourceTree = "<group>"; };
+		DEDC856816BB1F4500EA5FDA /* Blink1AppleScriptCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1AppleScriptCommand.h; sourceTree = "<group>"; };
+		DEDC856916BB1F4500EA5FDA /* Blink1AppleScriptCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1AppleScriptCommand.m; sourceTree = "<group>"; };
+		DEDC856B16BBBCD500EA5FDA /* Blink1AppleScriptCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Blink1AppleScriptCommands.h; sourceTree = "<group>"; };
+		DEDC856C16BBBCD500EA5FDA /* Blink1AppleScriptCommands.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Blink1AppleScriptCommands.m; sourceTree = "<group>"; };
 		DEFABAE015F47F59006E4BB7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -235,6 +243,11 @@
 				DEB0CB261630BA7C008B26D8 /* Blink1Input.m */,
 				DE3C79DC1626786F00104F4D /* Blink1Pattern.h */,
 				DE3C79DD1626787000104F4D /* Blink1Pattern.m */,
+				DEDC856816BB1F4500EA5FDA /* Blink1AppleScriptCommand.h */,
+				DEDC856916BB1F4500EA5FDA /* Blink1AppleScriptCommand.m */,
+				DEDC856B16BBBCD500EA5FDA /* Blink1AppleScriptCommands.h */,
+				DEDC856C16BBBCD500EA5FDA /* Blink1AppleScriptCommands.m */,
+				DEDC856516BB1DEA00EA5FDA /* Blink1Control.sdef */,
 				DE1D05AC160BC69700B97943 /* main.m */,
 				DE1D05AA160BC69700B97943 /* MainMenu.xib */,
 				DE1D05B8160C02B100B97943 /* misc bits */,
@@ -590,6 +603,7 @@
 				DE3C79E5162B799000104F4D /* blink1iconA1i.png in Resources */,
 				DE3C79E6162B799000104F4D /* blink1iconA1.png in Resources */,
 				DE44AF011676C987005422E0 /* icon.icns in Resources */,
+				DEDC856616BB1DEA00EA5FDA /* Blink1Control.sdef in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -653,6 +667,8 @@
 				DEB0CB271630BA7C008B26D8 /* Blink1Input.m in Sources */,
 				DEB0CB2D16331C54008B26D8 /* Netuse.m in Sources */,
 				DED88D281683A25A001808BA /* RegexKitLite.m in Sources */,
+				DEDC856A16BB1F4500EA5FDA /* Blink1AppleScriptCommand.m in Sources */,
+				DEDC856D16BBBCD500EA5FDA /* Blink1AppleScriptCommands.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

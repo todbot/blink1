@@ -33,6 +33,7 @@
 int millis = 300;
 int delayMillis = 500;
 int numDevicesToUse = 1;
+int ledn = 0;
 
 hid_device* dev;
 //const wchar_t* dev_serial;
@@ -126,6 +127,7 @@ static void usage(char *myName)
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
+"  -n <num>, --num <n>         Set which RGB LED in a blink(1) mk2 to use\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
@@ -182,7 +184,7 @@ int main(int argc, char** argv)
 
     // parse options
     int option_index = 0, opt;
-    char* opt_str = "aqvm:t:d:U:u:g";
+    char* opt_str = "aqvhm:t:d:U:u:gn:";
     static struct option loptions[] = {
         {"all",        no_argument,       0,      'a'},
         {"verbose",    optional_argument, 0,      'v'},
@@ -190,7 +192,9 @@ int main(int argc, char** argv)
         {"millis",     required_argument, 0,      'm'},
         {"delay",      required_argument, 0,      't'},
         {"id",         required_argument, 0,      'd'},
+        {"num",        required_argument, 0,      'n'},
         {"nogamma",    no_argument,       0,      'g'},
+        {"help",       no_argument,       0,      'h'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
         {"hidread",    no_argument,       &cmd,   CMD_HIDREAD },
         {"hidwrite",   required_argument, &cmd,   CMD_HIDWRITE },
@@ -270,6 +274,9 @@ int main(int argc, char** argv)
         case 't':
             delayMillis = strtol(optarg,NULL,10);
             break;
+        case 'n':
+            ledn = strtol(optarg,NULL,10);
+            break;
         case 'q':
             if( optarg==NULL ) quiet++;
             else quiet = strtol(optarg,NULL,0);
@@ -294,6 +301,10 @@ int main(int argc, char** argv)
         case 'u':
             pid = strtol(optarg,NULL,0);
             break;
+        case 'h':
+            usage( "blink1-tool" );
+            exit(1);
+            break;
         }
     }
 
@@ -305,8 +316,8 @@ int main(int argc, char** argv)
     //FIXME: confusing
     if( nogamma ) { 
         if ( !quiet ) {
-        	printf("disabling auto degamma\n");
-	}
+            printf("disabling auto degamma\n");
+        }
         blink1_disableDegamma();  
     }
 
@@ -353,6 +364,12 @@ int main(int argc, char** argv)
         }
         exit(1);
     }
+
+    // an idea: 
+    // blink1 mk2 does gamma correction in hardware
+    //if( blink1_getVersion() >= 200 ) {
+    //    nogamma = 1;
+    //}
 
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
@@ -407,9 +424,6 @@ int main(int argc, char** argv)
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
 
-        //if( bink_count > 1 ) { 
-        // }
-
         for( int i=0; i< numDevicesToUse; i++ ) {
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
@@ -417,7 +431,11 @@ int main(int argc, char** argv)
                 printf("set dev:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
                        deviceIds[i],r,g,b,millis);
             }
-            rc = blink1_fadeToRGB(dev,millis, r,g,b);
+            if( ledn==0 ) {
+                rc = blink1_fadeToRGB(dev,millis, r,g,b);
+            } else {
+                rc = blink1_fadeToRGBN(dev,millis,r,g,b, ledn);
+            }
             if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
                 printf("error on fadeToRGB\n");
             }
@@ -472,9 +490,14 @@ int main(int argc, char** argv)
 
             hid_device* mydev = dev;
             if( cnt > 1 ) mydev = blink1_openById( id );
-            rc = blink1_fadeToRGB(mydev, millis,r,g,b);
+            if( ledn == 0 ) { 
+                rc = blink1_fadeToRGB(mydev, millis,r,g,b);
+            } else {
+                uint8_t n = 1 + rand() % ledn;
+                rc = blink1_fadeToRGBN(mydev, millis,r,g,b,n);
+            }
             if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
-	        printf("error during random\n");
+                printf("error during random\n");
                 //break;
             }
             if( cnt > 1 ) blink1_close( mydev );

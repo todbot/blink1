@@ -14,7 +14,7 @@
 # Platform-specific notes:
 #
 # Mac OS X 
-#   - Install Xcode with "Unix Dev Support" and "Command-line tools"
+#   - Install Xcode with "Unix Dev Support" and "Command-line tools" (in Preferences)
 #   - make
 #
 # Windows XP/7  
@@ -22,8 +22,7 @@
 #   - make
 #
 # Linux (Ubuntu) 
-#   - apt-get install gcc-avr avr-libc   (to build firmware files)
-#   - apt-get install libusb-1.0-0-dev
+#   - apt-get install build-essential pkg-config libusb-1.0-0-dev 
 #   - make
 #
 # FreeBSD
@@ -82,18 +81,20 @@ endif
 
 
 CC=gcc
-
+#CC=clang
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
 LIBTARGET = libBlink1.dylib
 CFLAGS += -arch i386 -arch x86_64
 CFLAGS += -pthread
+CFLAGS += -mmacosx-version-min=10.6
 LIBS += -framework IOKit -framework CoreFoundation
 OBJS = ./hidapi/mac/hid.o
 
 EXEFLAGS = 
-LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
+#LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
+LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 
 EXE=
 endif
@@ -139,8 +140,6 @@ endif
 
 
 #####################  Common  ###############################################
-
-CC = gcc
 
 CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 

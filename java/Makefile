@@ -2,12 +2,17 @@
 #  
 # This makefile builds Java and native code for multiple OSes
 # To build the multi-platform Processing library, it's assumed that
-# this directory is shared between a Mac OS X, Windows, and Linux computer
+# this directory is shared between a Mac OS X, Windows, and Linux computers
+#
+# For base OS dependencies, see the blink1/commandline/Makefile
 #
 # Assumptions:
+#
 # Mac OS X is at least 10.6 (Snow Leopard)
+#
 # Windows is at least Windows XP with MinGW and MinSys installed
-# Linux is Ubuntu 9 or above
+#
+# Linux is Ubuntu 9 or above, with JDK installed (e.g. "sudo apt-get install openjdk-6-jdk")
 #
 # Attempts are made to make universal binary (i386 & x86_64) on Mac OS X
 #
@@ -18,6 +23,7 @@ TARGET = Blink1
 LIBUSBA_DIR = libusb-static
 #PROCESSING_LIBDIR = blink1/library
 
+LIBZIPNAME = blink1-java-processing-lib.zip
 
 # try to do some autodetecting
 UNAME := $(shell uname -s)
@@ -81,7 +87,19 @@ ifeq "$(OS)" "linux"
 LIBTARGET = lib$(TARGET).so  # for linux
 USBFLAGS += `pkg-config libusb-1.0 --cflags`
 USBLIBS  += `pkg-config libusb-1.0 --libs` 
-OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I/usr/lib/jvm/java-6-openjdk/include -I/usr/lib/jvm/java-6-openjdk/include/linux
+OBJS = ../commandline/hidapi/libusb/hid.o
+
+# Possible values for JAVA_HOME, there are probably more
+#JAVA_HOME=/usr/lib/jvm/java-6-openjdk
+#JAVA_HOME=/usr/lib/jvm/java-6-sun
+#JAVA_HOME=/usr/lib/jvm/default-java
+
+ifndef JAVA_HOME
+ ${error JAVA_HOME not set. Set it in the makefile or with 'export JAVA_HOME=<java dir>'. It is often in /usr/lib/jvm/default-java, so try 'export JAVA_HOME=/usr/lib/jvm/default-java'}
+endif
+
+# gotta find jni.h in here somewhere (is there a better way of doing this?)
+OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux
 OS_LDFLAGS = $(USBLIBS) 
 endif
 
@@ -105,7 +123,6 @@ help:
 	@echo "This Makefile has no default rule. Use one of the following:"
 	@echo "make javac ..... to build all java classes"
 	@echo "make jni ....... to build JNI stubs"
-	@echo "#make libprep ... to get libusb usable for compiling"
 	@echo "make compile ....to build the C code" 
 	@echo "make jar ....... to build the distribution jar"
 	@echo "make processing. to build the processing library (for current arch)"
@@ -146,7 +163,7 @@ jar: javac jni compile
 
 processing: processinglib
 processinglib: jar
-	rm -f blink1.zip
+	rm -f $(LIBZIPNAME)
 	rm -rf blink1/library
 	rm -rf blink1/examples
 	mkdir -p blink1/library
@@ -155,9 +172,10 @@ processinglib: jar
 	cp -r ../libraries/* blink1/library
 	rm -rf blink1/library/html
 	cp -r ../processing/* blink1/examples
-	zip --exclude \*application.\* --exclude \*~ -r blink1.zip blink1
+	zip --exclude \*application.\* --exclude \*~ --exclude .DS_Store -r $(LIBZIPNAME) blink1
+	cp $(LIBZIPNAME) ../libraries
 	@echo
-	@echo "now unzip blink1.zip into ~/Documents/Processing/libraries"
+	@echo "now unzip $(LIBZIPNAME) into ~/Documents/Processing/libraries"
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
 
 
@@ -171,7 +189,7 @@ clean:
 	rm -f libtargets/blink1.jar
 	rm -f libtargets/$(LIBTARGET)
 	rm -f $(LIBTARGET) thingm_blink1_$(TARGET).h
-	rm -f blink1jar blink1.zip
+	rm -f blink1jar $(LIBZIPNAME)
 	rm -rf blink1
 
 distclean: clean

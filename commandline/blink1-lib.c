@@ -26,7 +26,9 @@
 #define LOG(...) do {} while (0)
 #endif
 
-#define blink1_report_id 1
+#define blink1_report_id  1
+#define blink1_report_size 8
+#define blink1_buf_size (blink1_report_size+1)
 
 // addresses in EEPROM 
 #define blink1_eeaddr_osccal        0
@@ -67,11 +69,11 @@ int blink1_enumerateByVidPid(int vid, int pid)
         if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
             if( cur_dev->serial_number != NULL ) { // can happen if not root
-	        strcpy( blink1_cached_paths[p], cur_dev->path );
-	        wcscpy( blink1_cached_serials[p], cur_dev->serial_number );
-		p++;
-	    }
-	}
+                strcpy( blink1_cached_paths[p], cur_dev->path );
+            wcscpy( blink1_cached_serials[p], cur_dev->serial_number );
+            p++;
+            }
+        }
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(devs);
@@ -155,6 +157,10 @@ int blink1_write( hid_device* dev, void* buf, int len)
         return -1; // BLINK1_ERR_NOTOPEN;
     }
     int rc = hid_send_feature_report( dev, buf, len );
+    // FIXME: put this in an ifdef?
+    if( rc==-1 ) {
+        fprintf(stderr, "blink1_write error: %ls\n", hid_error(dev));
+    }
     return rc;
 }
 
@@ -199,7 +205,7 @@ int blink1_getSerialNumber(hid_device *dev, char* buf)
 //
 int blink1_getVersion(hid_device *dev)
 {
-    char buf[9] = {blink1_report_id, 'v' };
+    char buf[blink1_buf_size] = {blink1_report_id, 'v' };
     int len = sizeof(buf);
 
     //hid_set_nonblocking(dev, 0);
@@ -217,7 +223,7 @@ int blink1_getVersion(hid_device *dev)
 //
 int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val)
 {
-    char buf[9] = {blink1_report_id, 'e', addr };
+    char buf[blink1_buf_size] = {blink1_report_id, 'e', addr };
     int len = sizeof(buf);
 
     int rc = blink1_write(dev, buf, len );
@@ -232,7 +238,7 @@ int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val)
 //
 int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val)
 {
-    char buf[9] = {blink1_report_id, 'E', addr, val };
+    char buf[blink1_buf_size] = {blink1_report_id, 'E', addr, val };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
         
@@ -286,14 +292,12 @@ int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr)
     return rc;
 }
 
-
-//
-int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
-                     uint8_t r, uint8_t g, uint8_t b)
+int blink1_fadeToRGBN(hid_device *dev,  uint16_t fadeMillis,
+                      uint8_t r, uint8_t g, uint8_t b, uint8_t n)
 {
     int dms = fadeMillis/10;  // millis_divided_by_10
 
-    char buf[9];
+    char buf[blink1_buf_size];
 
     buf[0] = blink1_report_id;     // report id
     buf[1] = 'c';   // command code for 'fade to rgb'
@@ -302,6 +306,30 @@ int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
     buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );
     buf[5] = (dms >> 8);
     buf[6] = dms % 0xff;
+    buf[7] = n;
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+
+    return rc; 
+}
+
+
+//
+int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
+                     uint8_t r, uint8_t g, uint8_t b)
+{
+    int dms = fadeMillis/10;  // millis_divided_by_10
+
+    uint8_t buf[9];
+
+    buf[0] = blink1_report_id;     // report id
+    buf[1] = 'c';   // command code for 'fade to rgb'
+    buf[2] = ((blink1_enable_degamma) ? blink1_degamma(r) : r );
+    buf[3] = ((blink1_enable_degamma) ? blink1_degamma(g) : g );
+    buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );
+    buf[5] = (dms >> 8);
+    buf[6] = dms % 0xff;
+    buf[7] = 0;
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
 
@@ -311,13 +339,16 @@ int blink1_fadeToRGB(hid_device *dev,  uint16_t fadeMillis,
 //
 int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
 {
-    char buf[9];
+    uint8_t buf[blink1_buf_size];
 
     buf[0] = blink1_report_id;     // report id
     buf[1] = 'n';   // command code for "set rgb now"
     buf[2] = ((blink1_enable_degamma) ? blink1_degamma(r) : r );     // red
     buf[3] = ((blink1_enable_degamma) ? blink1_degamma(g) : g );     // grn
     buf[4] = ((blink1_enable_degamma) ? blink1_degamma(b) : b );     // blu
+    buf[5] = 0;
+    buf[6] = 0;
+    buf[7] = 0;
     
     int rc = blink1_write(dev, buf, sizeof(buf) );
 
@@ -330,7 +361,7 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
 {
     int dms = millis/10;  // millis_divided_by_10
 
-    char buf[9] = {blink1_report_id, 'D', on, (dms>>8), (dms % 0xff) };
+    char buf[blink1_buf_size] = {blink1_report_id, 'D', on, (dms>>8), (dms % 0xff) };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
@@ -339,7 +370,7 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
 //
 int blink1_play(hid_device *dev, uint8_t play, uint8_t pos)
 {
-    char buf[9] = {blink1_report_id, 'p', play, pos };
+    char buf[blink1_buf_size] = {blink1_report_id, 'p', play, pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
@@ -353,7 +384,8 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
     r = (blink1_enable_degamma) ? blink1_degamma(r) : r ;
     g = (blink1_enable_degamma) ? blink1_degamma(g) : g ;
     b = (blink1_enable_degamma) ? blink1_degamma(b) : b ;
-    char buf[9] = {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
+
+    char buf[blink1_buf_size] = {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
@@ -363,7 +395,7 @@ int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis,
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos)
 {
-    char buf[9] = {blink1_report_id, 'R', 0,0,0, 0,0, pos };
+    char buf[blink1_buf_size] = {blink1_report_id, 'R', 0,0,0, 0,0, pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     blink1_sleep( 50 ); // FIXME:
     if( rc != -1 ) // no error
@@ -519,7 +551,7 @@ char *blink1_error_msg(int errCode)
 //
 int blink1_nightlight(hid_device *dev, uint8_t on)
 {
-    char buf[9] = { blink1_report_id, 'N', on };
+    char buf[8] = { blink1_report_id, 'N', on };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
     

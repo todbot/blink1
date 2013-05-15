@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+
+<!-- declare the namespace for using XInclude so we can include the standard suite -->
+<dictionary xmlns:xi="http://www.w3.org/2003/XInclude">
+    
+    <!-- use XInclude to include the standard suite -->
+	<!-- xi:include href="file:///System/Library/ScriptingDefinitions/CocoaStandard.sdef" xpointer="xpointer(/dictionary/suite)"/-->
+
+    <suite name="Blink1Control" code="B1cl" description="Terminology for Blink1Control.">
+
+        <command name="do it" code="You DOIT" description="Do it, whatever that happens to be.">
+            <cocoa class="Blink1AppleScriptCommands" method="doIt:" />
+            <result description="it's done" type="text" />
+        </command>
+        
+        <command name="do command with args" code="B1clAgCm" description="run a command with a bunch of arguments">
+			<cocoa class="Blink1AppleScriptCommand"/>
+            
+			<direct-parameter description="the command to run (e.g. 'fadeToRGB', 'on', 'off, etc.)">
+				<type type="text"/>
+			</direct-parameter>
+            
+			<parameter name="color" code="hexc" type="text" optional="yes"
+				description="rgb color code.">
+				<cocoa key="rgb"/>
+			</parameter>
+            
+			<parameter name="time" code="time" type="real" optional="yes"
+				description="time in seconds.">
+				<cocoa key="time"/>
+			</parameter>
+            
+            
+			<parameter name="blinking" code="savo" type="boolean" optional="yes"
+				description="a boolean parameter.">
+				<cocoa key="SaveOptions"/>
+			</parameter>
+            
+			<parameter name="prose" code="Pros" type="text" optional="yes"
+				description="a text parameter.">
+				<cocoa key="ProseText"/>
+			</parameter>
+            
+			<parameter name="ivalue" code="iVal" type="integer" optional="yes"
+				description="an integer parameter.">
+				<cocoa key="IntegerValue"/>
+			</parameter>
+            
+			<parameter name="rvalue" code="rVal" type="real" optional="yes"
+				description="an real number parameter.">
+				<cocoa key="RealValue"/>
+			</parameter>
+            
+			<result type="text" description="the result of the command"/>
+		</command>
+        
+        
+	</suite>
+
+</dictionary>
