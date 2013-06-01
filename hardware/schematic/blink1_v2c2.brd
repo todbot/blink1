@@ -123,7 +123,7 @@
 <board>
 <plain>
 <text x="6.9596" y="3.8201" size="0.6096" layer="21" ratio="10" rot="SR90">blink1.thingm.com</text>
-<text x="7.62" y="11.176" size="0.889" layer="21" ratio="10">blink(1)</text>
+<text x="7.366" y="11.176" size="0.889" layer="21" ratio="10">blink(1)</text>
 <text x="1.524" y="5.08" size="0.6096" layer="22" ratio="10" rot="MR90">blink1_v2c2</text>
 <rectangle x1="7.3247" y1="12.3031" x2="9.2297" y2="12.3095" layer="200"/>
 <rectangle x1="7.3247" y1="12.3095" x2="9.2297" y2="12.3158" layer="200"/>
