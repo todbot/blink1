@@ -127,7 +127,7 @@ static void usage(char *myName)
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
-"  -n <num>, --num <n>         Set which RGB LED in a blink(1) mk2 to use\n"
+"  -l <led>, --led <led>       Set which RGB LED in a blink(1) mk2 to use\n"
 "  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
@@ -158,6 +158,7 @@ enum {
     CMD_BLINK,
     CMD_PLAY,
     CMD_RANDOM,
+    CMD_RUNNING,
     CMD_VERSION,
     CMD_SERVERDOWN,
     CMD_SERIALNUMREAD,
@@ -184,7 +185,7 @@ int main(int argc, char** argv)
 
     // parse options
     int option_index = 0, opt;
-    char* opt_str = "aqvhm:t:d:U:u:gn:";
+    char* opt_str = "aqvhm:t:d:U:u:gl:";
     static struct option loptions[] = {
         {"all",        no_argument,       0,      'a'},
         {"verbose",    optional_argument, 0,      'v'},
@@ -192,7 +193,7 @@ int main(int argc, char** argv)
         {"millis",     required_argument, 0,      'm'},
         {"delay",      required_argument, 0,      't'},
         {"id",         required_argument, 0,      'd'},
-        {"num",        required_argument, 0,      'n'},
+        {"led",        required_argument, 0,      'l'},
         {"nogamma",    no_argument,       0,      'g'},
         {"help",       no_argument,       0,      'h'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
@@ -211,6 +212,7 @@ int main(int argc, char** argv)
         {"blink",      required_argument, &cmd,   CMD_BLINK},
         {"play",       required_argument, &cmd,   CMD_PLAY},
         {"random",     required_argument, &cmd,   CMD_RANDOM },
+        {"running",    required_argument, &cmd,   CMD_RUNNING },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
         {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
@@ -234,6 +236,7 @@ int main(int argc, char** argv)
             case CMD_SAVERGB:
             case CMD_READRGB:
             case CMD_BLINK:
+            case CMD_RUNNING:
             case CMD_PLAY:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
@@ -274,7 +277,7 @@ int main(int argc, char** argv)
         case 't':
             delayMillis = strtol(optarg,NULL,10);
             break;
-        case 'n':
+        case 'l':
             ledn = strtol(optarg,NULL,10);
             break;
         case 'q':
@@ -503,6 +506,55 @@ int main(int argc, char** argv)
             if( cnt > 1 ) blink1_close( mydev );
             
             blink1_sleep(delayMillis);
+        }
+    }
+    // this whole thing is a huge mess currently // FIXME
+    else if( cmd == CMD_RUNNING ) { 
+        if( ledn != 0 ) { 
+            uint8_t do_rand = 0;
+            uint8_t running_cnt = 0;
+            uint8_t leds[ledn][3];
+            uint8_t c[3] = {cmdbuf[0], cmdbuf[1], cmdbuf[2]};
+            if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) {
+                c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
+                do_rand =1;
+            }
+            // make gradient
+            for( int i=0; i<ledn; i++ ) { 
+                leds[i][0] = c[0] * i / ledn;
+                leds[i][1] = c[1] * i / ledn;
+                leds[i][2] = c[2] * i / ledn;
+            }
+
+            while( 1 ) {
+                //memcpy( c, leds[0], sizeof(c) );
+                //memcpy( leds, leds+1, sizeof(c)*(ledn-1) );
+                //memcpy( leds[ledn-1], c, sizeof(c) );
+                memcpy( c, leds[ledn-1], sizeof(c) );
+                memcpy( leds+1, leds, sizeof(c)*(ledn-1) );
+                memcpy( leds[0], c, sizeof(c) );
+
+                // output to string
+                for( int n=0; n<ledn; n++ )  { 
+                    uint8_t r = leds[n][0];
+                    uint8_t g = leds[n][1];
+                    uint8_t b = leds[n][2];
+                    rc = blink1_fadeToRGBN(dev, millis, r,g,b,n+1 );
+                }
+                blink1_sleep(delayMillis);
+
+                running_cnt++;
+                if( do_rand && running_cnt > (ledn*2) ) { 
+                    running_cnt = 0;
+                    c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
+                    for( int i=0; i<ledn; i++ ) { 
+                        leds[i][0] = c[0] * i / ledn;
+                        leds[i][1] = c[1] * i / ledn;
+                        leds[i][2] = c[2] * i / ledn;
+                    }
+                }
+            }
+
         }
     }
     else if( cmd == CMD_BLINK ) { 
