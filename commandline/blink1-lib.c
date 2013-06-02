@@ -30,22 +30,20 @@
 #define blink1_report_size 8
 #define blink1_buf_size (blink1_report_size+1)
 
-// addresses in EEPROM 
+// addresses in EEPROM for mk1 blink(1) devices
 #define blink1_eeaddr_osccal        0
 #define blink1_eeaddr_bootmode      1
 #define blink1_eeaddr_serialnum     2
 #define blink1_serialnum_len        4
 #define blink1_eeaddr_patternstart (blink1_eeaddr_serialnum + blink1_serialnum_len)
 
-#define pathmax 16
-#define pathstrmax 128
-#define serialmax (8 + 1) 
-
 
 // FIXME: use hid_device_info instead with custom sorter on serial or path
-static char blink1_cached_paths[pathmax][pathstrmax]; 
-static int blink1_cached_count = 0;
-static wchar_t blink1_cached_serials[pathmax][serialmax];
+//static char blink1_cached_paths[cachemax][pathstrmax]; 
+//static wchar_t blink1_cached_serials[cachemax][serialmax];
+//static hid_dev_info blink1_cached_hid_dev_infos[cachemax];
+static blink1_info blink1_infos[cache_max];
+static int blink1_cached_count = 0;  // number of cached entities
 
 static int blink1_enable_degamma = 1;
 
@@ -62,16 +60,21 @@ int blink1_enumerateByVidPid(int vid, int pid)
 {
     struct hid_device_info *devs, *cur_dev;
 
-    int p = 0;
+    int p = 0; 
     devs = hid_enumerate(vid, pid);
     cur_dev = devs;    
     while (cur_dev) {
         if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
             if( cur_dev->serial_number != NULL ) { // can happen if not root
-                strcpy( blink1_cached_paths[p], cur_dev->path );
-            wcscpy( blink1_cached_serials[p], cur_dev->serial_number );
-            p++;
+                strcpy( blink1_infos[p].path,   cur_dev->path );
+                wcscpy( blink1_infos[p].serial, cur_dev->serial_number );
+                blink1_infos[p].type = BLINK1_MK1;
+                uint32_t sn = wcstol( cur_dev->serial_number, NULL, 16);
+                if( sn > blink1mk2_serialstart ) {
+                    blink1_infos[p].type = BLINK1_MK2;
+                }
+                p++;
             }
         }
         cur_dev = cur_dev->next;
@@ -80,7 +83,7 @@ int blink1_enumerateByVidPid(int vid, int pid)
     
     blink1_cached_count = p;
 
-    blink1_sortSerials();
+    blink1_sortCache();
 
     return p;
 }
@@ -94,12 +97,61 @@ int blink1_getCachedCount(void)
 //
 const char* blink1_getCachedPath(int i)
 {
-    return blink1_cached_paths[i];    
+    return blink1_infos[i].path;
 }
 //
 const wchar_t* blink1_getCachedSerial(int i)
 {
-    return blink1_cached_serials[i];
+    return blink1_infos[i].serial;
+}
+
+int blink1_getCacheIndexByPath( const char* path ) 
+{
+    for( int i=0; i< cache_max; i++ ) { 
+        if( strcmp( blink1_infos[i].path, (const char*) path ) == 0 ) return i;
+    }
+    return -1;
+}
+
+int blink1_getCacheIndexBySerial( const wchar_t* serial ) 
+{
+    for( int i=0; i< cache_max; i++ ) { 
+        if( wcscmp( blink1_infos[i].serial, serial ) == 0 ) return i;
+    }
+    return -1;
+}
+
+int blink1_getCacheIndexByDev( hid_device* dev ) 
+{
+    for( int i=0; i< cache_max; i++ ) { 
+        if( blink1_infos[i].dev == dev ) return i;
+    }
+    return -1;
+}
+
+const wchar_t* blink1_getSerialForDev(hid_device* dev)
+{
+    int i = blink1_getCacheIndexByDev( dev );
+    if( i>=0 ) return blink1_infos[i].serial;
+    return NULL;
+}
+
+int blink1_clearCacheDev( hid_device* dev ) 
+{
+    int i = blink1_getCacheIndexByDev( dev );
+    if( i>=0 ) blink1_infos[i].dev == NULL; // FIXME: hmmmm
+    return i;
+}
+
+int blink1_isMk2ById( int i )
+{
+    if( i>=0  && blink1_infos[i].type == BLINK1_MK2 ) return 1;
+    return 0;
+}
+
+int blink1_isMk2( hid_device* dev )
+{
+    return blink1_isMk2ById( blink1_getCacheIndexByDev(dev) );
 }
 
 //
@@ -107,6 +159,14 @@ hid_device* blink1_openByPath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
     hid_device* handle = hid_open_path( path ); 
+
+    int i = blink1_getCacheIndexByPath( path );
+    if( i >= 0 ) {  // good
+        blink1_infos[i].dev = handle;
+    }
+    else { // uh oh, not in cache, now what?
+    }
+    
     return handle;
 }
 
@@ -119,6 +179,14 @@ hid_device* blink1_openBySerial(const wchar_t* serial)
     
     LOG("opening %ls at vid/pid %x/%x\n", serial, vid,pid);
     hid_device* handle = hid_open(vid,pid, serial ); 
+
+    int i = blink1_getCacheIndexBySerial( serial );
+    if( i >= 0 ) {  // good
+        blink1_infos[i].dev = handle;
+    }
+    else { // uh oh, not in cache, now what?
+    }
+
     return handle;
 }
 
@@ -137,6 +205,8 @@ hid_device* blink1_open(void)
 
     hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
 
+    blink1_infos[0].dev = handle;
+    
     return handle;
 }
 
@@ -144,8 +214,10 @@ hid_device* blink1_open(void)
 // FIXME: search through blink1s list to zot it too?
 void blink1_close( hid_device* dev )
 {
-    if( dev != NULL ) 
+    if( dev != NULL ) {
+        blink1_clearCacheDev(dev); // FIXME: hmmm 
         hid_close(dev);
+    }
     dev = NULL;
     hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
 }
@@ -469,12 +541,13 @@ int blink1_degamma( int n )
     return blink1_degamma_log2lin(n);
 }
 
-
+/*
 // qsort C-string comparison function 
 int cmp_path(const void *a, const void *b) 
 { 
     return strncmp( (const char *)a, (const char *)b, pathstrmax);
 } 
+
 // qsort wchar_t string comparison function 
 int cmp_serial(const void *a, const void *b) 
 { 
@@ -501,6 +574,29 @@ void blink1_sortSerials(void)
            elemsize, 
            cmp_serial);
 }
+*/
+
+// qsort wchar_t string comparison function 
+int cmp_blink1_info_serial(const void *a, const void *b) 
+{ 
+    blink1_info* bia = (blink1_info*) a;
+    blink1_info* bib = (blink1_info*) b;
+
+    return wcsncmp( bia->serial, 
+                    bib->serial, 
+                    serialstrmax);
+} 
+
+void blink1_sortCache(void)
+{
+    size_t elemsize = sizeof( blink1_info ); //  
+    
+    qsort( blink1_infos, 
+           blink1_cached_count, 
+           elemsize, 
+           cmp_blink1_info_serial);
+}
+
 
 //
 int blink1_vid(void)

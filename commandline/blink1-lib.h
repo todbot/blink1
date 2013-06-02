@@ -20,17 +20,40 @@ extern "C" {
 
 #define blink1_max_devices 16
 
+#define cache_max 16  
+#define serialstrmax (8 + 1) 
+#define pathstrmax 128
+
+#define blink1mk2_serialstart 0x20000000
+
+enum { 
+    BLINK1_UNKNOWN = 0,
+    BLINK1_MK1,   // the original one from the kickstarter
+    BLINK1_MK2    // the updated one 
+} blink1types;
+
+// blink1 copy of hid_device_info and other bits. 
+// this seems kinda dumb, though. is there a better way?
+typedef struct blink1_info_ {
+    hid_device* dev;  // device, if opened, NULL otherwise
+    char path[pathstrmax];  // platform-specific device path
+    wchar_t serial[serialstrmax];
+    int type;  // from blink1types
+} blink1_info;
+
 
 int blink1_vid(void);
 int blink1_pid(void);
-void blink1_sortPaths(void);
-void blink1_sortSerials(void);
+void blink1_sortCache(void);
 
 int blink1_enumerate();
 int blink1_enumerateByVidPid(int vid, int pid);
 const char* blink1_getCachedPath(int i);
 const wchar_t* blink1_getCachedSerial(int i);
+const wchar_t* blink1_getSerialForDev(hid_device* dev);
 int blink1_getCachedCount(void);
+int blink1_isMk2ById(int i);
+int blink1_isMk2(hid_device* dev);
 
 hid_device* blink1_open(void);
 hid_device* blink1_openByPath(const char* path);

@@ -26,6 +26,7 @@
 #include <getopt.h>    // for getopt_long()
 #include <time.h>
 #include <unistd.h>    // getuid()
+#include <wchar.h>     // for wcstol
 
 #include "blink1-lib.h"
 
@@ -156,6 +157,7 @@ enum {
     CMD_GRN,
     CMD_BLU,
     CMD_BLINK,
+    CMD_GLIMMER,
     CMD_PLAY,
     CMD_RANDOM,
     CMD_RUNNING,
@@ -210,6 +212,7 @@ int main(int argc, char** argv)
         {"green",      no_argument,       &cmd,   CMD_GRN },
         {"blue",       no_argument,       &cmd,   CMD_BLU},
         {"blink",      required_argument, &cmd,   CMD_BLINK},
+        {"glimmer",    required_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
         {"random",     required_argument, &cmd,   CMD_RANDOM },
         {"running",    required_argument, &cmd,   CMD_RUNNING },
@@ -236,6 +239,7 @@ int main(int argc, char** argv)
             case CMD_SAVERGB:
             case CMD_READRGB:
             case CMD_BLINK:
+            case CMD_GLIMMER:
             case CMD_RUNNING:
             case CMD_PLAY:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
@@ -316,14 +320,6 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    //FIXME: confusing
-    if( nogamma ) { 
-        if ( !quiet ) {
-            printf("disabling auto degamma\n");
-        }
-        blink1_disableDegamma();  
-    }
-
     // debug  (not on Windows though, no getuid())
     /*
     if( 0 ) { 
@@ -355,7 +351,7 @@ int main(int argc, char** argv)
         printf("deviceId[0] = %d\n", deviceIds[0]);
         //printf("cached path = '%ls'\n", dev_serial);
         for( int i=0; i< count; i++ ) { 
-            printf("%d: serial: '%ls'\n", i,blink1_getCachedSerial(i) );
+            printf("%d: serial: '%ls' '%s'\n", i,blink1_getCachedSerial(i), blink1_getCachedPath(i) );
         }
     }
 
@@ -368,16 +364,24 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    // an idea: 
-    // blink1 mk2 does gamma correction in hardware
-    //if( blink1_getVersion() >= 200 ) {
-    //    nogamma = 1;
-    //}
+    if( blink1_isMk2(dev) )  { 
+        if( verbose ) printf("blink1(1)mk2 detected. disabling degamma\n");
+        blink1_disableDegamma();  
+    }
+    // then for original mk1 owners who want to disable degamma
+    if( nogamma ) {      //FIXME: confusing
+        if ( !quiet ) {
+            printf("disabling auto degamma\n");
+        }
+        blink1_disableDegamma();  
+    }
+
 
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
-        for( int i=0; i< count; i++ ) { 
-            printf("id:%d - serialnum:%ls\n", i, blink1_getCachedSerial(i) );
+        for( int i=0; i< count; i++ ) {
+            printf("id:%d - serialnum:%ls %s\n", i, blink1_getCachedSerial(i), 
+                   (blink1_isMk2ById(i)) ? "(mk2)":"");
         }
     }
     else if( cmd == CMD_HIDREAD ) { 
@@ -570,6 +574,24 @@ int main(int argc, char** argv)
             rc = blink1_fadeToRGB(dev, millis,r,g,b);
             blink1_sleep(delayMillis);
             rc = blink1_fadeToRGB(dev, millis,0,0,0);
+            blink1_sleep(delayMillis);
+        }
+    }
+    else if( cmd == CMD_GLIMMER ) { 
+        uint8_t n = cmdbuf[0]; 
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
+        if( r == 0 && b == 0 && g == 0 ) {
+            r = g = b = 255;
+        }
+        if ( !quiet ) { printf("glimmering %d times rgb:%x,%x,%x: \n", n,r,g,b); }
+        for( int i=0; i<n; i++ ) { 
+            rc = blink1_fadeToRGBN(dev, millis,r,g,b, 1);
+            rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 2);
+            blink1_sleep(delayMillis);
+            rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 1);
+            rc = blink1_fadeToRGBN(dev, millis,r,g,b, 2);
             blink1_sleep(delayMillis);
         }
     }
