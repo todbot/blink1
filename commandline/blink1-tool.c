@@ -151,6 +151,7 @@ enum {
     CMD_RGB,
     CMD_SAVERGB,
     CMD_READRGB,
+    CMD_SAVEPATTERN,
     CMD_OFF,
     CMD_ON,
     CMD_RED,
@@ -165,6 +166,7 @@ enum {
     CMD_SERVERDOWN,
     CMD_SERIALNUMREAD,
     CMD_SERIALNUMWRITE,
+    CMD_TESTTEST,
 };
 
 //
@@ -206,6 +208,7 @@ int main(int argc, char** argv)
         {"rgb",        required_argument, &cmd,   CMD_RGB },
         {"savergb",    required_argument, &cmd,   CMD_SAVERGB },
         {"readrgb",    required_argument, &cmd,   CMD_READRGB },
+        {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
         {"red",        no_argument,       &cmd,   CMD_RED },
@@ -220,6 +223,7 @@ int main(int argc, char** argv)
         {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
         {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
         {"servertickle", required_argument, &cmd,   CMD_SERVERDOWN },
+        {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
         {"vid",        required_argument, 0,      'U'}, // FIXME: This sucks
         {"pid",        required_argument, 0,      'u'},
         {NULL,         0,                 0,      0}
@@ -458,6 +462,13 @@ int main(int argc, char** argv)
         if( rc == -1 && !quiet ) { 
         }
     }
+    else if( cmd == CMD_SAVEPATTERN ) {
+        if( !quiet ) { printf("writing pattern to flash\n"); }
+        rc = blink1_savePattern(dev);
+        if( rc==-1 && !quiet ) {
+            printf("error on savePattern\n");
+        }
+    }
     else if( cmd == CMD_SAVERGB ) {
         uint8_t r = cmdbuf[0];
         uint8_t g = cmdbuf[1];
@@ -614,6 +625,11 @@ int main(int argc, char** argv)
             fprintf(stderr,"error writing new serial number: %d\n",rc);
         }
     }
+    else if( cmd == CMD_TESTTEST ) { 
+        printf("test test\n");
+        rc = blink1_testtest(dev);
+    }
+
 
     return 0;
 }

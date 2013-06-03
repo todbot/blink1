@@ -268,21 +268,6 @@ int blink1_read( hid_device* dev, void* buf, int len)
 #include <unistd.h>
 
 //
-int blink1_getSerialNumber(hid_device *dev, char* buf)
-{
-    if( dev == NULL ) return -1;
-    /*
-    wchar_t* wbuf = dev->serial_number;
-    int i=0;
-    while( wbuf ) { 
-        buf[i++] = *wbuf;
-    }
-    return i;
-    */
-    return -1;
-}
-
-//
 int blink1_getVersion(hid_device *dev)
 {
     char buf[blink1_buf_size] = {blink1_report_id, 'v' };
@@ -441,7 +426,7 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
 {
     int dms = millis/10;  // millis_divided_by_10
 
-    char buf[blink1_buf_size] = {blink1_report_id, 'D', on, (dms>>8), (dms % 0xff) };
+    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'D', on, (dms>>8), (dms % 0xff) };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
@@ -450,7 +435,7 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
 //
 int blink1_play(hid_device *dev, uint8_t play, uint8_t pos)
 {
-    char buf[blink1_buf_size] = {blink1_report_id, 'p', play, pos };
+    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'p', play, pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
@@ -465,7 +450,7 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
     g = (blink1_enable_degamma) ? blink1_degamma(g) : g ;
     b = (blink1_enable_degamma) ? blink1_degamma(b) : b ;
 
-    char buf[blink1_buf_size] = {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
+    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
@@ -475,7 +460,7 @@ int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis,
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos)
 {
-    char buf[blink1_buf_size] = {blink1_report_id, 'R', 0,0,0, 0,0, pos };
+    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'R', 0,0,0, 0,0, pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     blink1_sleep( 50 ); // FIXME:
     if( rc != -1 ) // no error
@@ -489,17 +474,42 @@ int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis,
     return rc;
 }
 
+//
+int blink1_savePattern( hid_device *dev )
+{
+    uint8_t buf[blink1_buf_size];
 
-// FIXME: 
-int readUUID( hid_device* dev, uint8_t** uuid )
-{
-    return -1;
+    buf[0] = blink1_report_id;     // report id
+    buf[1] = 'W';   // command code for "write pattern to flash"
+    buf[2] = 0x55;
+    buf[3] = 0xAA;
+    buf[4] = 0xCA;
+    buf[5] = 0xFE;
+    buf[6] = 0x00;
+    buf[7] = 0x00;
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    return rc;
 }
-// FIXME:
-int setUUID( hid_device* dev, uint8_t* uuid )
+
+//
+int blink1_testtest( hid_device *dev)
 {
-    return -1;
+    uint8_t buf[blink1_buf_size] = {blink1_report_id, '!', 0,0,0, 0,0,0 };
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    blink1_sleep( 50 ); //FIXME:
+    if( rc != -1 ) { // no error
+        rc = blink1_read(dev, buf, sizeof(buf));
+        for( int i=0; i<sizeof(buf); i++ ) { 
+            printf("%2.2x,",(uint8_t)buf[i]);
+        }
+        printf("\n");
+    }
+    else { 
+        printf("testtest error: rc=%d\n", rc);
+    }
+    return rc;
 }
+
 
 
 /* ------------------------------------------------------------------------- */

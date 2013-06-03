@@ -65,7 +65,6 @@ void blink1_close( hid_device* dev );
 int blink1_write( hid_device* dev, void* buf, int len);
 int blink1_read( hid_device* dev, void* buf, int len);
 
-int blink1_getSerialNumber(hid_device *dev, char* buf);
 int blink1_getVersion(hid_device *dev);
 
 int blink1_fadeToRGB(hid_device *dev, uint16_t fadeMillis,
@@ -91,7 +90,9 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis, 
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos);
-//int blink1_playPattern(hid_device *dev,,);
+int blink1_savePattern(hid_device *dev);
+
+int blink1_testtest(hid_device *dev);
 
 char *blink1_error_msg(int errCode);
 
