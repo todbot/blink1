@@ -30,7 +30,7 @@ enum {
     BLINK1_UNKNOWN = 0,
     BLINK1_MK1,   // the original one from the kickstarter
     BLINK1_MK2    // the updated one 
-} blink1types;
+}; 
 
 // blink1 copy of hid_device_info and other bits. 
 // this seems kinda dumb, though. is there a better way?

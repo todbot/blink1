@@ -197,6 +197,7 @@ hid_device* blink1_openById( int i )
     return blink1_openBySerial( blink1_getCachedSerial(i) );
 }
 
+/*
 //
 hid_device* blink1_open(void)
 {
@@ -205,9 +206,16 @@ hid_device* blink1_open(void)
 
     hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
 
-    blink1_infos[0].dev = handle;
+    blink1_infos[0].dev = handle;  // FIXME
     
     return handle;
+}
+*/
+hid_device* blink1_open(void)
+{
+    blink1_enumerate();
+    
+    return blink1_openById( 0 );
 }
 
 //
