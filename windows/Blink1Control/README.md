@@ -6,7 +6,7 @@ http://thingm.com/blink1/downloads/Blink1Control-win.zip
 
 To run Blink1Control, double-click the Blink1Control.exe application icon.
 
-Blink1Control requires Microsoft's .NET Framework 4.5, 
+Blink1Control requires Microsoft's .NET Framework 4.0, 
 available free from http://www.microsoft.com/en-us/download/details.aspx?id=30653
 
 You will also need to give Blink1Control permission to access local networks.
@@ -36,6 +36,11 @@ Releases
 - added logging to logs/log.txt
 - added Start Minimized option
 - cleaned up HTML UI a little
+
+0.9.8 -- 11 Jun 2013
+- fixed app crash when deleting non-existent patterns or inputs
+- added /blink1/logging?loglevel=0 to turn off all logging (loglevel=1 to turn back on)
+
 
 (to get version: right-click on Blink1Control.exe, go to Properties > Details)
 
