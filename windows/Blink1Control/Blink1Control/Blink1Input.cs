@@ -320,7 +320,7 @@ namespace Blink1Control
             }
             catch (WebException we) {
                 // WebException.Status holds useful information
-                Blink1Server.Log("we:"+we.Message); // + "\n" + we.Status.ToString());  // FIXME:
+                Blink1Server.Log("webex:"+we.Message); // + "\n" + we.Status.ToString());  // FIXME:
                 /*
                 Stream receiveStream = we.Response.GetResponseStream();
                 Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
