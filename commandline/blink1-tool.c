@@ -529,7 +529,7 @@ int main(int argc, char** argv)
             uint8_t do_rand = 0;
             uint8_t running_cnt = 0;
             uint8_t leds[ledn][3];
-            uint8_t c[3] = {cmdbuf[0], cmdbuf[1], cmdbuf[2]};
+            uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2]};
             if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) {
                 c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
                 do_rand =1;
