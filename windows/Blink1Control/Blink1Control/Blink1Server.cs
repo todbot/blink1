@@ -121,6 +121,7 @@ namespace Blink1Control
             Properties.Settings.Default["inputs"] =  JsonConvert.SerializeObject(inputs, Formatting.Indented, jsonSerializerSettings);
             Properties.Settings.Default["patterns"] = JsonConvert.SerializeObject(patterns, Formatting.Indented, jsonSerializerSettings);
             Properties.Settings.Default["startMinimized"] = startMinimized;
+            Properties.Settings.Default["logToScreen"] = logToScreen;
             Properties.Settings.Default.Save();
         }
 
@@ -183,6 +184,9 @@ namespace Blink1Control
                 lastColor.GetStringResponse = Ublink1LastColor;
                 blink1dir.AddFile(lastColor);
 
+                Blink1JSONFile logging = new Blink1JSONFile("logging", blink1dir, this);
+                logging.GetStringResponse = Ublink1Logging;
+                blink1dir.AddFile(logging);
 
                 Blink1JSONFile pattern = new Blink1JSONFile("patterns", blink1dir, this);
                 pattern.GetStringResponse = Ublink1Pattern;
@@ -398,6 +402,24 @@ namespace Blink1Control
             return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
         }
 
+        //    /blink1/logging -- Set logging level (or turn it off)
+        static string Ublink1Logging(HttpRequest request, Blink1Server blink1Server)
+        {
+            string loglevelstr = request.Query.Get("loglevel");
+            int loglevel = (logToScreen) ? 1 : 0;
+            if (loglevelstr != null) {
+                loglevel = int.Parse(loglevelstr, CultureInfo.InvariantCulture);
+                logToScreen = (loglevel >= 1);
+                blink1Server.saveSettings();
+            }
+            Log("loglevel: " + loglevel);
+
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            result.Add("status", "logging");
+            result.Add("loglevel", loglevel);
+            return JsonConvert.SerializeObject(result, Formatting.Indented, jsonSerializerSettings);
+        }
+
         // -----------------------------------------------------------------------------------------------
         // color patterns url handling
         //
@@ -447,10 +469,11 @@ namespace Blink1Control
             string statusstr = "no pattern by that name";
             Blink1Pattern patt = null;
             if (pname != null) {
-                patt = blink1Server.patterns[pname];
-                patt.stop();
-                blink1Server.patterns.Remove(pname);
-                statusstr = "pattern '" + pname + "' removed";
+                if( blink1Server.patterns.TryGetValue(pname, out patt) ) {
+                    patt.stop();
+                    blink1Server.patterns.Remove(pname);
+                    statusstr = "pattern '" + pname + "' removed";
+                }
             }
             blink1Server.saveSettings();
 
@@ -539,10 +562,11 @@ namespace Blink1Control
             string statusstr = "no input by that name";
             Blink1Input input = null;
             if (iname != null) {
-                input = blink1Server.inputs[iname];
-                input.stop();
-                blink1Server.inputs.Remove(iname);
-                statusstr = "input '" + iname + "' removed";
+                if (blink1Server.inputs.TryGetValue(iname, out input)) {
+                    input.stop();
+                    blink1Server.inputs.Remove(iname);
+                    statusstr = "input '" + iname + "' removed";
+                }
             }
 
             blink1Server.saveSettings();
