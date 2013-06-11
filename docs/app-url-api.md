@@ -191,6 +191,9 @@ Base URL: `http://localhost:8934/blink1`
 * `/blink1/lastColor`
 -- Return the last color command sent to blink(1)
 
+* `/blink1/logging`
+-- Enable or disable logging (Windows only currently)
+
 
 ### Input Selection ###
 
@@ -361,6 +364,24 @@ __Response:__
     {
       "lastColor": "#FF00FF",
       "status": "lastColor"
+    }
+
+
+`/blink1/logging`
+-----------------
+__Description:__ Enable or disable logfile writing
+
+__Query args:__ loglevel  (can be 0 or 1)
+
+__Example:__
+
+`http://localhost:8934/blink1/logging?loglevel=0`
+
+__Response:__
+
+    {
+      "loglevel": 0,
+      "status": "logging"
     }
     
 
