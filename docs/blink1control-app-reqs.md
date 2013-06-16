@@ -2,6 +2,7 @@
 
 Blink1Control Application Requirements
 ======================================
+20130714 -- Tod E. Kurt
 
 
 1. Introduction 
@@ -9,13 +10,14 @@ Blink1Control Application Requirements
 
 ### 1.1. Background
 
-Blink1Control is an application used to mediate between events on the Net and the 
-user's computer and the blink(1) USB RGB LED notification device.  When an event
-important to the user occur, the blink(1) plays a color pattern of the user's choosing.
+Blink1Control is a desktop application used to mediate between events on the Net 
+and/or the user's computer and the blink(1) USB RGB LED notification device.  
+When an event important to the user occur, the blink(1) plays a color pattern 
+of the user's choosing.
 
 The original release of Blink1Control had a uniform UI across Mac & Windows platforms.
 This UI was written in HTML5/Javascript and the underlying platform-specific local
-HTTP server and application logic was written in Cocoa and .NET, respectively.
+HTTP server and application logic was written in Cocoa (Mac) or .NET (Windows).
 Managing three separate codebases (HTML,Cocoa,.NET) is problematic, and it's hoped that
 a unified codebase in Qt will make future updates easier and faster to accomplish.
 
@@ -24,7 +26,12 @@ a unified codebase in Qt will make future updates easier and faster to accomplis
 The application provides an interface for the user to create and manage different
 data "inputs" and color "patterns".  Inputs can be any data source that is periodically 
 evaluated and when an evaluation criteria is met, a corresponding color pattern is
-played on a blink(1) device.
+played on a blink(1) device.  Thus the application provides an internal timing 
+system for managing input evaluation and blink(1) color pattern playing.
+
+After configuration, the application is minimized to an StatusItem icon in the menubar
+(Mac) or a System Tray icon (Windows).  Clicking on this icon allows the user to
+get info about their blink(1), open the settings GUI, or reset any triggered alerts.
 
 ### 1.3. Previous implementations
 
@@ -71,9 +78,9 @@ The pattern subsystem must:
 
 3.2.1. Maintain a user-editable map of named color patterns.
 
-3.2.2. Save color pattern map as application setting.
+3.2.2. Save color pattern map to application settings file.
 
-3.2.3. Load color pattern map from application setting.
+3.2.3. Load color pattern map from application settings file.
 
 3.2.4. A color pattern may be started playing at any time, by name.
 Update resolution for color patterns is 50 milliseconds.
@@ -82,7 +89,11 @@ Update resolution for color patterns is 50 milliseconds.
 
 3.2.6. A color pattern may be stopped at any time, by name.
 
-3.2.7. *** Special color patterns for real-time mapping?
+3.2.7. A color pattern may be deleted, by name.
+
+3.2.8. All color patterns may be removed with a single command.
+
+3.2.9. A color pattern may be rendered as a JSON object.
 
 
 ### 3.3. Data Inputs
@@ -103,23 +114,37 @@ A pattern has additional meta data such as:
 * list of input-specific user-supplied arguments (IFTTT tag, JSON URL, etc.)
 * list of input-specific parameters (e.g. input-specific update rate, IFTTT URL)
  
-
-When the user-specified /
-
 The input subsystem must:
 
 3.3.1. Maintain a user-editable map of named inputs.
-3.3.2. Save input map as application setting.
-3.3.3. Load color pattern map from application setting.
-3.3.4. Periodically, an input is evaluated (e.g. URL fetched & parsed) and if 
+
+3.3.2. Save input map to application settings file.
+
+3.3.3. Load input map from application settings file.
+
+3.3.4. Periodically, an input's data source is queried (e.g. URL fetched), its data
+is evaluated (e.g. parsed from JSON),  and the input's color pattern is played.
+
+3.3.5. Multiple inputs may be active simultaneously.
+
+3.3.6. An input may be paused at any time, by name.
+
+3.3.7. An input may be deleted at any time, by name.
+
+3.3.8. All inputs may be removed with a single command.
+
+3.3.9. An input may be rendered as a JSON object.
 
 
 ### 3.4. blink(1) library interface
 Use the C-based "blink1-lib" for all communication with blink(1) devices.
 
 3.4.1. Query for available blink(1) devices.
+
 3.4.2. Connect to first available blink(1) device.
+
 3.4.3. Query blink(1) serial number to be displayed in GUI.
+
 3.4.4. Send color commands to blink(1) device.
 
 3.4.5. As the blink1-lib library doesn't do mutex, proper mutex of access to blink1-lib will be enforced.
@@ -148,8 +173,6 @@ Use the C-based "blink1-lib" for all communication with blink(1) devices.
 
 
 
-
-(format stolen from: http://www.radford.edu/waconley/Requirements.pdf)
 
 ------------
 
