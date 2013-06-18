@@ -2,7 +2,7 @@
 
 Blink1Control Application Requirements
 ======================================
-20130714 -- Tod E. Kurt
+20130716 -- Tod E. Kurt
 
 
 1. Introduction 
@@ -11,7 +11,7 @@ Blink1Control Application Requirements
 ### 1.1. Background
 
 Blink1Control is a desktop application used to mediate between events on the Net 
-and/or the user's computer and the blink(1) USB RGB LED notification device.  
+and/or the user's computer and the blink(1) USB RGB LED notification device.
 When an event important to the user occur, the blink(1) plays a color pattern 
 of the user's choosing.
 
@@ -29,17 +29,23 @@ evaluated and when an evaluation criteria is met, a corresponding color pattern 
 played on a blink(1) device.  Thus the application provides an internal timing 
 system for managing input evaluation and blink(1) color pattern playing.
 
-After configuration, the application is minimized to an StatusItem icon in the menubar
-(Mac) or a System Tray icon (Windows).  Clicking on this icon allows the user to
-get info about their blink(1), open the settings GUI, or reset any triggered alerts.
+After configuration, the application is minimized to an StatusItem icon in the
+menubar (Mac) or a System Tray icon (Windows).  Clicking on this icon allows the
+user to get info about their blink(1), open the settings GUI, or reset any
+triggered alerts.
 
 ### 1.3. Previous implementations
 
 There are two previous implementations of Blink1Control: one written in Cocoa, 
-one written in .NET.  The .NET one came later and is slightly better organized.  
-Either can be used to crib from.  But note that while the Qt version of Blink1Control
-will support a local HTTP server, the GUI is not in HTML5/Javascript and is instead 
-created with normal Qt widgets. 
+one written in .NET.  The .NET one came later and is slightly better organized.
+Either can be used to crib from.  But note that while the Qt version of
+Blink1Control will support a local HTTP server, the GUI is not in HTML5/Javascript
+and is instead created with normal Qt widgets.
+
+To example the previous version of Blink1Control, see:
+
+* [../mac/Blink1Control/](https://github.com/todbot/blink1/tree/master/mac/Blink1Control)
+* [../windows/Blink1Control/](https://github.com/todbot/blink1/tree/master/windows/Blink1Control)
 
 
 2. Cross-platform Targets
@@ -149,7 +155,7 @@ Use the C-based "blink1-lib" for all communication with blink(1) devices.
 3.4.4. Send color commands to blink(1) device.
 
 3.4.5. As the blink1-lib library doesn't do mutex, proper mutex of access 
-  to blink1-lib will be enforced.
+  to blink1-lib will be enforced to single-file calls to blink(1) devices.
 
 
 ### 3.5. Local HTTP server
@@ -169,84 +175,80 @@ and [app-url-api-examples.md](app-url-api-examples.md).
 [app-url-api.md](app-url-api.md) and [app-url-api-examples.md](app-url-api-examples.md).
 
 
-
 4. User Interface Requirements
 ------------------------------
 
-### 4.1. "Virtual blink(1)" display widget shows current color state of real blink(1) device
- 
+### 4.1. Main Settings Window
+
+4.1.1. Main window is fixed in size.
+
+4.1.2. Main window is no bigger than 800 x 600.
+
+4.1.3. 
+
+
+### 4.2. Custom GUI widgets
+
+4.2.1. "Virtual blink(1)" display shows current color state of real blink(1) device.
+
+4.2.2. Custom color picker 
+
+
+### 4.3. Menu / Tray Icon
+
+4.3.1. In normal use the app is in the background, with no visible window,
+but does have a Notification icon Menubar (Mac OS X) / Tray Icon (Windows).
+
+4.3.2. The Menu / Tray icon provides a menu on user left-click with the entries:
+
+* blink(1) connected status 
+* blink(1) serial number
+* Reset alerts command
+* Open settings
+* Quit application
+
+
+### 4.4. Fonts & Styling
+
+4.4.1. Primary application font is Helvetica Neue.
+
+4.4.2. UI has uniform look and feel across all platforms.
 
 
 5. Performance Requirements
 ---------------------------
 
+### 5.1. Resource utilization
+
+5.1.1. Application should not use more than 5% of CPU resources
+under normal operation.
+
+5.2.2. Application should not use more than 250 MB RAM.
+
 
 6. Other Non-Functional Requirements
 ------------------------------------
+
+-TBD-
 
 
 7. Example Use Case Scenarios
 -----------------------------
 
+-TBD-
+
+
 
 
 ------------
+-eof-
 
 
 
-4. Application logic
-
-5. GUI and Design
 
 
 
-Features
---------
-- blink(1) library interface
-- App logic
-- GUI & Design
-- Notification icon Menubar (Mac OS X) / Tray Icon (Windows)
-- Local HTTP server 
-
-
-blink(1) library interface
----------------------------
-- Query for available blink(1) devices
-- Connect to first available blink(1) device
-- Query blink(1) serial number
-- Send color commands to blink(1) device
-
-
-App logic
-----------
-- Load application settings from disk on app start
-- Save application settings to disk on any settings change
-- Maintain a named Map of color Patterns 
-- Maintain a named Map of trigger Inputs
-- Patterns are
-- Inputs are
-
-
-Trigger Inputs
---------------
-
-
-GUI & Design
-------------
-- Primary application font is Helvetica Neue 
-- uniform UI
-- custom color picker
-
-
-Menu / Tray Icon
-----------------
-- Open main gui
-- Shut down app
 
 
 
-HTTP Server
------------
-- Local HTTP server running on port 8934
-- Responds to URIs as described in url-api.md
 
