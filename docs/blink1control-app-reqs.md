@@ -191,7 +191,8 @@ and [app-url-api-examples.md](app-url-api-examples.md).
 
 4.2.1. "Virtual blink(1)" display shows current color state of real blink(1) device.
 
-4.2.2. Custom color picker 
+4.2.2. Custom color picker exists that allows users to select colors.
+An example color picker that is close is "Qt-Color-Picker".
 
 
 ### 4.3. Menu / Tray Icon
@@ -229,7 +230,26 @@ under normal operation.
 6. Other Non-Functional Requirements
 ------------------------------------
 
--TBD-
+### 6.1. Code style
+Code is to be written in "Qt" style, utilizing Qt's special features such as
+signals/slots and using Qt's class library where possible.
+
+
+### 6.2. Dependencies
+
+6.2.1. Dependencies on build tools other than qmake should be avoided.
+Cmake is fine, qmake amd .pro files is preferred.
+
+6.2.1. Dependencies on open source third-party Qt libraries is allowed,
+even encouraged, for toolkits such as an HTTP server.
+
+6.2.1.1. After extensive evaluation of HTTP libraries for Qt,
+the best one found so far is [Tasteful-Server](https://github.com/scheibel/tasteful-server).
+
+6.2.2. Dependencies on oOther C++ collection classes and frameowrks like
+Boost shall be avoided.
+
+
 
 
 7. Example Use Case Scenarios
