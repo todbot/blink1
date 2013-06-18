@@ -137,6 +137,7 @@ is evaluated (e.g. parsed from JSON),  and the input's color pattern is played.
 
 
 ### 3.4. blink(1) library interface
+
 Use the C-based "blink1-lib" for all communication with blink(1) devices.
 
 3.4.1. Query for available blink(1) devices.
@@ -147,30 +148,45 @@ Use the C-based "blink1-lib" for all communication with blink(1) devices.
 
 3.4.4. Send color commands to blink(1) device.
 
-3.4.5. As the blink1-lib library doesn't do mutex, proper mutex of access to blink1-lib will be enforced.
+3.4.5. As the blink1-lib library doesn't do mutex, proper mutex of access 
+  to blink1-lib will be enforced.
+
+
+### 3.5. Local HTTP server
+
+A local HTTP server provides a REST API to internal functions of the Blink1Control app
+and controlling blink(1) devices.
+
+3.5.1. Local HTTP server runs on port 8934.
+
+3.5.2. Control a blink(1) device as described in [app-url-api.md](app-url-api.md)
+and [app-url-api-examples.md](app-url-api-examples.md).
+
+3.5.3. Manage, add/delete data inputs as described in 
+[app-url-api.md](app-url-api.md) and [app-url-api-examples.md](app-url-api-examples.md).
+
+3.5.4. Manage, add/delete color patterns as described in 
+[app-url-api.md](app-url-api.md) and [app-url-api-examples.md](app-url-api-examples.md).
 
 
 
+4. User Interface Requirements
+------------------------------
 
-3.4.1.  Maintain a named Map of trigger Inputs
-- Patterns are
-- Inputs are
-
-
-
-4. Interface Requirements
--------------------------
-
-4.1. "Virtual blink(1)" display widget shows current color state of real blink(1) device
+### 4.1. "Virtual blink(1)" display widget shows current color state of real blink(1) device
  
 
 
 5. Performance Requirements
+---------------------------
+
 
 6. Other Non-Functional Requirements
+------------------------------------
+
 
 7. Example Use Case Scenarios
-
+-----------------------------
 
 
 

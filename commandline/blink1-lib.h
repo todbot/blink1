@@ -32,33 +32,45 @@ enum {
     BLINK1_MK2    // the updated one 
 }; 
 
-// blink1 copy of hid_device_info and other bits. 
+typedef struct hid_device_ blink1_device; /**< opaque blink1 structure */
+
+// blink1 copy of some hid_device_info and other bits. 
 // this seems kinda dumb, though. is there a better way?
 typedef struct blink1_info_ {
     hid_device* dev;  // device, if opened, NULL otherwise
     char path[pathstrmax];  // platform-specific device path
-    wchar_t serial[serialstrmax];
+    char serial[serialstrmax];
     int type;  // from blink1types
 } blink1_info;
 
-
+// return VID for blink(1)
 int blink1_vid(void);
+// return PID for blink(1)
 int blink1_pid(void);
-void blink1_sortCache(void);
+// 
+//void blink1_sortCache(void);
 
 int blink1_enumerate();
 int blink1_enumerateByVidPid(int vid, int pid);
 const char* blink1_getCachedPath(int i);
-const wchar_t* blink1_getCachedSerial(int i);
-const wchar_t* blink1_getSerialForDev(hid_device* dev);
+const char* blink1_getCachedSerial(int i);
+const char* blink1_getSerialForDev(hid_device* dev);
 int blink1_getCachedCount(void);
 int blink1_isMk2ById(int i);
 int blink1_isMk2(hid_device* dev);
 
+// open first found blink(1) device
 hid_device* blink1_open(void);
+
+// open blink(1) by USB path  note: this is platform-specific, and port-specific
 hid_device* blink1_openByPath(const char* path);
-hid_device* blink1_openBySerial(const wchar_t* serial);
-hid_device* blink1_openById( int i );
+
+// open blink(1) by 8-digit serial number
+hid_device* blink1_openBySerial(const char* serial);
+
+// open by "id", which if from 0-blink1_max_devices is index
+// or if >blink1_max_devices, is numerical representation of serial number
+hid_device* blink1_openById( uint32_t i );
 
 void blink1_close( hid_device* dev );
 
