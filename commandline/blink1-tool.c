@@ -26,7 +26,7 @@
 #include <getopt.h>    // for getopt_long()
 #include <time.h>
 #include <unistd.h>    // getuid()
-#include <wchar.h>     // for wcstol
+
 
 #include "blink1-lib.h"
 
@@ -37,8 +37,7 @@ int numDevicesToUse = 1;
 int ledn = 0;
 
 hid_device* dev;
-//const wchar_t* dev_serial;
-char  deviceIds[blink1_max_devices];
+uint32_t  deviceIds[blink1_max_devices];
 
 char  cmdbuf[9]; 
 char rgbbuf[4];
@@ -178,6 +177,7 @@ int main(int argc, char** argv)
     static int vid,pid;
     int  rc;
     char tmpstr[100];
+    char serialnumstr[serialstrmax] = {'\0'}; 
 
     uint16_t seed = time(NULL);
     srand(seed);
@@ -302,8 +302,14 @@ int main(int argc, char** argv)
                 for( int i=0; i< blink1_max_devices; i++) {
                     deviceIds[i] = i;
                 }
-            } else {
-                numDevicesToUse = hexread(deviceIds,optarg,sizeof(deviceIds));
+            } 
+            else if( strlen(optarg) == 8 ) { //  
+                deviceIds[0] = strtol( optarg, NULL, 16);
+                numDevicesToUse = 1;
+                //sprintf( serialnumstr, "%s", optarg);  // strcpy
+            } 
+            else {
+                numDevicesToUse = hexread((uint8_t*)deviceIds,optarg,sizeof(deviceIds));
             }
             break;
         case 'U': 
@@ -348,22 +354,21 @@ int main(int argc, char** argv)
 
     if( numDevicesToUse == 0 ) numDevicesToUse = count; 
 
-    //if( !dev_serial ) 
-    //    dev_serial = blink1_getCachedSerial( deviceIds[0] );
-
-    if( verbose && !quiet ) { 
-        printf("deviceId[0] = %d\n", deviceIds[0]);
-        //printf("cached path = '%ls'\n", dev_serial);
+    if( verbose ) { 
+        printf("deviceId[0] = %X\n", deviceIds[0]);
+        printf("cached list:\n");
         for( int i=0; i< count; i++ ) { 
-            printf("%d: serial: '%ls' '%s'\n", i,blink1_getCachedSerial(i), blink1_getCachedPath(i) );
+            printf("%d: serial: '%s' '%s'\n", i,blink1_getCachedSerial(i), blink1_getCachedPath(i) );
         }
     }
 
     // actually open up the device to start talking to it
+    if(verbose) printf("openById: %X\n", deviceIds[0]);
     dev = blink1_openById( deviceIds[0] );
+
     if( dev == NULL ) { 
         if ( !quiet ) {
-            printf("cannot open blink(1), bad serial number\n");
+            printf("cannot open blink(1), bad id or serial number\n");
         }
         exit(1);
     }
@@ -384,7 +389,7 @@ int main(int argc, char** argv)
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
         for( int i=0; i< count; i++ ) {
-            printf("id:%d - serialnum:%ls %s\n", i, blink1_getCachedSerial(i), 
+            printf("id:%d - serialnum:%s %s\n", i, blink1_getCachedSerial(i), 
                    (blink1_isMk2ById(i)) ? "(mk2)":"");
         }
     }
@@ -439,7 +444,7 @@ int main(int argc, char** argv)
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
             if ( !quiet ) {
-                printf("set dev:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+                printf("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
                        deviceIds[i],r,g,b,millis);
             }
             if( ledn==0 ) {

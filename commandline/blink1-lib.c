@@ -13,12 +13,14 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#define   swprintf   _snwprintf
 #else
 #include <unistd.h>    // for usleep()
 #endif
 
 #include "blink1-lib.h"
 
+//#define DEBUG_PRINTF
 
 #ifdef DEBUG_PRINTF
 #define LOG(...) fprintf(stderr, __VA_ARGS__)
@@ -38,16 +40,13 @@
 #define blink1_eeaddr_patternstart (blink1_eeaddr_serialnum + blink1_serialnum_len)
 
 
-// FIXME: use hid_device_info instead with custom sorter on serial or path
-//static char blink1_cached_paths[cachemax][pathstrmax]; 
-//static wchar_t blink1_cached_serials[cachemax][serialmax];
-//static hid_dev_info blink1_cached_hid_dev_infos[cachemax];
 static blink1_info blink1_infos[cache_max];
 static int blink1_cached_count = 0;  // number of cached entities
 
 static int blink1_enable_degamma = 1;
 
 //----------------------------------------------------------------------------
+void blink1_sortCache(void);
 
 //
 int blink1_enumerate(void)
@@ -68,10 +67,12 @@ int blink1_enumerateByVidPid(int vid, int pid)
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
             if( cur_dev->serial_number != NULL ) { // can happen if not root
                 strcpy( blink1_infos[p].path,   cur_dev->path );
-                wcscpy( blink1_infos[p].serial, cur_dev->serial_number );
+                sprintf( blink1_infos[p].serial, "%ls", cur_dev->serial_number );
+                //wcscpy( blink1_infos[p].serial, cur_dev->serial_number );
+                //uint32_t sn = wcstol( cur_dev->serial_number, NULL, 16);
+                uint32_t serialnum = strtol( blink1_infos[p].serial, NULL, 16);
                 blink1_infos[p].type = BLINK1_MK1;
-                uint32_t sn = wcstol( cur_dev->serial_number, NULL, 16);
-                if( sn > blink1mk2_serialstart ) {
+                if( serialnum >= blink1mk2_serialstart ) {
                     blink1_infos[p].type = BLINK1_MK2;
                 }
                 p++;
@@ -100,7 +101,7 @@ const char* blink1_getCachedPath(int i)
     return blink1_infos[i].path;
 }
 //
-const wchar_t* blink1_getCachedSerial(int i)
+const char* blink1_getCachedSerial(int i)
 {
     return blink1_infos[i].serial;
 }
@@ -113,10 +114,10 @@ int blink1_getCacheIndexByPath( const char* path )
     return -1;
 }
 
-int blink1_getCacheIndexBySerial( const wchar_t* serial ) 
+int blink1_getCacheIndexBySerial( const char* serial ) 
 {
     for( int i=0; i< cache_max; i++ ) { 
-        if( wcscmp( blink1_infos[i].serial, serial ) == 0 ) return i;
+        if( strcmp( blink1_infos[i].serial, serial ) == 0 ) return i;
     }
     return -1;
 }
@@ -129,7 +130,7 @@ int blink1_getCacheIndexByDev( hid_device* dev )
     return -1;
 }
 
-const wchar_t* blink1_getSerialForDev(hid_device* dev)
+const char* blink1_getSerialForDev(hid_device* dev)
 {
     int i = blink1_getCacheIndexByDev( dev );
     if( i>=0 ) return blink1_infos[i].serial;
@@ -158,6 +159,9 @@ int blink1_isMk2( hid_device* dev )
 hid_device* blink1_openByPath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
+
+    LOG("blink1_openByPath %s\n", path);
+
     hid_device* handle = hid_open_path( path ); 
 
     int i = blink1_getCacheIndexByPath( path );
@@ -171,46 +175,50 @@ hid_device* blink1_openByPath(const char* path)
 }
 
 //
-hid_device* blink1_openBySerial(const wchar_t* serial)
+hid_device* blink1_openBySerial(const char* serial)
 {
-    if( serial == NULL || wcslen(serial) == 0 ) return NULL;
+    if( serial == NULL || strlen(serial) == 0 ) return NULL;
     int vid = blink1_vid();
     int pid = blink1_pid();
     
-    LOG("opening %ls at vid/pid %x/%x\n", serial, vid,pid);
-    hid_device* handle = hid_open(vid,pid, serial ); 
+    LOG("blink1_openBySerial %s at vid/pid %x/%x\n", serial, vid,pid);
+
+    wchar_t wserialstr[serialstrmax] = {L'\0'};
+#ifdef _WIN32   // omg windows you suck
+    swprintf( wserialstr, serialstrmax, L"%S", serial); // convert to wchar_t*
+#else
+    swprintf( wserialstr, serialstrmax, L"%s", serial); // convert to wchar_t*
+#endif
+    LOG("serialstr: '%ls' \n", wserialstr );
+    hid_device* handle = hid_open(vid,pid, wserialstr ); 
+    if( handle ) LOG("got a hid_device handle\n"); 
 
     int i = blink1_getCacheIndexBySerial( serial );
-    if( i >= 0 ) {  // good
+    if( i >= 0 ) {
+        LOG("good, serial was in cache\n");
         blink1_infos[i].dev = handle;
     }
     else { // uh oh, not in cache, now what?
+        LOG("uh oh, serial was not in cache\n");
     }
 
     return handle;
 }
 
 //
-hid_device* blink1_openById( int i ) 
+hid_device* blink1_openById( uint32_t i ) 
 { 
-    //return blink1_openByPath( blink1_getCachedPath(i) );
-    return blink1_openBySerial( blink1_getCachedSerial(i) );
+    if( i > blink1_max_devices ) { // then i is a serial number not an array index
+        char serialstr[serialstrmax];
+        sprintf( serialstr, "%X", i);  // convert to wchar_t* 
+        return blink1_openBySerial( serialstr );  
+    } 
+    else {
+        return blink1_openByPath( blink1_getCachedPath(i) );
+    }
 }
 
-/*
 //
-hid_device* blink1_open(void)
-{
-    int vid = blink1_vid();
-    int pid = blink1_pid();
-
-    hid_device* handle = hid_open(vid,pid, NULL);  // FIXME?
-
-    blink1_infos[0].dev = handle;  // FIXME
-    
-    return handle;
-}
-*/
 hid_device* blink1_open(void)
 {
     blink1_enumerate();
@@ -592,15 +600,27 @@ void blink1_sortSerials(void)
            elemsize, 
            cmp_serial);
 }
-*/
+
 
 // qsort wchar_t string comparison function 
-int cmp_blink1_info_serial(const void *a, const void *b) 
+int cmp_blink1_info_serial_old(const void *a, const void *b) 
 { 
     blink1_info* bia = (blink1_info*) a;
     blink1_info* bib = (blink1_info*) b;
 
     return wcsncmp( bia->serial, 
+                    bib->serial, 
+                    serialstrmax);
+} 
+*/
+
+// qsort char* string comparison function 
+int cmp_blink1_info_serial(const void *a, const void *b) 
+{ 
+    blink1_info* bia = (blink1_info*) a;
+    blink1_info* bib = (blink1_info*) b;
+
+    return strncmp( bia->serial, 
                     bib->serial, 
                     serialstrmax);
 } 
