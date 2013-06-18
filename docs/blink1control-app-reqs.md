@@ -180,11 +180,11 @@ and [app-url-api-examples.md](app-url-api-examples.md).
 
 ### 4.1. Main Settings Window
 
-4.1.1. Main window is fixed in size.
+4.1.1. Main window is fixed in size, not resizable.
 
 4.1.2. Main window is no bigger than 800 x 600.
 
-4.1.3. 
+4.1.3. When minimized, window hides.
 
 
 ### 4.2. Custom GUI widgets
