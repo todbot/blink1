@@ -113,7 +113,7 @@ static void usage(char *myName)
 "  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
 "  --readrgb <pos>             Read pattern RGB value at pos\n" 
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
-"  --servertickle <1/0>        Turn on/off servertickle (uses -t msec) \n"
+"  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
 "  --list                      List connected blink(1) devices \n"
 " Nerd functions: (not used normally) \n"
 "  --hidread                   Read a blink(1) USB HID GetFeature report \n"
@@ -246,10 +246,11 @@ int main(int argc, char** argv)
             case CMD_GLIMMER:
             case CMD_RUNNING:
             case CMD_PLAY:
+            case CMD_SERVERDOWN:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
-            case CMD_SERVERDOWN:
+                //case CMD_SERVERDOWN:
                 if( optarg ) 
                     arg = strtol(optarg,NULL,0);   // cmd w/ number arg
                 break;
@@ -612,12 +613,14 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_SERVERDOWN ) { 
-        int on  = arg;
+        //int on  = arg;
+        int on = cmdbuf[0];
+        int st = cmdbuf[1];
         if ( !quiet ) {
             printf("setting serverdown %s (at %d millis)\n", 
                    ((on)?"ON":"OFF"), delayMillis);
         }
-        blink1_serverdown( dev, on, delayMillis );
+        blink1_serverdown( dev, on, delayMillis, st );
     }
     // use caution with this, could make your blink(1) unusable
     // --serialnumwrite abcd1234

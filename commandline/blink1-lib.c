@@ -429,12 +429,24 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
 }
 
 
-//
-int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis)
+// 
+// args:
+// - on == 1 or 0, enable or disable
+// - millis == milliseconds to wait until triggering 
+// - st == 1 or 0, stay lit or set off()  (mk2 firmware only)
+int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis, uint8_t st)
 {
     int dms = millis/10;  // millis_divided_by_10
 
-    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'D', on, (dms>>8), (dms % 0xff) };
+    uint8_t buf[blink1_buf_size];
+    buf[0] = blink1_report_id;
+    buf[1] = 'D';
+    buf[2] = on;
+    buf[3] = (dms>>8);
+    buf[4] = (dms % 0xff);
+    buf[5] = st;
+    buf[6] = 0;
+    buf[7] = 0;
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
