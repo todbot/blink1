@@ -21,7 +21,7 @@ public:
     Blink1Pattern(const char* name, QObject *parent=0);
 
     QJsonObject toJson();
-    void fromJson(const QJsonObject& obj);  // make class method?
+    void fromJson( QJsonObject obj);  // make class method?
 
     QString name() const;
     void setName(const QString& name);

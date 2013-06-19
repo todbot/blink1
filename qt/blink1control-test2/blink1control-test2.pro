@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+#CONFIG   += static
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,12 +31,11 @@ FORMS    += mainwindow.ui \
 BLINK1_LIB_DIR=$$PWD/../../commandline
 message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
-macx: LIBS += -L$$PWD/../../commandline -lBlink1
-win32: LIBS += $$BLINK1_LIB_DIR/libBlink1.dll
+macx: LIBS += -L$$BLINK1_LIB_DIR -lBlink1
+win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 
 INCLUDEPATH += $$BLINK1_LIB_DIR $$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
-DEPENDPATH += $$BLINk1_LIB_DIR
-
+DEPENDPATH += $$BLINK1_LIB_DIR
 
 
 RESOURCES += \
@@ -49,7 +49,6 @@ macx {
     # FIXME: How to make this cross-platform?
     QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
 }
-
 # mac: note to deploy must do commandline magic of:
 # % macdeployqt test2.app -verbose=2
 # % mv test2.app/Contents/MacOS/libBlink1.dylib test2.app/Contents/Frameworks
@@ -65,9 +64,9 @@ win32 {
     CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
 
     message( "MYAPPDIR = $$MYAPPDIR" )
-
-    # but this line does not work, because of forward slashes presumably
-    QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
+    #message( "CONFIG = $$CONFIG")
+    # but this line doesn't work, because of forward slashes presumably
+   # QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
 }
 # win32:
 # minimum DLLs appear to be: (in "release" kit)
@@ -84,9 +83,6 @@ win32 {
 #win32: LIBS += -lSetupAPI
 #unix: !macx: LIBS += -lusb-1.0
 
+
 # FIXME: this lives outside the repo
-# need to do "git clone https://github.com/mbasaglia/Qt-Color-Picker.git"
 include(../third-party/Qt-Color-Picker/color_widgets.pri)
-
-
-

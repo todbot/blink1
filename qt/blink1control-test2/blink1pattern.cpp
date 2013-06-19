@@ -16,7 +16,7 @@ Blink1Pattern::Blink1Pattern(const char* name, QObject *parent) : QObject(parent
     setName(name);
 }
 
-void Blink1Pattern::fromJson( const QJsonObject& obj)
+void Blink1Pattern::fromJson( QJsonObject obj)
 {
     setName( obj.value("name").toString() );
     setPlaycount( obj.value("playcount").toDouble());
