@@ -30,17 +30,12 @@ FORMS    += mainwindow.ui \
 BLINK1_LIB_DIR=$$PWD/../../commandline
 message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
-#unix|win32: LIBS += -L$$PWD/../../blink1/commandline -lBlink1
-LIBS += -L$$PWD/../../commandline -lBlink1
+macx: LIBS += -L$$PWD/../../commandline -lBlink1
+win32: LIBS += $$BLINK1_LIB_DIR/libBlink1.dll
+
 INCLUDEPATH += $$BLINK1_LIB_DIR $$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
 DEPENDPATH += $$BLINk1_LIB_DIR
 
-#macx: LIBS += -L./HIDAPI/mac -lHIDAPI
-#win32: LIBS += -L./HIDAPI/windows -lHIDAPI
-#unix: !macx: LIBS += -L./HIDAPI/linux -lHIDAPI
-#macx: LIBS += -framework CoreFoundation -framework IOkit
-#win32: LIBS += -lSetupAPI
-#unix: !macx: LIBS += -lusb-1.0
 
 
 RESOURCES += \
@@ -55,9 +50,43 @@ macx {
     QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
 }
 
-# note to deploy must do commandline magic of:
+# mac: note to deploy must do commandline magic of:
 # % macdeployqt test2.app -verbose=2
 # % mv test2.app/Contents/MacOS/libBlink1.dylib test2.app/Contents/Frameworks
 
+
+win32 {
+    # confusingly, these both print, why?
+    #CONFIG(release, debug|release):message(*** Release build!) #will print
+    #CONFIG(debug, debug|release):message(*** Debug build!) #no print
+
+    # surely there's a better way to do this
+    CONFIG(release, debug|release):  MYAPPDIR=$$OUT_PWD/release
+    CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
+
+    message( "MYAPPDIR = $$MYAPPDIR" )
+
+    # but this line does not work, because of forward slashes presumably
+    QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
+}
+# win32:
+# minimum DLLs appear to be: (in "release" kit)
+# Qt5Core.dll Qt5Gui.dll Qt5Widgets.dll
+# icudt49.dll icuin49.dll icuuc49.dll
+# D3DCompiler_43.dll libGLESv2.dll libEGL.dll
+# libgcc_s_sjlj-1.dll libstdc++-6.dll  libwinpthread-1.dll
+# blink1-lib.dll
+
+#macx: LIBS += -L./HIDAPI/mac -lHIDAPI
+#win32: LIBS += -L./HIDAPI/windows -lHIDAPI
+#unix: !macx: LIBS += -L./HIDAPI/linux -lHIDAPI
+#macx: LIBS += -framework CoreFoundation -framework IOkit
+#win32: LIBS += -lSetupAPI
+#unix: !macx: LIBS += -lusb-1.0
+
 # FIXME: this lives outside the repo
+# need to do "git clone https://github.com/mbasaglia/Qt-Color-Picker.git"
 include(../third-party/Qt-Color-Picker/color_widgets.pri)
+
+
+
