@@ -9,6 +9,7 @@
 //#include <QVariant>
 //#include <QObjectHelper>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonDocument>
 
 enum {
@@ -59,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     qDebug() << "num blink(1)s found: " << n;
 
-    if( n ) {
+    if( n ) {  // only save settings if blink(1) is plugged in FIXME
         ui->blink1Status->setText("blink(1) connected");
         char ser[10];
         char iftttkey[20];
@@ -67,8 +68,10 @@ MainWindow::MainWindow(QWidget *parent) :
         sprintf(iftttkey, "%s%s",ser,ser);
         ui->blink1SerialNumber->setText(ser);
         ui->blink1IftttKey->setText(iftttkey);
+
         saveSettings();
-    } else {
+    }
+    else {
         ui->blink1Status->setText("no blink(1) found");
     }
 
@@ -79,10 +82,13 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     qDebug() << "destructor";
-    //blink1_fadeToRGB(blink1dev, 0, 0,0,0 );
-    //blink1_close(blink1dev);
 
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *)
+{
+    quit();
 }
 
 void MainWindow::quit()
@@ -90,31 +96,69 @@ void MainWindow::quit()
     blink1_fadeToRGB(blink1dev, 0, 0,0,0 );
     blink1_close(blink1dev);
 
+    qDebug() << "pattern list:";
     QList<QString> pattnames = patterns.keys();
+    QJsonArray qarr;
     foreach (QString nm, pattnames ) {
         Blink1Pattern*  patt = patterns.value(nm);
         qDebug() << "patt name: " << patt->name();
         QJsonObject obj = patt->toJson();
-        QJsonDocument doc;
-        doc.setObject(obj);
-        qDebug() << "toJson: " << doc.toJson();
+        qarr.append(obj);
     }
+    QJsonDocument doc;
+    doc.setArray(qarr);
+   // qDebug() << "quitLtoJson: " << doc.toJson();
 
     qApp->quit();
 }
 
+void MainWindow::saveSettings()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1ControlQt");
+
+    QString sText = ui->blink1IftttKey->text();
+    settings.setValue("iftttKey", sText);
+
+    QList<QString> pattnames = patterns.keys();
+    QJsonArray qarr;
+    foreach (QString nm, pattnames ) {
+        //Blink1Pattern*  patt = patterns.value(nm);
+        QJsonObject obj = patterns.value(nm)->toJson();
+        qarr.append(obj);
+    }
+    //QJsonDocument doc = QJsonDocument(qarr);
+    //doc.setArray(qarr);
+    QString patternstr = QJsonDocument(qarr).toJson();
+    qDebug() << "saveSettings:patterns: " << patternstr;
+    settings.setValue("patterns", patternstr);
+
+}
+
 void MainWindow::loadSettings()
 {
-    QSettings settings("ThingM", "Blink1ControlQt");
-    QString sText = settings.value("text", "").toString();
-    ui->blink1IftttKey->setText(sText);
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1ControlQt");
 
-    for( int i=0; i<5; i++) {
-        QString name = QString("pattern-%1-%2").arg(i).arg("abc");
-        Blink1Pattern* bp = new Blink1Pattern(); //name );
-        bp->setName( name );
-        bp->setPlaycount(i*3);
-        patterns.insert( name, bp );
+    QString sIftttKey = settings.value("iftttKey", "").toString();
+    ui->blink1IftttKey->setText(sIftttKey);
+    QString sPatternStr = settings.value("patterns","").toString();
+    qDebug() << "patterns: " << sPatternStr;
+    if( sPatternStr.length() ) {
+        QJsonDocument doc = QJsonDocument::fromJson( sPatternStr.toLatin1() );
+        QJsonArray qarr = doc.array();
+        for( int i=0; i< qarr.size(); i++ ) {
+            Blink1Pattern* bp = new Blink1Pattern();
+            bp->fromJson( qarr.at(i).toObject() );
+            patterns.insert( bp->name(), bp );
+        }
+    }
+    else {
+          for( int i=0; i<5; i++) {
+            QString name = QString("pattern-%1-%2").arg(i).arg("abc");
+            Blink1Pattern* bp = new Blink1Pattern(); //name );
+            bp->setName( name );
+            bp->setPlaycount(i*3);
+            patterns.insert( name, bp );
+        }
     }
 
     /* test badly formatted QJsonObject
@@ -137,13 +181,6 @@ void MainWindow::loadSettings()
     */
 }
 
-void MainWindow::saveSettings()
-{
-    QSettings settings("ThingM", "Blink1ControlQt");
-    QString sText = ui->blink1IftttKey->text();
-    settings.setValue("text", sText);
-    //settings.setValue("patterns", patterns);
-}
 
 void MainWindow::updateBlink1()
 {
