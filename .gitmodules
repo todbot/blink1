@@ -3,4 +3,4 @@
 	url = https://github.com/mbasaglia/Qt-Color-Picker.git
 [submodule "qt/third-party/fervor"]
 	path = qt/third-party/fervor
-	url = https://github.com/pypt/fervor.git
+	url = https://github.com/todbot/fervor.git

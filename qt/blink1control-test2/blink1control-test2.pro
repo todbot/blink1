@@ -4,10 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-#CONFIG   += static
+QT       += core gui widgets
+#QT       += webkit webkitwidgets
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = test2
 VERSION = 0.9.8
@@ -77,6 +76,7 @@ win32 {
 # libgcc_s_sjlj-1.dll libstdc++-6.dll  libwinpthread-1.dll
 # blink1-lib.dll
 
+# some hints from a hidapi app
 #macx: LIBS += -L./HIDAPI/mac -lHIDAPI
 #win32: LIBS += -L./HIDAPI/windows -lHIDAPI
 #unix: !macx: LIBS += -L./HIDAPI/linux -lHIDAPI
