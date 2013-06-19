@@ -2,7 +2,7 @@
 #include "blink1pattern.h"
 
 #include <QDebug>
-#include <QJsonArray>
+//#include <QJsonArray>
 
 Blink1Pattern::Blink1Pattern( QObject *parent) : QObject(parent)
 {

@@ -16,11 +16,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     blink1pattern.cpp \
-    todgroupbox.cpp
+    todgroupbox.cpp \
+    blink1input.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
-    todgroupbox.h
+    todgroupbox.h \
+    blink1input.h
 
 FORMS    += mainwindow.ui \
     dialog.ui \
