@@ -10,6 +10,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = test2
+VERSION = 0.9.8
 TEMPLATE = app
 
 
@@ -84,5 +85,9 @@ win32 {
 #unix: !macx: LIBS += -lusb-1.0
 
 
-# FIXME: this lives outside the repo
 include(../third-party/Qt-Color-Picker/color_widgets.pri)
+
+# Fervor autoupdater
+!include("../third-party/fervor/Fervor.pri") {
+    error("Unable to include Fervor autoupdater.")
+}
