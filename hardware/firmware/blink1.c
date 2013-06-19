@@ -27,7 +27,7 @@
 #include "usbdrv.h"
 
 #define blink1_ver_major  '1'
-#define blink1_ver_minor  '0'
+#define blink1_ver_minor  '1'
 
 static uint8_t usbHasBeenSetup;
 
@@ -347,18 +347,21 @@ void handleMessage(void)
             eeprom_write_byte( (uint8_t*)(uint16_t)addr, val ); // dumb
         }
     }
-    // servermode tickle - {'D', {1/0},th,tl,  0,0, 0,0 }
+    // servermode tickle - {'D', {1/0},th,tl,  {1/0},0, 0,0 }
     //
     else if( cmd == 'D' ) {
         uint8_t serverdown_on = msgbufp[1];
         uint16_t t = ((uint16_t)msgbufp[2] << 8) | msgbufp[3]; 
+        uint8_t st = msgbuf[4];
         if( serverdown_on ) { 
             serverdown_millis = t;
             serverdown_update_next = millis() + (t*10);
         } else {
             serverdown_millis = 0; // turn off serverdown mode
         }
-        off();
+        if( st == 0 ) {  // reset blink(1) state 
+            off();
+        }
     }
     // version info
     else if( cmd == 'v' ) { 

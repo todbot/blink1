@@ -48,7 +48,6 @@ int blink1_vid(void);
 // return PID for blink(1)
 int blink1_pid(void);
 // 
-//void blink1_sortCache(void);
 
 int blink1_enumerate();
 int blink1_enumerateByVidPid(int vid, int pid);
@@ -93,7 +92,8 @@ int blink1_serialnumread(hid_device *dev, uint8_t** serialnumstr);
 int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr);
 
 //int blink1_nightlight(hid_device *dev, uint8_t on);
-int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis);
+//int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis);
+int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis, uint8_t st);
 
 int blink1_play(hid_device *dev, uint8_t play, uint8_t pos);
 int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis, 

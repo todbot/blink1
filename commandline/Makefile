@@ -101,6 +101,7 @@ endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
+#LIBTARGET = libBlink1.dll
 LIBTARGET = blink1-lib.dll
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
@@ -117,6 +118,7 @@ endif
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
 LIBTARGET = blink1-lib.so
+#LIBTARGET = libBlink1.so
 CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
 
@@ -131,6 +133,7 @@ endif
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
+#LIBTARGET = libBlink1.so
 LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
 OBJS = ./hidapi/libusb/hid.o
 EXEFLAGS=
@@ -150,7 +153,7 @@ CFLAGS += -I./hidapi/hidapi -I./mongoose -g
 OBJS +=  blink1-lib.o 
 
 #all: msg blink1-tool blink1-server-simple
-all: msg blink1-tool 
+all: msg blink1-tool lib
 
 msg: 
 	@echo "building for OS=$(OS)"
