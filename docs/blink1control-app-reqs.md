@@ -174,6 +174,13 @@ and [app-url-api-examples.md](app-url-api-examples.md).
 3.5.4. Manage, add/delete color patterns as described in 
 [app-url-api.md](app-url-api.md) and [app-url-api-examples.md](app-url-api-examples.md).
 
+### 3.6. Interation with System
+
+3.6.1. Launch on system startup option
+
+3.6.2. Launch minimized option
+
+
 
 4. User Interface Requirements
 ------------------------------
