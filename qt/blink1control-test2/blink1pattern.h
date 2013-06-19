@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QList>
 #include <QColor>
-//#include <QByteArray>
 #include <QJsonObject>
 
 class Blink1Pattern : public QObject
