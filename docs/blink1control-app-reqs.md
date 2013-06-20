@@ -251,7 +251,7 @@ Cmake is fine, qmake amd .pro files is preferred.
 even encouraged, for toolkits such as an HTTP server.
 
 6.2.1.1. After extensive evaluation of HTTP libraries for Qt,
-the best one found so far is [Tasteful-Server](https://github.com/scheibel/tasteful-server).
+the best one found so far is [Tasteful-Server](https://github.com/scheibel/tasteful-server). libqxt looks good but I couldn't find a good webserver example.
 
 6.2.2. Dependencies on oOther C++ collection classes and frameowrks like
 Boost shall be avoided.

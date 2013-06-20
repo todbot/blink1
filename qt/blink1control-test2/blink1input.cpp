@@ -24,8 +24,25 @@ QString Blink1Input::name() const
 {
     return mname;
 }
-
 void Blink1Input::setName(const QString &name)
 {
     mname = name;
+}
+
+QString Blink1Input::type() const
+{
+    return mtype;
+}
+void Blink1Input::setType(const QString &type)
+{
+    mtype = type;
+}
+
+QString Blink1Input::arg1() const
+{
+    return marg1;
+}
+void Blink1Input::setArg1(const QString &arg1)
+{
+    marg1 = arg1;
 }
