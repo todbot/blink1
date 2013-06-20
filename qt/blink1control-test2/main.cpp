@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-#include <HttpServer>
+//#include <HttpServer>
 
 #include "fvupdater.h"
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
-    
+/*
     HttpServer server([](const HttpRequest& request) {
         HttpResponse response(request);
 
@@ -36,9 +36,8 @@ int main(int argc, char *argv[])
 
         return response;
     });
-
     server.listen(QHostAddress::Any, 8080);
-
+*/
 
     return a.exec();
 }
