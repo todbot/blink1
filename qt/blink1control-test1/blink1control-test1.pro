@@ -46,7 +46,9 @@ macx: {
 }
 
 win32 {
-    message( "Be sure to copy blink1-lib.dll to $$MYAPPDIR" )
-    # but this line doesn't work, because of forward slashes presumably
-   # QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR/blink1-lib.dll" "$$MYAPPDIR"
+    MYAPPDIR=$$OUT_PWD/debug
+    CP_CMD="c:/MinGW/msys/1.0/bin/cp -f"
+    message( "copying blink1-lib.dll to $$MYAPPDIR" )
+    QMAKE_POST_LINK = "$$CP_CMD $${BLINK1_LIB_DIR}/blink1-lib.dll $${MYAPPDIR}"
+    #QMAKE_POST_LINK = "COPY /Y $${BLINK1_LIB_DIR}/blink1-lib.dll $${MYAPPDIR}"
 }
