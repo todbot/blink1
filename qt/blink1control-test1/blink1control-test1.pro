@@ -4,6 +4,8 @@
 #  A simple demonstration of integrating the C
 #  blink1-lib into Qt.
 #
+# 2013, Tod E. Kurt, http://thingm.com/
+#
 #-------------------------------------------------
 
 QT       += core gui
@@ -21,12 +23,12 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-
+#
 # Build the blink(1) shared library before trying to build this project.
 # Go into blink1/commandline directory and do: "make lib".
-# The result will be blink1-lib.dll (windows) or libBlink1.dylib (macx)
-# You will then need to copy the lib into the executable directory
-
+# The result will be "blink1-lib.dll" (windows) or "libBlink1.dylib" (macx)
+# You will then need to copy the lib into the executable directory.
+#
 BLINK1_LIB_DIR=$$PWD/../../commandline
 message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
