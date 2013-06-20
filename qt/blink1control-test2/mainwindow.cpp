@@ -6,11 +6,10 @@
 #include <QPropertyAnimation>
 #include <QDebug>
 
-//#include <QVariant>
-//#include <QObjectHelper>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+
 
 enum {
     NONE = 0,

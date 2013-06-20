@@ -4,3 +4,6 @@
 [submodule "qt/third-party/fervor"]
 	path = qt/third-party/fervor
 	url = https://github.com/todbot/fervor.git
+[submodule "qt/third-party/tasteful-server"]
+	path = qt/third-party/tasteful-server
+	url = git@github.com:todbot/tasteful-server.git
