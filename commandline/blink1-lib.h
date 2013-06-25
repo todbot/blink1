@@ -85,6 +85,11 @@ int blink1_fadeToRGBN(hid_device *dev, uint16_t fadeMillis,
 
 int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b );
 
+// mk2 devices only
+int blink1_readRGB(hid_device *dev, uint16_t* fadeMillis, 
+                   uint8_t* r, uint8_t* g, uint8_t* b, 
+                   uint8_t ledn);
+
 int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val);
 int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val);
 
@@ -102,6 +107,7 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
 int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis, 
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos);
+// mk2 devices only
 int blink1_savePattern(hid_device *dev);
 
 int blink1_testtest(hid_device *dev);

@@ -8,9 +8,9 @@ This document shows the format of the data packet sent to blink(1).
 
 ## Command Summary ##
 
-    - Fade to RGB color       format: {0x01, 'c', r,g,b,    th,tl, 0 }
-    - Set RGB color now       format: {0x01, 'n', r,g,b,      0,0, 0 }
-    - Read current RGB color  format: {0x01, 'C', n,0,0,      0,0, 0 } (*)
+    - Fade to RGB color       format: {0x01, 'c', r,g,b,    th,tl, n } (*)
+    - Set RGB color now       format: {0x01, 'n', r,g,b,      0,0, n } (*)
+    - Read current RGB color  format: {0x01, 'r', n,0,0,      0,0, n } (*)
     - Serverdown tickle/off   format: {0x01, 'D', on,th,tl,  st,0, 0 } (*)
     - Play/Pause              format: {0x01, 'p', on,p,0,     0,0, 0 }
     - Set color pattern line  format: {0x01, 'P', r,g,b,    th,tl, p }
@@ -24,11 +24,13 @@ This document shows the format of the data packet sent to blink(1).
 where:
 
     r,g,b = 24-bit RGB color
+        n = which LED to address: 0=all, 1=led#1, 2=led#2, etc. (mk2 only)
        th = (fadetimeMillis/10) >> 8
        tl = (fadetimeMillis/10) & 0xff
        on = 1 or 0, indicating on/off, play/pause, etc.
        st = 1 or 0, indicating on/off, maintain state or clear state (mk2 only)
-        p = position in a list, starting at 0
+        p = position in a list, starting at 0, going to 11 (mk1) 
+        p = (pos & 0x7f) | (ledn << 4) : ledn = 0..7, pos = 0..15   (mk2) e.g. "line 3, led 2: p = (3 & 0x7f) | (2 << 4) = 0x23
        ad = address starting at 1
         v = arbitrary value 
 
@@ -47,7 +49,7 @@ blink(1) takes 8 bytes of input
     - byte 4 = cmd arg 2 (e.g. blue)
     - byte 5 = cmd arg 3 (e.g. th)
     - byte 6 = cmd arg 4 (e.g. tl)
-    - byte 7 = cmd arg 5 (e.g. step)
+    - byte 7 = cmd arg 5 (e.g. ledn)
 
 Some things to note:
 
@@ -64,7 +66,7 @@ The most common command is "fade to RGB", which has the form:
     - byte 4 = blue value
     - byte 5 = th    (fadeMillis/10 high byte)
     - byte 6 = tl    (fadeMillis/10 low byte)
-    - byte 7 = 0     (unused)
+    - byte 7 = 0     (unused on mk1, 0=all on mk2) 
 
 (th: time/cs high (T >>8)  where time 'T' is a number of 10msec ticks
 tl : time/cs low (T & 0xff)
@@ -83,7 +85,7 @@ This command does not produce a return value
     - byte 4 = blue value
     - byte 5 = th    (fadeMillis/10 high byte)
     - byte 6 = tl    (fadeMillis/10 low byte)
-    - byte 7 = 0     (unused)
+    - byte 7 = 0     (unused on mk1)
 
 ### Servertickle - `format: {0x01, 'D', on,th,tl,  st,0, 0 }`
 
