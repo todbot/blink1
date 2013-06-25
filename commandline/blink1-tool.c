@@ -148,8 +148,9 @@ enum {
     CMD_EEREAD,
     CMD_EEWRITE,
     CMD_RGB,
-    CMD_SAVERGB,
     CMD_READRGB,
+    CMD_SETPATTLINE,
+    CMD_READPATTLINE,
     CMD_SAVEPATTERN,
     CMD_OFF,
     CMD_ON,
@@ -206,14 +207,15 @@ int main(int argc, char** argv)
         {"eeread",     required_argument, &cmd,   CMD_EEREAD },
         {"eewrite",    required_argument, &cmd,   CMD_EEWRITE },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
-        {"savergb",    required_argument, &cmd,   CMD_SAVERGB },
-        {"readrgb",    required_argument, &cmd,   CMD_READRGB },
+        {"savepattline", required_argument, &cmd,   CMD_SETPATTLINE },
+        {"readpattline", required_argument, &cmd,   CMD_READPATTLINE },
         {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
         {"red",        no_argument,       &cmd,   CMD_RED },
         {"green",      no_argument,       &cmd,   CMD_GRN },
         {"blue",       no_argument,       &cmd,   CMD_BLU},
+        {"readrgb",    no_argument,       &cmd,   CMD_READRGB},
         {"blink",      required_argument, &cmd,   CMD_BLINK},
         {"glimmer",    required_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
@@ -240,8 +242,8 @@ int main(int argc, char** argv)
             case CMD_HIDWRITE:
             case CMD_EEREAD:
             case CMD_EEWRITE:
-            case CMD_SAVERGB:
-            case CMD_READRGB:
+            case CMD_SETPATTLINE:
+            case CMD_READPATTLINE:
             case CMD_BLINK:
             case CMD_GLIMMER:
             case CMD_RUNNING:
@@ -459,6 +461,16 @@ int main(int argc, char** argv)
             blink1_close( dev );
         }
     }
+    else if( cmd == CMD_READRGB ) { 
+        uint8_t r,g,b;
+        uint16_t msecs;
+        printf("reading rgb of led %d: ", ledn );
+        rc = blink1_readRGB(dev, &msecs, &r,&g,&b, ledn );
+        if( rc==-1 && !quiet ) {
+            printf("error on readRGB\n");
+        }
+        printf("r,g,b:0x%2.2x,0x%2.2x,0x%2.2x\n", r,g,b);
+    }
     else if( cmd == CMD_PLAY ) { 
         uint8_t play = cmdbuf[0];
         uint8_t pos = cmdbuf[1];
@@ -475,7 +487,7 @@ int main(int argc, char** argv)
             printf("error on savePattern\n");
         }
     }
-    else if( cmd == CMD_SAVERGB ) {
+    else if( cmd == CMD_SETPATTLINE ) {
         uint8_t r = cmdbuf[0];
         uint8_t g = cmdbuf[1];
         uint8_t b = cmdbuf[2];
@@ -486,7 +498,7 @@ int main(int argc, char** argv)
             printf("error on writePatternLine\n");
         }
     }
-    else if( cmd == CMD_READRGB ) { 
+    else if( cmd == CMD_READPATTLINE ) { 
         uint8_t p = cmdbuf[0];
         uint8_t r,g,b;
         uint16_t msecs;
@@ -548,9 +560,6 @@ int main(int argc, char** argv)
             }
 
             while( 1 ) {
-                //memcpy( c, leds[0], sizeof(c) );
-                //memcpy( leds, leds+1, sizeof(c)*(ledn-1) );
-                //memcpy( leds[ledn-1], c, sizeof(c) );
                 memcpy( c, leds[ledn-1], sizeof(c) );
                 memcpy( leds+1, leds, sizeof(c)*(ledn-1) );
                 memcpy( leds[0], c, sizeof(c) );
@@ -575,7 +584,6 @@ int main(int argc, char** argv)
                     }
                 }
             }
-
         }
     }
     else if( cmd == CMD_BLINK ) { 

@@ -428,6 +428,25 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b )
     return rc; 
 }
 
+// mk2 devices only
+int blink1_readRGB(hid_device *dev, uint16_t* fadeMillis, 
+                   uint8_t* r, uint8_t* g, uint8_t* b, 
+                   uint8_t ledn)
+{
+    uint8_t buf[blink1_buf_size] = { blink1_report_id, 'r', 0,0,0, 0,0,ledn };
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    blink1_sleep( 50 ); // FIXME:
+    if( rc != -1 ) // no error
+        rc = blink1_read(dev, buf, sizeof(buf) );
+    if( rc != -1 ) {
+        *r = buf[2];
+        *g = buf[3];
+        *b = buf[4];
+        *fadeMillis = ((buf[5]<<8) + (buf[6] &0xff)) * 10;
+    }
+    return rc;
+}
 
 // 
 // args:
@@ -444,7 +463,7 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis, uint8_t st)
     buf[2] = on;
     buf[3] = (dms>>8);
     buf[4] = (dms % 0xff);
-    buf[5] = st;
+    buf[5] = st;  // mk2 only
     buf[6] = 0;
     buf[7] = 0;
 
@@ -480,7 +499,8 @@ int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis,
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos)
 {
-    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'R', 0,0,0, 0,0, pos };
+    uint8_t buf[blink1_buf_size] = { blink1_report_id, 'R', 0,0,0, 0,0, pos };
+
     int rc = blink1_write(dev, buf, sizeof(buf) );
     blink1_sleep( 50 ); // FIXME:
     if( rc != -1 ) // no error
@@ -494,7 +514,7 @@ int blink1_readPatternLine(hid_device *dev, uint16_t* fadeMillis,
     return rc;
 }
 
-//
+// mk2 devices only, mk1 devices save on each writePatternLine()
 int blink1_savePattern( hid_device *dev )
 {
     uint8_t buf[blink1_buf_size];
@@ -514,7 +534,8 @@ int blink1_savePattern( hid_device *dev )
 //
 int blink1_testtest( hid_device *dev)
 {
-    uint8_t buf[blink1_buf_size] = {blink1_report_id, '!', 0,0,0, 0,0,0 };
+    uint8_t buf[blink1_buf_size] = { blink1_report_id, '!', 0,0,0, 0,0,0 };
+
     int rc = blink1_write(dev, buf, sizeof(buf) );
     blink1_sleep( 50 ); //FIXME:
     if( rc != -1 ) { // no error
@@ -533,27 +554,6 @@ int blink1_testtest( hid_device *dev)
 
 
 /* ------------------------------------------------------------------------- */
-
-// FIXME: this is wrong
-// FIXME: provide function that generated this
-uint8_t degamma_lookup[256] = { 
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-  1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,4,
-  4,4,4,5,5,5,5,6,6,6,7,7,7,8,8,9,
-  9,9,10,10,11,11,11,12,12,13,13,14,14,15,15,16,
-  16,17,17,18,18,19,19,20,20,21,22,22,23,23,24,25,
-  25,26,27,27,28,29,29,30,31,31,32,33,33,34,35,36,
-  36,37,38,39,40,40,41,42,43,44,44,45,46,47,48,49,
-  50,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,
-  65,66,67,68,69,70,71,72,73,74,75,76,77,79,80,81,
-  82,83,84,85,87,88,89,90,91,93,94,95,96,97,99,100,
-  101,102,104,105,106,108,109,110,112,113,114,116,117,118,120,121,
-  122,124,125,127,128,129,131,132,134,135,137,138,140,141,143,144,
-  146,147,149,150,152,153,155,156,158,160,161,163,164,166,168,169,
-  171,172,174,176,177,179,181,182,184,186,188,189,191,193,195,196,
-  198,200,202,203,205,207,209,211,212,214,216,218,220,222,224,225,
-  227,229,231,233,235,237,239,241,243,245,247,249,251,253,255,255,
-};
 
 void blink1_enableDegamma()
 {
@@ -578,53 +578,6 @@ int blink1_degamma( int n )
     //return degamma_lookup[n];
     return blink1_degamma_log2lin(n);
 }
-
-/*
-// qsort C-string comparison function 
-int cmp_path(const void *a, const void *b) 
-{ 
-    return strncmp( (const char *)a, (const char *)b, pathstrmax);
-} 
-
-// qsort wchar_t string comparison function 
-int cmp_serial(const void *a, const void *b) 
-{ 
-    return wcsncmp( (const wchar_t *)a, (const wchar_t *)b, serialmax);
-} 
-
-//
-void blink1_sortPaths(void)
-{
-    size_t elemsize = sizeof( blink1_cached_paths[0] ); // 128 
-    //size_t count = sizeof(blink1_cached_paths) / elemsize; // 16
-    
-    return qsort( blink1_cached_paths, blink1_cached_count,elemsize,cmp_path);
-}
-
-//
-void blink1_sortSerials(void)
-{
-    size_t elemsize = sizeof( blink1_cached_serials[0] ); //  
-    //size_t count = sizeof(blink1_cached_serials) / elemsize; // 
-    
-    qsort( blink1_cached_serials, 
-           blink1_cached_count, 
-           elemsize, 
-           cmp_serial);
-}
-
-
-// qsort wchar_t string comparison function 
-int cmp_blink1_info_serial_old(const void *a, const void *b) 
-{ 
-    blink1_info* bia = (blink1_info*) a;
-    blink1_info* bib = (blink1_info*) b;
-
-    return wcsncmp( bia->serial, 
-                    bib->serial, 
-                    serialstrmax);
-} 
-*/
 
 // qsort char* string comparison function 
 int cmp_blink1_info_serial(const void *a, const void *b) 

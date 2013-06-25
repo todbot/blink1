@@ -16,7 +16,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::on_scanButton_clicked()
 {
     int blink1count = blink1_enumerate();
