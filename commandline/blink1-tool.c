@@ -105,6 +105,7 @@ static void usage(char *myName)
 "  --blink <numtimes>          Blink on/off (specify --rgb before to blink a color)\n"
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
+"  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
 "  --on                        Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --red                       Turn blink(1) red \n"
