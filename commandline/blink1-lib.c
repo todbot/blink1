@@ -433,6 +433,9 @@ int blink1_readRGB(hid_device *dev, uint16_t* fadeMillis,
                    uint8_t* r, uint8_t* g, uint8_t* b, 
                    uint8_t ledn)
 {
+    if( ! blink1_isMk2(dev) ) { 
+        return blink1_readRGB_mk1( dev, fadeMillis, r,g,b);
+    }
     uint8_t buf[blink1_buf_size] = { blink1_report_id, 'r', 0,0,0, 0,0,ledn };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
@@ -445,6 +448,23 @@ int blink1_readRGB(hid_device *dev, uint16_t* fadeMillis,
         *b = buf[4];
         *fadeMillis = ((buf[5]<<8) + (buf[6] &0xff)) * 10;
     }
+    return rc;
+}
+
+// FIXME: Does not work at all times
+// for mk1 devices only
+int blink1_readRGB_mk1(hid_device *dev, uint16_t* fadeMillis,
+                       uint8_t* r, uint8_t* g, uint8_t* b)
+{
+    uint8_t buf[blink1_buf_size] = { blink1_report_id };
+    int rc;
+    blink1_sleep( 50 ); // FIXME:
+    if((rc = hid_get_feature_report(dev, buf, sizeof(buf))) == -1){
+        fprintf(stderr,"error reading data.\n");
+    }
+    *r = buf[2];
+    *g = buf[3];
+    *b = buf[4];
     return rc;
 }
 

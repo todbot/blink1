@@ -26,6 +26,10 @@ extern "C" {
 
 #define blink1mk2_serialstart 0x20000000
 
+#define blink1_report_id  1
+#define blink1_report_size 8
+#define blink1_buf_size (blink1_report_size+1)
+
 enum { 
     BLINK1_UNKNOWN = 0,
     BLINK1_MK1,   // the original one from the kickstarter
@@ -89,6 +93,8 @@ int blink1_setRGB(hid_device *dev, uint8_t r, uint8_t g, uint8_t b );
 int blink1_readRGB(hid_device *dev, uint16_t* fadeMillis, 
                    uint8_t* r, uint8_t* g, uint8_t* b, 
                    uint8_t ledn);
+int blink1_readRGB_mk1(hid_device *dev, uint16_t* fadeMillis,
+                       uint8_t* r, uint8_t* g, uint8_t* b);
 
 int blink1_eeread(hid_device *dev, uint16_t addr, uint8_t* val);
 int blink1_eewrite(hid_device *dev, uint16_t addr, uint8_t val);
