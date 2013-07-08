@@ -110,8 +110,9 @@ static void usage(char *myName)
 "  --red                       Turn blink(1) red \n"
 "  --green                     Turn blink(1) green \n"
 "  --blue                      Turn blink(1) blue \n"
-"  --savergb <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
-"  --readrgb <pos>             Read pattern RGB value at pos\n" 
+"  --savepattline <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
+"  --readpattline <pos>             Read pattern RGB value at pos\n" 
+"  --savepattern               Save color pattern to flash (mk2)\n"
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
 "  --list                      List connected blink(1) devices \n"
@@ -148,7 +149,7 @@ enum {
     CMD_EEREAD,
     CMD_EEWRITE,
     CMD_RGB,
-    CMD_READRGB,
+    CMD_RGBREAD,
     CMD_SETPATTLINE,
     CMD_READPATTLINE,
     CMD_SAVEPATTERN,
@@ -207,15 +208,15 @@ int main(int argc, char** argv)
         {"eeread",     required_argument, &cmd,   CMD_EEREAD },
         {"eewrite",    required_argument, &cmd,   CMD_EEWRITE },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
-        {"savepattline", required_argument, &cmd,   CMD_SETPATTLINE },
-        {"readpattline", required_argument, &cmd,   CMD_READPATTLINE },
+        {"rgbread",    no_argument,       &cmd,   CMD_RGBREAD},
+        {"savepattline",required_argument,&cmd,   CMD_SETPATTLINE },
+        {"readpattline",required_argument,&cmd,   CMD_READPATTLINE },
         {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
         {"red",        no_argument,       &cmd,   CMD_RED },
         {"green",      no_argument,       &cmd,   CMD_GRN },
         {"blue",       no_argument,       &cmd,   CMD_BLU},
-        {"readrgb",    no_argument,       &cmd,   CMD_READRGB},
         {"blink",      required_argument, &cmd,   CMD_BLINK},
         {"glimmer",    required_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
@@ -389,6 +390,8 @@ int main(int argc, char** argv)
     }
 
 
+    // begin command processing
+
     if( cmd == CMD_LIST ) { 
         printf("blink(1) list: \n");
         for( int i=0; i< count; i++ ) {
@@ -398,9 +401,10 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_HIDREAD ) { 
         printf("hidread:  ");
-        int len = sizeof(cmdbuf);
-        if((rc = hid_get_feature_report(dev, cmdbuf, len)) == -1){
-            fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
+        cmdbuf[0] = blink1_report_id;  // must set report_id on windows
+        if((rc = hid_get_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1){
+            //fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
+            fprintf(stderr,"error reading data.\n");
         } else {
             hexdump(cmdbuf, sizeof(cmdbuf));
         }
@@ -410,7 +414,7 @@ int main(int argc, char** argv)
             printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
         }
         if((rc = hid_send_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1) {
-            fprintf(stderr,"error writing data: %d\n",rc);
+            fprintf(stderr,"error writing data.\n");
         }
     }
     else if( cmd == CMD_EEREAD ) {  // FIXME
@@ -461,15 +465,15 @@ int main(int argc, char** argv)
             blink1_close( dev );
         }
     }
-    else if( cmd == CMD_READRGB ) { 
+    else if( cmd == CMD_RGBREAD ) { 
         uint8_t r,g,b;
         uint16_t msecs;
-        printf("reading rgb of led %d: ", ledn );
+        printf("reading led %d rgb: ", ledn );
         rc = blink1_readRGB(dev, &msecs, &r,&g,&b, ledn );
         if( rc==-1 && !quiet ) {
             printf("error on readRGB\n");
         }
-        printf("r,g,b:0x%2.2x,0x%2.2x,0x%2.2x\n", r,g,b);
+        printf("0x%2.2x,0x%2.2x,0x%2.2x\n", r,g,b);
     }
     else if( cmd == CMD_PLAY ) { 
         uint8_t play = cmdbuf[0];
