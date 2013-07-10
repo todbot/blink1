@@ -201,6 +201,20 @@ namespace ThingM.Blink1
             this.hidDevice = null;
         }
 
+        public void Complete()
+        {
+            if (this.IsConnected == false)
+            {
+                throw new InvalidOperationException("No Blink(1) device connected.");
+            }
+
+            this.hidDevice.CloseDevice();
+
+            this.hidDevice.Dispose();
+
+            this.hidDevice = null;
+        }
+
         /// <summary>
         ///     Deactivate the Blink(1) device from playing presets after a certain amount of inactivity.
         /// </summary>
