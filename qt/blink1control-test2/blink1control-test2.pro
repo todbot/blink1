@@ -45,17 +45,10 @@ DEPENDPATH += $$BLINK1_LIB_DIR
 
 
 macx {
-    # additions for tasteful-server
-    # this doesn't work because of initialize lists :
-    #QMAKE_CXXFLAGS += -std=c++0x
-    QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -std=c++11 -stdlib=libc++ -Wreturn-type -Werror=return-type
-    QMAKE_LFLAGS += -mmacosx-version-min=10.7 -std=c++11 -stdlib=libc++
-
     MYAPPDIR=$$OUT_PWD/$${TARGET}.app/Contents/MacOS
     message( "MYAPPDIR = $$MYAPPDIR" )
     # FIXME: How to make this cross-platform?
     QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
-
 }
 # mac: note to deploy must do commandline magic of:
 # % macdeployqt test2.app -verbose=2
