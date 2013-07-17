@@ -107,6 +107,13 @@ int blink1_serialnumwrite(hid_device *dev, uint8_t* serialnumstr);
 int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis, uint8_t st);
 
 int blink1_play(hid_device *dev, uint8_t play, uint8_t pos);
+// mk2 devices only
+int blink1_playloop(hid_device *dev, uint8_t play, uint8_t startpos, uint8_t endpos, uint8_t count);
+// mk2 devices only
+int blink1_readPlayState(hid_device *dev, uint8_t* playing, 
+                         uint8_t* playstart, uint8_t* playend,
+                         uint8_t* playcount, uint8_t* playpos);
+
 int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis, 
                             uint8_t r, uint8_t g, uint8_t b, 
                             uint8_t pos);

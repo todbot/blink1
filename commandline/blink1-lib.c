@@ -28,9 +28,6 @@
 #define LOG(...) do {} while (0)
 #endif
 
-#define blink1_report_id  1
-#define blink1_report_size 8
-#define blink1_buf_size (blink1_report_size+1)
 
 // addresses in EEPROM for mk1 blink(1) devices
 #define blink1_eeaddr_osccal        0
@@ -492,13 +489,50 @@ int blink1_serverdown(hid_device *dev, uint8_t on, uint16_t millis, uint8_t st)
 }
 
 //
-int blink1_play(hid_device *dev, uint8_t play, uint8_t pos)
+int blink1_play(hid_device *dev, uint8_t play, uint8_t startpos)
 {
-    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'p', play, pos };
+    return blink1_playloop(dev, play, startpos, 0,0);
+}
+
+// mk2 devices only
+int blink1_playloop(hid_device *dev, uint8_t play, uint8_t startpos,uint8_t endpos, uint8_t count)
+{
+    uint8_t buf[blink1_buf_size];
+    buf[0] = blink1_report_id;
+    buf[1] = 'p'; 
+    buf[2] = play;
+    buf[3] = startpos;
+    buf[4] = endpos;
+    buf[5] = count;
+    buf[6] = 0;
+    buf[7] = 0;
+
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
     
+// mk2 devices only
+int blink1_readPlayState(hid_device *dev, uint8_t* playing, 
+                         uint8_t* playstart, uint8_t* playend,
+                         uint8_t* playcount, uint8_t* playpos)
+{
+    uint8_t buf[blink1_buf_size] = { blink1_report_id, 'S', 0,0,0, 0,0,0 };
+
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    blink1_sleep( 50 ); // FIXME:
+    if( rc != -1 ) // no error
+        rc = blink1_read(dev, buf, sizeof(buf) );
+    if( rc != -1 ) {
+        *playing   = buf[2];
+        *playstart = buf[3];
+        *playend   = buf[4];
+        *playcount = buf[5];
+        *playpos   = buf[6];
+    }
+    return rc;
+}
+
+
 //
 int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis, 
                             uint8_t r, uint8_t g, uint8_t b, 
