@@ -62,9 +62,9 @@ void logpri(int loglevel, char* fmt, ...)
 //
 static void hexdump(char *buffer, int len)
 {
-int     i;
-FILE    *fp = stdout;
-
+    int     i;
+    FILE    *fp = stdout;
+    
     for(i = 0; i < len; i++){
         if(i != 0){
             if(i % 16 == 0){
@@ -82,9 +82,9 @@ FILE    *fp = stdout;
 //
 static int  hexread(char *buffer, char *string, int buflen)
 {
-char    *s;
-int     pos = 0;
-
+    char    *s;
+    int     pos = 0;
+    bzero(buffer,buflen);
     while((s = strtok(string, ", ")) != NULL && pos < buflen){
         string = NULL;
         buffer[pos++] = (char)strtol(s, NULL, 0);
@@ -115,6 +115,7 @@ static void usage(char *myName)
 "  --readpattline <pos>             Read pattern RGB value at pos\n" 
 "  --savepattern               Save color pattern to flash (mk2)\n"
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
+"  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
 "  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
 "  --list                      List connected blink(1) devices \n"
 " Nerd functions: (not used normally) \n"
@@ -162,6 +163,7 @@ enum {
     CMD_BLINK,
     CMD_GLIMMER,
     CMD_PLAY,
+    CMD_READPLAYSTATE,
     CMD_RANDOM,
     CMD_RUNNING,
     CMD_VERSION,
@@ -477,13 +479,30 @@ int main(int argc, char** argv)
         printf("0x%2.2x,0x%2.2x,0x%2.2x\n", r,g,b);
     }
     else if( cmd == CMD_PLAY ) { 
-        uint8_t play = cmdbuf[0];
-        uint8_t pos = cmdbuf[1];
+        uint8_t play     = cmdbuf[0];
+        uint8_t startpos = cmdbuf[1];
+        uint8_t endpos   = cmdbuf[2]; 
+        uint8_t count    = cmdbuf[3];
 
-        if ( !quiet ) { printf("%s color pattern at pos %d\n", ((play)?"playing":"stopping"),pos); }
-        rc = blink1_play(dev, play, pos);
+        if ( !quiet ) { 
+            printf("%s color pattern from pos %d-%d (%d times)\n", 
+                   ((play)?"playing":"stopping"),startpos,endpos,count);
+        }
+        rc = blink1_playloop(dev, play, startpos,endpos,count);
         if( rc == -1 && !quiet ) { 
         }
+    }
+    else if( cmd == CMD_READPLAYSTATE ) { 
+        if( !quiet ) { }
+        uint8_t playing;
+        uint8_t startpos;
+        uint8_t endpos;
+        uint8_t count;
+        uint8_t countleft;
+        rc = blink1_readPlayState(dev, &playing, &startpos, &endpos, 
+                                  &count, &countleft);
+        printf("playstate: playing:%d start-end:%d-%d count:%d countleft:%d\n",
+               playing, startpos, endpos, count, countleft);
     }
     else if( cmd == CMD_SAVEPATTERN ) {
         if( !quiet ) { printf("writing pattern to flash\n"); }
@@ -497,7 +516,7 @@ int main(int argc, char** argv)
         uint8_t g = cmdbuf[1];
         uint8_t b = cmdbuf[2];
         uint8_t p = cmdbuf[3];
-        if ( !quiet ) { printf("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x to pos %d\n", r,g,b,p ); }
+        if ( !quiet ) { printf("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x to pos %d, millis:%d\n", r,g,b,p, millis ); }
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
         if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
@@ -512,7 +531,7 @@ int main(int argc, char** argv)
         if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
         }
-        printf("r,g,b = %x,%x,%x millis:%d\n", r,g,b, msecs);
+        printf("r,g,b = 0x%2.2x,0x%2.2x,0x%2.2x millis:%d\n", r,g,b, msecs);
     }
     else if( cmd == CMD_RANDOM ) { 
         int cnt = blink1_getCachedCount();
