@@ -8,18 +8,19 @@ This document shows the format of the data packet sent to blink(1).
 
 ## Command Summary ##
 
-    - Fade to RGB color       format: {0x01, 'c', r,g,b,    th,tl, n } (*)
-    - Set RGB color now       format: {0x01, 'n', r,g,b,      0,0, n } (*)
-    - Read current RGB color  format: {0x01, 'r', n,0,0,      0,0, n } (*)
-    - Serverdown tickle/off   format: {0x01, 'D', on,th,tl,  st,0, 0 } (*)
-    - Play/Pause              format: {0x01, 'p', on,p,0,     0,0, 0 }
-    - Set color pattern line  format: {0x01, 'P', r,g,b,    th,tl, p }
-    - Save color patterns     format: {0x01, 'W', 0,0,0,      0,0, 0 } (*)
-    - read color pattern line format: {0x01, 'R', 0,0,0,      0,0, p }
-    - Read EEPROM location    format: {0x01, 'e', ad,0,0,     0,0, 0 }
-    - Write EEPROM location   format: {0x01, 'E', ad,v,0,     0,0, 0 }
-    - Get version             format: {0x01, 'v', 0,0,0,      0,0, 0 } 
-    - Test command            format: {0x01, '!', 0,0,0,      0,0, 0 }
+    - Fade to RGB color       format: {0x01, 'c', r,g,b,     th,tl, n } (*)
+    - Set RGB color now       format: {0x01, 'n', r,g,b,       0,0, n } (*)
+    - Read current RGB color  format: {0x01, 'r', n,0,0,       0,0, n } (2)
+    - Serverdown tickle/off   format: {0x01, 'D', on,th,tl,   st,0, 0 } (*)
+    - Play/Pause              format: {0x01, 'p', on,sp,0,     0,0, 0 }
+    - PlayLoop                format: {0x01, 'p', on,sp,ep,c,    0, 0 } (2)
+    - Set color pattern line  format: {0x01, 'P', r,g,b,     th,tl, p }
+    - Save color patterns     format: {0x01, 'W', 0,0,0,       0,0, 0 } (2)
+    - read color pattern line format: {0x01, 'R', 0,0,0,       0,0, p }
+    - Read EEPROM location    format: {0x01, 'e', ad,0,0,      0,0, 0 } (1)
+    - Write EEPROM location   format: {0x01, 'E', ad,v,0,      0,0, 0 } (1)
+    - Get version             format: {0x01, 'v', 0,0,0,       0,0, 0 } 
+    - Test command            format: {0x01, '!', 0,0,0,       0,0, 0 }
 
 where:
 
@@ -29,12 +30,15 @@ where:
        tl = (fadetimeMillis/10) & 0xff
        on = 1 or 0, indicating on/off, play/pause, etc.
        st = 1 or 0, indicating on/off, maintain state or clear state (mk2 only)
-        p = position in a list, starting at 0, going to 11 (mk1) 
-        p = (pos & 0x7f) | (ledn << 4) : ledn = 0..7, pos = 0..15   (mk2) e.g. "line 3, led 2: p = (3 & 0x7f) | (2 << 4) = 0x23
+        p = position in list, starting at 0, going to patt_max-1 (patt_max = 12(mk1), 16(mk2))
+       sp = start loop position (0 - patt_max)
+       en = end loop position (0 - patt_max)
        ad = address starting at 1
         v = arbitrary value 
 
-      (*) some or all of this command is only available in mk2 firmware
+      (*) some arguments for command is only available in mk2 devices
+      (2) mk2 devices only
+      (1) mk1 devices only
 
 
 Protocol
