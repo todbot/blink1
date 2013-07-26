@@ -4,8 +4,10 @@ import java.util.*;
 import java.awt.Color;
 
 public class Blink1 {
+  //static boolean isEnumerated;
   //java.nio.ByteBuffer hidDevicePtr;
   //long hidDevicePtr; // FIXME: unused currently, but should be
+  long hidDevicePtr;
 
   static {
     System.loadLibrary("Blink1");     // Load the library
@@ -25,24 +27,37 @@ public class Blink1 {
       usage();
     }
     
-    // 
-    Blink1 blink1 = new Blink1();
-
-    int count = blink1.getCount();
+    Blink1.enumerate(); // look for blink(1)s
+    int count = Blink1.getCount();
 
     System.out.println("found "+count+ " devices");
+
+    if( count == 0 ) {
+      System.out.println("no devices found, would normally exit. continuing for error testing\n");
+      //return;
+    }
+
     System.out.println("device paths:");
-    
-    blink1.open();
-    int ver = blink1.getFirmwareVersion();
-    blink1.close();
-    System.out.println("firmware version: " + ver);
-    
-    String paths[] = blink1.getDevicePaths();
-    String serials[] = blink1.getDeviceSerials();
+    String paths[] = Blink1.getDevicePaths();
+    String serials[] = Blink1.getDeviceSerials();
     for( int i=0; i<paths.length; i++ ) { 
       System.out.println( i + ": "+ serials[i] + " : " + paths[i]);
     }
+
+    // 
+    Blink1 blink1 = new Blink1();
+
+    System.out.println("opening deviceId 0 \n");
+
+    blink1.open();
+
+    blink1.fadeToRGB( 100, 10,20,30 );
+
+    int ver = blink1.getFirmwareVersion();
+
+    System.out.println("firmware version: " + ver);
+    blink1.close();
+
 
     Random rand = new Random();
     for( int i=0; i<5; i++ ) {
@@ -52,15 +67,15 @@ public class Blink1 {
       
       int id = (count==0) ? 0 : rand.nextInt() & (count-1);
       
-      System.out.print("setting id: "+id+" to color "+r+","+g+","+b+"   ");
+      System.out.print("setting device id: "+id+" to color "+r+","+g+","+b+"   ");
 
       int rc = blink1.openById( id );
       if( rc == -1 ) { 
         System.out.print("couldn't open "+id+" ");
       }
       
+      // can do r,g,b ints or a single Color
       //rc = blink1.setRGB( r,g,b );
-
       Color c = new Color( r,g,b );
       rc = blink1.setRGB( c );
       
@@ -73,7 +88,7 @@ public class Blink1 {
         System.out.println();
       }
 
-      Blink1.pause( 250 );
+      Blink1.pause( 500 );
     }
 
     System.out.println("Turn off all blink(1)s.");
@@ -96,27 +111,26 @@ public class Blink1 {
     enumerate();
   }
 
-
   /**
    * (re)Enumerate the bus and return a count of blink(1) device found.
    * @returns blink1_command response code, -1 == fail 
    */
-  public native int enumerate();
+  public static native int enumerate();
 
  /**
    *
    */
-  public native int getCount();
+  public static native int getCount();
 
   /**
    * Return the list of blink(1) device paths found by enumerate.
    */
-  public native String[] getDevicePaths();
+  public static native String[] getDevicePaths();
 
   /**
    * Return the list of blink(1) device serials found by enumerate.
    */
-  public native String[] getDeviceSerials();
+  public static native String[] getDeviceSerials();
 
 
   /**
