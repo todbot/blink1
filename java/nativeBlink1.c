@@ -8,21 +8,49 @@
 
 /* ------------------------------------------------------------------------- */
 
-static hid_device* dev;
+//static hid_device* dev;
 
+void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev);
+hid_device* getDeviceFromJava(JNIEnv *env, jobject obj);
+//void setIsEnumerated(JNIEnv *env, 
+int isEnumerated = 0;
 
-JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_enumerate
-(JNIEnv *env, jobject obj)
+//
+hid_device* getDevicePtr(JNIEnv *env, jobject obj)
 {
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    //printf("jni start here!\n");
+    jclass class = (*env)->GetObjectClass(env, obj); 
+    jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
+    jlong jhidptr = (*env)->GetLongField(env, obj, fieldId);
+    hid_device* dev = (hid_device*) jhidptr;
+    return dev;
+}
+
+//
+void setDevicePtr(JNIEnv *env, jobject obj, hid_device* devt)
+{
+    jclass class = (*env)->GetObjectClass(env, obj); 
+    jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
+    (*env)->SetLongField(env, obj, fieldId, (jlong)devt );
+}
+
+
+//
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_enumerate
+(JNIEnv *env, jclass class)
+{
     jint c = blink1_enumerate();
+    isEnumerated = 1;
+
     return c;
 }
 
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_getCount
-(JNIEnv *env, jobject obj)
+(JNIEnv *env, jclass class)
 {
+    if( !isEnumerated ) {
+        blink1_enumerate();
+        isEnumerated = 1;
+    }
     int count = blink1_getCachedCount();
     return count;
 }
@@ -30,10 +58,15 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_getCount
 JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDevicePaths
 (JNIEnv *env, jobject obj)
 {
+    if( !isEnumerated ) {
+        blink1_enumerate();
+        isEnumerated = 1;
+    }
+
     int count = blink1_getCachedCount();
 
-    jclass strCls = (*env)->FindClass(env,"Ljava/lang/String;");
-    jobjectArray strarray = (*env)->NewObjectArray(env,count,strCls,NULL);
+    jclass stringClass = (*env)->FindClass(env,"Ljava/lang/String;");    
+    jobjectArray strarray = (*env)->NewObjectArray(env,count,stringClass,NULL);
 
     for( int i=0; i<count; i++ ) { 
         //printf("native path=%s\n",blink1_getCachedPath(i));
@@ -47,18 +80,19 @@ JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDevicePaths
 JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDeviceSerials
 (JNIEnv *env, jobject obj)
 {
+    if( !isEnumerated ) {
+        blink1_enumerate();
+        isEnumerated = 1;
+    }
+
     int count = blink1_getCachedCount();
 
-    jclass strCls = (*env)->FindClass(env,"Ljava/lang/String;");
-    jobjectArray strarray = (*env)->NewObjectArray(env,count,strCls,NULL);
+    jclass stringClass = (*env)->FindClass(env,"Ljava/lang/String;");
+    jobjectArray strarray = (*env)->NewObjectArray(env,count,stringClass,NULL);
 
     for( int i=0; i<count; i++ ) { 
-        //printf("native serial=%ls\n", blink1_getCachedSerial(i));
-        //FIXME: wrt (char*)?
-        // FIXME: hardcoded 16 strlen
-        //jstring str=(*env)->NewString(env,(jchar*)blink1_getCachedSerial(i), 8*sizeof(jchar));
         char serstr[9];
-        sprintf( serstr, "%ls", blink1_getCachedSerial(i) );
+        sprintf( serstr, "%s", blink1_getCachedSerial(i) );
         jstring str=(*env)->NewStringUTF(env, serstr);
         (*env)->SetObjectArrayElement(env,strarray,i,str);
         (*env)->DeleteLocalRef(env,str);
@@ -72,11 +106,11 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openByPath__Ljava_lang_String_2
     int err = 0;
     const char *devicepath = (*env)->GetStringUTFChars(env, jdevicepath, 0);
     
-    dev = blink1_openByPath( devicepath );
+    hid_device* devt = blink1_openByPath( devicepath );
     
     (*env)->ReleaseStringUTFChars(env, jdevicepath, devicepath);
 
-    if( dev == NULL ) err = -1;
+    if( devt == NULL ) err = -1;
 
     return err;
 }
@@ -85,13 +119,16 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openBySerial__Ljava_lang_String
   (JNIEnv *env, jobject obj, jstring jserialnumber)
 {
     int err = 0;
-    const jchar *serialnumber = (*env)->GetStringChars(env, jserialnumber, 0);
+    // const jchar *serialnumber = (*env)->GetStringChars(env, jserialnumber, 0);
+    const char *serialnumber = (*env)->GetStringUTFChars(env, jserialnumber, 0);
     
-    dev = blink1_openBySerial( (wchar_t*) serialnumber ); //FIXME: okay?
+    hid_device* devt = blink1_openBySerial( serialnumber ); //FIXME: okay?
+    setDevicePtr(env,obj, devt);
     
-    (*env)->ReleaseStringChars(env, jserialnumber, serialnumber);
+    //(*env)->ReleaseStringChars(env, jserialnumber, serialnumber);
+    (*env)->ReleaseStringUTFChars(env, jserialnumber, serialnumber);
 
-    if( dev == NULL ) err = -1;
+    if( devt == NULL ) err = -1;
 
     return err;
 }
@@ -101,12 +138,11 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
 {
     int err = 0;
     hid_device* devt = blink1_openById( id );
-    dev = devt;
 
-    //setDeviceToJava(env,obj, devt);
-    if( dev == NULL ) err = -1;
+    if( devt == NULL ) err = -1;
 
-    //fprintf(stderr, "nativeBlink1:open devid=%d\n", err); // debug
+    setDevicePtr(env,obj, devt);
+
     return err;
 }
 
@@ -119,13 +155,16 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
     int err = 0;
     
     hid_device* devt = blink1_open();
-    dev = devt;
 
-    //setDeviceToJava(env,obj, devt);
-    if( dev == NULL ) err = -1;
+    if( devt == NULL ) err = -1;
 
+    isEnumerated = 1;  // blink1_open() does enumeration (blink1_openById() does not)
+
+    setDevicePtr(env,obj, devt);
+    
     return err;  // FIXME: error
 }
+
 
 /**
  *
@@ -133,8 +172,8 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
 JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
 (JNIEnv *env, jobject obj)
 {
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    blink1_close(dev);
+    hid_device* devt = getDevicePtr(env,obj);
+    blink1_close(devt);
 }
 
 /**
@@ -144,8 +183,8 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 (JNIEnv *env, jobject obj, jint r, jint g, jint b)
 {
     int err;
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    err = blink1_setRGB(dev, r,g,b);
+    hid_device* devt = getDevicePtr(env,obj);
+    err = blink1_setRGB(devt, r,g,b);
     return err;
 }
 
@@ -156,8 +195,10 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b)
 {
     int err;
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
+    hid_device* devt = getDevicePtr(env,obj);
+
+    err = blink1_fadeToRGB(devt, fadeMillis, r,g,b);
+    //err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
     return err;
 }
 
@@ -168,8 +209,8 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_writePatternLine
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b, jint pos)
 {
     int err;
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    err = blink1_writePatternLine(dev, fadeMillis, r,g,b, pos);
+    hid_device* devt = getDevicePtr(env,obj);
+    err = blink1_writePatternLine(devt, fadeMillis, r,g,b, pos);
     return err;
 }
 
@@ -181,8 +222,8 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_play
 {
     int err;
     //play = (play) ? 1 : 0; // normalize just in case
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    err = blink1_play(dev, play, pos);
+    hid_device* devt = getDevicePtr(env,obj);
+    err = blink1_play(devt, play, pos);
     return err;
 }
 
@@ -194,22 +235,23 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_serverdown
 {
     int err;
     //on = (on) ? 1 : 0; // normalize just in case
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    err = blink1_serverdown(dev, on, millis);
+    hid_device* devt = getDevicePtr(env,obj);
+    err = blink1_serverdown(devt, on, millis, 0);
     return err;
 }
 
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_getFirmwareVersion
 (JNIEnv *env, jobject obj)
 {
-    //hid_device* dev = getDeviceFromJava(env,obj);
-    jint c = blink1_getVersion(dev);
+    hid_device* devt = getDevicePtr(env,obj);
+    jint c = blink1_getVersion(devt);
     return c;
 }
 
 
 // --------------------------------------------------------------------------
 // old ideas
+
 
 /*
 //
