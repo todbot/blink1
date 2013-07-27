@@ -100,55 +100,78 @@ JNIEXPORT jobjectArray JNICALL Java_thingm_blink1_Blink1_getDeviceSerials
     return strarray;
 }
 
-JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openByPath__Ljava_lang_String_2
-  (JNIEnv *env, jobject obj, jstring jdevicepath)
+JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openByPath
+  (JNIEnv *env, jclass class, jstring jdevicepath)
 {
-    int err = 0;
     const char *devicepath = (*env)->GetStringUTFChars(env, jdevicepath, 0);
-    
     hid_device* devt = blink1_openByPath( devicepath );
-    
     (*env)->ReleaseStringUTFChars(env, jdevicepath, devicepath);
 
-    if( devt == NULL ) err = -1;
+    if( devt == NULL ) return NULL;
 
-    return err;
+    jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
+    jobject obj = (*env)->NewObject(env, class, constructorMethodID);
+
+    setDevicePtr(env,obj, devt);
+   
+    return obj;
 }
 
-JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openBySerial__Ljava_lang_String_2
-  (JNIEnv *env, jobject obj, jstring jserialnumber)
+//JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openBySerial__Ljava_lang_String_2
+//  (JNIEnv *env, jobject obj, jstring jserialnumber)
+JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openBySerial
+  (JNIEnv *env, jclass class, jstring jserialnumber)
 {
-    int err = 0;
-    // const jchar *serialnumber = (*env)->GetStringChars(env, jserialnumber, 0);
     const char *serialnumber = (*env)->GetStringUTFChars(env, jserialnumber, 0);
-    
-    hid_device* devt = blink1_openBySerial( serialnumber ); //FIXME: okay?
-    setDevicePtr(env,obj, devt);
-    
-    //(*env)->ReleaseStringChars(env, jserialnumber, serialnumber);
+    hid_device* devt = blink1_openBySerial( serialnumber );
     (*env)->ReleaseStringUTFChars(env, jserialnumber, serialnumber);
 
-    if( devt == NULL ) err = -1;
+    if( devt == NULL ) return NULL;
 
-    return err;
-}
-
-JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_openById
-(JNIEnv *env, jobject obj, jint id )
-{
-    int err = 0;
-    hid_device* devt = blink1_openById( id );
-
-    if( devt == NULL ) err = -1;
+    jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
+    jobject obj = (*env)->NewObject(env, class, constructorMethodID);
 
     setDevicePtr(env,obj, devt);
+   
+    return obj;
+}
 
-    return err;
+JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openById
+  (JNIEnv *env, jclass class, jint id)
+{
+    hid_device* devt = blink1_openById( id );
+
+    if( devt == NULL ) return NULL;
+
+    jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
+    jobject obj = (*env)->NewObject(env, class, constructorMethodID);
+
+    setDevicePtr(env,obj, devt);
+   
+    return obj;
+}
+
+/*
+ * 
+ */
+JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_open
+  (JNIEnv *env, jclass class)
+{
+    jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
+    jobject obj = (*env)->NewObject(env, class, constructorMethodID);
+
+    hid_device* devt = blink1_open();
+
+    setDevicePtr(env,obj, devt);
+    isEnumerated = 1;  // blink1_open() does enumeration (blink1_openById() does not)
+    
+    if( devt == NULL ) obj = NULL;
+    return obj;
 }
 
 /**
  *
- */
+ *
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
 (JNIEnv *env, jobject obj) //, jint vid, jint pid, jstring vstr, jstring pstr)
 {
@@ -164,7 +187,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_open
     
     return err;  // FIXME: error
 }
-
+*/
 
 /**
  *
