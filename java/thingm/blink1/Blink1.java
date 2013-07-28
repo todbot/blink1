@@ -5,7 +5,18 @@ import java.awt.Color;
 
 public class Blink1 
 {
-  long hidDevicePtr; // pointer to native hid_device* 
+
+  /**
+   * pointer to native hid_device* 
+   * do not use.
+   */
+  long hidDevicePtr = 0;
+
+  /**
+   * Error code of last operation 
+   * 0 = ok, anything else = error
+   */
+  int errorCode = 0;
 
   static {
     System.loadLibrary("Blink1");     // Load the library
@@ -20,6 +31,8 @@ public class Blink1
    */
   public static void main(String args[]) {
     
+    int rc;
+
     if( args.length == 0 ) {
       //usage();
     }
@@ -45,18 +58,25 @@ public class Blink1
 
     Blink1 blink1 = Blink1.open();
 
-    if( blink1 == null ) { 
-      System.out.println("null on open(), no blink(1), next call will error out");
+    if( blink1.error() ) { 
+      System.out.println("error on open(), no blink(1), next call will return error ");
     }
 
-    System.out.println("fading to 10,20,30 ");
-    blink1.fadeToRGB( 100, 10,20,30 );
+    System.out.print("fading to 10,20,30 ");
+    rc = blink1.fadeToRGB( 100, 10,20,30 );
+    System.out.println(" -- rc = "+rc);
 
     int ver = blink1.getFirmwareVersion();
-
     System.out.println("firmware version: " + ver);
+
     blink1.close();
 
+    if( serials.length > 0 ) {
+      String serial  = serials[0];
+      blink1 = Blink1.openBySerial( serial );
+      blink1.fadeToRGB( 100, 0,0,0 );
+      blink1.close();
+    }
 
     Random rand = new Random();
     for( int i=0; i<5; i++ ) {
@@ -65,19 +85,18 @@ public class Blink1
       int b = rand.nextInt() & 0xFF;
       
       int id = (count==0) ? 0 : rand.nextInt() & (count-1);
-      String serial = serials[id];
-      System.out.print("setting device "+serial+" to color "+r+","+g+","+b+"   ");
+      
+      System.out.print("setting device "+id+" to color "+r+","+g+","+b+"   ");
 
-      //blink1 = Blink1.openById( id );
-      blink1 = Blink1.openBySerial( serial );
-      if( blink1 == null ) { 
+      blink1 = Blink1.openById( id );
+      if( blink1.error() ) { 
         System.out.print("couldn't open "+id+" ");
       }
       
       // can do r,g,b ints or a single Color
       //rc = blink1.setRGB( r,g,b );
       Color c = new Color( r,g,b );
-      int rc = blink1.setRGB( c );
+      rc = blink1.setRGB( c );
       if( rc == -1 ) 
         System.out.println("error detected");
       else 
@@ -106,6 +125,10 @@ public class Blink1
    */
   public Blink1() {
     //enumerate();
+  }
+
+  public boolean error() {
+    return errorCode != 0;
   }
 
   /**
