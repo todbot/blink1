@@ -20,6 +20,8 @@
 
 #include "blink1-lib.h"
 
+#include "usbconfig.h" // from firmware, for VID,PID,vendor name & product name 
+
 //#define DEBUG_PRINTF
 
 #ifdef DEBUG_PRINTF

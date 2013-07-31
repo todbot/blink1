@@ -12,7 +12,6 @@
 #include <stdint.h>
 
 #include "hidapi.h"
-#include "usbconfig.h" // from firmware, for VID,PID,vendor name & product name 
 
 #ifdef __cplusplus
 extern "C" {
