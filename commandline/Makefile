@@ -134,11 +134,12 @@ endif
 ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
 #LIBTARGET = libBlink1.so
-LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
+LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
 OBJS = ./hidapi/libusb/hid.o
 EXEFLAGS=
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
+CFLAGS+= -I/usr/local/include -fPIC
 endif
 
 
