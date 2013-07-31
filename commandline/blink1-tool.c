@@ -106,7 +106,7 @@ static void usage(char *myName)
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
 "  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
-"  --on                        Turn blink(1) full-on white \n"
+"  --on | --white              Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --red                       Turn blink(1) red \n"
 "  --green                     Turn blink(1) green \n"
@@ -217,6 +217,7 @@ int main(int argc, char** argv)
         {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
+        {"white",      no_argument,       &cmd,   CMD_ON },
         {"red",        no_argument,       &cmd,   CMD_RED },
         {"green",      no_argument,       &cmd,   CMD_GRN },
         {"blue",       no_argument,       &cmd,   CMD_BLU},
