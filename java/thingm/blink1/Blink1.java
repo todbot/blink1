@@ -71,11 +71,27 @@ public class Blink1
 
     blink1.close();
 
-    if( serials.length > 0 ) {
-      String serial  = serials[0];
-      blink1 = Blink1.openBySerial( serial );
-      blink1.fadeToRGB( 100, 0,0,0 );
-      blink1.close();
+    if( serials.length >= 2 ) {
+      String serialA  = serials[0];
+      String serialB  = serials[1];
+      System.out.println("opening two devices: "+serialA+" and "+serialB);
+      Blink1 blink1A = Blink1.openBySerial( serialA );
+      Blink1 blink1B = Blink1.openBySerial( serialB );
+      System.out.println("fading "+ serialA + " to red"); 
+      blink1A.fadeToRGB( 100, 255,0,0 );
+      Blink1.pause(500);
+      System.out.println("fading "+ serialB + " to green");
+      blink1B.fadeToRGB( 100, 0,255,0 );
+      Blink1.pause(500);
+      System.out.println("fading "+ serialA + " to blue"); 
+      blink1A.fadeToRGB( 100, 0,0,255 );
+      Blink1.pause(500);
+      System.out.println("fading "+ serialB + " to purple"); 
+      blink1B.fadeToRGB( 100, 255,0,255 );
+      Blink1.pause(500);
+      blink1A.close();
+      blink1B.close();
+      Blink1.pause(500);
     }
 
     Random rand = new Random();
