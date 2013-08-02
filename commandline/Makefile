@@ -96,6 +96,10 @@ EXEFLAGS =
 #LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 
+INSTALL = install -D
+EXELOCATION = /usr/local/bin
+LIBLOCATION = /usr/local/lib
+
 EXE=
 endif
 
@@ -112,6 +116,10 @@ EXEFLAGS =
 #LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a $(LIBS)
 LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
 
+INSTALL = cp
+EXELOCATION = $(SystemRoot)/system32
+LIBLOCATION = $(SystemRoot)/system32
+
 EXE= .exe
 endif
 
@@ -127,6 +135,10 @@ OBJS = ./hidapi/libusb/hid.o
 EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 
+INSTALL = install -D
+EXELOCATION = /usr/local/bin
+LIBLOCATION = /usr/local/lib
+
 EXE=
 endif
 
@@ -138,6 +150,11 @@ LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
 OBJS = ./hidapi/libusb/hid.o
 EXEFLAGS=
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+
+INSTALL = install -D
+EXELOCATION = /usr/local/bin
+LIBLOCATION = /usr/local/lib
+
 EXE=
 CFLAGS+= -I/usr/local/include -fPIC
 endif
@@ -190,6 +207,13 @@ lib: $(OBJS)
 package: blink1-tool
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
 	zip ../builds/blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
+
+# Install the executable and library.
+install: all
+	$(INSTALL) blink1-tool$(EXE) $(DESTDIR)$(EXELOCATION)/blink1-tool$(EXE)
+	$(INSTALL) $(LIBTARGET) $(DESTDIR)$(LIBLOCATION)/$(LIBTARGET)
+
+.PHONY: install
 
 clean: 
 	rm -f $(OBJS) 
