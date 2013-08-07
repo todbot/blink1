@@ -19,14 +19,13 @@
  */
 
 #include <stdio.h>
-#include <stdarg.h>
+#include <stdarg.h>    // vararg stuff
 #include <string.h>    // for memset(), strcmp(), et al
 #include <stdlib.h>
 #include <stdint.h>
 #include <getopt.h>    // for getopt_long()
 #include <time.h>
 #include <unistd.h>    // getuid()
-
 
 #include "blink1-lib.h"
 
@@ -39,7 +38,7 @@ int ledn = 0;
 hid_device* dev;
 uint32_t  deviceIds[blink1_max_devices];
 
-char  cmdbuf[9]; 
+char cmdbuf[blink1_buf_size]; 
 char rgbbuf[4];
 int verbose;
 int quiet;
@@ -58,6 +57,16 @@ void logpri(int loglevel, char* fmt, ...)
 }
 */
 
+// printf that can be shut up
+void msg(char* fmt, ...)
+{
+    va_list args;
+    va_start(args,fmt);
+    if( !quiet ) {
+        vprintf(fmt,args);
+    }
+    va_end(args);
+}
 
 //
 static void hexdump(char *buffer, int len)
@@ -92,6 +101,45 @@ static int  hexread(char *buffer, char *string, int buflen)
     return pos;
 }
 
+// integer-only hsbtorgb
+// from: http://web.mit.edu/storborg/Public/hsvtorgb.c
+static void hsbtorgb( uint8_t* hsb, uint8_t* rgb)
+{
+    uint8_t h = hsb[0];
+    uint8_t s = hsb[1];
+    uint8_t v = hsb[2];
+
+    unsigned char region, fpart, p, q, t;
+    uint8_t r,g,b;
+
+    if(s == 0) {          // color is grayscale 
+        r = g = b = v;
+        return;
+    }
+    
+    region = h / 43;      // make hue 0-5 
+    fpart = (h - (region * 43)) * 6;   // find remainder part, make it from 0-255 
+    
+    // calculate temp vars, doing integer multiplication 
+    p = (v * (255 - s)) >> 8;
+    q = (v * (255 - ((s * fpart) >> 8))) >> 8;
+    t = (v * (255 - ((s * (255 - fpart)) >> 8))) >> 8;
+        
+    // assign temp vars based on color cone region 
+    switch(region) {
+        case 0:   r = v; g = t; b = p; break;
+        case 1:   r = q; g = v; b = p; break;
+        case 2:   r = p; g = v; b = t; break;
+        case 3:   r = p; g = q; b = v; break;
+        case 4:   r = t; g = p; b = v; break;
+        default:  r = v; g = p; b = q; break;
+    }    
+    rgb[0]=r;
+    rgb[1]=g;
+    rgb[2]=b;
+}
+
+
 
 // --------------------------------------------------------------------------- 
 
@@ -105,14 +153,15 @@ static void usage(char *myName)
 "  --blink <numtimes>          Blink on/off (specify --rgb before to blink a color)\n"
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
+"  --hsb <hue>,<sat>,<bri>     Fade to HSB value\n"
 "  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
 "  --on | --white              Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --red                       Turn blink(1) red \n"
 "  --green                     Turn blink(1) green \n"
 "  --blue                      Turn blink(1) blue \n"
-"  --savepattline <r>,<g>,<b>,<pos> Write pattern RGB value at pos\n" 
-"  --readpattline <pos>             Read pattern RGB value at pos\n" 
+"  --setpattline <pos>         Write pattern RGB val at pos (--rgb/hsb to set)\n"
+"  --getpattline <pos>         Read pattern RGB value at pos\n" 
 "  --savepattern               Save color pattern to flash (mk2)\n"
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
@@ -151,9 +200,10 @@ enum {
     CMD_EEREAD,
     CMD_EEWRITE,
     CMD_RGB,
+    CMD_HSB,
     CMD_RGBREAD,
     CMD_SETPATTLINE,
-    CMD_READPATTLINE,
+    CMD_GETPATTLINE,
     CMD_SAVEPATTERN,
     CMD_OFF,
     CMD_ON,
@@ -163,7 +213,8 @@ enum {
     CMD_BLINK,
     CMD_GLIMMER,
     CMD_PLAY,
-    CMD_READPLAYSTATE,
+    CMD_STOP,
+    CMD_GETPLAYSTATE,
     CMD_RANDOM,
     CMD_RUNNING,
     CMD_VERSION,
@@ -181,7 +232,7 @@ int main(int argc, char** argv)
     int16_t arg=0;
     static int vid,pid;
     int  rc;
-    char tmpstr[100];
+    char tmpbuf[100];
     char serialnumstr[serialstrmax] = {'\0'}; 
 
     uint16_t seed = time(NULL);
@@ -211,9 +262,10 @@ int main(int argc, char** argv)
         {"eeread",     required_argument, &cmd,   CMD_EEREAD },
         {"eewrite",    required_argument, &cmd,   CMD_EEWRITE },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
+        {"hsb",        required_argument, &cmd,   CMD_HSB },
         {"rgbread",    no_argument,       &cmd,   CMD_RGBREAD},
-        {"savepattline",required_argument,&cmd,   CMD_SETPATTLINE },
-        {"readpattline",required_argument,&cmd,   CMD_READPATTLINE },
+        {"setpattline",required_argument, &cmd,   CMD_SETPATTLINE },
+        {"getpattline",required_argument, &cmd,   CMD_GETPATTLINE },
         {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
         {"off",        no_argument,       &cmd,   CMD_OFF },
         {"on",         no_argument,       &cmd,   CMD_ON },
@@ -224,6 +276,9 @@ int main(int argc, char** argv)
         {"blink",      required_argument, &cmd,   CMD_BLINK},
         {"glimmer",    required_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
+        {"play",       required_argument, &cmd,   CMD_PLAY},
+        {"stop",       no_argument,       &cmd,   CMD_STOP},
+        {"playstate",  no_argument,       &cmd,   CMD_GETPLAYSTATE},
         {"random",     required_argument, &cmd,   CMD_RANDOM },
         {"running",    required_argument, &cmd,   CMD_RUNNING },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
@@ -244,11 +299,16 @@ int main(int argc, char** argv)
             case CMD_RGB:
                 hexread(rgbbuf, optarg, sizeof(rgbbuf));
                 break;
+            case CMD_HSB:
+                hexread(tmpbuf, optarg, 4);
+                hsbtorgb( tmpbuf, rgbbuf );
+                cmd = CMD_RGB; // haha! 
+                break;
             case CMD_HIDWRITE:
             case CMD_EEREAD:
             case CMD_EEWRITE:
             case CMD_SETPATTLINE:
-            case CMD_READPATTLINE:
+            case CMD_GETPATTLINE:
             case CMD_BLINK:
             case CMD_GLIMMER:
             case CMD_RUNNING:
@@ -261,9 +321,9 @@ int main(int argc, char** argv)
                 if( optarg ) 
                     arg = strtol(optarg,NULL,0);   // cmd w/ number arg
                 break;
-            case CMD_SERIALNUMWRITE:
-                strcpy(tmpstr, optarg);
-                break;
+                //case CMD_SERIALNUMWRITE:
+                //strcpy(tmpstr, optarg);
+                //break;
             case CMD_ON:
                 rgbbuf[0] = 255; rgbbuf[1] = 255; rgbbuf[2] = 255;
                 break;
@@ -279,7 +339,6 @@ int main(int argc, char** argv)
             case CMD_BLU:
                 rgbbuf[2] = 255; 
                 break;
-
             } // switch(cmd)
             break;
         case 'g':
@@ -354,9 +413,7 @@ int main(int argc, char** argv)
     // get a list of all devices and their paths
     int count = blink1_enumerateByVidPid(vid,pid);
     if( count == 0 ) {
-        if ( !quiet ) {
-            printf("no blink(1) devices found\n");
-        }
+        msg("no blink(1) devices found\n");
         exit(1);
     }
 
@@ -375,9 +432,7 @@ int main(int argc, char** argv)
     dev = blink1_openById( deviceIds[0] );
 
     if( dev == NULL ) { 
-        if ( !quiet ) {
-            printf("cannot open blink(1), bad id or serial number\n");
-        }
+        msg("cannot open blink(1), bad id or serial number\n");
         exit(1);
     }
 
@@ -387,9 +442,7 @@ int main(int argc, char** argv)
     }
     // then for original mk1 owners who want to disable degamma
     if( nogamma ) {      //FIXME: confusing
-        if ( !quiet ) {
-            printf("disabling auto degamma\n");
-        }
+        msg("disabling auto degamma\n");
         blink1_disableDegamma();  
     }
 
@@ -414,15 +467,13 @@ int main(int argc, char** argv)
         }
     } 
     else if( cmd == CMD_HIDWRITE ) {
-        if ( !quiet ) {
-            printf("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
-        }
+        msg("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
         if((rc = hid_send_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1) {
             fprintf(stderr,"error writing data.\n");
         }
     }
     else if( cmd == CMD_EEREAD ) {  // FIXME
-        printf("eeread:  addr 0x%2.2x = ", cmdbuf[0]);
+        msg("eeread:  addr 0x%2.2x = ", cmdbuf[0]);
         uint8_t val = 0;
         rc = blink1_eeread(dev, cmdbuf[0], &val );
         if( rc==-1 ) { // on error
@@ -432,14 +483,14 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_EEWRITE ) {  // FIXME
-        if ( !quiet ) { printf("eewrite: \n"); }
+        msg("eewrite: \n");
         rc = blink1_eewrite(dev, cmdbuf[0], cmdbuf[1] );
         if( rc==-1  && !quiet ) { // error
             printf("error\n");
         }
     }
     else if( cmd == CMD_VERSION ) { 
-        printf("firmware version: ");
+        msg("firmware version: ");
         rc = blink1_getVersion(dev);
         printf("%d\n", rc );
     }
@@ -454,10 +505,8 @@ int main(int argc, char** argv)
         for( int i=0; i< numDevicesToUse; i++ ) {
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
-            if ( !quiet ) {
-                printf("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
-                       deviceIds[i],r,g,b,millis);
-            }
+            msg("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+                deviceIds[i],r,g,b,millis);
             if( ledn==0 ) {
                 rc = blink1_fadeToRGB(dev,millis, r,g,b);
             } else {
@@ -472,82 +521,81 @@ int main(int argc, char** argv)
     else if( cmd == CMD_RGBREAD ) { 
         uint8_t r,g,b;
         uint16_t msecs;
-        printf("reading led %d rgb: ", ledn );
+        msg("reading led %d rgb: ", ledn );
         rc = blink1_readRGB(dev, &msecs, &r,&g,&b, ledn );
         if( rc==-1 && !quiet ) {
             printf("error on readRGB\n");
         }
         printf("0x%2.2x,0x%2.2x,0x%2.2x\n", r,g,b);
     }
-    else if( cmd == CMD_PLAY ) { 
+    else if( cmd == CMD_PLAY || cmd == CMD_STOP ) { 
+        //if( cmd == CMD_STOP ) play = 0
         uint8_t play     = cmdbuf[0];
         uint8_t startpos = cmdbuf[1];
         uint8_t endpos   = cmdbuf[2]; 
         uint8_t count    = cmdbuf[3];
 
-        if ( !quiet ) { 
-            printf("%s color pattern from pos %d-%d (%d times)\n", 
+        msg("%s color pattern from pos %d-%d (%d times)\n", 
                    ((play)?"playing":"stopping"),startpos,endpos,count);
-        }
+
         rc = blink1_playloop(dev, play, startpos,endpos,count);
         if( rc == -1 && !quiet ) { 
+            // hmm, do what here
         }
     }
-    else if( cmd == CMD_READPLAYSTATE ) { 
-        if( !quiet ) { }
+    else if( cmd == CMD_GETPLAYSTATE ) { 
+        msg("playstate: ");
         uint8_t playing;
         uint8_t startpos;
         uint8_t endpos;
-        uint8_t count;
-        uint8_t countleft;
+        uint8_t playcount;
+        uint8_t playpos;
         rc = blink1_readPlayState(dev, &playing, &startpos, &endpos, 
-                                  &count, &countleft);
-        printf("playstate: playing:%d start-end:%d-%d count:%d countleft:%d\n",
-               playing, startpos, endpos, count, countleft);
+                                  &playcount, &playpos);
+        printf("playing:%d start-end:%d-%d count:%d pos:%d\n",
+               playing, startpos, endpos, playcount, playpos);
     }
     else if( cmd == CMD_SAVEPATTERN ) {
-        if( !quiet ) { printf("writing pattern to flash\n"); }
+        msg("writing pattern to flash\n");
         rc = blink1_savePattern(dev);
         if( rc==-1 && !quiet ) {
             printf("error on savePattern\n");
         }
     }
     else if( cmd == CMD_SETPATTLINE ) {
-        uint8_t r = cmdbuf[0];
-        uint8_t g = cmdbuf[1];
-        uint8_t b = cmdbuf[2];
-        uint8_t p = cmdbuf[3];
-        if ( !quiet ) { printf("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x to pos %d, millis:%d\n", r,g,b,p, millis ); }
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
+        uint8_t p = cmdbuf[0];
+        msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
         if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
         }
     }
-    else if( cmd == CMD_READPATTLINE ) { 
+    else if( cmd == CMD_GETPATTLINE ) { 
         uint8_t p = cmdbuf[0];
         uint8_t r,g,b;
         uint16_t msecs;
-        printf("reading rgb at pos %d: ", p );
+        msg("reading rgb at pos %2d: ", p );
         rc = blink1_readPatternLine(dev, &msecs, &r,&g,&b, p );
         if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
         }
-        printf("r,g,b = 0x%2.2x,0x%2.2x,0x%2.2x millis:%d\n", r,g,b, msecs);
+        printf("r,g,b = 0x%2.2x,0x%2.2x,0x%2.2x ms:%d\n", r,g,b, msecs);
     }
     else if( cmd == CMD_RANDOM ) { 
         int cnt = blink1_getCachedCount();
         if( cnt>1 ) blink1_close(dev); // close global device, open as needed
-        if ( !quiet ) { printf("random %d times: \n", arg); }
+        msg("random %d times: \n", arg);
         for( int i=0; i<arg; i++ ) { 
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
             uint8_t id = rand() % blink1_getCachedCount();
 
-            if ( !quiet ) {
-                printf("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
-                       i, id, blink1_getCachedCount(), r,g,b);
-            }
+            msg("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
+                i, id, blink1_getCachedCount(), r,g,b);
 
             hid_device* mydev = dev;
             if( cnt > 1 ) mydev = blink1_openById( id );
@@ -619,11 +667,11 @@ int main(int argc, char** argv)
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 255;
         }
-        if ( !quiet ) { printf("blink %d times rgb:%x,%x,%x: \n", n,r,g,b); }
+        msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
-            rc = blink1_fadeToRGB(dev, millis,r,g,b);
+            rc = blink1_fadeToRGBN(dev, millis,r,g,b,ledn);
             blink1_sleep(delayMillis);
-            rc = blink1_fadeToRGB(dev, millis,0,0,0);
+            rc = blink1_fadeToRGBN(dev, millis,0,0,0,ledn);
             blink1_sleep(delayMillis);
         }
     }
@@ -635,7 +683,7 @@ int main(int argc, char** argv)
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 255;
         }
-        if ( !quiet ) { printf("glimmering %d times rgb:%x,%x,%x: \n", n,r,g,b); }
+        msg("glimmering %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGBN(dev, millis,r,g,b, 1);
             rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 2);
@@ -649,12 +697,11 @@ int main(int argc, char** argv)
         //int on  = arg;
         int on = cmdbuf[0];
         int st = cmdbuf[1];
-        if ( !quiet ) {
-            printf("setting serverdown %s (at %d millis)\n", 
-                   ((on)?"ON":"OFF"), delayMillis);
-        }
+        msg("setting serverdown %s (@ %d millis)\n",((on)?"ON":"OFF"),delayMillis);
         blink1_serverdown( dev, on, delayMillis, st );
     }
+    /*
+      // NOTE: This is now unsupported and will not work on mk2 anyway
     // use caution with this, could make your blink(1) unusable
     // --serialnumwrite abcd1234
     else if( cmd == CMD_SERIALNUMWRITE ) { 
@@ -666,8 +713,9 @@ int main(int argc, char** argv)
             fprintf(stderr,"error writing new serial number: %d\n",rc);
         }
     }
+    */
     else if( cmd == CMD_TESTTEST ) { 
-        printf("test test\n");
+        msg("test test\n");
         rc = blink1_testtest(dev);
     }
 
