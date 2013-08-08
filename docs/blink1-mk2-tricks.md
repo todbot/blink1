@@ -8,6 +8,10 @@ and the blink1-tool command-line program on a bash shell.
 
 Turn on one LED, then the other
 -------------------------------
+This examples uses the new "-l" option to specify which LED to light.
+The default is "-l 0", which means all LEDs on a single blink(1) mk2.
+Note the "-l" option works with most, but not all, commands in blink1-tool.
+
     % while [ 1 ] ; do
         blink1-tool -l 1 --red  && blink1-tool -l 2 --blue
         sleep 1
@@ -18,6 +22,16 @@ Turn on one LED, then the other
 
 Turn all plugged-in blink(1)s to the same color
 -----------------------------------------------
+This example uses the existing "-d" option to specify which blink(1) to address.
+The '-d' option takes the "id" value given by the "--list" commmand,
+or "-all" to mean all blink(1)s.
+
+    % blink1-tool --list
+    blink(1) list:
+    id:0 - serialnum:2143AB23 (mk2)
+    id:1 - serialnum:2143DC05 (mk2)
+    id:2 - serialnum:214369F0 (mk2)
+    id:3 - serialnum:2143BADC (mk2)
 
     % blink1-tool -d all --rgb 255,0,255
     set dev:0 to rgb:0xff,0x00,0xff over 300 msec
@@ -28,24 +42,33 @@ Turn all plugged-in blink(1)s to the same color
 
 Play the green part of the startup sequence 3 times
 ---------------------------------------------------
+
     % blink1-tool --play 1,3,5,3
     playing color pattern from pos 3-5 (3 times)
 
 
 Play the blue part of the startup sequence forever
 --------------------------------------------------
+
     % blink1-tool --play 1,6,8,0
     playing color pattern from pos 6-8 (0 times)
 
 
 Stop playing
 ------------
+You can use either "--stop" or "--play 0" to stop the playing light pattern.
+The latter may be more useful if you're using blink1-tool in a programmatic context.
+
     % blink1-tool --stop
     % blink1-tool --play 0  # equivalent
 
 
 Dump current (in RAM) light pattern
 -----------------------------------
+To get the light pattern stored in a blink(1), use the "--getpattline <n>" command
+to get a pattern line.  The number of pattern lines available is 12 (for mk1 devices)
+and 32 (for mk2 devices).
+
     % for p in {0..15}
       do
         blink1-tool --getpattline $p
@@ -70,6 +93,9 @@ Dump current (in RAM) light pattern
 
 Infinite Rainbow using Bash
 ---------------------------
+Use the new "--hsb" command to specify colors by HSB (hue, saturation, brightness)
+instead of the standard "--rgb" command.  Note that the HSB-to-RGB conversion
+is done within blink1-tool, not in the blink(1) device.
 
     % while [ 1 ]
       do
@@ -83,7 +109,7 @@ Infinite Rainbow using Bash
 
 Write a rainbow color pattern
 -----------------------------
-This only writes it to RAM, these changes are lost
+This example only writes the color pattern to RAM, these changes are lost
 if you unplug.  See below for how to save to flash.
 
     % for h in {0..255..16}
@@ -113,7 +139,8 @@ if you unplug.  See below for how to save to flash.
 
 Save color pattern to non-volatile flash 
 ----------------------------------------
-This copies RAM pattern to flash.
+This copies RAM pattern to flash, making it available on next power up.
+Note that only the first 16 of 32 pattern lines are saved to flash.
 
     % blink1-tool --savepattern
     

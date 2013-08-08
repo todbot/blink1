@@ -8,24 +8,25 @@ This document shows the format of the data packet sent to blink(1).
 
 ## Command Summary ##
 
-    - Fade to RGB color       format: {0x01, 'c', r,g,b,     th,tl, n } (*)
-    - Set RGB color now       format: {0x01, 'n', r,g,b,       0,0, n } (*)
-    - Read current RGB color  format: {0x01, 'r', n,0,0,       0,0, n } (2)
-    - Serverdown tickle/off   format: {0x01, 'D', on,th,tl,  st,sp,ep } (*)
-    - Play/Pause              format: {0x01, 'p', on,sp,0,     0,0, 0 }
-    - PlayLoop                format: {0x01, 'p', on,sp,ep,c,    0, 0 } (2)
-    - Playstate readback      format: {0x01, 'S', 0,0,0,       0,0, 0 } (2)
-    - Set color pattern line  format: {0x01, 'P', r,g,b,     th,tl, p }
-    - Save color patterns     format: {0x01, 'W', 0,0,0,       0,0, 0 } (2)
-    - read color pattern line format: {0x01, 'R', 0,0,0,       0,0, p }
-    - Read EEPROM location    format: {0x01, 'e', ad,0,0,      0,0, 0 } (1)
-    - Write EEPROM location   format: {0x01, 'E', ad,v,0,      0,0, 0 } (1)
-    - Get version             format: {0x01, 'v', 0,0,0,       0,0, 0 }
-    - Test command            format: {0x01, '!', 0,0,0,       0,0, 0 }
+    - Fade to RGB color       format: { 1, 'c', r,g,b,     th,tl, n } (*)
+    - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, n } (*)
+    - Read current RGB color  format: { 1, 'r', n,0,0,       0,0, n } (2)
+    - Serverdown tickle/off   format: { 1, 'D', on,th,tl,  st,sp,ep } (*)
+    - Play/Pause              format: { 1, 'p', on,sp,0,     0,0, 0 }
+    - PlayLoop                format: { 1, 'p', on,sp,ep,c,    0, 0 } (2)
+    - Playstate readback      format: { 1, 'S', 0,0,0,       0,0, 0 } (2)
+    - Set color pattern line  format: { 1, 'P', r,g,b,     th,tl, p }
+    - read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
+    - Save color patterns     format: { 1, 'W', 0,0,0,       0,0, 0 } (2)
+    - Read EEPROM location    format: { 1, 'e', ad,0,0,      0,0, 0 } (1)
+    - Write EEPROM location   format: { 1, 'E', ad,v,0,      0,0, 0 } (1)
+    - Get version             format: { 1, 'v', 0,0,0,       0,0, 0 }
+    - Test command            format: { 1, '!', 0,0,0,       0,0, 0 }
 
 where:
 
     r,g,b = 24-bit RGB color
+    
         n = which LED to address: 0=all, 1=led#1, 2=led#2, etc. (mk2 only)
        th = (fadetimeMillis/10) >> 8
        tl = (fadetimeMillis/10) & 0xff
@@ -35,7 +36,8 @@ where:
        sp = start loop position (0 - patt_max-1)
        ep = end loop position (1 - patt_max)
        ad = address starting at 1
-        v = arbitrary value 
+        v = arbitrary value
+        1 = report id (must always be present)
 
       (*) some arguments for command is only available in mk2 devices
       (2) mk2 devices only
@@ -60,6 +62,8 @@ Some things to note:
 
 - The command action is the ascii value of the letter given (e.g. 'c' = 0x63)
 - Any command with unused cmd args should set them to zero.
+- On mk2 devices, gamma-correction of R,G,B values is done on the device,
+  while on mk1 devices, the gamma correction is done in blink1-lib
 
 
 The most common command is "fade to RGB", which has the form:
@@ -81,9 +85,10 @@ Commands
 --------
 
 ### Fade To RGB - `format: {0x01, 'c', r,g,b,    th,tl, 0 }`
+
 This command does not produce a return value
 
-    - byte 0 = 0x01  (report_id )
+    - byte 0 = 0x01  (report_id)
     - byte 1 = 'c'   (command "fade to rgb")
     - byte 2 = red value
     - byte 3 = green value
@@ -93,9 +98,10 @@ This command does not produce a return value
     - byte 7 = 0     (unused on mk1)
 
 ### Servertickle - `format: {0x01, 'D', on,th,tl,  st,0, 0 }`
+
 This command does not produce a return value
 
-    - byte 0 = 0x01  (report_id )
+    - byte 0 = 0x01  (report_id)
     - byte 1 = 'D'   (command "servertickle")
     - byte 2 = {1,0} (1 = enable servertickle, 0 = disable servertickle)
     - byte 3 = th    (timeout/10 high byte)
@@ -104,40 +110,67 @@ This command does not produce a return value
     - byte 6 = sp    (start position, 0 for entire loop)
     - byte 7 = ep    (end position, 0 for entire loop)
 
-### Read current color - `format:  {0x01, 'r', n,0,0,       0,0, n }`
+### Read Color Pattern Line - `format: { 1, 'R', 0,0,0,       0,0, p }`
 
 return values:
 
-        hid_send_buf[2] = leds[ledn].r;
-        hid_send_buf[3] = leds[ledn].g;
-        hid_send_buf[4] = leds[ledn].b;
-        hid_send_buf[5] = 0;
-        hid_send_buf[6] = 0;
-        hid_send_buf[7] = ledn;
-        
-### Playstate readback - `format: {0x01, 'S', 0,0,0,       0,0, 0 }`
+    hid_send_buf[0] = 0x01 (report_id)
+    hid_send_buf[1] = 'R'
+    hid_send_buf[2] = r;
+    hid_send_buf[3] = g;
+    hid_send_buf[4] = b;
+    hid_send_buf[5] = th;
+    hid_send_buf[6] = tl;
+    hid_send_buf[7] = pos;
+
+
+### Read current color - `format:  {0x01, 'r', n,0,0,       0,0, n }` 
+
+return values:
+
+    hid_send_buf[0] = 0x01 (report_id)
+    hid_send_buf[1] = 'r'
+    hid_send_buf[2] = leds[ledn].r;
+    hid_send_buf[3] = leds[ledn].g;
+    hid_send_buf[4] = leds[ledn].b;
+    hid_send_buf[5] = 0;
+    hid_send_buf[6] = 0;
+    hid_send_buf[7] = ledn;
+
+
+### Playstate readback - `format: {0x01, 'S', 0,0,0,       0,0, 0 }` 
 
 return values:
     
-        hid_send_buf[2] = playing;
-        hid_send_buf[3] = playstart;
-        hid_send_buf[4] = playend;
-        hid_send_buf[5] = playcount;
-        hid_send_buf[6] = playpos;
-        hid_send_buf[7] = 0;
+    hid_send_buf[0] = 0x01 (report_id)
+    hid_send_buf[1] = 'S'
+    hid_send_buf[2] = playing;
+    hid_send_buf[3] = playstart;
+    hid_send_buf[4] = playend;
+    hid_send_buf[5] = playcount;
+    hid_send_buf[6] = playpos;
+    hid_send_buf[7] = 0;
         
+
 
 Examples
 --------
 
-* fade to white (255,255,255) in 5 seconds
+* Fade to white (255,255,255) in 5 seconds
 
   `{ 0x01, 'c', 0xff,0ff,0xff, 0x01,0xff, 0 }`
 
 
-* fade to white (255,255,255) in 5 seconds
+* Fade to white (255,255,255) in 5 seconds
 
   `{ 0x01, 'c', 0xff,0ff,0xff, 0x01,0xff, 0 }`
 
+* Read color pattern line #5
+
+  `{ 0x01, 'R', 0,0,0,  0,0, 5}`
+
+  example response (#FF00FF @ 500msec)
+
+  `{ 0x01, 'R', 0xff,0x00,0xff,  0x00,0x32, 5 }`
 
 
