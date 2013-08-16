@@ -140,7 +140,7 @@ static uint8_t msgbuf[REPORT_COUNT+1];
 //static uint8_t msgbufout[8];
 
 // HID descriptor, 1 report, 8 bytes long
-PROGMEM char usbHidReportDescriptor[24] = {
+PROGMEM const char usbHidReportDescriptor[24] = {
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
