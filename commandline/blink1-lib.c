@@ -545,7 +545,8 @@ int blink1_writePatternLine(hid_device *dev, uint16_t fadeMillis,
     g = (blink1_enable_degamma) ? blink1_degamma(g) : g ;
     b = (blink1_enable_degamma) ? blink1_degamma(b) : b ;
 
-    uint8_t buf[blink1_buf_size] = {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
+    uint8_t buf[blink1_buf_size] = 
+        {blink1_report_id, 'P', r,g,b, (dms>>8), (dms % 0xff), pos };
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
@@ -577,8 +578,8 @@ int blink1_savePattern( hid_device *dev )
 
     buf[0] = blink1_report_id;     // report id
     buf[1] = 'W';   // command code for "write pattern to flash"
-    buf[2] = 0x55;
-    buf[3] = 0xAA;
+    buf[2] = 0xBE;
+    buf[3] = 0xEF;
     buf[4] = 0xCA;
     buf[5] = 0xFE;
     buf[6] = 0x00;
