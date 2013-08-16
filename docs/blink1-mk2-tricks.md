@@ -147,13 +147,15 @@ Note that only the first 16 of 32 pattern lines are saved to flash.
 
 Is blink(1) playing a color pattern?
 ------------------------------------
+
     % blink1-tool --playstate
     playstate: playing:1 start-end:0-16 count:0 pos:4
 
 
 Start pattern playing, wait for it to stop
 ------------------------------------------
-    # play red & green part of default pattern 3 times
+
+# play red & green part of default pattern 3 times
     % blink1-tool --play 1,0,5,3
     # wait for "playing" to go to zero before continuing
     % while [ `blink1-tool --playstate | cut -c 20` != 0 ]
