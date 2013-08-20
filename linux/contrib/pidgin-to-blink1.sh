@@ -26,6 +26,10 @@ DBUS_PATH="/im/pidgin/purple/PurpleObject"
 STATUS_AVAILABLE=0,255,0    # Green
 STATUS_AWAY=255,200,0       # Yellow
 STATUS_BUSY=255,0,0         # Red
+STATUS_RECEIVE=8,0,243      # Blue
+
+# Set Blinks
+STATUS_RECEIVE_BLINK=5
 
 # On exit, shut off the blink1
 trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
@@ -34,7 +38,8 @@ trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
 dbus-monitor --profile \
     "type='signal',interface='$DBUS_INTERFACE',member='SavedstatusChanged'" \
     "type='signal',interface='$DBUS_INTERFACE',member='Quitting'" \
-    "type='signal',interface='$DBUS_INTERFACE',member='SignedOn'" | 
+    "type='signal',interface='$DBUS_INTERFACE',member='SignedOn'" \
+    "type='signal',interface='$DBUS_INTERFACE',member='ReceivedImMsg'" |
 while read -r line; do
     
     message=`echo "$line" | rev | cut -d$'\t' -f1 | rev`
@@ -43,6 +48,11 @@ while read -r line; do
     if [ "$message" == 'Quitting' ]; then
         $BLINK1 --off &> /dev/null
         continue
+    fi
+
+    # Blink when receiving a message
+    if [ "$message" == "ReceivedImMsg" ]; then
+        $BLINK1 --rgb $STATUS_RECEIVE --blink $STATUS_RECEIVE_BLINK &> /dev/null
     fi
 
     # Get status text
