@@ -22,10 +22,19 @@ DBUS_INTERFACE="im.pidgin.purple.PurpleInterface"
 DBUS_SERVICE="im.pidgin.purple.PurpleService"
 DBUS_PATH="/im/pidgin/purple/PurpleObject"
 
+# Pidgin's Status Type IDs
+PIDGIN_STATUS_TYPE_OFFLINE=1
+PIDGIN_STATUS_TYPE_AVAILABLE=2
+PIDGIN_STATUS_TYPE_UNAVAILABLE=3
+PIDGIN_STATUS_TYPE_INVISIBLE=4
+PIDGIN_STATUS_TYPE_AWAY=5
+
 # Set colours
-STATUS_AVAILABLE=0,255,0    # Green
-STATUS_AWAY=255,200,0       # Yellow
-STATUS_BUSY=255,0,0         # Red
+STATUS_AVAILABLE=0,255,0     # Green
+STATUS_AWAY=255,200,0        # Yellow
+STATUS_UNAVAILABLE=255,0,0   # Red
+STATUS_INVISIBLE=255,255,255 # White
+STATUS_OFFLINE=0,0,0         # Black (Off)
 
 # On exit, shut off the blink1
 trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
@@ -46,18 +55,21 @@ while read -r line; do
     fi
 
     # Get status text
+    STATUS=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetCurrent`
     STATUS_ID=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetCurrent | cut -d ' ' -f5`
-    STATUS=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetTitle int32:$STATUS_ID`
-
-    status=`echo "${STATUS}" | tr -d ' '`
+    STATUS_TYPE=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetType int32:$STATUS_ID | cut -d ' ' -f5`
 
     #Handle changing the colour
-    case "$status" in 
-        "Available")
+    case "$STATUS_TYPE" in
+        "$PIDGIN_STATUS_TYPE_AVAILABLE")
             $BLINK1 --rgb $STATUS_AVAILABLE &> /dev/null;;
-        "Away") 
+        "$PIDGIN_STATUS_TYPE_AWAY")
             $BLINK1 --rgb $STATUS_AWAY &> /dev/null;;
-        "Busy") 
-            $BLINK1 --rgb $STATUS_BUSY &> /dev/null;;
+        "$PIDGIN_STATUS_TYPE_UNAVAILABLE")
+            $BLINK1 --rgb $STATUS_UNAVAILABLE &> /dev/null;;
+        "$PIDGIN_STATUS_TYPE_INVISIBLE")
+            $BLINK1 --rgb $STATUS_INVISIBLE &> /dev/null;;
+        "$PIDGIN_STATUS_TYPE_OFFLINE")
+            $BLINK1 --rgb $STATUS_OFFLINE &> /dev/null;;
     esac
 done
