@@ -93,7 +93,7 @@ static int  hexread(char *buffer, char *string, int buflen)
 {
     char    *s;
     int     pos = 0;
-    bzero(buffer,buflen);
+    memset(buffer,0,buflen);  // bzero() not defined on Win32?
     while((s = strtok(string, ", ")) != NULL && pos < buflen){
         string = NULL;
         buffer[pos++] = (char)strtol(s, NULL, 0);
