@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>blink1test1</title>
+    <style>
+    </style>
+  <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="requestPermissionDiv">
+      <button id="requestPermission">Request USB permissions</button>
+    </div>
+    <div id="container" >
+      <div id="info">
+    <label>
+      blink1:
+      <span id="blink1Info">12345678</span>
+    </label>
+    <label>
+      Status:
+      <span id="blink1Status">unknown</span>
+    </label>
+    </div>
+    <hr/>
+    <div id="controls">
+    <label>
+      red:
+      <input id="redval" class="rgbval" type="range" min="0" max="255" value="127">
+    </label>
+    <label>
+      grn:
+      <input id="grnval" class="rgbval" type="range" min="0" max="255" value="127">
+    </label>
+    <label>
+      blu:
+      <input id="bluval" class="rgbval" type="range" min="0" max="255" value="127">
+    </label>
+    </div>
+
+    <div id="colorswatch"></div>
+
+    </div> 
+
+    <script src="blink1test1.js"></script>
+  </body>
+</html>
