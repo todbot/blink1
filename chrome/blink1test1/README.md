@@ -11,5 +11,5 @@ sending color commands to it via USB HID Set Feature reports.
 * [Window](http://developer.chrome.com/trunk/apps/app.window.html)
      
 ## Screenshot
-[tbd]
+![screenshot](https://raw.github.com/todbot/blink1/master/chrome/blink1test1/assets/screenshot1.png)
 
