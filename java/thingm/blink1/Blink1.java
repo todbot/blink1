@@ -262,6 +262,18 @@ public class Blink1
    * Fade blink(1) to RGB color over fadeMillis milliseconds.
    *
    * @param fadeMillis milliseconds to take to get to color
+   * @param r red component 0-255
+   * @param g green component 0-255
+   * @param b blue component 0-255
+   * @param ledn which LED to address (0=all)
+   * @returns blink1_command response code, -1 == fail 
+   */
+  public native synchronized int fadeToRGB(int fadeMillis, int r, int g, int b, int ledn);
+  
+  /**
+   * Fade blink(1) to RGB color over fadeMillis milliseconds.
+   *
+   * @param fadeMillis milliseconds to take to get to color
    * @param c Color to set
    * @returns blink1_command response code, -1 == fail 
    */
