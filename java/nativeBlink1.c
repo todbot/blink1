@@ -201,12 +201,28 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 /**
  *
  */
-JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB__IIII
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b)
 {
     hid_device* devt = getDevicePtr(env,obj);
 
     int err = blink1_fadeToRGB(devt, fadeMillis, r,g,b);
+    //err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
+
+    setErrorCode(env,obj,err);
+
+    return err;
+}
+
+/**
+ *
+ */
+JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB__IIIII
+(JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b, jint ledn)
+{
+    hid_device* devt = getDevicePtr(env,obj);
+
+    int err = blink1_fadeToRGBN(devt, fadeMillis, r,g,b, ledn);
     //err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
 
     setErrorCode(env,obj,err);
