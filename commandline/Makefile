@@ -118,7 +118,6 @@ endif
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
 LIBTARGET = blink1-lib.so
-#LIBTARGET = libBlink1.so
 CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
 
@@ -133,13 +132,15 @@ endif
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
-#LIBTARGET = libBlink1.so
-LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
-OBJS = ./hidapi/libusb/hid.o
-EXEFLAGS=
-LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
-EXE=
 CFLAGS+= -I/usr/local/include -fPIC
+LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
+
+OBJS = ./hidapi/libusb/hid.o
+
+EXEFLAGS = -static
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+
+EXE=
 endif
 
 
