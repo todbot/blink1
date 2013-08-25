@@ -210,6 +210,9 @@ enum {
     CMD_RED,
     CMD_GRN,
     CMD_BLU,
+    CMD_CYAN,
+    CMD_MAGENTA,
+    CMD_YELLOW,
     CMD_BLINK,
     CMD_GLIMMER,
     CMD_PLAY,
@@ -273,6 +276,9 @@ int main(int argc, char** argv)
         {"red",        no_argument,       &cmd,   CMD_RED },
         {"green",      no_argument,       &cmd,   CMD_GRN },
         {"blue",       no_argument,       &cmd,   CMD_BLU},
+        {"cyan",       no_argument,       &cmd,   CMD_CYAN},
+        {"magenta",    no_argument,       &cmd,   CMD_MAGENTA},
+        {"yellow",     no_argument,       &cmd,   CMD_YELLOW},
         {"blink",      required_argument, &cmd,   CMD_BLINK},
         {"glimmer",    required_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
@@ -338,6 +344,15 @@ int main(int argc, char** argv)
                 break;
             case CMD_BLU:
                 rgbbuf[2] = 255; 
+                break;
+            case CMD_CYAN:
+                rgbbuf[1] = 255; rgbbuf[2] = 255; 
+                break;
+            case CMD_MAGENTA:
+                rgbbuf[0] = 255; rgbbuf[2] = 255; 
+                break;
+            case CMD_YELLOW:
+                rgbbuf[0] = 255; rgbbuf[1] = 255; 
                 break;
             } // switch(cmd)
             break;
@@ -495,7 +510,8 @@ int main(int argc, char** argv)
         printf("%d\n", rc );
     }
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
-             cmd == CMD_RED || cmd == CMD_BLU || cmd ==CMD_GRN ) { 
+             cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
+	     cmd == CMD_CYAN || cmd == CMD_MAGENTA || cmd == CMD_YELLOW ) { 
         blink1_close(dev); // close global device, open as needed
         
         uint8_t r = rgbbuf[0];
