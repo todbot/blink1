@@ -40,23 +40,26 @@ action = 0x6E # ='n' (set rgb now)
 red = 0xFF
 green = 0x00
 blue = 0x00
-dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, [0x00, action, red, green, blue, 0x00, 0x00, 0x00, 0x00])
+dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, 
+                  [0x00, action, red, green, blue, 0x00, 0x00, 0x00])
 
 #then fade to blue
 action = 0x63 # ='c' (fade to rgb)
 red = 0x00
 green = 0x00
 blue = 0xFF
-T = 5000/10 #5 seconds worth of 10msec tics
+T = 2000/10 #5 seconds worth of 10msec tics
 th = (T & 0xff00) >> 8
 tl = T & 0x00ff
-dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, [0x00, action, red, green, blue, th, tl, 0x00, 0x00])
+dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, 
+                  [0x00, action, red, green, blue, th, tl, 0x00])
 
 #get version number
 import time
 import string
 action = 0x76 # ='v' (version)
-dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, [0x00, action, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, 
+                  [0x00, action, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 time.sleep(.05)
 bmRequestTypeIn = usb.util.build_request_type(usb.util.CTRL_IN, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
 version_raw = dev.ctrl_transfer(bmRequestTypeIn, 0x01, (3 << 8) | 0x01, 0, 8)
