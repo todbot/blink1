@@ -46,6 +46,8 @@ Python libraries
 
 Thanks to members of the blink(1) community, we have working examples of all three techniques:
 
+- "blink1.py" - Simple blink(1) library based on blink1hid-demo.py.  This is the ThingM-supported Python library for blink(1)
+
 - "blink1hid-demo.py" - Aaron Blondeau's script uses PyUSB to show how to construct raw HID reports 
 that send commands to blink(1)
 
