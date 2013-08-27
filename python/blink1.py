@@ -46,7 +46,7 @@ class Blink1:
 
 #get version number
     def getVersion(self):
-        if( self.dev == None ): return self.notfound()
+        if( self.dev == None ): return ''
         action = 0x76 # ='v' (version)
         bmRequestTypeOut = usb.util.build_request_type(usb.util.CTRL_OUT, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
         self.dev.ctrl_transfer(bmRequestTypeOut, 0x09, (3 << 8) | 0x01, 0, 
@@ -59,30 +59,36 @@ class Blink1:
         return version
 
 
-blink1 = Blink1()
-if( blink1.dev == None ):
-    print("no blink1 found")
+def main():
+    blink1 = Blink1()
+    if( blink1.dev == None ):
+        print("no blink1 found")
 
-print "blink1 version: "+ blink1.getVersion()
+    print "blink1 version: "+ blink1.getVersion()
+        
+    demoColors = [ [255,  0,  0],  # red
+                   [  0,255,  0],  # grn
+                   [  0,  0,255],  # blu
+                   [255,255,  0],  # yellow
+                   [  0,255,255],  # cyan
+                   [255,  0,255],  # magenta
+                   [  0,  0,  0],  # off
+                   ]
+        
+    fadeMillis = 100
+    
+    for rgb in demoColors:
+        r = rgb[0]
+        g = rgb[1]
+        b = rgb[2]
+        print "fading to %3i,%3i,%3i" % (r,g,b)
+        blink1.fadeToRGB( r,g,b, fadeMillis, 0 )
+        time.sleep(0.5)
+        
+        blink1.fadeToRGB(   0,0,0, 1000, 0 )
 
-demoColors = [ [255,  0,  0],  # red
-               [  0,255,  0],  # grn
-               [  0,  0,255],  # blu
-               [255,255,  0],  # yellow
-               [  0,255,255],  # cyan
-               [255,  0,255],  # magenta
-               [  0,  0,  0],  # off
-               ]
 
-fadeMillis = 100
-
-for rgb in demoColors:
-    r = rgb[0]
-    g = rgb[1]
-    b = rgb[2]
-    print "fading to %3i,%3i,%3i" % (r,g,b)
-    blink1.fadeToRGB( r,g,b, fadeMillis, 0 )
-    time.sleep(0.5)
+if __name__ == '__main__':
+    main()
 
 
-blink1.fadeToRGB(   0,0,0, 1000, 0 )
