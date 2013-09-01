@@ -46,13 +46,18 @@ Python libraries
 
 Thanks to members of the blink(1) community, we have working examples of all three techniques:
 
-- "blink1.py" - Simple blink(1) library based on blink1hid-demo.py.  This is the ThingM-supported Python library for blink(1)
+- `blink1_pyusb.py` - Simple blink(1) library based on blink1hid-demo.py.
+This is a ThingM-supported Python library for blink(1).
+Run it by itself to get a command-line tool similar to blink1-tool.
 
-- "blink1hid-demo.py" - Aaron Blondeau's script uses PyUSB to show how to construct raw HID reports 
-that send commands to blink(1)
+- `blink1_ctypes.py` - blink(1) library using ctypes.
+This is a ThingM-supported Python library for blink(1).
+Run it by itself to get a command-line tool similar to blink1-tool.
 
-- "blink1-ctypes.py"  - Stephen Youndt's script shows how to wrap the C library
+- `blink1_pyusb_demoblondeau.py` - Aaron Blondeau's script uses PyUSB to show how to construct raw HID reports that send commands to blink(1)
 
-- "bliPi.py" - DPontes wrapper of blink1-tool, available at : https://github.com/DPontes/bliPy/blob/master/bliPy.py
+- `blink1_ctypes_demoyoundt.py`  - Stephen Youndt's script shows how to wrap the C library
+
+- `bliPi.py` - DPontes wrapper of blink1-tool, available at : https://github.com/DPontes/bliPy/blob/master/bliPy.py
 
 
