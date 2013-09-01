@@ -5,7 +5,7 @@ import time
 import re
 import sys
 
-debugimport=False
+debugimport=True
 try:
     from blink1_pyusb import Blink1
     #sys.modules['Blink1'] = blink1_pyusb
