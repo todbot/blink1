@@ -96,8 +96,7 @@ void setup() {
   drawBackground();
 
   //INITIATE BLINK 1
-  myBlink1 = new Blink1();
-  myBlink1.open();
+  myBlink1 = Blink1.open();
   myBlink1.setRGB(0, 0, 0);
 
   //COLOR AND MESSAGE ARRAYS
