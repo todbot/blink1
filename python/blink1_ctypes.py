@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 """
 
 blink1_ctypes.py -- blink(1) Python library
 
-Uses ctypes wrapper around blink1-lib C library
+Uses ctypes wrapper around blink1-lib C library (which in turn wraps HIDAPI)
 
 Make sure you have the blink1-lib shared library in the same directory
 as blink1_ctypes.py or in your LD_LIBRARY_PATH
@@ -16,8 +14,6 @@ Based on Stephen Youndt's script on how to wrap the C library
 """
 
 import time
-import string
-import re
 
 from ctypes import *
 from ctypes.util import find_library
@@ -32,14 +28,19 @@ if libname is None:
 if libname is None:
     libname = find_library("blink1-lib")
 if libname is None:
-    libname = glob.glob(os.path.join(localpath, '[Bb]link1-lib.so'))[-1]
+    pathlist = glob.glob(os.path.join(localpath, '[Bb]link1-lib.so')) 
+    if pathlist: libname = pathlist[-1]
 if libname is None:
-    libname = glob.glob(os.path.join(localpath, 'blink1-lib.dll'))[-1]
+    pathlist = glob.glob(os.path.join(localpath, 'blink1-lib.dll'))[-1]
+    if pathlist: libname = pathlist[-1]
 if libname is None:
-    libname = glob.glob(os.path.join(localpath, 'lib[Bb]link1*'))[-1]
+    pathlist = glob.glob(os.path.join(localpath, 'lib[Bb]link1*'))[-1]
+    if pathlist: libname = pathlist[-1]
 
 # If we found the library, load it
-assert libname is not None
+if not libname:
+    raise ImportError("no blink1-lib shared library found")
+
 libblink1 = CDLL(libname)
 
 enumerate = libblink1.blink1_enumerate
@@ -156,133 +157,5 @@ class Blink1:
         return str(getVersion(self.dev))
 
     
-
-##################################################################################
-
-#
-def parse_color_string(rgbstr):
-    rgbstr = rgbstr.lower()
-    rgb = None
-    # match hex color code "#FFcc00"
-    m = re.search(r"#([0-9a-f]{6})", rgbstr)
-    if m:
-        rgb = tuple(ord(c) for c in m.group(1).decode('hex'))
-    else:
-        # match color triplets like "255,0,0" and "0xff,0xcc,0x33"
-        m = re.search(r"(0x[\da-f]+|\d+),(0x[\da-f]+|\d+),(0x[\da-f]+|\d+)", rgbstr)
-        if m:
-            rgb = tuple(int(c,0) for c in m.groups())
-            
-    return rgb
-
-#
-def demo(blink1):
-
-    print "blink1 version: "+ blink1.get_version()
-        
-    democolors = [ [255,  0,  0],  # red
-                   [  0,255,  0],  # grn
-                   [  0,  0,255],  # blu
-                   [255,255,  0],  # yellow
-                   [  0,255,255],  # cyan
-                   [255,  0,255],  # magenta
-                   [  0,  0,  0],  # off
-                   ]
-        
-    fademillis = 100
-    
-    for rgb in democolors:
-        r = rgb[0]
-        g = rgb[1]
-        b = rgb[2]
-        print "fading to %3i,%3i,%3i" % (r,g,b)
-        blink1.fade_to_rgbn( fademillis, r,g,b, 0 )
-        time.sleep(0.5)
-        
-    blink1.fade_to_rgbn( 1000,  0,0,0,  0 )
-
-
-if __name__ == '__main__':
-
-    from optparse import OptionParser
-    
-    parser = OptionParser()
-    parser.add_option('--demo',    
-                      action='store_const', dest='cmd',const='demo',
-                      help='run simple demo')
-
-    parser.add_option('--version', 
-                      action='store_const', dest='cmd',const='version',
-                      help='return firmware version')
-
-    parser.add_option('--blink', 
-                      dest='blink',default=0, type='int',
-                      help='blink specified number of times')
-
-    parser.add_option('--play', 
-                      dest='play',default=0, type='string',
-                      help='play built-in light sequence')
-
-    parser.add_option('--rgb', dest='rgb', default='',
-                      help="the RGB color to use")
-
-    parser.add_option('-l', '--led', dest='ledn', default=0, type='int',
-                      help="which LED to use (default=both)")
-
-    parser.add_option('-m', '--millis', dest='fade_millis', default=300, type='int',
-                      help="fade millis for color commands")
-
-    parser.add_option('-t', '--delay', dest='delay_millis', default=500,type='int',
-                      help="millis between commands like blink, random, etc.")
-
-    parser.add_option('--debug', action="store_true", dest='debug' )
-    parser.add_option('--on',    action="store_const",dest='rgb',const="#FFFFFF")
-    parser.add_option('--off',   action="store_const",dest='rgb',const="#000000")
-    parser.add_option('--red',   action="store_const",dest='rgb',const="#FF0000")
-    parser.add_option('--green', action="store_const",dest='rgb',const="#00FF00")
-    parser.add_option('--blue',  action="store_const",dest='rgb',const="#0000FF")
-
-    (options, args) = parser.parse_args()
-
-    rgbstr = options.rgb
-    fade_millis = options.fade_millis
-    ledn = options.ledn
-    rgb = parse_color_string( rgbstr )
-    debug_rw = options.debug
-
-    #print "rgbval:%s millis:%i ledn:%i " % (repr(rgb),fade_millis,ledn)
-
-    #
-    blink1 = Blink1()
-
-    if blink1.dev == None :
-        print("no blink1 found")
-
-    # blink command (takes an argument of number of blinks)
-    if options.blink :
-        if not rgb : rgb = (255,255,255)
-        for i in range(0,options.blink):
-            blink1.fade_to_rgbn( fade_millis, rgb[0],rgb[1],rgb[2], ledn)
-            time.sleep( options.delay_millis / 1000.0 )
-            blink1.fade_to_rgbn( fade_millis, 0,0,0, ledn)
-            time.sleep( options.delay_millis / 1000.0 )
-            
-    elif options.play :
-        play = map(int, options.play.split(',')) # convert to int list
-        #print "play: "+repr(options.play) + ','+repr(play)
-        play.extend( [0] * (4 - len(play)) )  # make list fixed size, seems dumb
-        blink1.playloop( play[0], play[1], play[2], play[3] )
-
-    elif options.cmd == "version":
-        print "version: "+ blink1.get_version()
-
-    elif options.cmd == "demo" :
-        demo(blink1)
-        
-    elif options.cmd == None and rgb :
-        blink1.fade_to_rgbn( fade_millis, rgb[0],rgb[1],rgb[2], ledn)
-
-    else:
-        parser.print_help()
 
 
