@@ -52,7 +52,7 @@ getCachedPath = libblink1.blink1_getCachedPath
 getCachedPath.restype = c_char_p
 getCachedPath.argtypes = [c_int]
 getCachedSerial = libblink1.blink1_getCachedSerial
-getCachedSerial.restype = c_wchar_p
+getCachedSerial.restype = c_char_p
 getCachedSerial.argtypes = [c_int]
 getCachedCount = libblink1.blink1_getCachedCount
 getCachedCount.restype = c_int
@@ -63,7 +63,7 @@ openByPath.restype = c_void_p
 openByPath.argtypes = [c_char_p]
 openBySerial = libblink1.blink1_openBySerial
 openBySerial.restype = c_void_p
-openBySerial.argtypes = [c_wchar_p]
+openBySerial.argtypes = [c_char_p]
 openById = libblink1.blink1_openById
 openById.restype = c_void_p
 openById.argtypes = [c_int]
@@ -151,11 +151,15 @@ class Blink1:
 
     """
     Get blink(1) firmware version
-
     """
     def get_version(self):
         return str(getVersion(self.dev))
 
-    
+    """
+    Get blink(1) serial number
+    """
+    def get_serialnumber(self):
+        return getCachedSerial(0)
+
 
 

@@ -119,15 +119,20 @@ class Blink1:
     """
     def get_version(self):
         if( self.dev == None ): return ''
-        action = ord('v') # 0x76 # ='v' (version)
-        buf = [0x01, action, 0,0, 0,0,0,0]
+        buf = [0x01, ord('v'), 0,0, 0,0,0,0]
         self.write(buf)
         time.sleep(.05)
-        #bmRequestTypeIn = usb.util.build_request_type(usb.util.CTRL_IN, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
-        #version_raw = self.dev.ctrl_transfer(bmRequestTypeIn, 0x01, (3 << 8) | 0x01, 0, 8)
         version_raw = self.read()
         version = (version_raw[3]-ord('0'))*100 + (version_raw[4]-ord('0'))
         return str(version)
+
+    """
+    Get blink(1) serial number
+
+    """
+    def get_serialnumber(self):
+        if( self.dev == None ): return ''
+        return usb.util.get_string(self.dev, 256, 3)
 
 
 
