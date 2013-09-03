@@ -4,7 +4,7 @@ Using Python with blink(1)
 Python libraries
 ----------------
 
-Thanks to members of the blink(1) community, we have working examples of all three techniques:
+The current official Python library for blink(1) is `blink1.py` below. It's actually a thin wrapper around two different approaches, depending on your installation.  The `blink1.py` library will pick the correct one automatically.
 
 - `blink1.py` - blink(1) library
 This is a ThingM-supported library. It wraps the two libraries below automatically.
@@ -17,9 +17,12 @@ This is a ThingM-supported Python library for blink(1).
 This is a ThingM-supported Python library for blink(1).
 
 
+Thanks to members of the blink(1) community who helped create these.
+
+
 ## Things to Note ##
 
-There are three ways to get Python to access blink(1): 
+There are at least three ways to get Python to access blink(1): 
 
 - Use the PyUSB library to construct USB HID requests
 - Wrap the "blink1-lib" C-library located in blink1/commandline
@@ -52,7 +55,6 @@ Cons:
 Pros:
 - 100% Python
 - Easy to understand
-- Usable on many more platforms like Raspberry Pi
 
 Cons:
 - Ineffecient; Spawns a process for each blink(1) call
