@@ -4,7 +4,6 @@
 
 Making it a service on Mac OS X
 -------------------------------
-(note this is a little stale)
 
 to start:
 % launchctl load -w ./com.thingm.blink1.plist

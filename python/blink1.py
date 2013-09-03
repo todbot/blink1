@@ -43,19 +43,19 @@ def demo(blink1):
 
     print "blink1 version: "+ blink1.get_version()
         
-    democolors = [ [255,  0,  0],  # red
-                   [  0,255,  0],  # grn
-                   [  0,  0,255],  # blu
-                   [255,255,  0],  # yellow
-                   [  0,255,255],  # cyan
-                   [255,  0,255],  # magenta
-                   [  0,  0,  0],  # off
+    democolors = [ (255,  0,  0),  # red
+                   (  0,255,  0),  # grn
+                   (  0,  0,255),  # blu
+                   (255,255,  0),  # yellow
+                   (  0,255,255),  # cyan
+                   (255,  0,255),  # magenta
+                   (  0,  0,  0),  # off
                    ]
 
     demo_millis = 200
 
     for rgb in democolors:
-        (r,g,b) = map(int,rgb)
+        (r,g,b) = rgb
 
         print "fading to %3i,%3i,%3i" % (r,g,b)
         blink1.fade_to_rgbn( demo_millis/2, r,g,b, 0 )

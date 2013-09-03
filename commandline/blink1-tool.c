@@ -29,6 +29,7 @@
 
 #include "blink1-lib.h"
 
+#define BLINK1_TOOL_VERSION "1.2.34"
 
 int millis = 300;
 int delayMillis = 500;
@@ -175,7 +176,8 @@ static void usage(char *myName)
 "  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
 "  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
 "  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
-"  --version                   Display blink(1) firmware version \n"
+"  --fwversion                 Display blink(1) firmware version \n"
+"  --version                   Display blink1-tool version info \n"
 "and [options] are: \n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
 "  -g -nogamma                 Disable autogamma correction\n"
@@ -224,6 +226,7 @@ enum {
     CMD_RANDOM,
     CMD_RUNNING,
     CMD_VERSION,
+    CMD_FWVERSION,
     CMD_SERVERDOWN,
     CMD_SERIALNUMREAD,
     CMD_SERIALNUMWRITE,
@@ -270,6 +273,7 @@ int main(int argc, char** argv)
         {"rgb",        required_argument, &cmd,   CMD_RGB },
         {"hsb",        required_argument, &cmd,   CMD_HSB },
         {"rgbread",    no_argument,       &cmd,   CMD_RGBREAD},
+        {"savepattline",required_argument,&cmd,   CMD_SETPATTLINE }, // back compat
         {"setpattline",required_argument, &cmd,   CMD_SETPATTLINE },
         {"getpattline",required_argument, &cmd,   CMD_GETPATTLINE },
         {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
@@ -291,6 +295,7 @@ int main(int argc, char** argv)
         {"random",     required_argument, &cmd,   CMD_RANDOM },
         {"running",    required_argument, &cmd,   CMD_RUNNING },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
+        {"fwversion",  no_argument,       &cmd,   CMD_FWVERSION },
         {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
         {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
         {"servertickle", required_argument, &cmd,   CMD_SERVERDOWN },
@@ -430,10 +435,22 @@ int main(int argc, char** argv)
 
     // get a list of all devices and their paths
     int count = blink1_enumerateByVidPid(vid,pid);
+
+    if( cmd == CMD_VERSION ) { 
+        char verbuf[40] = "";
+        if( count ) { 
+            rc = blink1_getVersion(dev);
+            sprintf(verbuf, ", fw version: %d", rc);
+        }
+        msg("blink1-tool version: %s %s\n",BLINK1_TOOL_VERSION,verbuf);
+    }
+
+
     if( count == 0 ) {
         msg("no blink(1) devices found\n");
         exit(1);
     }
+
 
     if( numDevicesToUse == 0 ) numDevicesToUse = count; 
 
@@ -507,10 +524,9 @@ int main(int argc, char** argv)
             printf("error\n");
         }
     }
-    else if( cmd == CMD_VERSION ) { 
-        msg("firmware version: ");
+    else if( cmd == CMD_FWVERSION ) { 
         rc = blink1_getVersion(dev);
-        printf("%d\n", rc );
+        msg("blink1-tool: %s firmware version: %d",BLINK1_TOOL_VERSION,rc);
     }
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
@@ -582,10 +598,10 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_SETPATTLINE ) {
-        uint8_t r = rgbbuf[0];
-        uint8_t g = rgbbuf[1];
-        uint8_t b = rgbbuf[2];
-        uint8_t p = cmdbuf[0];
+        uint8_t r = cmdbuf[0];
+        uint8_t g = cmdbuf[1];
+        uint8_t b = cmdbuf[2];
+        uint8_t p = cmdbuf[3];
         msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
         if( rc==-1 && !quiet ) {

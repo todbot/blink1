@@ -148,7 +148,7 @@ endif
 
 CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
-CFLAGS += -I./hidapi/hidapi -I./mongoose -g
+CFLAGS += -I./hidapi/hidapi -g
 # only uncomment for debugging HIDAPI stuff
 #CFLAGS += -DDEBUG_PRINTF
 
@@ -180,9 +180,9 @@ blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
 blink1-server-simple: $(OBJS) blink1-server-simple.c
-	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
-	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
-	$(CC) -g $(OBJS) $(EXEFLAGS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+	$(CC) $(CFLAGS) -I./server/mongoose -c server/blink1-server-simple.c -o blink1-server-simple.o
+	$(CC) $(CFLAGS) -I./server/mongoose -c ./server/mongoose/mongoose.c -o ./server/mongoose/mongoose.o
+	$(CC) -g $(OBJS) $(EXEFLAGS) ./server/mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
 
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
@@ -195,7 +195,7 @@ package: blink1-tool
 clean: 
 	rm -f $(OBJS) 
 	rm -f blink1-server-simple.o blink1-tool.o
-	rm -f mongoose/mongoose.o
+	rm -f server/mongoose/mongoose.o
 
 distclean: clean
 	rm -f blink1-tool$(EXE)
