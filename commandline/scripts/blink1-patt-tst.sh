@@ -17,3 +17,4 @@ blink1-tool -m   0 --setpattline 0,0,0,10
 blink1-tool -m   0 --setpattline 0,0,0,11 
 
 blink1-tool --play 1
+
