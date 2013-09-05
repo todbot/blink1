@@ -179,18 +179,18 @@ blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
 	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
-blink1-server-simple: $(OBJS) blink1-server-simple.c
-	$(CC) $(CFLAGS) -I./server/mongoose -c server/blink1-server-simple.c -o blink1-server-simple.o
-	$(CC) $(CFLAGS) -I./server/mongoose -c ./server/mongoose/mongoose.c -o ./server/mongoose/mongoose.o
+blink1-server-simple: $(OBJS) server/blink1-server-simple.c
+	$(CC) $(CFLAGS) -I. -I./server/mongoose -c server/blink1-server-simple.c -o blink1-server-simple.o
+	$(CC) $(CFLAGS) -I. -I./server/mongoose -c ./server/mongoose/mongoose.c -o ./server/mongoose/mongoose.o
 	$(CC) -g $(OBJS) $(EXEFLAGS) ./server/mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
 
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
 
-package: blink1-tool
+package: 
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
-	zip ../builds/blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
+	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
 
 clean: 
 	rm -f $(OBJS) 
@@ -201,6 +201,9 @@ distclean: clean
 	rm -f blink1-tool$(EXE)
 	rm -f blink1-server-simple$(EXE)
 	rm -f $(LIBTARGET) $(LIBTARGET).a
+
+# show shared library use
+# in general we want minimal to no dependecies for blink1-tool
 
 # shows shared lib usage on Mac OS X
 otool:

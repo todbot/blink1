@@ -29,7 +29,7 @@
 
 #include "blink1-lib.h"
 
-#define BLINK1_TOOL_VERSION "1.2.34"
+#define BLINK1_TOOL_VERSION "1.4-0001"   // FIXME: how to pull github rev?
 
 int millis = 300;
 int delayMillis = 500;
@@ -439,10 +439,13 @@ int main(int argc, char** argv)
     if( cmd == CMD_VERSION ) { 
         char verbuf[40] = "";
         if( count ) { 
+            dev = blink1_openById( deviceIds[0] );
             rc = blink1_getVersion(dev);
+            blink1_close(dev);
             sprintf(verbuf, ", fw version: %d", rc);
         }
         msg("blink1-tool version: %s %s\n",BLINK1_TOOL_VERSION,verbuf);
+        exit(0);
     }
 
 
@@ -526,7 +529,8 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_FWVERSION ) { 
         rc = blink1_getVersion(dev);
-        msg("blink1-tool: %s firmware version: %d",BLINK1_TOOL_VERSION,rc);
+        msg("blink1-tool: firmware version: ");
+        printf("%d\n",rc);
     }
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
