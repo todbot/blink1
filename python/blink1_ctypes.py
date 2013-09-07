@@ -31,10 +31,10 @@ if libname is None:
     pathlist = glob.glob(os.path.join(localpath, '[Bb]link1-lib.so')) 
     if pathlist: libname = pathlist[-1]
 if libname is None:
-    pathlist = glob.glob(os.path.join(localpath, 'blink1-lib.dll'))[-1]
+    pathlist = glob.glob(os.path.join(localpath, 'blink1-lib.dll'))
     if pathlist: libname = pathlist[-1]
 if libname is None:
-    pathlist = glob.glob(os.path.join(localpath, 'lib[Bb]link1*'))[-1]
+    pathlist = glob.glob(os.path.join(localpath, 'lib[Bb]link1*'))
     if pathlist: libname = pathlist[-1]
 
 # If we found the library, load it
