@@ -40,7 +40,7 @@ hid_device* dev;
 uint32_t  deviceIds[blink1_max_devices];
 
 char cmdbuf[blink1_buf_size]; 
-char rgbbuf[4];
+uint8_t rgbbuf[3];
 int verbose;
 int quiet;
 
@@ -151,7 +151,7 @@ static void usage(char *myName)
 "Usage: \n"
 "  %s <cmd> [options]\n"
 "where <cmd> is one of:\n"
-"  --blink <numtimes>          Blink on/off (specify --rgb before to blink a color)\n"
+"  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
 "  --random <numtimes>         Flash a number of random colors \n"
 "  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
 "  --hsb <hue>,<sat>,<bri>     Fade to HSB value\n"
@@ -170,6 +170,7 @@ static void usage(char *myName)
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
 "  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
+"  --running                   Multi-LED effect (uses --led & --rgb)\n"
 "  --list                      List connected blink(1) devices \n"
 " Nerd functions: (not used normally) \n"
 "  --hidread                   Read a blink(1) USB HID GetFeature report \n"
@@ -293,7 +294,7 @@ int main(int argc, char** argv)
         {"stop",       no_argument,       &cmd,   CMD_STOP},
         {"playstate",  no_argument,       &cmd,   CMD_GETPLAYSTATE},
         {"random",     required_argument, &cmd,   CMD_RANDOM },
-        {"running",    required_argument, &cmd,   CMD_RUNNING },
+        {"running",    no_argument,       &cmd,   CMD_RUNNING },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"fwversion",  no_argument,       &cmd,   CMD_FWVERSION },
         {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
@@ -325,7 +326,6 @@ int main(int argc, char** argv)
             case CMD_GETPATTLINE:
             case CMD_BLINK:
             case CMD_GLIMMER:
-            case CMD_RUNNING:
             case CMD_PLAY:
             case CMD_SERVERDOWN:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
@@ -474,6 +474,7 @@ int main(int argc, char** argv)
         exit(1);
     }
 
+    // FIXME: verify mk2 does better gamma correction (thinking now maybe it doesn't)
     if( blink1_isMk2(dev) )  { 
         if( verbose ) printf("blink1(1)mk2 detected. disabling degamma\n");
         blink1_disableDegamma();  
@@ -659,11 +660,16 @@ int main(int argc, char** argv)
             uint8_t do_rand = 0;
             uint8_t running_cnt = 0;
             uint8_t leds[ledn][3];
-            uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2]};
-            if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) {
+            uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2] };
+            if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) { // no rgb specified
                 c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
                 do_rand =1;
             }
+            char ledstr[16];
+            sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
+            printf("running effect with %d LEDs, color %s\n",
+                   ledn, ((do_rand) ? "random" : ledstr) );
+
             // make gradient
             for( int i=0; i<ledn; i++ ) { 
                 leds[i][0] = c[0] * i / ledn;
@@ -681,9 +687,9 @@ int main(int argc, char** argv)
                     uint8_t r = leds[n][0];
                     uint8_t g = leds[n][1];
                     uint8_t b = leds[n][2];
-                    rc = blink1_fadeToRGBN(dev, millis, r,g,b,n+1 );
+                    rc = blink1_fadeToRGBN(dev, millis/ledn, r,g,b,n+1 );
                 }
-                blink1_sleep(delayMillis);
+                blink1_sleep(delayMillis/ledn);
 
                 running_cnt++;
                 if( do_rand && running_cnt > (ledn*2) ) { 
@@ -696,6 +702,9 @@ int main(int argc, char** argv)
                     }
                 }
             }
+        }
+        else {
+            printf("yar must specify multiple LEDs with --led option\n");
         }
     }
     else if( cmd == CMD_BLINK ) { 
