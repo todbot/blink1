@@ -191,6 +191,7 @@ lib: $(OBJS)
 package: 
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
 	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
+	mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
 
 clean: 
 	rm -f $(OBJS) 

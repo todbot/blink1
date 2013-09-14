@@ -18,7 +18,7 @@ Supported platforms:
 - Raspberry Pi (Raspian)
 - BeagleBone (Ubuntu)
 - OpenWRT / DD-WRT
-- ... just about anything else with Make & a C-compiler
+- ... just about anything else with Gnu Make & a C-compiler
 
 In general, the `blink1-tool` builds as a static binary where possible,
 eliminating the need for shared library dependencies on the target.
