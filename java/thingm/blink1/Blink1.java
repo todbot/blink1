@@ -282,6 +282,18 @@ public class Blink1
   }
 
   /**
+   * Fade blink(1) to RGB color over fadeMillis milliseconds.
+   *
+   * @param fadeMillis milliseconds to take to get to color
+   * @param c Color to set
+   * @param ledn which LED to address (0=all)
+   * @returns blink1_command response code, -1 == fail 
+   */
+  public int fadeToRGB(int fadeMillis, Color c, int ledn) {
+    return fadeToRGB( fadeMillis, c.getRed(), c.getGreen(), c.getBlue(), ledn );
+  }
+
+  /**
    * Write a blink(1) light pattern entry.
    *
    * @param fadeMillis milliseconds to take to get to color
