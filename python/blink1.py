@@ -4,20 +4,65 @@ import sys
 import time
 import re
 import sys
+import uuid
 
 debugimport=True
+use_pyusb=False
 try:
-    from blink1_pyusb import Blink1
+    from blink1_pyusb import Blink1 as Blink1_pyusb
+    use_pyusb = True
     #sys.modules['Blink1'] = blink1_pyusb
     if debugimport: print "using blink1_pyusb"
 except ImportError:
     try: 
-        from blink1_ctypes import Blink1
+        from blink1_ctypes import Blink1 as Blink1_ctypes
         #sys.modules['Blink1'] = blink1_ctypes
         if debugimport: print "using blink1_ctypes" 
     except ImportError:
         print "couldn't load blink1_pyusb or blink1_ctypes"
         sys.exit(1)
+
+
+hostid = uuid.uuid4().hex[:8]
+
+class Blink1:
+    '''
+    Object wrapper class.
+    This a wrapper for objects. It is initialiesed with the object to wrap
+    and then proxies the unhandled getattribute methods to it.
+    Other classes are to inherit from it.
+    '''
+    def __init__(self):
+        '''
+        Wrapper constructor.
+        '''
+        # wrap the object
+        if use_pyusb : 
+            blink1 = Blink1_pyusb()
+        else : 
+            blink1 = Blink1_ctypes()
+        self._wrapped_obj = blink1
+            
+    def __getattr__(self, attr):
+        # see if this object has attr
+        # NOTE do not use hasattr, it goes into
+        # infinite recurrsion
+        if attr in self.__dict__:
+            # this object has it
+            return getattr(self, attr)
+        # proxy to the wrapped object
+        try : 
+            return getattr(self._wrapped_obj, attr)
+        except Exception:
+            print "****** error!"
+            return None
+
+
+    def get_hostid(self):  # FIXME
+        return hostid
+
+    def get_blink1id(self):
+        return self.get_hostid() + self.get_serialnumber()
 
 
 """
@@ -37,10 +82,10 @@ def parse_color_string(rgbstr):
             
     return rgb
 
+
 """
 """
 def demo(blink1):
-
     print "blink1 version: "+ blink1.get_version()
         
     democolors = [ (255,  0,  0),  # red
@@ -76,6 +121,10 @@ def main():
     parser.add_option('--version', 
                       action='store_const', dest='cmd',const='version',
                       help='return firmware version')
+
+    parser.add_option('--hostid', 
+                      action='store_const', dest='cmd',const='hostid',
+                      help='return hostid')
 
     parser.add_option('--blink', 
                       dest='blink',default=0, type='int',
@@ -137,6 +186,9 @@ def main():
 
     elif options.cmd == "version":
         print "version: "+ blink1.get_version()
+
+    elif options.cmd == "hostid":
+        print "hostid: "+ blink1.get_hostid()
 
     elif options.cmd == "demo" :
         demo(blink1)

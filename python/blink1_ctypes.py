@@ -20,7 +20,7 @@ from ctypes.util import find_library
 import inspect, os
 import glob
 
-# Find the library 
+# Find the blink1-lib C library 
 localpath = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 libname = find_library("blink1")
 if libname is None:
@@ -109,8 +109,12 @@ class Blink1:
     
     def find(self):
         return self.open()
+
+    def enumerate(self):
+        enumerate()
         
     def open(self):
+        self.close()
         self.dev = open()
         
     def open_by_id(self,id):
@@ -119,7 +123,8 @@ class Blink1:
     def close(self):
         if self.dev != None:
             close(self.dev)
-            
+            self.dev = None
+
     def notfound(self):
         return None  # fixme what to do here
 
@@ -129,8 +134,7 @@ class Blink1:
 
     """
     def fade_to_rgbn(self, fadeMillis, red,green,blue, ledn):
-        #print("rgb:"+red+","+green+","+blue)
-        fadeToRGBN( self.dev, fadeMillis, red,green,blue, ledn)
+        return fadeToRGBN( self.dev, fadeMillis, red,green,blue, ledn)
 
     """
     Command blink(1) to fade to RGB color
@@ -155,11 +159,20 @@ class Blink1:
     def get_version(self):
         return str(getVersion(self.dev))
 
-    """
-    Get blink(1) serial number
-    """
     def get_serialnumber(self):
-        return getCachedSerial(0)
+        '''
+        Get blink(1) serial number
+        '''
 
+        sernum = getCachedSerial(0)
+        if not sernum : sernum = '00000000'
+        return sernum
+
+    def get_serialnumbers(self):  # FIXME:
+        seriallist = []
+        for i in range(0, getCachedCount()):
+            seriallist.append( getCachedSerial(i) )
+        return seriallist
+    
 
 
