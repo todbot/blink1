@@ -35,6 +35,7 @@ debug_rw = False
 class Blink1:
 
     def __init__(self):
+        self.dev = None
         return self.find()
     
     def find(self):
@@ -42,14 +43,24 @@ class Blink1:
         if( self.dev == None ): 
             return None
 
-        #print "kernel_driver_active: %i" % (self.dev.is_kernel_driver_active(0))
+        #print "kernel_driver_active:%i" % (self.dev.is_kernel_driver_active(0))
         if( self.dev.is_kernel_driver_active(0) ):
             try:
                 self.dev.detach_kernel_driver(0)
             except usb.core.USBError as e:
                 sys.exit("Could not detatch kernel driver: %s" % str(e))
         #self.dev.set_configuration()
-            
+
+    def open(self):
+        return self.find()
+
+    def close(self):
+        if self.dev != None:
+            self.dev = None  # FIXME: what's equivalent to: close(self.dev)
+
+    def enumerate(self):
+        return self.find()
+
     def notfound(self):
         return None  # fixme what to do here
 
@@ -59,7 +70,7 @@ class Blink1:
     Note: arg 'buf' must be 8 bytes or bad things happen
     """
     def write(self,buf):
-        if debug_rw : print "blink1write: " + ",".join( '0x%02x' % v for v in buf )
+        if debug_rw : print "blink1write:"+",".join('0x%02x' % v for v in buf)
         if( self.dev == None ): return self.notfound()
         bmRequestTypeOut = usb.util.build_request_type(usb.util.CTRL_OUT, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
         self.dev.ctrl_transfer( bmRequestTypeOut, 
@@ -80,7 +91,7 @@ class Blink1:
                                       (3 << 8) | report_id, 
                                       0, 
                                       8 )    # == number of bytes to read
-        if debug_rw : print "blink1read:  " + ",".join( '0x%02x' % v for v in buf )
+        if debug_rw : print "blink1read: "+",".join('0x%02x' % v for v in buf)
         return buf
 
     """
@@ -115,7 +126,6 @@ class Blink1:
 
     """
     Get blink(1) firmware version
-
     """
     def get_version(self):
         if( self.dev == None ): return ''
