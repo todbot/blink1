@@ -28,13 +28,13 @@ if libname is None:
 if libname is None:
     libname = find_library("blink1-lib")
 if libname is None:
-    pathlist = glob.glob(os.path.join(localpath, '[Bb]link1-lib.so')) 
+    pathlist = glob.glob(os.path.join(localpath, '[Bb]link1-lib.so')) # unix
     if pathlist: libname = pathlist[-1]
 if libname is None:
-    pathlist = glob.glob(os.path.join(localpath, 'blink1-lib.dll'))
+    pathlist = glob.glob(os.path.join(localpath, 'blink1-lib.dll')) # windows
     if pathlist: libname = pathlist[-1]
 if libname is None:
-    pathlist = glob.glob(os.path.join(localpath, 'lib[Bb]link1*'))
+    pathlist = glob.glob(os.path.join(localpath, 'lib[Bb]link1*')) # mac
     if pathlist: libname = pathlist[-1]
 
 # If we found the library, load it
@@ -129,34 +129,35 @@ class Blink1:
         return None  # fixme what to do here
 
 
-    """
-    Command blink(1) to fade to RGB color
+    def fade_to_rgbn(self, fade_millis, red,green,blue, ledn):
+        """
+        Command blink(1) to fade to RGB color
+        
+        """
+        return fadeToRGBN( self.dev, fade_millis, red,green,blue, ledn)
 
-    """
-    def fade_to_rgbn(self, fadeMillis, red,green,blue, ledn):
-        return fadeToRGBN( self.dev, fadeMillis, red,green,blue, ledn)
+    def fade_to_rgb(self, fade_millis, red,green,blue):
+        """
+        Command blink(1) to fade to RGB color
+        
+        """
+        return self.fade_to_rgbn( fade_millis, red,green,blue, 0)
 
-    """
-    Command blink(1) to fade to RGB color
 
-    """
-    def fade_to_rgb(self, fadeMillis, red,green,blue):
-        return self.fade_to_rgbn( fadeMillis, red,green,blue, 0)
-
-    """
-    """
     def playloop(self, play,startpos,endpos,count):
+        """
+        """
         playloop(self.dev, play, startpos,endpos, count)
 
-    """
-    """
     def play(self, play,startpos):
+        """
+        """
         playloop(self.dev, play, startpos,endpos, count)
 
-    """
-    Get blink(1) firmware version
-    """
     def get_version(self):
+        """
+        Get blink(1) firmware version
+        """
         return str(getVersion(self.dev))
 
     def get_serialnumber(self):

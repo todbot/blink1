@@ -51,25 +51,27 @@ class Blink1:
                 sys.exit("Could not detatch kernel driver: %s" % str(e))
         #self.dev.set_configuration()
 
+    def enumerate(self):
+        return self.find()
+
     def open(self):
+        self.close()
         return self.find()
 
     def close(self):
         if self.dev != None:
             self.dev = None  # FIXME: what's equivalent to: close(self.dev)
 
-    def enumerate(self):
-        return self.find()
 
     def notfound(self):
         return None  # fixme what to do here
 
-    """
-    Write command to blink(1)
-    Send USB Feature Report 0x01 to blink(1) with 8-byte payload
-    Note: arg 'buf' must be 8 bytes or bad things happen
-    """
     def write(self,buf):
+        """
+        Write command to blink(1)
+        Send USB Feature Report 0x01 to blink(1) with 8-byte payload
+        Note: arg 'buf' must be 8 bytes or bad things happen
+        """
         if debug_rw : print "blink1write:"+",".join('0x%02x' % v for v in buf)
         if( self.dev == None ): return self.notfound()
         bmRequestTypeOut = usb.util.build_request_type(usb.util.CTRL_OUT, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
@@ -79,12 +81,12 @@ class Blink1:
                                 0, 
                                 buf) 
         
-    """
-    Read command result from blink(1)
-    Receive USB Feature Report 0x01 from blink(1) with 8-byte payload
-    Note: buf must be 8 bytes or bad things happen
-    """
     def read(self):
+        """
+        Read command result from blink(1)
+        Receive USB Feature Report 0x01 from blink(1) with 8-byte payload
+        Note: buf must be 8 bytes or bad things happen
+        """
         bmRequestTypeIn = usb.util.build_request_type(usb.util.CTRL_IN, usb.util.CTRL_TYPE_CLASS, usb.util.CTRL_RECIPIENT_INTERFACE)
         buf = self.dev.ctrl_transfer( bmRequestTypeIn, 
                                       0x01,  # == HID get_report
@@ -94,11 +96,11 @@ class Blink1:
         if debug_rw : print "blink1read: "+",".join('0x%02x' % v for v in buf)
         return buf
 
-    """
-    Command blink(1) to fade to RGB color
-
-    """
     def fade_to_rgbn(self, fadeMillis, red,green,blue, ledn):
+        """
+        Command blink(1) to fade to RGB color
+        
+        """
         action = ord('c')
         fadeMillis = fadeMillis/10
         th = (fadeMillis & 0xff00) >> 8
@@ -106,28 +108,28 @@ class Blink1:
         buf = [report_id, action, red,green,blue, th,tl, ledn]
         return self.write(buf)
 
-    """
-    Command blink(1) to fade to RGB color
-
-    """
     def fade_to_rgb(self, fadeMillis, red,green,blue):
+        """
+        Command blink(1) to fade to RGB color
+        
+        """
         return self.fade_to_rgbn(fadeMillis, red,green,blue,0)
 
-    """
-    """
     def playloop(self, play,startpos,endpos,count):
+        """
+        """
         buf = [0x01, ord('p'), play, startpos, endpos, count, 0,0 ]
         return self.write(buf)
 
-    """
-    """
     def play(self, play,startpos):
+        """
+        """
         return self.playloop( play, startpos, 0,0)
 
-    """
-    Get blink(1) firmware version
-    """
     def get_version(self):
+        """
+        Get blink(1) firmware version
+        """
         if( self.dev == None ): return ''
         buf = [0x01, ord('v'), 0,0, 0,0,0,0]
         self.write(buf)
@@ -136,13 +138,18 @@ class Blink1:
         version = (version_raw[3]-ord('0'))*100 + (version_raw[4]-ord('0'))
         return str(version)
 
-    """
-    Get blink(1) serial number
-
-    """
     def get_serialnumber(self):
+        """
+        Get blink(1) serial number
+        
+        """
         if( self.dev == None ): return ''
         return usb.util.get_string(self.dev, 256, 3)
+
+    def get_serialnumbers(self):  # FIXME:
+        seriallist = []
+        seriallist.append( self.get_serialnumber() )
+        return seriallist
 
 
 
