@@ -474,15 +474,22 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    // FIXME: verify mk2 does better gamma correction (thinking now maybe it doesn't)
+    // FIXME: verify mk2 does better gamma correction 
+    // (now thinking maybe it doesn't, or is not perfectly visually linear)
     if( blink1_isMk2(dev) )  { 
         if( verbose ) printf("blink1(1)mk2 detected. disabling degamma\n");
         blink1_disableDegamma();  
+        if( nogamma ) {
+            blink1_enableDegamma();  
+            if( verbose ) printf("overriding, re-enabling gamma\n");
+        }
     }
-    // then for original mk1 owners who want to disable degamma
-    if( nogamma ) {      //FIXME: confusing
-        msg("disabling auto degamma\n");
-        blink1_disableDegamma();  
+    else {
+        // for original mk1 owners who want to disable degamma
+        if( nogamma ) {      //FIXME: confusing
+            msg("disabling auto degamma\n");
+            blink1_disableDegamma();  
+        }
     }
 
 
