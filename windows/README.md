@@ -14,4 +14,6 @@ this directory contains additional Windows-related blink(1) items.
 
 - scripts -- various scripts and batch files (which use blink1-tool.exe)
 
+- also see YoYo-Pete's great scripts at https://github.com/YoYo-Pete/blink1
+
 
