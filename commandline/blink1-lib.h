@@ -25,6 +25,10 @@ extern "C" {
 
 #define blink1mk2_serialstart 0x20000000
 
+// originally from ../hardware/usbconfig.h
+#define  USB_CFG_VENDOR_ID       0xB8, 0x27 /* = 0x27B8 = 10168 = thingm */
+#define  USB_CFG_DEVICE_ID       0xED, 0x01 /* = 0x01ED */
+
 #define blink1_report_id  1
 #define blink1_report_size 8
 #define blink1_buf_size (blink1_report_size+1)

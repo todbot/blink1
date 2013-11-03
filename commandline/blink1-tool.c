@@ -90,7 +90,7 @@ static void hexdump(char *buffer, int len)
 }
 
 //
-static int  hexread(char *buffer, char *string, int buflen)
+static int  hexread(unsigned char *buffer, char *string, int buflen)
 {
     char    *s;
     int     pos = 0;
