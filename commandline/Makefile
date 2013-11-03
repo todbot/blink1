@@ -143,6 +143,19 @@ LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 endif
 
+#################  WRT Linux  ################################################
+ifeq "$(OS)" "wrt"
+LIBTARGET = blink1-lib.so
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC -I /usr/lib/libiconv-full/include
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl 
+
+OBJS = ./hidapi/libusb/hid.o
+
+EXEFLAGS = -static
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+
+EXE=
+endif
 
 #####################  Common  ###############################################
 
