@@ -20,7 +20,6 @@
 
 #include "blink1-lib.h"
 
-#include "usbconfig.h" // from firmware, for VID,PID,vendor name & product name 
 
 //#define DEBUG_PRINTF
 
@@ -139,7 +138,7 @@ const char* blink1_getSerialForDev(hid_device* dev)
 int blink1_clearCacheDev( hid_device* dev ) 
 {
     int i = blink1_getCacheIndexByDev( dev );
-    if( i>=0 ) blink1_infos[i].dev == NULL; // FIXME: hmmmm
+    if( i>=0 ) blink1_infos[i].dev = NULL; // FIXME: hmmmm
     return i;
 }
 
