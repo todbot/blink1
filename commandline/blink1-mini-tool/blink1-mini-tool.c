@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     usbDevice_t *dev;
     int         rc;
     
-    char argbuf[8];  
+    char argbuf[16];  
     
     if(argc < 2) {
         usage(argv[0]);
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
             uint8_t r = v;
             uint8_t g = v;
             uint8_t b = v;
-            printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n", cmd, r,g,b, millis );
+            printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n",cmd, r,g,b,millis);
             rc = blink1_fadeToRGB( dev, millis, v,v,v );
             if( rc ) { // on error, do something
                 printf("error on fadeToRGB\n");

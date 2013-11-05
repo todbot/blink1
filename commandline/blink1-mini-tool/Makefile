@@ -46,14 +46,15 @@ endif
 #################  Mac OSx  ###################################################
 ifeq "$(OS)" "macosx"
 OPT_HOME := /opt/local/bin
-USBFLAGS =  `$(OPT_HOME)/libusb-legacy-config --cflags`
+USBFLAGS =  `$(OPT_HOME)/libusb-config --cflags`
+USBLIBS  =  `$(OPT_HOME)/libusb-config --libs`
+#USBFLAGS =  `$(OPT_HOME)/libusb-legacy-config --cflags`
 # get just the path to the static lib
-USBLIBS  =  `$(OPT_HOME)/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
+#USBLIBS  =  `$(OPT_HOME)/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
 # get everything else in --libs
-USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
+#USBLIBS +=  `$(OPT_HOME)/libusb-legacy-config --libs | cut -d' ' -f 3- `
 
 endif
-
 
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
