@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     char* cmd = argv[1];
 
     if( blink1_open(&dev) ) {
-        fprintf(stderr, "error: couldn't open blink1");
+        fprintf(stderr, "error: couldn't open blink1\n");
         exit(1);
     }
 
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
-            printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n", cmd, r,g,b, millis );
+            printf("cmd:%s rgb:%2.2x,%2.2x,%2.2x in %d ms\n",cmd, r,g,b,millis);
             rc = blink1_fadeToRGB(dev, millis, r,g,b);
             if( rc )  // on error, do something
                 printf("error on fadeToRGB\n");
@@ -181,7 +181,7 @@ void blink1_close(usbDevice_t *dev)
 int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
                         uint8_t r, uint8_t g, uint8_t b )
 {
-    char buffer[8];
+    char buf[9];
     int err;
 
     if( dev==NULL ) {
@@ -190,16 +190,18 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
 
     int dms = fadeMillis/10;  // millis_divided_by_10
 
-    buffer[0] = 1;
-    buffer[1] = 'c';
-    buffer[2] = r;
-    buffer[3] = g;
-    buffer[4] = b;
-    buffer[5] = (dms >> 8);
-    buffer[6] = dms % 0xff;
+    buf[0] = 1;
+    buf[1] = 'c';
+    buf[2] = r;
+    buf[3] = g;
+    buf[4] = b;
+    buf[5] = (dms >> 8);
+    buf[6] = dms % 0xff;
+    buf[7] = 0; // ledn
+    //buf[8] = 0; // unused
 
-    if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
+    if( (err = usbhidSetReport(dev, buf, sizeof(buf))) != 0) {
+        fprintf(stderr,"fadeToRGB: error writing: %s\n",blink1_error_msg(err));
     }
     return err;  // FIXME: remove fprintf
 }
@@ -209,21 +211,21 @@ int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
  */
 int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
 {
-    char buffer[8];
+    char buf[9];
     int err;
 
     if( dev==NULL ) {
         return -1; // BLINK1_ERR_NOTOPEN;
     }
 
-    buffer[0] = 1;
-    buffer[1] = 'n';
-    buffer[2] = r;
-    buffer[3] = g;
-    buffer[4] = b;
+    buf[0] = 1;
+    buf[1] = 'n';
+    buf[2] = r;
+    buf[3] = g;
+    buf[4] = b;
     
-    if( (err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
+    if( (err = usbhidSetReport(dev, buf, sizeof(buf))) != 0) {
+        fprintf(stderr,"setRGB: error writing: %s\n",blink1_error_msg(err));
     }
     return err;  // FIXME: remove fprintf
 }
