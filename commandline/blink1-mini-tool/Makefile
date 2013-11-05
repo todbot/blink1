@@ -7,7 +7,7 @@
 # Mac OS X
 #   - Install Xcode and command-line dev tools
 #   - Install MacPorts
-#   - sudo port install libusb-compat
+#   - sudo port install libusb-legacy
 #
 # Linux (Ubuntu) 
 #   - apt-get install gcc-avr avr-libc avrdude java librxtx-java
@@ -28,17 +28,30 @@
 
 TARGET=blink1-mini-tool
 
-CC=gcc
+#CC=gcc
+
+# try to do some autodetecting
+UNAME := $(shell uname -s)
 
 # assume linux 
 ifeq "$(OS)" ""
   OS = linux
 endif
 
+ifeq "$(UNAME)" "Darwin"
+	OS = macosx
+endif
+
+
+#################  Mac OSx  ###################################################
 ifeq "$(OS)" "macosx"
 OPT_HOME := /opt/local/bin
-USBFLAGS =   `$(OPT_HOME)/libusb-config --cflags`
-USBLIBS  =   `$(OPT_HOME)/libusb-config --libs`
+USBFLAGS =  `$(OPT_HOME)/libusb-legacy-config --cflags`
+# get just the path to the static lib
+USBLIBS  =  `$(OPT_HOME)/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
+# get everything else in --libs
+USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
+
 endif
 
 
@@ -51,19 +64,23 @@ endif
 #################  OpenWrt / DD-WRT #########################################
 ifeq "$(OS)" "wrt"
 
-WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
+#WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
+#CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
+#LD = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-ld
+#USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
+#USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
 
-CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
-LD = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-ld
-USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
-USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
-
+WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
+CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
+LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
+USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include"
+USBLIBS  = "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
+LDFLAGS += -static
 endif
 
 
-#CC=		gcc
 CFLAGS=	$(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS)
-LIBS=	$(OS_LIBS) $(USBLIBS) 
+LIBS=	$(OS_LIBS) $(USBLIBS) $(LDFLAGS)
 
 OBJ=		$(TARGET).o hiddata.o 
 
