@@ -21,10 +21,12 @@ else:
 print "serial number: " + blink1.get_serialnumber()
 print "firmware version: " + blink1.get_version()
 
+print "fading to #ffffff"
 blink1.fade_to_rgb( 1000,  255,255,255 )
 
 time.sleep(0.5)
         
+print "fading to #000000"
 blink1.fade_to_rgb( 1000,  0,0,0 )
         
-
+print "done"
