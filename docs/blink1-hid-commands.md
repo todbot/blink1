@@ -1,4 +1,3 @@
-
 blink(1) HID commands
 =====================
 
@@ -10,7 +9,7 @@ This document shows the formats of the feature report data packet sent to blink(
 ## Command Summary ##
 
     - Fade to RGB color       format: { 1, 'c', r,g,b,     th,tl, n } (*)
-    - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, n } (*)
+    - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, 0 } 
     - Read current RGB color  format: { 1, 'r', n,0,0,       0,0, n } (2)
     - Serverdown tickle/off   format: { 1, 'D', on,th,tl,  st,sp,ep } (*)
     - Play/Pause              format: { 1, 'p', on,sp,0,     0,0, 0 }
