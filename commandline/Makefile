@@ -225,6 +225,36 @@ EXE=
 
 endif
 
+##############  Cross-compile WRT Linux  #####################################
+ifeq "$(OS)" "wrtcross"
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+
+#WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
+#CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
+#LD = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-ld
+#USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
+#USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
+
+WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
+CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
+LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
+CFLAGS += "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include" -fPIC
+LIBS   += "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
+LDFLAGS += -static
+
+endif
+
+EXEFLAGS = -static
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+EXE=
+
+endif
+
+
+
 #####################  Common  ###############################################
 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
@@ -277,7 +307,7 @@ package:
 clean: 
 	rm -f $(OBJS)
 	rm -f $(LIBTARGET)
-	rm -f blink1-server-simple.o blink1-tool.o
+	rm -f blink1-server-simple.o blink1-tool.o hiddata.o
 	rm -f server/mongoose/mongoose.o
 
 distclean: clean
