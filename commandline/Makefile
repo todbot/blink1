@@ -80,90 +80,156 @@ ifeq "$(PKGOS)" ""
 endif
 
 
-CC=gcc
+#CC=gcc
 #CC=clang
+
+# pick low-level implemenation style
+# "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
+#  but has dependencies on iconv, libusb-1.0, pthread, dl
+#
+# "HIDDATA" type is best for low-resource Linux, 
+#  and the only dependencies it has is libusb-0.1
+#
+
+USBLIB_TYPE = HIDAPI
+#USBLIB_TYPE = HIDDATA
+
+# uncomment for debugging HID stuff
+#CFLAGS += -DDEBUG_PRINTF
+
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
 LIBTARGET = libBlink1.dylib
+CFLAGS += -mmacosx-version-min=10.6
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
 CFLAGS += -arch i386 -arch x86_64
 CFLAGS += -pthread
-CFLAGS += -mmacosx-version-min=10.6
-LIBS += -framework IOKit -framework CoreFoundation
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/mac/hid.o
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+OPT_HOME := /opt/local/bin
+CFLAGS += `$(OPT_HOME)/libusb-config --cflags`
+LIBS   += `$(OPT_HOME)/libusb-config --libs`
+endif
+
+LIBS += -framework IOKit -framework CoreFoundation
 
 EXEFLAGS = 
 #LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
-
 EXE=
+
 endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
-#LIBTARGET = libBlink1.dll
 LIBTARGET = blink1-lib.dll
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/windows/hid.o
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+endif
 
 EXEFLAGS =
 #LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a $(LIBS)
 LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
-
 EXE= .exe
+
 endif
 
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
 LIBTARGET = blink1-lib.so
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
+OBJS = ./hidapi/libusb/hid.o
 CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+endif
 
-OBJS = ./hidapi/libusb/hid.o
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+CFLAGS += `pkg-config libusb --cflags` -fPIC
+LIBS   += `pkg-config libusb --libs` 
+endif
 
 EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
-
 EXE=
+
 endif
 
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
-CFLAGS+= -I/usr/local/include -fPIC
-LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
 
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/libusb/hid.o
+CFLAGS += -I/usr/local/include -fPIC
+LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+CFLAGS += -I/usr/local/include -fPIC
+LIBS   += -L/usr/local/lib -lusb 
+endif
 
 EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
-
 EXE=
+
 endif
 
 #################  WRT Linux  ################################################
 ifeq "$(OS)" "wrt"
 LIBTARGET = blink1-lib.so
-CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC -I /usr/lib/libiconv-full/include
-LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl 
 
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/libusb/hid.o
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC 
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl 
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+
+endif
 
 EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
-
 EXE=
+
 endif
 
 #####################  Common  ###############################################
 
-CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
-CFLAGS += -I./hidapi/hidapi -g
-# only uncomment for debugging HIDAPI stuff
-#CFLAGS += -DDEBUG_PRINTF
+CFLAGS += -std=gnu99 
+CFLAGS += -g
 
 OBJS +=  blink1-lib.o 
 
@@ -180,6 +246,8 @@ help:
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
 	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
+	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
+	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
 	@echo "make lib        ... build blink1-lib shared library"
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
@@ -207,7 +275,8 @@ package:
 	mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
 
 clean: 
-	rm -f $(OBJS) 
+	rm -f $(OBJS)
+	rm -f $(LIBTARGET)
 	rm -f blink1-server-simple.o blink1-tool.o
 	rm -f server/mongoose/mongoose.o
 
