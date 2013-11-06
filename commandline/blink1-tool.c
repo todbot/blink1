@@ -29,20 +29,20 @@
 
 #include "blink1-lib.h"
 
-#define BLINK1_TOOL_VERSION "1.4-0001"   // FIXME: how to pull github rev?
+#define BLINK1_TOOL_VERSION "1.5-0001"   // FIXME: how to pull github rev?
 
 int millis = 300;
 int delayMillis = 500;
 int numDevicesToUse = 1;
 int ledn = 0;
 
-hid_device* dev;
+blink1_device* dev;
 uint32_t  deviceIds[blink1_max_devices];
 
-char cmdbuf[blink1_buf_size]; 
+uint8_t cmdbuf[blink1_buf_size]; 
 uint8_t rgbbuf[3];
 int verbose;
-int quiet;
+int quiet=0;
 
 
 //---------------------------------------------------------------------------- 
@@ -69,8 +69,8 @@ void msg(char* fmt, ...)
     va_end(args);
 }
 
-//
-static void hexdump(char *buffer, int len)
+// take an array of bytes and spit them out as a hex string
+static void hexdump(uint8_t *buffer, int len)
 {
     int     i;
     FILE    *fp = stdout;
@@ -89,8 +89,8 @@ static void hexdump(char *buffer, int len)
         fprintf(fp, "\n");
 }
 
-//
-static int  hexread(unsigned char *buffer, char *string, int buflen)
+// parse a comma-delimited string containing numbers (dec,hex) into a byte arr
+static int  hexread(uint8_t *buffer, char *string, int buflen)
 {
     char    *s;
     int     pos = 0;
@@ -173,8 +173,6 @@ static void usage(char *myName)
 "  --running                   Multi-LED effect (uses --led & --rgb)\n"
 "  --list                      List connected blink(1) devices \n"
 " Nerd functions: (not used normally) \n"
-"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
-"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
 "  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
 "  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
 "  --fwversion                 Display blink(1) firmware version \n"
@@ -186,7 +184,6 @@ static void usage(char *myName)
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
 "  -l <led>, --led <led>       Set which RGB LED in a blink(1) mk2 to use\n"
-"  --vid=vid --pid=pid         Specifcy alternate USB VID & PID\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
 "Examples \n"
@@ -195,14 +192,16 @@ static void usage(char *myName)
 "  blink1-tool --rgb 0xff,0,00 --blink 3 # blink red 3 times\n"
 "\n"
             ,myName);
+//"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
+//"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
 }
 
 // local states for the "cmd" option variable
 enum { 
     CMD_NONE = 0,
     CMD_LIST,
-    CMD_HIDREAD,
-    CMD_HIDWRITE,
+    //CMD_HIDREAD,
+    //CMD_HIDWRITE,
     CMD_EEREAD,
     CMD_EEWRITE,
     CMD_RGB,
@@ -240,9 +239,9 @@ int main(int argc, char** argv)
     int openall = 0;
     int nogamma = 0;
     int16_t arg=0;
-    static int vid,pid;
+
     int  rc;
-    char tmpbuf[100];
+    uint8_t tmpbuf[100];
     char serialnumstr[serialstrmax] = {'\0'}; 
 
     uint16_t seed = time(NULL);
@@ -251,7 +250,6 @@ int main(int argc, char** argv)
 
     static int cmd  = CMD_NONE;
 
-    vid = blink1_vid(), pid = blink1_pid();
 
     // parse options
     int option_index = 0, opt;
@@ -267,8 +265,8 @@ int main(int argc, char** argv)
         {"nogamma",    no_argument,       0,      'g'},
         {"help",       no_argument,       0,      'h'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
-        {"hidread",    no_argument,       &cmd,   CMD_HIDREAD },
-        {"hidwrite",   required_argument, &cmd,   CMD_HIDWRITE },
+        //{"hidread",    no_argument,       &cmd,   CMD_HIDREAD },
+        //{"hidwrite",   required_argument, &cmd,   CMD_HIDWRITE },
         {"eeread",     required_argument, &cmd,   CMD_EEREAD },
         {"eewrite",    required_argument, &cmd,   CMD_EEWRITE },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
@@ -301,8 +299,6 @@ int main(int argc, char** argv)
         {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
         {"servertickle", required_argument, &cmd,   CMD_SERVERDOWN },
         {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
-        {"vid",        required_argument, 0,      'U'}, // FIXME: This sucks
-        {"pid",        required_argument, 0,      'u'},
         {NULL,         0,                 0,      0}
     };
     while(1) {
@@ -319,7 +315,7 @@ int main(int argc, char** argv)
                 hsbtorgb( tmpbuf, rgbbuf );
                 cmd = CMD_RGB; // haha! 
                 break;
-            case CMD_HIDWRITE:
+            //case CMD_HIDWRITE:
             case CMD_EEREAD:
             case CMD_EEWRITE:
             case CMD_SETPATTLINE:
@@ -331,7 +327,6 @@ int main(int argc, char** argv)
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
-                //case CMD_SERVERDOWN:
                 if( optarg ) 
                     arg = strtol(optarg,NULL,0);   // cmd w/ number arg
                 break;
@@ -385,6 +380,9 @@ int main(int argc, char** argv)
         case 'v':
             if( optarg==NULL ) verbose++;
             else verbose = strtol(optarg,NULL,0);
+            if( verbose > 3 ) {
+                fprintf(stderr,"going REALLY verbose\n");
+            }
             break;
         case 'd':
             if( strcmp(optarg,"all") == 0 ) {
@@ -401,12 +399,6 @@ int main(int argc, char** argv)
             else {
                 numDevicesToUse = hexread((uint8_t*)deviceIds,optarg,sizeof(deviceIds));
             }
-            break;
-        case 'U': 
-            vid = strtol(optarg,NULL,0);
-            break;
-        case 'u':
-            pid = strtol(optarg,NULL,0);
             break;
         case 'h':
             usage( "blink1-tool" );
@@ -434,7 +426,7 @@ int main(int argc, char** argv)
     */
 
     // get a list of all devices and their paths
-    int count = blink1_enumerateByVidPid(vid,pid);
+    int count = blink1_enumerate();
 
     if( cmd == CMD_VERSION ) { 
         char verbuf[40] = "";
@@ -501,7 +493,11 @@ int main(int argc, char** argv)
             printf("id:%d - serialnum:%s %s\n", i, blink1_getCachedSerial(i), 
                    (blink1_isMk2ById(i)) ? "(mk2)":"");
         }
+#ifdef USE_HIDDATA
+        printf("(Listing not supported in HIDDATA builds)\n"); 
+#endif
     }
+    /*
     else if( cmd == CMD_HIDREAD ) { 
         printf("hidread:  ");
         cmdbuf[0] = blink1_report_id;  // must set report_id on windows
@@ -518,6 +514,7 @@ int main(int argc, char** argv)
             fprintf(stderr,"error writing data.\n");
         }
     }
+    */
     else if( cmd == CMD_EEREAD ) {  // FIXME
         msg("eeread:  addr 0x%2.2x = ", cmdbuf[0]);
         uint8_t val = 0;
@@ -644,7 +641,7 @@ int main(int argc, char** argv)
             msg("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
                 i, id, blink1_getCachedCount(), r,g,b);
 
-            hid_device* mydev = dev;
+            blink1_device* mydev = dev;
             if( cnt > 1 ) mydev = blink1_openById( id );
             if( ledn == 0 ) { 
                 rc = blink1_fadeToRGB(mydev, millis,r,g,b);
