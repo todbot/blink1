@@ -8,23 +8,23 @@
 
 /* ------------------------------------------------------------------------- */
 
-void setDeviceToJava(JNIEnv *env, jobject obj, hid_device* dev);
-hid_device* getDeviceFromJava(JNIEnv *env, jobject obj);
+void setDeviceToJava(JNIEnv *env, jobject obj, blink1_device* dev);
+blink1_device* getDeviceFromJava(JNIEnv *env, jobject obj);
 
 int isEnumerated = 0;
 
 //
-hid_device* getDevicePtr(JNIEnv *env, jobject obj)
+blink1_device* getDevicePtr(JNIEnv *env, jobject obj)
 {
     jclass class = (*env)->GetObjectClass(env, obj); 
     jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
     jlong jhidptr = (*env)->GetLongField(env, obj, fieldId);
-    hid_device* dev = (hid_device*) jhidptr;
+    blink1_device* dev = (blink1_device*) jhidptr;
     return dev;
 }
 
 //
-void setDevicePtr(JNIEnv *env, jobject obj, hid_device* devt)
+void setDevicePtr(JNIEnv *env, jobject obj, blink1_device* devt)
 {
     jclass class = (*env)->GetObjectClass(env, obj); 
     jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
@@ -108,7 +108,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openByPath
   (JNIEnv *env, jclass class, jstring jdevicepath)
 {
     const char *devicepath = (*env)->GetStringUTFChars(env, jdevicepath, 0);
-    hid_device* devt = blink1_openByPath( devicepath );
+    blink1_device* devt = blink1_openByPath( devicepath );
     (*env)->ReleaseStringUTFChars(env, jdevicepath, devicepath);
 
     jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
@@ -125,7 +125,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openBySerial
   (JNIEnv *env, jclass class, jstring jserialnumber)
 {
     const char *serialnumber = (*env)->GetStringUTFChars(env, jserialnumber, 0);
-    hid_device* devt = blink1_openBySerial( serialnumber );
+    blink1_device* devt = blink1_openBySerial( serialnumber );
     (*env)->ReleaseStringUTFChars(env, jserialnumber, serialnumber);
 
     jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
@@ -141,7 +141,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openBySerial
 JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openById
   (JNIEnv *env, jclass class, jint id)
 {
-    hid_device* devt = blink1_openById( id );
+    blink1_device* devt = blink1_openById( id );
 
     jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
     jobject obj = (*env)->NewObject(env, class, constructorMethodID);
@@ -159,7 +159,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openById
 JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_open
   (JNIEnv *env, jclass class)
 {
-    hid_device* devt = blink1_open();
+    blink1_device* devt = blink1_open();
 
     jmethodID constructorMethodID = (*env)->GetMethodID(env, class, "<init>", "()V");
     jobject obj = (*env)->NewObject(env, class, constructorMethodID);
@@ -178,7 +178,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_open
 JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
 (JNIEnv *env, jobject obj)
 {
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
     blink1_close(devt);
     setDevicePtr(env,obj, NULL);
 }
@@ -189,7 +189,7 @@ JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 (JNIEnv *env, jobject obj, jint r, jint g, jint b)
 {
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
 
     int err = blink1_setRGB(devt, r,g,b);
 
@@ -204,7 +204,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_setRGB
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB__IIII
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b)
 {
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
 
     int err = blink1_fadeToRGB(devt, fadeMillis, r,g,b);
     //err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
@@ -220,7 +220,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB__IIII
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB__IIIII
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b, jint ledn)
 {
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
 
     int err = blink1_fadeToRGBN(devt, fadeMillis, r,g,b, ledn);
     //err = blink1_fadeToRGB(dev, fadeMillis, r,g,b);
@@ -236,7 +236,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_fadeToRGB__IIIII
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_writePatternLine
 (JNIEnv *env, jobject obj, jint fadeMillis, jint r, jint g, jint b, jint pos)
 {
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
     int err = blink1_writePatternLine(devt, fadeMillis, r,g,b, pos);
     setErrorCode(env,obj,err);
     return err;
@@ -249,7 +249,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_play
 (JNIEnv *env, jobject obj, jboolean play, jint pos)
 {
     //play = (play) ? 1 : 0; // normalize just in case
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
     int err = blink1_play(devt, play, pos);
     return err;
 }
@@ -261,7 +261,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_serverdown
 (JNIEnv *env, jobject obj, jboolean on, jint millis)
 {
     //on = (on) ? 1 : 0; // normalize just in case
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
     int err = blink1_serverdown(devt, on, millis, 0);
     return err;
 }
@@ -269,7 +269,7 @@ JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_serverdown
 JNIEXPORT jint JNICALL Java_thingm_blink1_Blink1_getFirmwareVersion
 (JNIEnv *env, jobject obj)
 {
-    hid_device* devt = getDevicePtr(env,obj);
+    blink1_device* devt = getDevicePtr(env,obj);
     jint c = blink1_getVersion(devt);
     return c;
 }

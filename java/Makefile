@@ -41,6 +41,17 @@ ifeq "$(UNAME)" "Linux"
 endif
 
 
+# pick low-level implemenation style
+# "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
+#  but has dependencies on iconv, libusb-1.0, pthread, dl
+#
+# "HIDDATA" type is best for low-resource Linux, 
+#  and the only dependencies it has is libusb-0.1
+#
+
+USBLIB_TYPE = HIDAPI
+#USBLIB_TYPE = HIDDATA
+
 JAVA_VER=`java -version 2>&1 | grep version | cut -c 15-17`
 
 
@@ -53,14 +64,30 @@ LIBTARGET = lib$(TARGET).jnilib
 #USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
 #USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
 #USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
+
+#OBJS = ../commandline/hidapi/mac/hid.o
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -arch i386 -arch x86_64
+CFLAGS += -pthread
+CFLAGS += -I../commandline/hidapi/hidapi 
 OBJS = ../commandline/hidapi/mac/hid.o
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ../commandline/hiddata.o
+OPT_HOME := /opt/local/bin
+CFLAGS += `$(OPT_HOME)/libusb-config --cflags`
+LIBS   += `$(OPT_HOME)/libusb-config --libs`
+endif
 
 #
 JAVAINCLUDEDIR = /System/Library/Frameworks/JavaVM.framework/Headers
 JAVANATINC = -I $(JAVAINCLUDEDIR)/./
 JAVAINCLUDE = -I $(JAVAINCLUDEDIR)
 
-OS_CFLAGS = -g -O2 -D_BSD_SOURCE -bundle -arch i386 -arch x86_64 -std=gnu99 -pthread  $(USBFLAGS) 
+OS_CFLAGS = -g -O2 -D_BSD_SOURCE -bundle -std=gnu99  $(USBFLAGS) 
 #OS_CFLAGS += -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5
 OS_LDFLAGS =  -Wl,-search_paths_first -framework JavaVM -framework IOKit -framework CoreFoundation $(USBLIBS) 
 endif
@@ -70,7 +97,17 @@ ifeq "$(OS)" "windows"
 LIBTARGET = $(TARGET).dll
 LIBUSBA   = libusb-windows.a
 USBLIBS   = -lhid -lsetupapi
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I../commandline/hidapi/hidapi 
 OBJS = ../commandline/hidapi/windows/hid.o
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ../commandline/hiddata.o
+endif
 
 # this must match your Java install
 #JAVA_HOME = "C:\\Program Files\\Java\\jdk1.7.0_05\\"
@@ -87,9 +124,24 @@ endif
 ifeq "$(OS)" "linux"
 # ???
 LIBTARGET = lib$(TARGET).so  # for linux
-USBFLAGS += `pkg-config libusb-1.0 --cflags`
-USBLIBS  += `pkg-config libusb-1.0 --libs` 
+#USBFLAGS += `pkg-config libusb-1.0 --cflags`
+#USBLIBS  += `pkg-config libusb-1.0 --libs` 
+#OBJS = ../commandline/hidapi/libusb/hid.o
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I../commandline/hidapi/hidapi 
 OBJS = ../commandline/hidapi/libusb/hid.o
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ../commandline/hiddata.o
+CFLAGS += `pkg-config libusb --cflags` -fPIC
+LIBS   += `pkg-config libusb --libs` 
+endif
 
 # Possible values for JAVA_HOME, there are probably more
 #JAVA_HOME=/usr/lib/jvm/java-6-openjdk
@@ -101,22 +153,21 @@ ifndef JAVA_HOME
 endif
 
 # gotta find jni.h in here somewhere (is there a better way of doing this?)
-OS_CFLAGS  = $(USBFLAGS) -fPIC -shared -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux
-OS_LDFLAGS = $(USBLIBS) 
+OS_CFLAGS  = -shared -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux
+OS_LDFLAGS = $(LIBS)
 endif
 
 
 # now construct normal env vars based on OS-specific ones
-INCLUDES = -I. -I../commandline -I../hardware/firmware 
-INCLUDES += -I ../commandline/hidapi/hidapi
+INCLUDES = -I. -I../commandline 
 INCLUDES += $(JAVAINCLUDE) $(JAVANATINC) 
 
 OBJS += ../commandline/blink1-lib.o  native$(TARGET).o 
 
-CFLAGS  = $(OS_CFLAGS) -O -Wall -std=gnu99  $(INCLUDES)
-LDFLAGS = $(OS_LDFLAGS) 
+CFLAGS  += $(OS_CFLAGS) -O -Wall -std=gnu99  $(INCLUDES)
+LDFLAGS += $(OS_LDFLAGS) 
 
-CC = gcc
+#CC = gcc
 
 
 all: help
@@ -187,8 +238,9 @@ javadoc:
 	cd ../docs/javadoc && javadoc -sourcepath ../../java thingm.blink1 && cd ../../java
 
 clean:
-	rm -f thingm/blink1/*.class $(OBJS)
+	rm -f thingm/blink1/*.class 	
 	rm -f libtargets/blink1.jar
+	rm -f $(OBJS)
 	rm -f libtargets/$(LIBTARGET)
 	rm -f $(LIBTARGET) thingm_blink1_$(TARGET).h
 	rm -f blink1jar $(LIBZIPNAME)
