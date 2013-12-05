@@ -468,6 +468,7 @@ int main(int argc, char** argv)
 
     // FIXME: verify mk2 does better gamma correction 
     // (now thinking maybe it doesn't, or is not perfectly visually linear)
+#if 0
     if( blink1_isMk2(dev) )  { 
         if( verbose ) printf("blink1(1)mk2 detected. disabling degamma\n");
         blink1_disableDegamma();  
@@ -483,7 +484,12 @@ int main(int argc, char** argv)
             blink1_disableDegamma();  
         }
     }
-
+#else
+    if( nogamma ) {      //FIXME: confusing
+        msg("disabling auto degamma\n");
+        blink1_disableDegamma();  
+    }
+#endif
 
     // begin command processing
 
@@ -607,10 +613,10 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_SETPATTLINE ) {
-        uint8_t r = cmdbuf[0];
-        uint8_t g = cmdbuf[1];
-        uint8_t b = cmdbuf[2];
-        uint8_t p = cmdbuf[3];
+        uint8_t r = rgbbuf[0]; //cmdbuf[0];
+        uint8_t g = rgbbuf[1]; //cmdbuf[1];
+        uint8_t b = rgbbuf[2]; //cmdbuf[2];
+        uint8_t p = cmdbuf[0]; //cmdbuf[3];
         msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
         if( rc==-1 && !quiet ) {
