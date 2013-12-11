@@ -250,7 +250,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 #endif /* INVASIVE_GET_USAGE */
 
 #ifdef __FreeBSD__
-#if __FreeBSD >= 10
+#if __FreeBSD__ < 10
 /* The FreeBSD version of libusb doesn't have this funciton. In mainline
    libusb, it's inlined in libusb.h. This function will bear a striking
    resemblence to that one, because there's about one way to code it.
