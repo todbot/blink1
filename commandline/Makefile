@@ -28,7 +28,8 @@
 # FreeBSD
 #   - libusb is part of the OS so no pkg-config needed.
 #   - No -ldl on FreeBSD necessary.
-#   - iconv is a package that needs to be installed; it lives in /usr/local/lib/
+#   - For FreeBSD versions < 10, iconv is a package that needs to be installed;
+#     in this case it lives in /usr/local/lib/
 #
 # Linux Ubuntu 32-bit cross-compile on 64-bit
 #   To build 32-bit on 64-bit Ubuntu, try a chrooted build:
@@ -187,7 +188,10 @@ CFLAGS += -DUSE_HIDAPI
 CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/libusb/hid.o
 CFLAGS += -I/usr/local/include -fPIC
-LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv
+LIBS   += -lusb -lrt -lpthread
+ifndef FBSD10
+LIBS   += -L/usr/local/lib -liconv
+endif
 endif
 
 ifeq "$(USBLIB_TYPE)" "HIDDATA"
@@ -197,7 +201,10 @@ CFLAGS += -I/usr/local/include -fPIC
 LIBS   += -L/usr/local/lib -lusb 
 endif
 
+# Static binaries don't play well with the iconv implementation of FreeBSD 10
+ifndef FBSD10
 EXEFLAGS = -static
+endif
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
