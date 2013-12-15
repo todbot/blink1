@@ -214,6 +214,7 @@ endif
 ifeq "$(OS)" "wrt"
 LIBTARGET = blink1-lib.so
 
+# HIDAPI build doesn't work, use HIDDATA instead
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
 CFLAGS += -I./hidapi/hidapi 
@@ -223,10 +224,15 @@ LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
 endif
 
 ifeq "$(USBLIB_TYPE)" "HIDDATA"
-
+CFLAGS += -DUSE_HIDDATA $(COPT_FLAGS)
+OBJS = ./hiddata.o
+LIBS += $(LDOPT_FLAGS) 
+#LIBS += $(STAGING_DIR)/usr/lib/libusb.a 
+#can't build this static for some reason
+LIBS += -lusb
 endif
 
-EXEFLAGS = -static
+#EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
@@ -239,18 +245,12 @@ ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA
 OBJS = ./hiddata.o
 
-#WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
-#CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
-#LD = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-ld
-#USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
-#USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
-
 WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
 CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
 LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
 CFLAGS += "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include" -fPIC
 LIBS   += "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
-LDFLAGS += -static
+#LDFLAGS += -static
 
 endif
 
