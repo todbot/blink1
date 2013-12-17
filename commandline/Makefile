@@ -287,6 +287,7 @@ help:
 	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
 	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
 	@echo "make lib        ... build blink1-lib shared library"
+	@echo "make blink1-tiny-server ... build tiny REST server"
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
@@ -298,10 +299,10 @@ blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
 	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
-blink1-server-simple: $(OBJS) server/blink1-server-simple.c
-	$(CC) $(CFLAGS) -I. -I./server/mongoose -c server/blink1-server-simple.c -o blink1-server-simple.o
+blink1-tiny-server: $(OBJS) server/blink1-tiny-server.c
+	$(CC) $(CFLAGS) -I. -I./server/mongoose -c server/blink1-tiny-server.c -o blink1-tiny-server.o
 	$(CC) $(CFLAGS) -I. -I./server/mongoose -c ./server/mongoose/mongoose.c -o ./server/mongoose/mongoose.o
-	$(CC) -g $(OBJS) $(EXEFLAGS) ./server/mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+	$(CC) -g $(OBJS) $(EXEFLAGS) ./server/mongoose/mongoose.o $(LIBS) blink1-tiny-server.o -o blink1-tiny-server$(EXE)
 
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
@@ -315,12 +316,12 @@ package:
 clean: 
 	rm -f $(OBJS)
 	rm -f $(LIBTARGET)
-	rm -f blink1-server-simple.o blink1-tool.o hiddata.o
+	rm -f blink1-tiny-server.o blink1-tool.o hiddata.o
 	rm -f server/mongoose/mongoose.o
 
 distclean: clean
 	rm -f blink1-tool$(EXE)
-	rm -f blink1-server-simple$(EXE)
+	rm -f blink1-tiny-server$(EXE)
 	rm -f $(LIBTARGET) $(LIBTARGET).a
 
 # show shared library use

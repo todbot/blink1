@@ -1,5 +1,6 @@
 //
-//
+// blink1-tiny-server -- a small cross-platform REST/JSON server for
+//                       controlling a blink(1) device
 //
 //
 //
@@ -13,7 +14,7 @@
 
 #include "blink1-lib.h"
 
-const char* blink1_server_version = "0.90b";
+const char* blink1_server_version = "0.92";
 
 
 //
@@ -39,6 +40,8 @@ static int  hexread(uint8_t *buffer, char *string, int buflen)
     return pos;
 }
 
+// given a string of hex color code ("#FF3322") or rgb triple ("255,0,0" or
+// "0xff,0x23,0x00"), produce a parsed byte array 
 static void parse_rgbstr(uint8_t* rgb, char* rgbstr)
 {
     if( rgbstr != NULL && strlen(rgbstr) ) {
