@@ -289,6 +289,7 @@ int bytesSent, reportId = buffer[0];
     // original hiddata.h
     //    bytesSent = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_ENDPOINT_OUT, USBRQ_HID_SET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | (reportId & 0xff), 0, buffer, len, 5000);
     // modification by todbot, matches roughly what hiddata does
+    // change by tod to use USB_RECIP_INTERFACE instead of USB_RECIP_DEVICE
     bytesSent = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USBRQ_HID_SET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | (reportId & 0xff), 0, buffer, len, 5000);
     if(bytesSent != len){
         if(bytesSent < 0)
@@ -308,7 +309,10 @@ int bytesReceived, maxLen = *len;
         buffer++;   /* make room for dummy report ID */
         maxLen--;
     }
-    bytesReceived = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | reportNumber, 0, buffer, maxLen, 5000);
+    // original hiddata.h
+    //bytesReceived = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | reportNumber, 0, buffer, maxLen, 5000);
+    // change by tod to use USB_RECIP_INTERFACE instead of USB_RECIP_DEVICE
+    bytesReceived = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | reportNumber, 0, buffer, maxLen, 5000);
     if(bytesReceived < 0){
         fprintf(stderr, "Error sending message: %s\n", usb_strerror());
         return USBOPEN_ERR_IO;
