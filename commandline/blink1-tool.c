@@ -119,7 +119,7 @@ static void hsbtorgb( uint8_t* hsb, uint8_t* rgb)
     }
     
     region = h / 43;      // make hue 0-5 
-    fpart = (h - (region * 43)) * 6;   // find remainder part, make it from 0-255 
+    fpart = (h - (region * 43)) * 6; // find remainder part, make it from 0-255 
     
     // calculate temp vars, doing integer multiplication 
     p = (v * (255 - s)) >> 8;
@@ -152,9 +152,11 @@ static void usage(char *myName)
 "  %s <cmd> [options]\n"
 "where <cmd> is one of:\n"
 "  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
-"  --random <numtimes>         Flash a number of random colors \n"
-"  --rgb <red>,<green>,<blue>  Fade to RGB value\n"
-"  --hsb <hue>,<sat>,<bri>     Fade to HSB value\n"
+"  --random, --random=<num>    Flash a number of random colors \n"
+"  --glimmer, --gimmer=<num>   Glimmer a color with --rgb (num times)\n"
+"  --running, --running=<num>  Do running animation (num times)\n"
+"  --rgb=<red>,<green>,<blue>  Fade to RGB value\n"
+"  --hsb=<hue>,<sat>,<bri>     Fade to HSB value\n"
 "  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
 "  --on | --white              Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
@@ -183,13 +185,13 @@ static void usage(char *myName)
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
-"  -l <led>, --led <led>       Set which RGB LED in a blink(1) mk2 to use\n"
+"  -l <led>, --led=<led>       Set which RGB LED in a blink(1) mk2 to use\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
 "Examples \n"
-"  blink1-tool -m 100 --rgb 255,0,255    # fade to #FF00FF in 0.1 seconds \n"
-"  blink1-tool -t 2000 --random 100      # every 2 seconds new random color\n"
-"  blink1-tool --rgb 0xff,0,00 --blink 3 # blink red 3 times\n"
+"  blink1-tool -m 100 --rgb=255,0,255    # fade to #FF00FF in 0.1 seconds \n"
+"  blink1-tool -t 2000 --random=100      # every 2 seconds new random color\n"
+"  blink1-tool --rgb=0xff,0,00 --blink 3 # blink red 3 times\n"
 "\n"
             ,myName);
 //"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
@@ -272,7 +274,7 @@ int main(int argc, char** argv)
         {"rgb",        required_argument, &cmd,   CMD_RGB },
         {"hsb",        required_argument, &cmd,   CMD_HSB },
         {"rgbread",    no_argument,       &cmd,   CMD_RGBREAD},
-        {"savepattline",required_argument,&cmd,   CMD_SETPATTLINE }, // back compat
+        {"savepattline",required_argument,&cmd,   CMD_SETPATTLINE },//backcompat
         {"setpattline",required_argument, &cmd,   CMD_SETPATTLINE },
         {"getpattline",required_argument, &cmd,   CMD_GETPATTLINE },
         {"savepattern",no_argument,       &cmd,   CMD_SAVEPATTERN },
@@ -286,18 +288,18 @@ int main(int argc, char** argv)
         {"magenta",    no_argument,       &cmd,   CMD_MAGENTA},
         {"yellow",     no_argument,       &cmd,   CMD_YELLOW},
         {"blink",      required_argument, &cmd,   CMD_BLINK},
-        {"glimmer",    required_argument, &cmd,   CMD_GLIMMER},
+        {"glimmer",    optional_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
         {"play",       required_argument, &cmd,   CMD_PLAY},
         {"stop",       no_argument,       &cmd,   CMD_STOP},
         {"playstate",  no_argument,       &cmd,   CMD_GETPLAYSTATE},
-        {"random",     required_argument, &cmd,   CMD_RANDOM },
-        {"running",    no_argument,       &cmd,   CMD_RUNNING },
+        {"random",     optional_argument, &cmd,   CMD_RANDOM },
+        {"running",    optional_argument, &cmd,   CMD_RUNNING },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"fwversion",  no_argument,       &cmd,   CMD_FWVERSION },
         {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
         {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
-        {"servertickle", required_argument, &cmd,   CMD_SERVERDOWN },
+        {"servertickle",  required_argument, &cmd,CMD_SERVERDOWN },
         {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
         {NULL,         0,                 0,      0}
     };
@@ -321,18 +323,18 @@ int main(int argc, char** argv)
             case CMD_SETPATTLINE:
             case CMD_GETPATTLINE:
             case CMD_BLINK:
-            case CMD_GLIMMER:
             case CMD_PLAY:
             case CMD_SERVERDOWN:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
-                if( optarg ) 
-                    arg = strtol(optarg,NULL,0);   // cmd w/ number arg
+            case CMD_RUNNING:
+            case CMD_GLIMMER:
+                arg = (optarg) ? strtol(optarg,NULL,0) : 0;// cmd w/ number arg
                 break;
-                //case CMD_SERIALNUMWRITE:
-                //strcpy(tmpstr, optarg);
-                //break;
+            //case CMD_SERIALNUMWRITE:
+            //strcpy(tmpstr, optarg);
+            //break;
             case CMD_ON:
                 rgbbuf[0] = 255; rgbbuf[1] = 255; rgbbuf[2] = 255;
                 break;
@@ -562,7 +564,7 @@ int main(int argc, char** argv)
             } else {
                 rc = blink1_fadeToRGBN(dev,millis,r,g,b, ledn);
             }
-            if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
+            if( rc == -1 && !quiet ) { // on error, do something, anything. 
                 printf("error on fadeToRGB\n");
             }
             blink1_close( dev );
@@ -613,10 +615,10 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_SETPATTLINE ) {
-        uint8_t r = rgbbuf[0]; //cmdbuf[0];
-        uint8_t g = rgbbuf[1]; //cmdbuf[1];
-        uint8_t b = rgbbuf[2]; //cmdbuf[2];
-        uint8_t p = cmdbuf[0]; //cmdbuf[3];
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
+        uint8_t p = cmdbuf[0];
         msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
         if( rc==-1 && !quiet ) {
@@ -636,6 +638,7 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_RANDOM ) { 
         int cnt = blink1_getCachedCount();
+        if( arg==0 ) arg = 1;
         if( cnt>1 ) blink1_close(dev); // close global device, open as needed
         msg("random %d times: \n", arg);
         for( int i=0; i<arg; i++ ) { 
@@ -655,7 +658,7 @@ int main(int argc, char** argv)
                 uint8_t n = 1 + rand() % ledn;
                 rc = blink1_fadeToRGBN(mydev, millis,r,g,b,n);
             }
-            if( rc == -1 && !quiet ) { // on error, do something, anything. come on.
+            if( rc == -1 && !quiet ) { // on error, do something, anything.
                 printf("error during random\n");
                 //break;
             }
@@ -666,56 +669,61 @@ int main(int argc, char** argv)
     }
     // this whole thing is a huge mess currently // FIXME
     else if( cmd == CMD_RUNNING ) { 
-        if( ledn != 0 ) { 
-            uint8_t do_rand = 0;
-            uint8_t running_cnt = 0;
-            uint8_t leds[ledn][3];
-            uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2] };
-            if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) { // no rgb specified
+        if( ledn == 0 ) ledn = 18;
+
+        uint8_t do_rand = 0;
+        uint8_t running_cnt = 0;
+        uint8_t leds[ledn][3];
+        uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2] };
+        if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) { // no rgb specified
+            c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
+            do_rand =1;
+        }
+        char ledstr[16];
+        sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
+        printf("running effect with %d LEDs, color %s\n",
+               ledn, ((do_rand) ? "random" : ledstr) );
+        
+        // make gradient
+        for( int i=0; i<ledn; i++ ) {
+            leds[i][0] = c[0] * i / ledn;
+            leds[i][1] = c[1] * i / ledn;
+            leds[i][2] = c[2] * i / ledn;
+        }
+        
+        int loopcnt = (arg*ledn);
+        do { 
+            if(arg==0) loopcnt=1;
+            // output
+            for( int n=0; n<ledn; n++ )  {
+                uint8_t r = leds[n][0];
+                uint8_t g = leds[n][1];
+                uint8_t b = leds[n][2];
+                rc = blink1_fadeToRGBN(dev, 10 + (millis/ledn), r,g,b,n+1 );
+            }
+            blink1_sleep(delayMillis/ledn);
+            
+            // rotate
+            memcpy( c,      leds[ledn-1], sizeof(c) );
+            memcpy( leds+1, leds,         sizeof(c)*(ledn-1) );
+            memcpy( leds[0],   c,         sizeof(c) );
+
+            // change color if random
+            running_cnt++;
+            if( do_rand && running_cnt > (ledn*2) ) {
+                running_cnt = 0;
                 c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
-                do_rand =1;
-            }
-            char ledstr[16];
-            sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
-            printf("running effect with %d LEDs, color %s\n",
-                   ledn, ((do_rand) ? "random" : ledstr) );
-
-            // make gradient
-            for( int i=0; i<ledn; i++ ) { 
-                leds[i][0] = c[0] * i / ledn;
-                leds[i][1] = c[1] * i / ledn;
-                leds[i][2] = c[2] * i / ledn;
-            }
-
-            while( 1 ) {
-                memcpy( c, leds[ledn-1], sizeof(c) );
-                memcpy( leds+1, leds, sizeof(c)*(ledn-1) );
-                memcpy( leds[0], c, sizeof(c) );
-
-                // output to string
-                for( int n=0; n<ledn; n++ )  { 
-                    uint8_t r = leds[n][0];
-                    uint8_t g = leds[n][1];
-                    uint8_t b = leds[n][2];
-                    rc = blink1_fadeToRGBN(dev, millis/ledn, r,g,b,n+1 );
-                }
-                blink1_sleep(delayMillis/ledn);
-
-                running_cnt++;
-                if( do_rand && running_cnt > (ledn*2) ) { 
-                    running_cnt = 0;
-                    c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
-                    for( int i=0; i<ledn; i++ ) { 
-                        leds[i][0] = c[0] * i / ledn;
-                        leds[i][1] = c[1] * i / ledn;
-                        leds[i][2] = c[2] * i / ledn;
-                    }
+                for( int i=0; i<ledn; i++ ) { 
+                    leds[i][0] = c[0] * i / ledn;
+                    leds[i][1] = c[1] * i / ledn;
+                    leds[i][2] = c[2] * i / ledn;
                 }
             }
-        }
-        else {
-            printf("yar must specify multiple LEDs with --led option\n");
-        }
+        } while( loopcnt-- );
+        // turn everyone off
+        blink1_sleep(delayMillis/ledn/2);
+        rc = blink1_fadeToRGB(dev, 10 + (millis/ledn), 0,0,0 );
+
     }
     else if( cmd == CMD_BLINK ) { 
         uint8_t n = cmdbuf[0]; 
@@ -733,22 +741,23 @@ int main(int argc, char** argv)
             blink1_sleep(delayMillis);
         }
     }
-    else if( cmd == CMD_GLIMMER ) { 
-        uint8_t n = cmdbuf[0]; 
+    else if( cmd == CMD_GLIMMER ) {
+        uint8_t n = arg;
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
         if( r == 0 && b == 0 && g == 0 ) {
-            r = g = b = 255;
+            r = g = b = 127;
+            if( n == 0 ) n = 3;
         }
-        msg("glimmering %d times rgb:%x,%x,%x: \n", n,r,g,b);
-        for( int i=0; i<n; i++ ) { 
+        msg("glimmering %d times rgb:#%2.2x%2.2x%2.2x: \n", n,r,g,b);
+        for( int i=0; i<n; i++ ) {
             rc = blink1_fadeToRGBN(dev, millis,r,g,b, 1);
             rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 2);
-            blink1_sleep(delayMillis);
+            blink1_sleep(delayMillis/2);
             rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 1);
             rc = blink1_fadeToRGBN(dev, millis,r,g,b, 2);
-            blink1_sleep(delayMillis);
+            blink1_sleep(delayMillis/2);
         }
     }
     else if( cmd == CMD_SERVERDOWN ) { 
@@ -759,7 +768,7 @@ int main(int argc, char** argv)
         blink1_serverdown( dev, on, delayMillis, st );
     }
     /*
-      // NOTE: This is now unsupported and will not work on mk2 anyway
+    // NOTE: This is now unsupported and will not work on mk2 anyway
     // use caution with this, could make your blink(1) unusable
     // --serialnumwrite abcd1234
     else if( cmd == CMD_SERIALNUMWRITE ) { 

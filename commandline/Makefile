@@ -107,7 +107,8 @@ CFLAGS += -mmacosx-version-min=10.6
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
 CFLAGS += -arch i386 -arch x86_64
-CFLAGS += -pthread
+# don't need pthread with clang
+#CFLAGS += -pthread
 CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/mac/hid.o
 endif
@@ -338,6 +339,6 @@ dumpbin:
 	dumpbin.exe /exports $(LIBTARGET)
 	dumpbin.exe /exports blink1-tool.exe
 
-foo:
-	@echo "OS=$(OS), USBFLAGS=$(USBFLAGS)"
 
+printvars:
+	@echo "OS=$(OS), CFLAGS=$(CFLAGS), LDFLAGS=$(LDFLAGS), LIBS=$(LIBS), LIBFLAGS=$(LIBFLAGS)"
