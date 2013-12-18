@@ -1,4 +1,4 @@
-# Makefile for "blink1-lib" and "blink1-tool"
+# Makefile for "libblink1" and "blink1-tool"
 # should work on Mac OS X, Windows, Linux, and other Linux-like systems
 #
 # Build arguments:
@@ -157,7 +157,7 @@ endif
 
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
@@ -174,7 +174,7 @@ CFLAGS += `pkg-config libusb --cflags` -fPIC
 LIBS   += `pkg-config libusb --libs`
 endif
 
-EXEFLAGS = -static
+#EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
@@ -182,7 +182,7 @@ endif
 
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
@@ -213,7 +213,7 @@ endif
 
 #################  WRT Linux  ################################################
 ifeq "$(OS)" "wrt"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
 
 # HIDAPI build doesn't work, use HIDDATA instead
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
@@ -272,7 +272,7 @@ CFLAGS += -g
 OBJS +=  blink1-lib.o
 
 #all: msg blink1-tool blink1-server-simple
-all: msg blink1-tool lib
+all: msg lib blink1-tool
 
 msg:
 	@echo "building for OS=$(OS)"
@@ -281,12 +281,12 @@ msg:
 help:
 	@echo "This Makefile works on multiple archs. Use one of the following:"
 	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool"
-	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool"
-	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool"
-	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool"
-	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
+	@echo "make OS=linux   ... build Linux    libblink1 and blink1-tool"
+	@echo "make OS=freebsd ... build FreeBSD    libblink1 and blink1-tool"
+	@echo "make OS=macosx  ... build Mac OS X libblink1 and blink1-tool"
+	@echo "make OS=wrt     ... build OpenWrt libblink1 and blink1-tool"
 	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
-	@echo "make lib        ... build blink1-lib shared library"
+	@echo "make lib        ... build libblink1 shared library"
 	@echo "make blink1-tiny-server ... build tiny REST server"
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
@@ -297,7 +297,7 @@ $(OBJS): %.o: %.c
 
 blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
-	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE)
+	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(LIBS) -L. -lblink1 blink1-tool.o -o blink1-tool$(EXE)
 
 # FIXME: verify we don't need MONGOOSE_LIBS and pthread & dl are avilable everywhere
 blink1-tiny-server: $(OBJS) server/blink1-tiny-server.c
