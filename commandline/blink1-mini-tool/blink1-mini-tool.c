@@ -1,12 +1,12 @@
-/* 
+/*
  * blink1-mini-tool -- minimal command-line tool for controlling blink(1)s
- *                     
+ *
  * Will work on small unix-based systems that have just libusb-0.1.4
  * No need for pthread & iconv, which is needed for hidapi-based tools
- * 
+ *
  * Known to work on:
  * - Ubuntu Linux
- * - Mac OS X 
+ * - Mac OS X
  * - TomatoUSB WRT / OpenWrt / DD-WRT
  *
  * 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
@@ -38,7 +38,7 @@ const int blink1_debug = 2;
 int blink1_open(usbDevice_t **dev);
 char *blink1_error_msg(int errCode);
 void blink1_close(usbDevice_t *dev);
-int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis, 
+int blink1_fadeToRGB(usbDevice_t *dev, int fadeMillis,
                      uint8_t r, uint8_t g, uint8_t b );
 int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b );
 static int  hexread(char *buffer, char *string, int buflen);
@@ -59,9 +59,9 @@ int main(int argc, char **argv)
 {
     usbDevice_t *dev;
     int         rc;
-    
-    char argbuf[16];  
-    
+
+    char argbuf[16];
+
     if(argc < 2) {
         usage(argv[0]);
         exit(1);
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    if( strcasecmp(cmd, "rgb") == 0 ) { 
+    if( strcasecmp(cmd, "rgb") == 0 ) {
         hexread(argbuf, argv[2], sizeof(argbuf));  // cmd w/ hexlist arg
         uint8_t r = argbuf[0];
         uint8_t g = argbuf[1];
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
         }
     }
     else if( strcasecmp(cmd, "blink") == 0 ) {
-        if( argc < 3 ) { 
+        if( argc < 3 ) {
             argbuf[0] = 3;  // blink 3 times if none specified
         } else {
             hexread(argbuf, argv[2], sizeof(argbuf));
@@ -105,13 +105,13 @@ int main(int argc, char **argv)
             usleep(millis * 1000 ); // sleep milliseconds
         }
     }
-    else if( strcasecmp(cmd, "random") == 0 ) { 
-        if( argc < 3 ) { 
+    else if( strcasecmp(cmd, "random") == 0 ) {
+        if( argc < 3 ) {
             argbuf[0] = 5;  // random 10 times if none specified
         } else {
             hexread(argbuf, argv[2], sizeof(argbuf));
         }
-        for( int i=0; i<argbuf[0]; i++ ) { 
+        for( int i=0; i<argbuf[0]; i++ ) {
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
             usleep(millis * 1000 ); // sleep milliseconds
         }
     }
-    else { 
+    else {
         usage(argv[0]);
         exit(1);
     }
@@ -142,12 +142,12 @@ int main(int argc, char **argv)
             pos += hexread(buffer + pos, argv[i], sizeof(buffer) - pos);
         }
 
-        // add a dummy report ID 
-        if((rc = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0) 
+        // add a dummy report ID
+        if((rc = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0)
             fprintf(stderr,"error writing data: %s\n",blink1_error_msg(rc));
 
     }
-    else 
+    else
     */
 
 }
@@ -161,14 +161,14 @@ int main(int argc, char **argv)
  */
 int blink1_open(usbDevice_t **dev)
 {
-    return usbhidOpenDevice(dev, 
+    return usbhidOpenDevice(dev,
                             IDENT_VENDOR_NUM,  NULL,
                             IDENT_PRODUCT_NUM, NULL,
                             1);  // NOTE: '0' means "not using report IDs"
 }
 
 /**
- * Close a Blink1 
+ * Close a Blink1
  */
 void blink1_close(usbDevice_t *dev)
 {
@@ -223,7 +223,7 @@ int blink1_setRGB(usbDevice_t *dev, uint8_t r, uint8_t g, uint8_t b )
     buf[2] = r;
     buf[3] = g;
     buf[4] = b;
-    
+
     if( (err = usbhidSetReport(dev, buf, sizeof(buf))) != 0) {
         fprintf(stderr,"setRGB: error writing: %s\n",blink1_error_msg(err));
     }

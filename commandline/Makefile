@@ -1,28 +1,28 @@
-# Makefile for "blink1-lib" and "blink1-tool"
+# Makefile for "libblink1" and "blink1-tool"
 # should work on Mac OS X, Windows, Linux, and other Linux-like systems
-#  
+#
 # Build arguments:
 # - "OS=macosx"  -- build Mac version on Mac OS X
 # - "OS=windows" -- build Windows version on Windows
 # - "OS=linux"   -- build Linux version on Linux
-# 
+#
 # Architecture is usually detected automatically, so normally just type "make"
 #
-# Dependencies: 
+# Dependencies:
 # - hidapi (included), which uses libusb on Linux-like OSes
 #
 # Platform-specific notes:
 #
-# Mac OS X 
+# Mac OS X
 #   - Install Xcode with "Unix Dev Support" and "Command-line tools" (in Preferences)
 #   - make
 #
-# Windows XP/7  
+# Windows XP/7
 #   - Install MinGW and MSYS (http://www.tdragon.net/recentgcc/ )
 #   - make
 #
-# Linux (Ubuntu) 
-#   - apt-get install build-essential pkg-config libusb-1.0-0-dev 
+# Linux (Ubuntu)
+#   - apt-get install build-essential pkg-config libusb-1.0-0-dev
 #   - make
 #
 # FreeBSD
@@ -44,14 +44,14 @@
 #   - cd $HOME/i386/blink1
 #   - CFLAGS='-I/usr/include/libusb-1.0' LIBS='-lusb-1.0' make
 #   - exit
-#   
+#
 # Raspberry Pi
 #   - apt-get install libusb-1.0.0-dev
 #   - make
 #
 # BeagleBone / BeagleBoard (on Angstrom Linux)
-#   - opkg install libusb-0.1-4-dev  (FIXME: uses HIDAPI & libusb-1.0 now)	
-#   - May need to symlink libusb 
+#   - opkg install libusb-0.1-4-dev  (FIXME: uses HIDAPI & libusb-1.0 now)
+#   - May need to symlink libusb
 #      cd /lib; ln -s libusb-0.1.so.4 libusb.so
 #   - make
 #
@@ -85,10 +85,10 @@ endif
 #CC=clang
 
 # pick low-level implemenation style
-# "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
+# "HIDAPI" type is best for Mac, Windows, Linux Desktop,
 #  but has dependencies on iconv, libusb-1.0, pthread, dl
 #
-# "HIDDATA" type is best for low-resource Linux, 
+# "HIDDATA" type is best for low-resource Linux,
 #  and the only dependencies it has is libusb-0.1
 #
 
@@ -109,7 +109,7 @@ CFLAGS += -DUSE_HIDAPI
 CFLAGS += -arch i386 -arch x86_64
 # don't need pthread with clang
 #CFLAGS += -pthread
-CFLAGS += -I./hidapi/hidapi 
+CFLAGS += -I./hidapi/hidapi
 OBJS = ./hidapi/mac/hid.o
 endif
 
@@ -123,7 +123,7 @@ endif
 
 LIBS += -framework IOKit -framework CoreFoundation
 
-EXEFLAGS = 
+EXEFLAGS =
 #LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 EXE=
@@ -133,13 +133,13 @@ endif
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
 LIBTARGET = blink1-lib.dll
-#LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
+#LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
-LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
+LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
-CFLAGS += -I./hidapi/hidapi 
+CFLAGS += -I./hidapi/hidapi
 OBJS = ./hidapi/windows/hid.o
 endif
 
@@ -157,11 +157,11 @@ endif
 
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
-CFLAGS += -I./hidapi/hidapi 
+CFLAGS += -I./hidapi/hidapi
 OBJS = ./hidapi/libusb/hid.o
 CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
@@ -171,10 +171,10 @@ ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA
 OBJS = ./hiddata.o
 CFLAGS += `pkg-config libusb --cflags` -fPIC
-LIBS   += `pkg-config libusb --libs` 
+LIBS   += `pkg-config libusb --libs`
 endif
 
-EXEFLAGS = -static
+#EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
@@ -182,11 +182,11 @@ endif
 
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
-CFLAGS += -I./hidapi/hidapi 
+CFLAGS += -I./hidapi/hidapi
 OBJS = ./hidapi/libusb/hid.o
 CFLAGS += -I/usr/local/include -fPIC
 LIBS   += -lusb -lrt -lpthread
@@ -199,7 +199,7 @@ ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA
 OBJS = ./hiddata.o
 CFLAGS += -I/usr/local/include -fPIC
-LIBS   += -L/usr/local/lib -lusb 
+LIBS   += -L/usr/local/lib -lusb
 endif
 
 # Static binaries don't play well with the iconv implementation of FreeBSD 10
@@ -213,22 +213,22 @@ endif
 
 #################  WRT Linux  ################################################
 ifeq "$(OS)" "wrt"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
 
 # HIDAPI build doesn't work, use HIDDATA instead
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
-CFLAGS += -I./hidapi/hidapi 
+CFLAGS += -I./hidapi/hidapi
 OBJS = ./hidapi/libusb/hid.o
-CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC 
-LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl 
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
 endif
 
 ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA $(COPT_FLAGS)
 OBJS = ./hiddata.o
-LIBS += $(LDOPT_FLAGS) 
-#LIBS += $(STAGING_DIR)/usr/lib/libusb.a 
+LIBS += $(LDOPT_FLAGS)
+#LIBS += $(STAGING_DIR)/usr/lib/libusb.a
 #can't build this static for some reason
 LIBS += -lusb
 endif
@@ -265,28 +265,28 @@ endif
 
 #####################  Common  ###############################################
 
-#CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
-CFLAGS += -std=gnu99 
+#CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware
+CFLAGS += -std=gnu99
 CFLAGS += -g
 
-OBJS +=  blink1-lib.o 
+OBJS +=  blink1-lib.o
 
 #all: msg blink1-tool blink1-server-simple
-all: msg blink1-tool lib
+all: msg lib blink1-tool
 
-msg: 
+msg:
 	@echo "building for OS=$(OS)"
 
 # symbolic targets:
 help:
 	@echo "This Makefile works on multiple archs. Use one of the following:"
-	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
-	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
-	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool" 
-	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
-	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
+	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool"
+	@echo "make OS=linux   ... build Linux    libblink1 and blink1-tool"
+	@echo "make OS=freebsd ... build FreeBSD    libblink1 and blink1-tool"
+	@echo "make OS=macosx  ... build Mac OS X libblink1 and blink1-tool"
+	@echo "make OS=wrt     ... build OpenWrt libblink1 and blink1-tool"
 	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
-	@echo "make lib        ... build blink1-lib shared library"
+	@echo "make lib        ... build libblink1 shared library"
 	@echo "make blink1-tiny-server ... build tiny REST server"
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
@@ -297,7 +297,7 @@ $(OBJS): %.o: %.c
 
 blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
-	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
+	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(LIBS) -L. -lblink1 blink1-tool.o -o blink1-tool$(EXE)
 
 # FIXME: verify we don't need MONGOOSE_LIBS and pthread & dl are avilable everywhere
 blink1-tiny-server: $(OBJS) server/blink1-tiny-server.c
@@ -309,12 +309,12 @@ lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
 
-package: 
+package:
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
 	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
 	mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
 
-clean: 
+clean:
 	rm -f $(OBJS)
 	rm -f $(LIBTARGET)
 	rm -f blink1-tiny-server.o blink1-tool.o hiddata.o
@@ -337,7 +337,7 @@ ldd:
 # show shared lib usage on Windows
 # FIXME: only works inside command prompt from
 # Start->All Programs-> MS Visual Studio 2012 -> VS Tools -> Devel. Cmd Prompt
-dumpbin: 
+dumpbin:
 	dumpbin.exe /exports $(LIBTARGET)
 	dumpbin.exe /exports blink1-tool.exe
 

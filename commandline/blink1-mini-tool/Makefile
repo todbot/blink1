@@ -9,7 +9,7 @@
 #   - Install MacPorts
 #   - sudo port install libusb-legacy
 #
-# Linux (Ubuntu) 
+# Linux (Ubuntu)
 #   - apt-get install gcc-avr avr-libc avrdude java librxtx-java
 #
 # OpenWrt / DD-WRT
@@ -18,9 +18,9 @@
 #   - type "make OS=wrt" to build
 #
 # BeagleBone / BeagleBoard (on Angstrom Linux)
-#   - Install USB dev support 
+#   - Install USB dev support
 #      "opkg install libusb-0.1-4-dev"
-#   - May need to symlink libusb 
+#   - May need to symlink libusb
 #      "cd /lib; ln -s libusb-0.1.so.4 libusb.so"
 #
 #
@@ -33,7 +33,7 @@ TARGET=blink1-mini-tool
 # try to do some autodetecting
 UNAME := $(shell uname -s)
 
-# assume linux 
+# assume linux
 ifeq "$(OS)" ""
   OS = linux
 endif
@@ -83,13 +83,13 @@ endif
 CFLAGS=	$(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS)
 LIBS=	$(OS_LIBS) $(USBLIBS) $(LDFLAGS)
 
-OBJ=		$(TARGET).o hiddata.o 
+OBJ=		$(TARGET).o hiddata.o
 
 PROGRAM=	$(TARGET)$(EXE_SUFFIX)
 
 all: msg $(PROGRAM)
 
-msg: 
+msg:
 	@echo "building for OS=$(OS)"
 
 # symbolic targets:
@@ -101,7 +101,7 @@ help:
 	@echo
 
 $(PROGRAM): $(OBJ)
-	$(CC) -o $(PROGRAM) $(OBJ) $(LIBS) 
+	$(CC) -o $(PROGRAM) $(OBJ) $(LIBS)
 
 
 strip: $(PROGRAM)

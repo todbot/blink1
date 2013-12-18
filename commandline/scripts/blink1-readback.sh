@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Demonstrate last-/current-color readback
-# 
+#
 
 blink1-tool --off
 sleep 1
