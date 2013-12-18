@@ -2,7 +2,8 @@ Compiling blink1-tool for OpenWrt
 =================================
 
 
-On a Linux box.  (I use an Ubuntu VM)
+Must do this on a Linux box.  (I use an Ubuntu VM)  
+And for the below, assume that the checkouts are going into the "~/projects/" directory.
 
 * Install needed tools
 ```
@@ -17,19 +18,26 @@ On a Linux box.  (I use an Ubuntu VM)
 * Build the cross-compiling toolchain and host tools:
 (note this step can take upwards of an hour and 10GB of disk space)
 ```
-    % cd linino/trunk
+    % cd ~/projects/linino/trunk
     % make tools/install
     % make toolchain/install
 ```
 
-* Build blink1-tool ipkg file:
+* Stick the blink1 OpenWrt directory in the "package" directory where packages-to-be-built live:
+```
+    % cd ~/projects/linino/trunk
+    % cd package
+    % ln ~/projects/blink1/openwrt blink1
+```
+
+* Build blink1-tool and create ipkg file:
 ```
     % make V=s package/blink1/compile
 ```
 
 * Grab resulting .ipkg file and copy to Yun/OpenWrt system:
 ```
-    % scp bin/ar71xx/packages/blink1_007-1_ar71xx.ipk root@arduino.local:
+    % scp ~/projects/linino/trunk/bin/ar71xx/packages/blink1_007-1_ar71xx.ipk root@arduino.local:
 ```
 
 * Log onto Yun/OpenWrt system and install the package
