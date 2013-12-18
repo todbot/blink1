@@ -45,7 +45,7 @@ define Build/Prepare
 endef
 
 define Build/Compile
-	 $(MAKE) USBLIB_TYPE=HIDDATA OS="wrt" blink1-tool -C $(PKG_BUILD_DIR) \
+	 $(MAKE) USBLIB_TYPE=HIDDATA OS="wrt" blink1-tool blink1-tiny-server -C $(PKG_BUILD_DIR) \
                 $(TARGET_CONFIGURE_OPTS) \
                 COPT_FLAGS="$(TARGET_CFLAGS)"  \
                 LDOPT_FLAGS="$(TARGET_LDFLAGS) "
@@ -54,6 +54,7 @@ endef
 define Package/blink1/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/blink1-tool $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/blink1-tiny-server $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,blink1))
