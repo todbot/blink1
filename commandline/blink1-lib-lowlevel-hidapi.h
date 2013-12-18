@@ -13,12 +13,12 @@ int blink1_enumerateByVidPid(int vid, int pid)
 {
     struct hid_device_info *devs, *cur_dev;
 
-    int p = 0; 
+    int p = 0;
     devs = hid_enumerate(vid, pid);
-    cur_dev = devs;    
+    cur_dev = devs;
     while (cur_dev) {
-        if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
-            (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
+        if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&
+            (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) {
             if( cur_dev->serial_number != NULL ) { // can happen if not root
                 strcpy( blink1_infos[p].path,   cur_dev->path );
                 sprintf( blink1_infos[p].serial, "%ls", cur_dev->serial_number);
@@ -35,7 +35,7 @@ int blink1_enumerateByVidPid(int vid, int pid)
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(devs);
-    
+
     blink1_cached_count = p;
 
     blink1_sortCache();
@@ -50,7 +50,7 @@ blink1_device* blink1_openByPath(const char* path)
 
     LOG("blink1_openByPath %s\n", path);
 
-    blink1_device* handle = hid_open_path( path ); 
+    blink1_device* handle = hid_open_path( path );
 
     int i = blink1_getCacheIndexByPath( path );
     if( i >= 0 ) {  // good
@@ -58,7 +58,7 @@ blink1_device* blink1_openByPath(const char* path)
     }
     else { // uh oh, not in cache, now what?
     }
-    
+
     return handle;
 }
 
@@ -68,7 +68,7 @@ blink1_device* blink1_openBySerial(const char* serial)
     if( serial == NULL || strlen(serial) == 0 ) return NULL;
     int vid = blink1_vid();
     int pid = blink1_pid();
-    
+
     LOG("blink1_openBySerial %s at vid/pid %x/%x\n", serial, vid,pid);
 
     wchar_t wserialstr[serialstrmax] = {L'\0'};
@@ -78,8 +78,8 @@ blink1_device* blink1_openBySerial(const char* serial)
     swprintf( wserialstr, serialstrmax, L"%s", serial); // convert to wchar_t*
 #endif
     LOG("serialstr: '%ls' \n", wserialstr );
-    blink1_device* handle = hid_open(vid,pid, wserialstr ); 
-    if( handle ) LOG("got a blink1_device handle\n"); 
+    blink1_device* handle = hid_open(vid,pid, wserialstr );
+    if( handle ) LOG("got a blink1_device handle\n");
 
     int i = blink1_getCacheIndexBySerial( serial );
     if( i >= 0 ) {
@@ -94,13 +94,13 @@ blink1_device* blink1_openBySerial(const char* serial)
 }
 
 //
-blink1_device* blink1_openById( uint32_t i ) 
-{ 
+blink1_device* blink1_openById( uint32_t i )
+{
     if( i > blink1_max_devices ) { // then i is a serial number not an array index
         char serialstr[serialstrmax];
-        sprintf( serialstr, "%X", i);  // convert to wchar_t* 
-        return blink1_openBySerial( serialstr );  
-    } 
+        sprintf( serialstr, "%X", i);  // convert to wchar_t*
+        return blink1_openBySerial( serialstr );
+    }
     else {
         return blink1_openByPath( blink1_getCachedPath(i) );
     }
@@ -110,7 +110,7 @@ blink1_device* blink1_openById( uint32_t i )
 blink1_device* blink1_open(void)
 {
     blink1_enumerate();
-    
+
     return blink1_openById( 0 );
 }
 
@@ -119,7 +119,7 @@ blink1_device* blink1_open(void)
 void blink1_close( blink1_device* dev )
 {
     if( dev != NULL ) {
-        blink1_clearCacheDev(dev); // FIXME: hmmm 
+        blink1_clearCacheDev(dev); // FIXME: hmmm
         hid_close(dev);
     }
     dev = NULL;

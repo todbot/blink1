@@ -1,10 +1,10 @@
-/* 
+/*
  * blinkraw.c
  *
  * fgmr 2012-09-22
  *
  * playing with the hidraw interface to blink(1)
- * 
+ *
  * Thank you Alan Ott for
  * http://lxr.free-electrons.com/source/samples/hidraw/hid-example.c
  */
@@ -83,7 +83,7 @@ color(int fd, char action, int R, int G, int B, int T, int step) {
   if (B>255) B=255;
   if (T>65535) T=65535;
   if (step>15) step=15;
-  
+
   buf[0] = 1;
   buf[1] = action;
   buf[2] = R; /* R */

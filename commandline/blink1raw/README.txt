@@ -2,7 +2,7 @@
 
 blink1raw -- use HIDRAW to talk to blink(1)
 --------------------------------------------
-2012 - Frederick Roeber 
+2012 - Frederick Roeber
 
 This tiny program is great for restricted environments like during machine installs
 

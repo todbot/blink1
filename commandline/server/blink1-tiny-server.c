@@ -41,17 +41,17 @@ static int  hexread(uint8_t *buffer, char *string, int buflen)
 }
 
 // given a string of hex color code ("#FF3322") or rgb triple ("255,0,0" or
-// "0xff,0x23,0x00"), produce a parsed byte array 
+// "0xff,0x23,0x00"), produce a parsed byte array
 static void parse_rgbstr(uint8_t* rgb, char* rgbstr)
 {
     if( rgbstr != NULL && strlen(rgbstr) ) {
-        if( rgbstr[0] == '#' ) { 
+        if( rgbstr[0] == '#' ) {
             uint32_t rgbval = strtoul(rgbstr+1,NULL,16); // FIXME: hack
             rgb[0] = ((rgbval >> 16) & 0xff);
             rgb[1] = ((rgbval >>  8) & 0xff);
             rgb[2] = ((rgbval >>  0) & 0xff);
         }
-        else { 
+        else {
             hexread(rgb, rgbstr, 3);
         }
     }
@@ -63,17 +63,17 @@ static void *callback(enum mg_event event,
                       const struct mg_request_info *request_info)
 {
     char result[1000];  result[0] = 0;
-    
+
     if (event == MG_NEW_REQUEST) {
         const char* uri = request_info->uri;
-        
+
         char rgbstr[16];
         char timestr[8];
         char countstr[4];
 
         uint16_t millis = 100;
         uint8_t rgb[3];
-        
+
         if( strstr(uri, "/blink1/off") == uri ) {
             sprintf(result, "blink1 off");
             blink1_device* dev = blink1_open();
@@ -100,7 +100,7 @@ static void *callback(enum mg_event event,
             uint8_t cnt = strtol(countstr, NULL,0);
 
             millis = (strlen(timestr)) ? (1000*strtof(timestr,NULL)) : millis;
-             
+
             rgb[0] = 100; rgb[1] = 100; rgb[2] = 100; // default
 
             parse_rgbstr( rgb, rgbstr);
@@ -117,7 +117,7 @@ static void *callback(enum mg_event event,
             }
             blink1_close(dev);
         }
-        else if( strstr(uri, "/blink1/fadeToRGB") == uri ) { 
+        else if( strstr(uri, "/blink1/fadeToRGB") == uri ) {
             get_qsvar(request_info, "rgb", rgbstr, sizeof(rgbstr));
             get_qsvar(request_info, "time", timestr, sizeof(timestr));
 
@@ -125,12 +125,12 @@ static void *callback(enum mg_event event,
 
             parse_rgbstr(rgb, rgbstr);
 
-            sprintf(result, "fadeToRGB: '%s' = %d,%d,%d @ %d msec", 
+            sprintf(result, "fadeToRGB: '%s' = %d,%d,%d @ %d msec",
                     rgbstr, rgb[0],rgb[1],rgb[2], millis );
-            
+
             blink1_device* dev = blink1_open();
-            if( dev ) { 
-                if( blink1_fadeToRGB( dev, millis, 
+            if( dev ) {
+                if( blink1_fadeToRGB( dev, millis,
                                       rgb[0], rgb[1], rgb[2]) == -1 ) {
                     fprintf(stderr, "fadeToRGB: blink1 device error\n");
                     sprintf(result, "%s\nfadeToRGB: couldn't find blink1",
@@ -142,13 +142,13 @@ static void *callback(enum mg_event event,
             }
             blink1_close(dev);
         }
-        else if( strstr(uri, "/blink1/random") == uri) { 
+        else if( strstr(uri, "/blink1/random") == uri) {
             sprintf(result, "random not implemented yet");
         }
         else {
             sprintf(result, "unrecognized uri");
         }
-        if( result != NULL ) { 
+        if( result != NULL ) {
             // Echo requested URI back to the client
             mg_printf(conn, "HTTP/1.1 200 OK\r\n"
                       "Content-Type: text/plain\r\n\r\n"
@@ -156,15 +156,15 @@ static void *callback(enum mg_event event,
                       "\"uri\":  \"%s\",\n"
                       "\"result\":  \"%s\",\n"
                       "\"version\": \"%s\"\n"
-                      "}\n", 
+                      "}\n",
                       uri,
                       result,
                       blink1_server_version
                       );
-            
+
             return "";  // Mark as processed
         }
-        else { 
+        else {
             return NULL;
         }
     }

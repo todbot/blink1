@@ -1,5 +1,5 @@
 /*
- * blink(1) C library -- 
+ * blink(1) C library --
  *
  * 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
  *
@@ -17,8 +17,8 @@ extern "C" {
 
 #define blink1_max_devices 16
 
-#define cache_max 16  
-#define serialstrmax (8 + 1) 
+#define cache_max 16
+#define serialstrmax (8 + 1)
 #define pathstrmax 128
 
 #define blink1mk2_serialstart 0x20000000
@@ -30,11 +30,11 @@ extern "C" {
 #define blink1_report_size 8
 #define blink1_buf_size (blink1_report_size+1)
 
-enum { 
+enum {
     BLINK1_UNKNOWN = 0,
     BLINK1_MK1,   // the original one from the kickstarter
-    BLINK1_MK2    // the updated one 
-}; 
+    BLINK1_MK2    // the updated one
+};
 
 struct blink1_device_;
 
@@ -95,8 +95,8 @@ int blink1_fadeToRGBN(blink1_device *dev, uint16_t fadeMillis,
 int blink1_setRGB(blink1_device *dev, uint8_t r, uint8_t g, uint8_t b );
 
 // mk2 devices only
-int blink1_readRGB(blink1_device *dev, uint16_t* fadeMillis, 
-                   uint8_t* r, uint8_t* g, uint8_t* b, 
+int blink1_readRGB(blink1_device *dev, uint16_t* fadeMillis,
+                   uint8_t* r, uint8_t* g, uint8_t* b,
                    uint8_t ledn);
 int blink1_readRGB_mk1(blink1_device *dev, uint16_t* fadeMillis,
                        uint8_t* r, uint8_t* g, uint8_t* b);
@@ -115,15 +115,15 @@ int blink1_play(blink1_device *dev, uint8_t play, uint8_t pos);
 // mk2 devices only
 int blink1_playloop(blink1_device *dev, uint8_t play, uint8_t startpos, uint8_t endpos, uint8_t count);
 // mk2 devices only
-int blink1_readPlayState(blink1_device *dev, uint8_t* playing, 
+int blink1_readPlayState(blink1_device *dev, uint8_t* playing,
                          uint8_t* playstart, uint8_t* playend,
                          uint8_t* playcount, uint8_t* playpos);
 
-int blink1_writePatternLine(blink1_device *dev, uint16_t fadeMillis, 
-                            uint8_t r, uint8_t g, uint8_t b, 
+int blink1_writePatternLine(blink1_device *dev, uint16_t fadeMillis,
+                            uint8_t r, uint8_t g, uint8_t b,
                             uint8_t pos);
-int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis, 
-                           uint8_t* r, uint8_t* g, uint8_t* b, 
+int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis,
+                           uint8_t* r, uint8_t* g, uint8_t* b,
                            uint8_t pos);
 // mk2 devices only
 int blink1_savePattern(blink1_device *dev);
