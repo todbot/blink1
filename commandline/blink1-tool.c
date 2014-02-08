@@ -455,7 +455,8 @@ int main(int argc, char** argv)
         printf("deviceId[0] = %X\n", deviceIds[0]);
         printf("cached list:\n");
         for( int i=0; i< count; i++ ) { 
-            printf("%d: serial: '%s' '%s'\n", i,blink1_getCachedSerial(i), blink1_getCachedPath(i) );
+            printf("%d: serial: '%s' '%s'\n", 
+                   i, blink1_getCachedSerial(i), blink1_getCachedPath(i) );
         }
     }
 
@@ -506,6 +507,7 @@ int main(int argc, char** argv)
 #endif
     }
     /*
+    // unsupported now
     else if( cmd == CMD_HIDREAD ) { 
         printf("hidread:  ");
         cmdbuf[0] = blink1_report_id;  // must set report_id on windows
@@ -759,12 +761,15 @@ int main(int argc, char** argv)
             rc = blink1_fadeToRGBN(dev, millis,r,g,b, 2);
             blink1_sleep(delayMillis/2);
         }
+        // turn them both off
+        rc = blink1_fadeToRGBN(dev, millis, 0,0,0, 1);
+        rc = blink1_fadeToRGBN(dev, millis, 0,0,0, 2);
     }
     else if( cmd == CMD_SERVERDOWN ) { 
         //int on  = arg;
         int on = cmdbuf[0];
         int st = cmdbuf[1];
-        msg("setting serverdown %s (@ %d millis)\n",((on)?"ON":"OFF"),delayMillis);
+        msg("setting servertickle %s (@ %d millis)\n",((on)?"ON":"OFF"),delayMillis);
         blink1_serverdown( dev, on, delayMillis, st );
     }
     /*
