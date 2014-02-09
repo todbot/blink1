@@ -42,6 +42,9 @@ struct blink1_device_;
 typedef struct hid_device_ blink1_device; /**< opaque blink1 structure */
 #elif USE_HIDDATA
 typedef struct usbDevice   blink1_device; /**< opaque blink1 structure */
+#else
+#warning "USE_HIDAPI or USE_HIDDATA wasn't defined, defaulting to USE_HIDAPI"
+typedef struct hid_device_ blink1_device; /**< opaque blink1 structure */
 #endif
 
 
