@@ -1,4 +1,5 @@
 # copy this udev with "sudo cp 51-blink1.rules /etc/udev/rules.d/"
+# edit it to suit your type of Linux 
 # and do "sudo udevadm control --reload-rules"
 # Note the hex values for vid & pid must be lower-case
 # SYSFS{idVendor}=="27b8", SYSFS{idProduct}=="01ed", MODE="666"
@@ -6,3 +7,4 @@
 # or try
 SUBSYSTEM=="input", GROUP="input", MODE="0666"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", MODE:="666", GROUP="plugdev"
+

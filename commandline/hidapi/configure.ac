@@ -2,9 +2,9 @@ AC_PREREQ(2.63)
 
 # Version number. This is currently the only place.
 m4_define([HIDAPI_MAJOR],   0)
-m4_define([HIDAPI_MINOR],   7)
+m4_define([HIDAPI_MINOR],   8)
 m4_define([HIDAPI_RELEASE], 0)
-m4_define([HIDAPI_RC],      +)
+m4_define([HIDAPI_RC],      -rc1)
 m4_define([VERSION_STRING], HIDAPI_MAJOR[.]HIDAPI_MINOR[.]HIDAPI_RELEASE[]HIDAPI_RC)
 
 AC_INIT([hidapi],[VERSION_STRING],[alan@signal11.us])
@@ -68,7 +68,7 @@ case $host in
 
 	# HIDAPI/libusb libs
 	AC_CHECK_LIB([rt], [clock_gettime], [LIBS_LIBUSB_PRIVATE+=" -lrt"], [hidapi_lib_error librt])
-	PKG_CHECK_MODULES([libusb], [libusb-1.0], true, [hidapi_lib_error libusb-1.0])
+	PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.9], true, [hidapi_lib_error libusb-1.0])
 	LIBS_LIBUSB_PRIVATE+=" $libusb_LIBS"
 	CFLAGS_LIBUSB+=" $libusb_CFLAGS"
 	;;
