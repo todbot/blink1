@@ -36,10 +36,9 @@ void setup()
   smooth();
   font = loadFont("LucidaSans-12.vlw");
 
-  blink1 = new Blink1();
+  blink1 = Blink1().open();
 
-  int rc = blink1.open();
-  if( rc!=0 ) { 
+  if( blink1.error() ) { 
     println("oops no blink1");
     statusText = "no Blink1 found";
   }

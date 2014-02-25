@@ -9,6 +9,7 @@
 #include "color_dialog.hpp"
 
 #include "blink1pattern.h"
+#include "blink1input.h"
 
 #include "blink1-lib.h"
 
@@ -65,15 +66,13 @@ private:
 
     QTimer* blink1timer;
     hid_device* blink1dev;
+
     uint8_t mode;
-    //uint8_t cr,cg,cb;
     QColor cc;  // current color
     Color_Dialog colorDialog;
 
-
-    //QList<Blink1Pattern> patternList;
-    // QHash<QString, Blink1Pattern*> patterns;
     QMap<QString,Blink1Pattern*> patterns;
+    QMap<QString,Blink1Input*> inputs;
 };
 
 #endif // MAINWINDOW_H

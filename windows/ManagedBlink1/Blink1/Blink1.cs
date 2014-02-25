@@ -201,6 +201,26 @@ namespace ThingM.Blink1
             this.hidDevice = null;
         }
 
+
+        /// <summary>
+        ///     Dispose of underlying resources without turning off the blink1 device.
+        ///     From github user emergentSushi commit 84bbc16f53ead6142fb817389c687281b0d42d4e
+        ///     https://github.com/emergentSushi/blink1/commit/84bbc16f53ead6142fb817389c687281b0d42d4e
+        /// </summary>
+        public void Complete()
+        {
+            if (this.IsConnected == false)
+            {
+                throw new InvalidOperationException("No Blink(1) device connected.");
+            }
+
+            this.hidDevice.CloseDevice();
+
+            this.hidDevice.Dispose();
+
+            this.hidDevice = null;
+        }
+
         /// <summary>
         ///     Deactivate the Blink(1) device from playing presets after a certain amount of inactivity.
         /// </summary>

@@ -45,8 +45,8 @@ namespace HidLibrary
         {
             var hidClass = HidClassGuid;
             var deviceInfoSet = NativeMethods.SetupDiGetClassDevs(ref hidClass, null, 0, NativeMethods.DIGCF_PRESENT | NativeMethods.DIGCF_DEVICEINTERFACE);
-
-            if (deviceInfoSet.ToInt32() != NativeMethods.INVALID_HANDLE_VALUE)
+            
+            if (deviceInfoSet.ToInt64() != NativeMethods.INVALID_HANDLE_VALUE)
             {
                 var devices = new List<string>();
                 var deviceInfoData = CreateDeviceInfoData();

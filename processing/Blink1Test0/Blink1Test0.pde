@@ -16,11 +16,9 @@ void setup()
 {
   frameRate(1);
 
-  blink1 = new Blink1();
+  blink1 = Blink1.open();
 
-  int rc = blink1.open();
-
-  if( rc != 0 ) { 
+  if( blink1.error() ) { 
       println("uh oh, no Blink1 device found");
   }
 

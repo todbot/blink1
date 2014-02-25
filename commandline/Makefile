@@ -28,7 +28,8 @@
 # FreeBSD
 #   - libusb is part of the OS so no pkg-config needed.
 #   - No -ldl on FreeBSD necessary.
-#   - iconv is a package that needs to be installed; it lives in /usr/local/lib/
+#   - For FreeBSD versions < 10, iconv is a package that needs to be installed;
+#     in this case it lives in /usr/local/lib/
 #
 # Linux Ubuntu 32-bit cross-compile on 64-bit
 #   To build 32-bit on 64-bit Ubuntu, try a chrooted build:
@@ -80,75 +81,193 @@ ifeq "$(PKGOS)" ""
 endif
 
 
-CC=gcc
+#CC=gcc
 #CC=clang
+
+# pick low-level implemenation style
+# "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
+#  but has dependencies on iconv, libusb-1.0, pthread, dl
+#
+# "HIDDATA" type is best for low-resource Linux, 
+#  and the only dependencies it has is libusb-0.1
+#
+
+USBLIB_TYPE = HIDAPI
+#USBLIB_TYPE = HIDDATA
+
+# uncomment for debugging HID stuff
+#CFLAGS += -DDEBUG_PRINTF
+
 
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
 LIBTARGET = libBlink1.dylib
-CFLAGS += -arch i386 -arch x86_64
-CFLAGS += -pthread
 CFLAGS += -mmacosx-version-min=10.6
-LIBS += -framework IOKit -framework CoreFoundation
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -arch i386 -arch x86_64
+# don't need pthread with clang
+#CFLAGS += -pthread
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/mac/hid.o
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+OPT_HOME := /opt/local/bin
+CFLAGS += `$(OPT_HOME)/libusb-config --cflags`
+LIBS   += `$(OPT_HOME)/libusb-config --libs`
+endif
+
+LIBS += -framework IOKit -framework CoreFoundation
 
 EXEFLAGS = 
 #LIBFLAGS = -bundle -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
-
 EXE=
+
 endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
-#LIBTARGET = libBlink1.dll
 LIBTARGET = blink1-lib.dll
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32 
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ 
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/windows/hid.o
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+endif
 
 EXEFLAGS =
 #LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a $(LIBS)
 LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
-
 EXE= .exe
+
 endif
 
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
 LIBTARGET = blink1-lib.so
-#LIBTARGET = libBlink1.so
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
+OBJS = ./hidapi/libusb/hid.o
 CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+endif
 
-OBJS = ./hidapi/libusb/hid.o
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+CFLAGS += `pkg-config libusb --cflags` -fPIC
+LIBS   += `pkg-config libusb --libs` 
+endif
 
 EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
-
 EXE=
+
 endif
 
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
 LIBTARGET = blink1-lib.so
-#LIBTARGET = libBlink1.so
-LIBS   += -L/usr/local/lib -lusb -lrt -lpthread -liconv -static
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/libusb/hid.o
-EXEFLAGS=
+CFLAGS += -I/usr/local/include -fPIC
+LIBS   += -lusb -lrt -lpthread
+ifndef FBSD10
+LIBS   += -L/usr/local/lib -liconv
+endif
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+CFLAGS += -I/usr/local/include -fPIC
+LIBS   += -L/usr/local/lib -lusb 
+endif
+
+# Static binaries don't play well with the iconv implementation of FreeBSD 10
+ifndef FBSD10
+EXEFLAGS = -static
+endif
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
+
 endif
+
+#################  WRT Linux  ################################################
+ifeq "$(OS)" "wrt"
+LIBTARGET = blink1-lib.so
+
+# HIDAPI build doesn't work, use HIDDATA instead
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
+OBJS = ./hidapi/libusb/hid.o
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC 
+LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl 
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA $(COPT_FLAGS)
+OBJS = ./hiddata.o
+LIBS += $(LDOPT_FLAGS) 
+#LIBS += $(STAGING_DIR)/usr/lib/libusb.a 
+#can't build this static for some reason
+LIBS += -lusb
+endif
+
+#EXEFLAGS = -static
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+EXE=
+
+endif
+
+##############  Cross-compile WRT Linux  #####################################
+ifeq "$(OS)" "wrtcross"
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+
+WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
+CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
+LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
+CFLAGS += "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include" -fPIC
+LIBS   += "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
+#LDFLAGS += -static
+
+endif
+
+EXEFLAGS = -static
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+EXE=
+
+endif
+
 
 
 #####################  Common  ###############################################
 
-CFLAGS += -std=gnu99 -I ../hardware/firmware 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
-CFLAGS += -I./hidapi/hidapi -I./mongoose -g
-# only uncomment for debugging HIDAPI stuff
-#CFLAGS += -DDEBUG_PRINTF
+CFLAGS += -std=gnu99 
+CFLAGS += -g
 
 OBJS +=  blink1-lib.o 
 
@@ -165,7 +284,10 @@ help:
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
 	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
+	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
+	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
 	@echo "make lib        ... build blink1-lib shared library"
+	@echo "make blink1-tiny-server ... build tiny REST server"
 	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
@@ -177,28 +299,34 @@ blink1-tool: $(OBJS) blink1-tool.o
 	$(CC) $(CFLAGS) -c blink1-tool.c -o blink1-tool.o
 	$(CC) $(CFLAGS) $(EXEFLAGS) -g $(OBJS) $(LIBS) blink1-tool.o -o blink1-tool$(EXE) 
 
-blink1-server-simple: $(OBJS) blink1-server-simple.c
-	$(CC) $(CFLAGS) -c blink1-server-simple.c -o blink1-server-simple.o
-	$(CC) $(CFLAGS) -c ./mongoose/mongoose.c -o ./mongoose/mongoose.o
-	$(CC) -g $(OBJS) $(EXEFLAGS) ./mongoose/mongoose.o $(LIBS) blink1-server-simple.o -o blink1-server-simple$(EXE)
+# FIXME: verify we don't need MONGOOSE_LIBS and pthread & dl are avilable everywhere
+blink1-tiny-server: $(OBJS) server/blink1-tiny-server.c
+	$(CC) $(CFLAGS) -I. -I./server/mongoose -c server/blink1-tiny-server.c -o blink1-tiny-server.o
+	$(CC) $(CFLAGS) -I. -I./server/mongoose -c ./server/mongoose/mongoose.c -o ./server/mongoose/mongoose.o
+	$(CC) -g $(OBJS) $(EXEFLAGS) ./server/mongoose/mongoose.o $(LIBS) -lpthread -ldl blink1-tiny-server.o -o blink1-tiny-server$(EXE)
 
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
 
-package: blink1-tool
+package: 
 	@echo "Zipping up blink1-tool for '$(PKGOS)'"
-	zip ../builds/blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
+	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
+	mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
 
 clean: 
-	rm -f $(OBJS) 
-	rm -f blink1-server-simple.o blink1-tool.o
-	rm -f mongoose/mongoose.o
+	rm -f $(OBJS)
+	rm -f $(LIBTARGET)
+	rm -f blink1-tiny-server.o blink1-tool.o hiddata.o
+	rm -f server/mongoose/mongoose.o
 
 distclean: clean
 	rm -f blink1-tool$(EXE)
-	rm -f blink1-server-simple$(EXE)
+	rm -f blink1-tiny-server$(EXE)
 	rm -f $(LIBTARGET) $(LIBTARGET).a
+
+# show shared library use
+# in general we want minimal to no dependecies for blink1-tool
 
 # shows shared lib usage on Mac OS X
 otool:
@@ -213,6 +341,6 @@ dumpbin:
 	dumpbin.exe /exports $(LIBTARGET)
 	dumpbin.exe /exports blink1-tool.exe
 
-foo:
-	@echo "OS=$(OS), USBFLAGS=$(USBFLAGS)"
 
+printvars:
+	@echo "OS=$(OS), CFLAGS=$(CFLAGS), LDFLAGS=$(LDFLAGS), LIBS=$(LIBS), LIBFLAGS=$(LIBFLAGS)"

@@ -74,9 +74,8 @@ int octaveDivisions = 2;
 void setup() {  
   size(300,300);
 
-  blink1 = new Blink1();
-  int rc = blink1.open();
-  if( rc != 0 ) { 
+  blink1 = Blink1.open();
+  if( blink1.error() ) { 
       println("uh oh, no Blink1 device found");
   }
 

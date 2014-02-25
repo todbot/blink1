@@ -10,6 +10,10 @@ this directory contains additional Windows-related blink(1) items.
 
 - Blink1Lib -- .NET library wrapper of blink1-lib to control blink(1) in your own apps
 
+- ManagedBlink1 -- 100% .NET library for blink(1)
+
 - scripts -- various scripts and batch files (which use blink1-tool.exe)
+
+- also see YoYo-Pete's great scripts at https://github.com/YoYo-Pete/blink1
 
 

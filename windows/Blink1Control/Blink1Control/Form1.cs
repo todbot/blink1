@@ -38,8 +38,24 @@ namespace Blink1Control
 
             mAllowVisible = !Blink1Server.startMinimized;
             stripMenuStartMinimized.Checked = !mAllowVisible;
+
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            /*
+            Blink1Server.Log("Load****");
+            // no smaller than design time size
+            //this.MinimumSize = new System.Drawing.Size(this.Width, this.Height);
+            // no larger than screen size
+            //this.MaximumSize = new System.Drawing.Size((int)System.Windows.SystemParameters.PrimaryScreenWidth, (int)System.Windows.SystemParameters.PrimaryScreenHeight);
+            this.MinimumSize = new Size(800, 600);
+            this.MaximumSize = new Size(800, 600);
+            this.AutoSize = true;
+            this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            */
+            // rest of your code here...
+        }
         //"Form Shown" event handler
         private void Form_Shown(object sender, EventArgs e)
         {
