@@ -1,12 +1,8 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2013-04-28T13:11:31
-#
 #-------------------------------------------------
 
 QT       += core gui widgets
-#QT       += webkit webkitwidgets
-
 
 TARGET = test2
 VERSION = 0.9.8
@@ -16,18 +12,24 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     blink1pattern.cpp \
-    todgroupbox.cpp
+    todgroupbox.cpp \
+    blink1input.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
-    todgroupbox.h
+    todgroupbox.h \
+    blink1input.h
 
 FORMS    += mainwindow.ui \
     dialog.ui \
     todgroupbox.ui
 
+RESOURCES += \
+    myresources.qrc
 
-# note: need to type "make lib" in blink1/commandline for this to work
+
+# for blink1-lib
+# note: need to type "make lib" in blink1/commandline beforehand
 BLINK1_LIB_DIR=$$PWD/../../commandline
 message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
@@ -37,14 +39,13 @@ win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 INCLUDEPATH += $$BLINK1_LIB_DIR $$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
 DEPENDPATH += $$BLINK1_LIB_DIR
 
-
-RESOURCES += \
-    myresources.qrc
+# for tasteful-server
+##INCLUDEPATH += ../third-party/tasteful-server/include
+##macx: LIBS += -L../third-party/tasteful-server -lTastefulServer
 
 
 macx {
     MYAPPDIR=$$OUT_PWD/$${TARGET}.app/Contents/MacOS
-    message( $$OUT_PWD )
     message( "MYAPPDIR = $$MYAPPDIR" )
     # FIXME: How to make this cross-platform?
     QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
@@ -55,16 +56,12 @@ macx {
 
 
 win32 {
-    # confusingly, these both print, why?
-    #CONFIG(release, debug|release):message(*** Release build!) #will print
-    #CONFIG(debug, debug|release):message(*** Debug build!) #no print
-
+    # confusingly, these both get run, why?
     # surely there's a better way to do this
     CONFIG(release, debug|release):  MYAPPDIR=$$OUT_PWD/release
     CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
 
     message( "MYAPPDIR = $$MYAPPDIR" )
-    #message( "CONFIG = $$CONFIG")
     # but this line doesn't work, because of forward slashes presumably
    # QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
 }
@@ -90,4 +87,8 @@ include(../third-party/Qt-Color-Picker/color_widgets.pri)
 # Fervor autoupdater
 !include("../third-party/fervor/Fervor.pri") {
     error("Unable to include Fervor autoupdater.")
+}
+
+!include(../third-party/tasteful-server/tasteful-server.pri) {
+    error("Unable to include tasteful-server.")
 }

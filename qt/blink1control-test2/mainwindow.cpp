@@ -6,11 +6,10 @@
 #include <QPropertyAnimation>
 #include <QDebug>
 
-//#include <QVariant>
-//#include <QObjectHelper>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+
 
 enum {
     NONE = 0,
@@ -96,22 +95,11 @@ void MainWindow::quit()
     blink1_fadeToRGB(blink1dev, 0, 0,0,0 );
     blink1_close(blink1dev);
 
-    qDebug() << "pattern list:";
-    QList<QString> pattnames = patterns.keys();
-    QJsonArray qarr;
-    foreach (QString nm, pattnames ) {
-        Blink1Pattern*  patt = patterns.value(nm);
-        qDebug() << "patt name: " << patt->name();
-        QJsonObject obj = patt->toJson();
-        qarr.append(obj);
-    }
-    QJsonDocument doc;
-    doc.setArray(qarr);
-   // qDebug() << "quitLtoJson: " << doc.toJson();
-
     qApp->quit();
 }
 
+// On Mac: settings stored in "~/.config/ThingM/Blink1ControlQt.ini"
+// On Win: settings stored in /c/Users/biff/
 void MainWindow::saveSettings()
 {
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1ControlQt");
@@ -119,19 +107,25 @@ void MainWindow::saveSettings()
     QString sText = ui->blink1IftttKey->text();
     settings.setValue("iftttKey", sText);
 
-    QList<QString> pattnames = patterns.keys();
-    QJsonArray qarr;
-    foreach (QString nm, pattnames ) {
-        //Blink1Pattern*  patt = patterns.value(nm);
+    // save patterns
+    QJsonArray qarrp;
+    foreach (QString nm, patterns.keys() ) {
         QJsonObject obj = patterns.value(nm)->toJson();
-        qarr.append(obj);
+        qarrp.append(obj);
     }
-    //QJsonDocument doc = QJsonDocument(qarr);
-    //doc.setArray(qarr);
-    QString patternstr = QJsonDocument(qarr).toJson();
-    qDebug() << "saveSettings:patterns: " << patternstr;
-    settings.setValue("patterns", patternstr);
+    QString patternsstr = QJsonDocument(qarrp).toJson();
+    qDebug() << "saveSettings:patterns: " << patternsstr;
+    settings.setValue("patterns", patternsstr);
 
+    // save inputs
+    QJsonArray qarri;
+    foreach (QString nm, inputs.keys() ) {
+        QJsonObject obj = inputs.value(nm)->toJson();
+        qarri.append(obj);
+    }
+    QString inputsstr = QJsonDocument(qarri).toJson();
+    qDebug() << "saveSettings:inputs: " << inputsstr;
+    settings.setValue("inputs", inputsstr);
 }
 
 void MainWindow::loadSettings()
@@ -158,7 +152,10 @@ void MainWindow::loadSettings()
             bp->setName( name );
             bp->setPlaycount(i*3);
             patterns.insert( name, bp );
-        }
+          }
+          Blink1Input* bi = new Blink1Input();
+          bi->setName( "hellotod" );
+          inputs.insert( "hellotod", bi );
     }
 
     /* test badly formatted QJsonObject

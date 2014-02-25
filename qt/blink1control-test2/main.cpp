@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QApplication>
 
+#include <HttpServer>
+
 #include "fvupdater.h"
 
 int main(int argc, char *argv[])
@@ -21,6 +23,20 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
-    
+
+    HttpServer server([](const HttpRequest& request) {
+        HttpResponse response(request);
+
+        response.setStatusCode(http::OK);
+
+        QByteArray content = request.toByteArray();
+        content.append("Client IP:" + request.address().toString() + " (Port " + QString::number(request.port()) + ")\r\n");
+
+        response.setContent(content);
+
+        return response;
+    });
+    server.listen(QHostAddress::Any, 8934);
+
     return a.exec();
 }

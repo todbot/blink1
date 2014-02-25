@@ -6467,7 +6467,7 @@ We've spent an enormous amount of time creating and checking these footprints an
 <part name="LED2" library="SparkFun-LED" deviceset="LED-TRICOLOR-5050-IC" device="WS2811"/>
 <part name="P+7" library="supply1" deviceset="+5V" device=""/>
 <part name="GND3" library="SparkFun-20110517" deviceset="GND" device=""/>
-<part name="JP1" library="SparkFun-20110517" deviceset="M03" device="PTH"/>
+<part name="JP1" library="SparkFun-20110517" deviceset="M03" device="PTH" value="strip"/>
 </parts>
 <sheets>
 <sheet>

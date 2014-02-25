@@ -11,7 +11,7 @@
 
  At the discretion of the user of this library,
  this software may be licensed under the terms of the
- GNU Public License v3, a BSD-Style license, or the
+ GNU General Public License v3, a BSD-Style license, or the
  original HIDAPI license as outlined in the LICENSE.txt,
  LICENSE-gpl3.txt, LICENSE-bsd.txt, and LICENSE-orig.txt
  files located at the root of the source distribution.
@@ -420,6 +420,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	process_pending_events();
 
 	/* Get a list of the Devices */
+	IOHIDManagerSetDeviceMatching(hid_mgr, NULL);
 	CFSetRef device_set = IOHIDManagerCopyDevices(hid_mgr);
 
 	/* Convert the list into a C array so we can iterate easily. */

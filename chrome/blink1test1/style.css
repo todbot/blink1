@@ -1,0 +1,45 @@
+#container {
+  display: block;
+  width: 300px;
+}
+
+label {
+}
+
+#requestPermissionDiv {
+  display: block;
+  height: 50px;
+}
+
+#container { 
+  display: block;
+}
+
+#colorswatch { 
+  display: block;
+  width: 70px;
+  height: 70px;
+  margin: 20px auto;
+  background: rgb(127,127,127);
+}
+
+.rgbval {
+  display: block;
+   -webkit-appearance:none !important;
+  width: 90%;
+  margin: 20px auto;
+  height: 6px;
+  background: rgb(80, 80, 80);
+}
+
+.rgbval::-webkit-slider-thumb {
+  -webkit-appearance:none !important;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  background: rgb(67, 135, 253);
+}
+#redval::-webkit-slider-thumb  { background: rgb(253,67,67);}
+#grnval::-webkit-slider-thumb  { background: rgb(67,253,67);}
+#bluval::-webkit-slider-thumb  { background: rgb(67,67,253);}
+

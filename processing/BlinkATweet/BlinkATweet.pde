@@ -13,6 +13,8 @@ import java.awt.geom.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
+import java.util.regex.*;
+import java.util.*;
 
 import thingm.blink1.*;
 
@@ -56,9 +58,8 @@ void setup() {
   textFont( font  );
   colormap = parseColorFile(colorfile);
 
-  blink1 = new Blink1();
-  int rc = blink1.open();
-  if( rc != 0 ) { 
+  blink1 = Blink1.open();
+  if( blink1.error() ) { 
     updateMsg("uh oh, no Blink1 device found");
   }
   blink1.fadeToRGB(1000, 0,0,0 );
@@ -153,7 +154,7 @@ StatusListener listener = new StatusListener() {
 
     println("@" + status.getUser().getScreenName() + " - " + status.getText());
 
-    debug(status.getUser().getName() + " : " + status.getText());
+    dbg(status.getUser().getName() + " : " + status.getText());
     String text = status.getText();
     String lctext = text.toLowerCase();
     
@@ -210,10 +211,10 @@ boolean parseColors(String text) {
   Matcher m = p.matcher( text );
   if(  m.find() && m.groupCount() == 1 ) { // matched 
     String colorstr = m.group(1);
-    debug(" match: "+colorstr );
+    dbg(" match: "+colorstr );
     c = (Color) colormap.get( colorstr );
     if( c !=null ) { 
-      debug("  color! "+c);
+      dbg("  color! "+c);
       lastColor = c;
       return true;
     }
@@ -222,7 +223,7 @@ boolean parseColors(String text) {
     try {
       int hexint = Integer.parseInt( colorstr, 16 ); // try hex
       c = new Color( hexint );
-      debug("  color! "+c);
+      dbg("  color! "+c);
       lastColor = c;
       return true;
     } catch( NumberFormatException nfe ) { 
@@ -261,7 +262,7 @@ HashMap parseColorFile(String filename) {
     Iterator it = keys.iterator();
     while (it.hasNext()) {
       String cname = (String)(it.next());
-      debug(cname + " - " + colormap.get(cname));
+      dbg(cname + " - " + colormap.get(cname));
     }
   }
 
@@ -269,11 +270,11 @@ HashMap parseColorFile(String filename) {
 }
 
 //
-void debug(String s) {
-  debug( s,null);
+void dbg(String s) {
+  dbg( s,null);
 }
 //
-void debug(String s1, Object s2) {
+void dbg(String s1, Object s2) {
   String s = s1;
   if( s2!=null ) s = s1 + " : " + s2;
   if(debug) println(s);

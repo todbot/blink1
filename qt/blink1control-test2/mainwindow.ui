@@ -50,7 +50,7 @@
      <enum>QTabWidget::North</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="iconSize">
      <size>
@@ -950,7 +950,7 @@
        </property>
       </column>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1007,7 +1007,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>150</x>
@@ -1037,7 +1037,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>330</x>
@@ -1940,12 +1940,6 @@
          <bool>false</bool>
         </property>
        </widget>
-       <zorder>label_34</zorder>
-       <zorder>toolButton_10</zorder>
-       <zorder>buttonBusyColorSpot_3</zorder>
-       <zorder>label_34</zorder>
-       <zorder>toolButton_10</zorder>
-       <zorder>buttonBusyColorSpot_3</zorder>
       </widget>
       <widget class="QGroupBox" name="groupBox_6">
        <property name="geometry">
@@ -3921,7 +3915,7 @@ blink(1) is a registered trademark of ThingM Corporation.</string>
      </size>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -4042,7 +4036,6 @@ blink(1) is a registered trademark of ThingM Corporation.</string>
      </item>
     </layout>
    </widget>
-   <zorder>layoutWidget</zorder>
    <zorder>tabWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>label_11</zorder>
