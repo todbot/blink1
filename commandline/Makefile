@@ -25,6 +25,14 @@
 #   - apt-get install build-essential pkg-config libusb-1.0-0-dev 
 #   - make
 #
+# Linux (Fedora 18+)
+#   - yum install make gcc 
+#   - make EXEFLAGS=     (yes, leave it blank)
+#
+# Linux (Fedora 17)
+#   - yum install make gcc libusb1-static glibc-static
+#   - make
+#
 # FreeBSD
 #   - libusb is part of the OS so no pkg-config needed.
 #   - No -ldl on FreeBSD necessary.
