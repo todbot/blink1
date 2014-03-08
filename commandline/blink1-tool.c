@@ -29,7 +29,10 @@
 
 #include "blink1-lib.h"
 
-#define BLINK1_TOOL_VERSION "1.5-0001"   // FIXME: how to pull github rev?
+#ifndef BLINK1_VERSION
+#define BLINK1_VERSION "v0.0"
+#endif
+
 
 int millis = 300;
 int delayMillis = 500;
@@ -438,7 +441,7 @@ int main(int argc, char** argv)
             blink1_close(dev);
             sprintf(verbuf, ", fw version: %d", rc);
         }
-        msg("blink1-tool version: %s %s\n",BLINK1_TOOL_VERSION,verbuf);
+        msg("blink1-tool version: %s %s\n",BLINK1_VERSION,verbuf);
         exit(0);
     }
 

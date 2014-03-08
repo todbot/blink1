@@ -84,9 +84,9 @@ ifeq "$(UNAME)" "FreeBSD"
 	OS=freebsd
 endif
 
-ifeq "$(PKGOS)" ""
-   PKGOS = $(OS)
-endif
+#ifeq "$(PKGOS)" ""
+#   PKGOS = $(OS)
+#endif
 
 
 #CC=gcc
@@ -273,11 +273,17 @@ endif
 
 #####################  Common  ###############################################
 
+BLINK1_VERSION=`git describe --tags | head -1`-$(OS)-`uname -m`
+
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
 CFLAGS += -std=gnu99 
 CFLAGS += -g
+CFLAGS += -DBLINK1_VERSION=\"$(BLINK1_VERSION)\"
 
 OBJS +=  blink1-lib.o 
+
+
+PKGOS = $(BLINK1_VERSION)
 
 #all: msg blink1-tool blink1-server-simple
 all: msg blink1-tool lib
@@ -296,7 +302,7 @@ help:
 	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
 	@echo "make lib        ... build blink1-lib shared library"
 	@echo "make blink1-tiny-server ... build tiny REST server"
-	@echo "make package PKGOS=mac  ... zip up build, give it a name 'mac' "
+	@echo "make package    ... zip up blink1-tool and blink1-lib "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
 
@@ -318,9 +324,10 @@ lib: $(OBJS)
 
 
 package: 
-	@echo "Zipping up blink1-tool for '$(PKGOS)'"
+	@echo "Zipping up blink1-tool and blink1-lib for '$(PKGOS)'"
 	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
-	mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
+	zip blink1-lib-$(PKGOS).zip $(LIBTARGET) blink1-lib.h
+	#mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
 
 clean: 
 	rm -f $(OBJS)
