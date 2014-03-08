@@ -84,7 +84,7 @@ Other
 
 blink(1) is open source hardware
 
-Copyright (c) ThingM, 2012-2013
+Copyright (c) ThingM, 2012-2014
 
 'blink(1)' is a trademark of ThingM Corporation
 
