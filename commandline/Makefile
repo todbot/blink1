@@ -1,12 +1,14 @@
 # Makefile for "blink1-lib" and "blink1-tool"
-# should work on Mac OS X, Windows, Linux, and other Linux-like systems
+#
+# Works on Mac OS X, Windows, Linux, and other Linux-like systems.
+# Type "make help" to see supported platforms.
 #  
 # Build arguments:
 # - "OS=macosx"  -- build Mac version on Mac OS X
 # - "OS=windows" -- build Windows version on Windows
 # - "OS=linux"   -- build Linux version on Linux
 # 
-# Architecture is usually detected automatically, so normally just type "make"
+# Architecture is usually detected automatically, so normally just type "make".
 #
 # Dependencies: 
 # - hidapi (included), which uses libusb on Linux-like OSes
@@ -65,6 +67,24 @@
 #
 #
 
+
+# pick low-level implemenation style
+# "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
+#  but has dependencies on iconv, libusb-1.0, pthread, dl
+#
+# "HIDDATA" type is best for low-resource Linux, 
+#  and the only dependencies it has is libusb-0.1
+#
+# Try either on the commandline with "make USBLIB_TYPE=HIDDATA" 
+#
+
+USBLIB_TYPE ?= HIDAPI
+#USBLIB_TYPE = HIDDATA
+
+# uncomment for debugging HID stuff
+#CFLAGS += -DDEBUG_PRINTF
+
+
 # try to do some autodetecting
 UNAME := $(shell uname -s)
 
@@ -84,27 +104,13 @@ ifeq "$(UNAME)" "FreeBSD"
 	OS=freebsd
 endif
 
-#ifeq "$(PKGOS)" ""
-#   PKGOS = $(OS)
-#endif
+
+GIT_TAG="$(strip $(shell git tag | tail -1))"
+MACH_TYPE="$(strip $(shell uname -m))"
+
+BLINK1_VERSION="$(GIT_TAG)-$(OS)-$(MACH_TYPE)"
 
 
-#CC=gcc
-#CC=clang
-
-# pick low-level implemenation style
-# "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
-#  but has dependencies on iconv, libusb-1.0, pthread, dl
-#
-# "HIDDATA" type is best for low-resource Linux, 
-#  and the only dependencies it has is libusb-0.1
-#
-
-USBLIB_TYPE = HIDAPI
-#USBLIB_TYPE = HIDDATA
-
-# uncomment for debugging HID stuff
-#CFLAGS += -DDEBUG_PRINTF
 
 
 #################  Mac OS X  ##################################################
@@ -273,7 +279,6 @@ endif
 
 #####################  Common  ###############################################
 
-BLINK1_VERSION=`git describe --tags | head -1`-$(OS)-`uname -m`
 
 #CFLAGS += -O -Wall -std=gnu99 -I ../hardware/firmware 
 CFLAGS += -std=gnu99 
@@ -289,21 +294,24 @@ PKGOS = $(BLINK1_VERSION)
 all: msg blink1-tool lib
 
 msg: 
-	@echo "building for OS=$(OS)"
+	@echo "Building for OS=$(OS) BLINK1_VERSION=$(BLINK1_VERSION)"
 
 # symbolic targets:
 help:
 	@echo "This Makefile works on multiple archs. Use one of the following:"
+	@echo "make            ... autodetect platform and build appropriately"
 	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
 	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
 	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
+	@echo "make OS=wrtcross... build for OpenWrt using cross-compiler"
 	@echo "make USBLIB_TYPE=HIDDATA OS=linux ... build using low-dep method"
 	@echo "make lib        ... build blink1-lib shared library"
 	@echo "make blink1-tiny-server ... build tiny REST server"
 	@echo "make package    ... zip up blink1-tool and blink1-lib "
-	@echo "make clean ..... to delete objects and hex file"
+	@echo "make clean      ... delete build products, leave binaries & libs"
+	@echo "make distclean  ... delele binaries and libs too"
 	@echo
 
 $(OBJS): %.o: %.c
@@ -323,11 +331,11 @@ lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
 
-package: 
-	@echo "Zipping up blink1-tool and blink1-lib for '$(PKGOS)'"
+package: all
+	@echo "Packaging up blink1-tool and blink1-lib for '$(PKGOS)'"
 	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
 	zip blink1-lib-$(PKGOS).zip $(LIBTARGET) blink1-lib.h
-	#mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
+	@#mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
 
 clean: 
 	rm -f $(OBJS)
