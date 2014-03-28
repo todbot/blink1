@@ -291,10 +291,7 @@ OBJS +=  blink1-lib.o
 PKGOS = $(BLINK1_VERSION)
 
 #all: msg blink1-tool blink1-server-simple
-all: msg blink1-tool lib
-
-msg: 
-	@echo "Building for OS=$(OS) BLINK1_VERSION=$(BLINK1_VERSION)"
+all: msg blink1-tool lib 
 
 # symbolic targets:
 help:
@@ -314,6 +311,10 @@ help:
 	@echo "make distclean  ... delele binaries and libs too"
 	@echo
 
+msg: 
+	@echo "Building for OS=$(OS) BLINK1_VERSION=$(BLINK1_VERSION)"
+
+
 $(OBJS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -331,7 +332,7 @@ lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
 
-package: all
+package: lib blink1-tool
 	@echo "Packaging up blink1-tool and blink1-lib for '$(PKGOS)'"
 	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
 	zip blink1-lib-$(PKGOS).zip $(LIBTARGET) blink1-lib.h
