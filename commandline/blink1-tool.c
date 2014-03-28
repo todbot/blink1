@@ -197,16 +197,14 @@ static void usage(char *myName)
 "  blink1-tool --rgb=0xff,0,00 --blink 3 # blink red 3 times\n"
 "\n"
             ,myName);
-//"  --hidread                   Read a blink(1) USB HID GetFeature report \n"
-//"  --hidwrite <listofbytes>    Write a blink(1) USB HID SetFeature report \n"
+//"  --hidread                  Read a blink(1) USB HID GetFeature report \n"
+//"  --hidwrite <listofbytes>   Write a blink(1) USB HID SetFeature report \n"
 }
 
 // local states for the "cmd" option variable
 enum { 
     CMD_NONE = 0,
     CMD_LIST,
-    //CMD_HIDREAD,
-    //CMD_HIDWRITE,
     CMD_EEREAD,
     CMD_EEWRITE,
     CMD_RGB,
@@ -233,8 +231,6 @@ enum {
     CMD_VERSION,
     CMD_FWVERSION,
     CMD_SERVERDOWN,
-    CMD_SERIALNUMREAD,
-    CMD_SERIALNUMWRITE,
     CMD_TESTTEST,
 };
 
@@ -270,8 +266,6 @@ int main(int argc, char** argv)
         {"nogamma",    no_argument,       0,      'g'},
         {"help",       no_argument,       0,      'h'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
-        //{"hidread",    no_argument,       &cmd,   CMD_HIDREAD },
-        //{"hidwrite",   required_argument, &cmd,   CMD_HIDWRITE },
         {"eeread",     required_argument, &cmd,   CMD_EEREAD },
         {"eewrite",    required_argument, &cmd,   CMD_EEWRITE },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
@@ -300,8 +294,8 @@ int main(int argc, char** argv)
         {"running",    optional_argument, &cmd,   CMD_RUNNING },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"fwversion",  no_argument,       &cmd,   CMD_FWVERSION },
-        {"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
-        {"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
+        //{"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
+        //{"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
         {"servertickle",  required_argument, &cmd,CMD_SERVERDOWN },
         {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
         {NULL,         0,                 0,      0}
@@ -320,7 +314,6 @@ int main(int argc, char** argv)
                 hsbtorgb( tmpbuf, rgbbuf );
                 cmd = CMD_RGB; // haha! 
                 break;
-            //case CMD_HIDWRITE:
             case CMD_EEREAD:
             case CMD_EEWRITE:
             case CMD_SETPATTLINE:
@@ -335,9 +328,6 @@ int main(int argc, char** argv)
             case CMD_GLIMMER:
                 arg = (optarg) ? strtol(optarg,NULL,0) : 0;// cmd w/ number arg
                 break;
-            //case CMD_SERIALNUMWRITE:
-            //strcpy(tmpstr, optarg);
-            //break;
             case CMD_ON:
                 rgbbuf[0] = 255; rgbbuf[1] = 255; rgbbuf[2] = 255;
                 break;
@@ -509,25 +499,6 @@ int main(int argc, char** argv)
         printf("(Listing not supported in HIDDATA builds)\n"); 
 #endif
     }
-    /*
-    // unsupported now
-    else if( cmd == CMD_HIDREAD ) { 
-        printf("hidread:  ");
-        cmdbuf[0] = blink1_report_id;  // must set report_id on windows
-        if((rc = hid_get_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1){
-            //fprintf(stderr,"error reading data: %s\n",blink1_error_msg(rc));
-            fprintf(stderr,"error reading data.\n");
-        } else {
-            hexdump(cmdbuf, sizeof(cmdbuf));
-        }
-    } 
-    else if( cmd == CMD_HIDWRITE ) {
-        msg("hidwrite: "); hexdump(cmdbuf,sizeof(cmdbuf));
-        if((rc = hid_send_feature_report(dev, cmdbuf, sizeof(cmdbuf))) == -1) {
-            fprintf(stderr,"error writing data.\n");
-        }
-    }
-    */
     else if( cmd == CMD_EEREAD ) {  // FIXME
         msg("eeread:  addr 0x%2.2x = ", cmdbuf[0]);
         uint8_t val = 0;
@@ -775,20 +746,6 @@ int main(int argc, char** argv)
         msg("setting servertickle %s (@ %d millis)\n",((on)?"ON":"OFF"),delayMillis);
         blink1_serverdown( dev, on, delayMillis, st );
     }
-    /*
-    // NOTE: This is now unsupported and will not work on mk2 anyway
-    // use caution with this, could make your blink(1) unusable
-    // --serialnumwrite abcd1234
-    else if( cmd == CMD_SERIALNUMWRITE ) { 
-        if ( !quiet ) { printf("serial number write: %s\n",tmpstr); }
-
-        //for( int i=0; i<4; i++)  printf("%2.2X,",cmdbuf[i]);
-        //printf("\n");
-        if( (rc = blink1_serialnumwrite( dev, tmpstr)) == -1 ) { 
-            fprintf(stderr,"error writing new serial number: %d\n",rc);
-        }
-    }
-    */
     else if( cmd == CMD_TESTTEST ) { 
         msg("test test\n");
         rc = blink1_testtest(dev);
