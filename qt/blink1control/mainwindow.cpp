@@ -212,8 +212,8 @@ void MainWindow::updateInputs()
         blinkKey="none";
     }
     blinkStatusAction->setText(blinkStatus);
-    blinkIdAction->setText("Blink1 id: "+blinkKey);
-    iftttKeyAction->setText("IFTTT.COM ID: "+iftttKey);
+    blinkIdAction->setText("Blink1 Id: "+blinkKey);
+    iftttKeyAction->setText("IFTTT Key: "+iftttKey);
 
     emit iftttUpdate();
     QString type;
@@ -822,7 +822,7 @@ void MainWindow::createActions()
     blinkIdAction->setDisabled(true);
     iftttKeyAction->setDisabled(true);
     #endif
-    minimizeAction = new QAction(tr("Start minimize"), this);
+    minimizeAction = new QAction(tr("Start minimized"), this);
     connect(minimizeAction,SIGNAL(triggered()),this,SLOT(minimalize()));
     minimizeAction->setCheckable(true);
     minimizeAction->setChecked(startmin);
