@@ -75,12 +75,12 @@ macx {
     MYAPPDIR=$$OUT_PWD/$${TARGET}.app/Contents/MacOS
     message( "MYAPPDIR = $$MYAPPDIR" )
     # FIXME: How to make this cross-platform?
+    # FIXME: libBlink1 should be in .app/Contents/Frameworks now
     QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
 }
 # mac: note to deploy must do commandline magic of:
-# % macdeployqt test2.app -verbose=2
+# % macdeployqt Blink1Control.app -qmldir=./Blink1Control.app/Contents/Resources/qml -verbose=2
 # % mv test2.app/Contents/MacOS/libBlink1.dylib test2.app/Contents/Frameworks
-
 
 win32 {
     # confusingly, these both get run, why?
@@ -90,8 +90,9 @@ win32 {
 
     message( "MYAPPDIR = $$MYAPPDIR" )
     # but this line doesn't work, because of forward slashes presumably
-   # QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
+    QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
 }
+
 # win32:
 # minimum DLLs appear to be: (in "release" kit)
 # Qt5Core.dll Qt5Gui.dll Qt5Widgets.dll
@@ -125,7 +126,8 @@ OTHER_FILES += \
     MailPopup.qml \
     HostIdPopup.qml \
     ComboBox1.qml \
-    DropDownMenu.qml
+    DropDownMenu.qml \
+    MyInfo.plist
 
 CONFIG += CONSOLE
 win32{
@@ -135,5 +137,6 @@ win32{
 
 mac{
     ICON = images/blink1-icon0.icns
+    QMAKE_INFO_PLIST = MyInfo.plist
 }
 
