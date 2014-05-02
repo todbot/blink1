@@ -103,7 +103,7 @@ MouseArea{
     }
 Text{
     color: "white"
-    font.pointSize: 10
+    font.pointSize: (!mw.mac())?10:13
     text: "Mail Settings"
     anchors.left: parent.left
     anchors.top: parent.top
@@ -140,7 +140,7 @@ Text{
             anchors.verticalCenter: parent.verticalCenter
             text: "Description:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         Rectangle{
             anchors.left: parent.left
@@ -159,10 +159,10 @@ Text{
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: 10
+                font.pointSize: (!mw.mac())?10:12
                 //clip: true
                 selectByMouse: true
-                maximumLength: 30
+                maximumLength: 24
                 KeyNavigation.tab: mailserver
             }
         }
@@ -182,7 +182,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Account type:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
 
         Text{
@@ -192,12 +192,13 @@ z: popup.z+1
             width: 300
             text: "IMAP"
             color: "black"
-            font.pointSize: 9
+            font.pointSize: (!mw.mac())?9:12
             anchors.left: parent.left
             anchors.leftMargin: 82
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 8
             MouseArea {
+                cursorShape: Qt.PointingHandCursor
                 id: ma2
                 anchors.fill: parent
                 onClicked: {
@@ -205,8 +206,8 @@ z: popup.z+1
                     comboPattern.z=popup.z+9999
                     comboPattern.x=accounttypes.x+accounttype.x-8
                     comboPattern.y=accounttypes.y
-                    for(var i=0;i<comboPattern.items.length;i++){
-                        if(comboPattern.items[i]===accounttype.text){
+                    for(var i=0;i<comboPattern.items.count;i++){
+                        if(comboPattern.items.get(i).name===accounttype.text){
                             comboPattern.curIn=i;
                             break;
                         }
@@ -245,7 +246,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Mail server:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         Rectangle{
             anchors.left: parent.left
@@ -264,10 +265,10 @@ z: popup.z+1
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: 10
+                font.pointSize: (!mw.mac())?10:12
                 //clip: true
                 selectByMouse: true
-                maximumLength: 30
+                maximumLength: 24
                 KeyNavigation.tab: username
             }
         }
@@ -285,7 +286,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Username:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         Rectangle{
             anchors.left: parent.left
@@ -304,10 +305,10 @@ z: popup.z+1
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: 10
+                font.pointSize: (!mw.mac())?10:12
                 //clip: true
                 selectByMouse: true
-                maximumLength: 30
+                maximumLength: 24
                 KeyNavigation.tab: password
             }
         }
@@ -325,7 +326,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Password:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         Rectangle{
             anchors.left: parent.left
@@ -345,10 +346,10 @@ z: popup.z+1
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: 10
+                font.pointSize: (!mw.mac())?10:12
                 //clip: true
                 selectByMouse: true
-                maximumLength: 30
+                maximumLength: 24
                 KeyNavigation.tab: port
             }
         }
@@ -365,7 +366,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Port:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         Rectangle{
             anchors.left: parent.left
@@ -384,7 +385,7 @@ z: popup.z+1
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: 10
+                font.pointSize: (!mw.mac())?10:12
                 //clip: true
                 selectByMouse: true
                 validator: IntValidator{}
@@ -444,9 +445,10 @@ z: popup.z+1
             anchors.topMargin: 3
             text: "Use SSL"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         MouseArea{
+            cursorShape: Qt.PointingHandCursor
             anchors.fill: parent
             onClicked: {
                 ssl.checked=!ssl.checked;
@@ -461,7 +463,7 @@ z: popup.z+1
         anchors.topMargin: 15
         text: "Blink when:"
         color: "black"
-        font.pointSize: 8
+        font.pointSize: (!mw.mac())?8:10
         width: 75
     }
 
@@ -476,6 +478,7 @@ z: popup.z+1
             property bool checked: true
             source: checked?"qrc:/images/layout/radio-selected.png":"qrc:/images/layout/radio-normal.png"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
                     sender.checked=false
@@ -526,7 +529,7 @@ z: popup.z+1
                     anchors.topMargin: 5
                     width: 54
                     height: 30
-                    font.pointSize: 10
+                    font.pointSize: (!mw.mac())?10:12
                     //clip: true
                     selectByMouse: true
                     validator: IntValidator{}
@@ -556,6 +559,7 @@ z: popup.z+1
                             source: "qrc:images/layout/colorpicker/arrow-up.png"
                         }
                         MouseArea{
+                            cursorShape: (unreads.checked)?Qt.PointingHandCursor:Qt.ArrowCursor
                             anchors.fill: parent
                             onPressed: arrowup.source="qrc:images/layout/colorpicker/arrow-down.png"
                             onReleased: arrowup.source="qrc:images/layout/colorpicker/arrow-up.png"
@@ -576,6 +580,7 @@ z: popup.z+1
                             source: "qrc:images/layout/colorpicker/arrow-2-up.png"
                         }
                         MouseArea{
+                            cursorShape: (unreads.checked)?Qt.PointingHandCursor:Qt.ArrowCursor
                             anchors.fill: parent
                             onPressed: arrowdown.source="qrc:images/layout/colorpicker/arrow-2-down.png"
                             onReleased: arrowdown.source="qrc:images/layout/colorpicker/arrow-2-up.png"
@@ -593,7 +598,7 @@ z: popup.z+1
                 anchors.top: parent.top
                 text: "Unread e-mails"
                 color: "black"
-                font.pointSize: 8
+                font.pointSize: (!mw.mac())?8:10
             }
         }
     }
@@ -609,6 +614,7 @@ z: popup.z+1
             property bool checked: false
             source: checked?"qrc:/images/layout/radio-selected.png":"qrc:/images/layout/radio-normal.png"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
                     sender.checked=false
@@ -643,7 +649,7 @@ z: popup.z+1
                 anchors.top: parent.top
                 text: "Subject contains:"
                 color: "black"
-                font.pointSize: 8
+                font.pointSize: (!mw.mac())?8:10
                 width: 120
             }
             Rectangle{
@@ -664,10 +670,10 @@ z: popup.z+1
                     anchors.topMargin: 5
                     width: 140
                     height: 30
-                    font.pointSize: 10
+                    font.pointSize: (!mw.mac())?10:12
                     selectByMouse: true
                     //readOnly: !subject.checked
-                    maximumLength: 14
+                    maximumLength: 12
                     KeyNavigation.tab: description
                 }
             }
@@ -685,6 +691,7 @@ z: popup.z+1
             property bool checked: false
             source: checked?"qrc:/images/layout/radio-selected.png":"qrc:/images/layout/radio-normal.png"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
                     unreads.checked=false
@@ -719,7 +726,7 @@ z: popup.z+1
                 anchors.top: parent.top
                 text: "Sender contains:"
                 color: "black"
-                font.pointSize: 8
+                font.pointSize: (!mw.mac())?8:10
                 width: 120
             }
             Rectangle{
@@ -740,11 +747,11 @@ z: popup.z+1
                     anchors.topMargin: 5
                     width: 140
                     height: 30
-                    font.pointSize: 10
+                    font.pointSize: (!mw.mac())?10:12
                     //clip: true
                     selectByMouse: true
                     //readOnly: !sender.checked
-                    maximumLength: 14
+                    maximumLength: 12
                     KeyNavigation.tab: description
                 }
             }
@@ -788,7 +795,7 @@ z: popup.z+1
         anchors.bottomMargin: 30
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: 9
+        label.font.pointSize: (!mw.mac())?9:12
     }
     PushButton{
         id: cancelButton
@@ -807,7 +814,7 @@ z: popup.z+1
         anchors.bottom: okButton.bottom
         label.text: "Cancel"
         label.color: "black"
-        label.font.pointSize: 9
+        label.font.pointSize: (!mw.mac())?9:12
     }
 
     ComboBox1{

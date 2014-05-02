@@ -39,25 +39,25 @@ QJsonObject Blink1Input::toJson3()
 {
     QJsonObject obj;
     obj.insert("arg1",arg1());
-    obj.insert("iname", name());
-    obj.insert("lastTime",date());
-    if(mtype!="IFTTT.COM")
+    obj.insert("iname", name());    
+    if(mtype!="IFTTT.COM"){
+        obj.insert("lastTime",date());
         obj.insert("lastVal",arg2());
-    else{
+    }else{
         QJsonArray ja;
         ja.append(QJsonValue(arg2()));
         obj.insert("possibleVals",ja);
     }
 
     obj.insert("pname",patternName());
-    obj.insert("type",type());
+    obj.insert("type",type2());
     return obj;
 }
 QJsonObject Blink1Input::toJson2()
 {
     QJsonObject obj;
     obj.insert("iname", name());
-    obj.insert("type",type());
+    obj.insert("type",type2());
     if(mtype!="IFTTT.COM") obj.insert("arg1",arg1());
     return obj;
 }
@@ -75,6 +75,13 @@ void Blink1Input::setName(const QString &name)
 QString Blink1Input::type() const
 {
     return mtype;
+}
+QString Blink1Input::type2() const
+{
+    if(mtype=="IFTTT.COM")
+        return "ifttt";
+    else
+        return QString(mtype).toLower();
 }
 void Blink1Input::setType(const QString &type)
 {

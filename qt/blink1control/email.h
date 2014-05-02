@@ -76,6 +76,7 @@ signals:
     void runPattern(QString,bool);
     void addReceiveEvent(int,QString,QString);
     void errorsUpdate();
+    void addToLog(QString txt);
 public slots:
     void readyIMAP();
     void readyPOP3();

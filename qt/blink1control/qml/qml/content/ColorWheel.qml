@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
-
+import CursorTools 1.0
 Rectangle {
     id: rec
     width: 450
@@ -79,7 +79,7 @@ Rectangle {
             width: parent.width
             height: parent.height
             model: modelSimpleColors
-
+            interactive: false
             delegate: Item {
                 Row {
                     x:1
@@ -99,7 +99,7 @@ Rectangle {
                             border.color: "black"
 
 
-                            MouseArea {
+                            MouseArea {                                
                                 anchors.fill: parent
                                 onClicked: {                                    
                                     setColorRgb(parseInt(parent.color.r*255), parseInt(parent.color.g*255), parseInt(parent.color.b*255));
@@ -108,6 +108,7 @@ Rectangle {
                             }
                     }
                         MouseArea {
+                            cursorShape: Qt.PointingHandCursor
                             anchors.fill: parent
                             onClicked: {                                
                                 setColorRgb(parseInt(rectCol.color.r*255), parseInt(rectCol.color.g*255), parseInt(rectCol.color.b*255));
@@ -162,6 +163,7 @@ Image{
         }
 
         MouseArea {
+            cursorShape: Qt.PointingHandCursor
             id: pointerArea
             x: 0
             y: 0
@@ -263,6 +265,10 @@ Image{
             value: 255
             maximumValue: 255
             orientation: 0
+            CursorShapeArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+            }
             style: SliderStyle {
                     groove: Rectangle {
                         implicitWidth: 200
@@ -279,7 +285,7 @@ Image{
                         width: 20
                         height: 20
                         radius: 12
-                    }
+                    }                    
                 }
 
             onValueChanged: {
@@ -345,12 +351,21 @@ currentColorName=textHex.text
             x: 0
             y: 9
             text: "Time (s):"
-            font.pointSize: if(mw.mac()) 10; else 8;
+            font.pointSize: if(mw.mac()) 11; else 8;
         }
 
         SpinBox {
+            CursorShapeArea{
+                cursorShape: Qt.PointingHandCursor
+                anchors.right: parent.right
+                anchors.rightMargin: 3
+                anchors.top: parent.top
+                width: 13
+                height: parent.height
+            }
+
             id: spinTime
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:12
             x: 47
             y: 6
             width: 62
@@ -369,12 +384,20 @@ currentColorName=textHex.text
             x: 31
             y: 40
             text: "R:"
-            font.pointSize:  if(mw.mac()) 10; else 8;
+            font.pointSize:  if(mw.mac()) 11; else 8;
         }
 
         SpinBox {
+            CursorShapeArea{
+                cursorShape: Qt.PointingHandCursor
+                anchors.right: parent.right
+                anchors.rightMargin: 3
+                anchors.top: parent.top
+                width: 13
+                height: parent.height
+            }
             id: spinRed
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:12
             x: 47
             y: 36
             width: 62
@@ -395,12 +418,20 @@ currentColorName=textHex.text
             x: 31
             y: 70
             text: "G:"
-            font.pointSize:  if(mw.mac()) 10; else 8;
+            font.pointSize:  if(mw.mac()) 11; else 8;
         }
 
         SpinBox {
+            CursorShapeArea{
+                cursorShape: Qt.PointingHandCursor
+                anchors.right: parent.right
+                anchors.rightMargin: 3
+                anchors.top: parent.top
+                width: 13
+                height: parent.height
+            }
             id: spinGreen
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:12
             x: 47
             y: 66
             width: 62
@@ -419,12 +450,20 @@ currentColorName=textHex.text
             x: 32
             y: 100
             text: "B:"
-            font.pointSize:  if(mw.mac()) 10; else 8;
+            font.pointSize:  if(mw.mac()) 11; else 8;
         }
 
         SpinBox {
+            CursorShapeArea{
+                cursorShape: Qt.PointingHandCursor
+                anchors.right: parent.right
+                anchors.rightMargin: 3
+                anchors.top: parent.top
+                width: 13
+                height: parent.height
+            }
             id: spinBlue
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:12
             x: 47
             y: 96
             width: 62
@@ -445,6 +484,7 @@ currentColorName=textHex.text
             width: 62
             height: 22
             text: "FF0000"
+            font.pointSize: (!mw.mac())?10:12
             placeholderText: qsTr("Text Field")
             inputMask: ">HHHHHH"
 
@@ -468,7 +508,7 @@ currentColorName=textHex.text
             height: 14
             text: "HEX #"
             verticalAlignment: Text.AlignTop
-            font.pointSize:  if(mw.mac()) 10; else 8;
+            font.pointSize:  if(mw.mac()) 11; else 8;
             horizontalAlignment: Text.AlignRight
         }
     }

@@ -81,7 +81,7 @@ MouseArea{
     }
 Text{
     color: "white"
-    font.pointSize: 10
+    font.pointSize: (!mw.mac())?10:13
     text: "Hardware - Properties"
     anchors.left: parent.left
     anchors.top: parent.top
@@ -90,14 +90,14 @@ Text{
 }
     PushButton{
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: 17
         anchors.top: parent.top
-        anchors.topMargin: 2
+        anchors.topMargin: 3
         label.text: ""
         upSrc: "qrc:/images/layout/close-single-up.png"
         downSrc: "qrc:/images/layout/close-single-hover.png"
         onClicked: {
-            //mw.markEditing(popup.oldname,false)
+            mw.markHardwareEditing(popup.oldname,false)
             popup.oldname=""
             parent.visible=false
         }
@@ -118,7 +118,7 @@ Text{
             anchors.verticalCenter: parent.verticalCenter
             text: "Name:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
         Rectangle{
             anchors.left: parent.left
@@ -137,10 +137,10 @@ Text{
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: 10
+                font.pointSize: (!mw.mac())?10:12
                 //clip: true
                 selectByMouse: true
-                maximumLength: 30
+                maximumLength: 24
             }
         }
     }
@@ -159,7 +159,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Type:"
             color: "black"
-            font.pointSize: 8
+            font.pointSize: (!mw.mac())?8:10
         }
 
         Text{
@@ -169,12 +169,13 @@ z: popup.z+1
             width: 300
             text: "Battery"
             color: "black"
-            font.pointSize: 9
+            font.pointSize: (!mw.mac())?9:12
             anchors.left: parent.left
             anchors.leftMargin: 82
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 8
             MouseArea {
+                cursorShape: Qt.PointingHandCursor
                 id: ma2
                 anchors.fill: parent
                 onClicked: {                    
@@ -182,8 +183,8 @@ z: popup.z+1
                     comboPattern.z=popup.z+9999
                     comboPattern.x=types.x+htype.x-8
                     comboPattern.y=types.y
-                    for(var i=0;i<comboPattern.items.length;i++)
-                        if(tcomboPattern.items[i]===htype.text){
+                    for(var i=0;i<comboPattern.items.count;i++)
+                        if(comboPattern.items.get(i).name===htype.text){
                             comboPattern.curIn=i;
                             break;
                         }
@@ -221,6 +222,7 @@ z: popup.z+1
             property bool checked: false
             source: checked?"qrc:/images/layout/radio-selected.png":"qrc:/images/layout/radio-normal.png"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
                     if(parent.checked){
@@ -246,6 +248,7 @@ z: popup.z+1
             anchors.left: activity.right
             anchors.leftMargin: 15
             anchors.verticalCenter: activity.verticalCenter
+            font.pointSize: (!mw.mac())?8:10
         }
     }
 
@@ -261,6 +264,7 @@ z: popup.z+1
             property bool checked: true
             source: checked?"qrc:/images/layout/radio-selected.png":"qrc:/images/layout/radio-normal.png"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 onClicked: {
                     if(parent.checked){
@@ -288,6 +292,7 @@ z: popup.z+1
             anchors.left: alert.right
             anchors.leftMargin: 15
             anchors.verticalCenter: alert.verticalCenter
+            font.pointSize: (!mw.mac())?8:10
         }
 
         Text{
@@ -297,12 +302,13 @@ z: popup.z+1
             width: 180
             text: "< (lower than)"
             color: "black"
-            font.pointSize: 9
+            font.pointSize: (!mw.mac())?9:12
             anchors.left: alerttitle.right
             anchors.leftMargin: 30
             anchors.verticalCenter: alert.verticalCenter
             anchors.verticalCenterOffset: 10
             MouseArea {
+                cursorShape: (alert.checked)?Qt.PointingHandCursor:Qt.ArrowCursor
                 id: ma3
                 anchors.fill: parent
                 onClicked: {
@@ -311,8 +317,8 @@ z: popup.z+1
                     comboAction.z=popup.z+9999
                     comboAction.x=al.x+haction.x-6
                     comboAction.y=al.y+haction.y-26
-                    for(var i=0;i<comboAction.items.length;i++)
-                        if(comboAction.items[i]===haction.text){
+                    for(var i=0;i<comboAction.items.count;i++)
+                        if(comboAction.items.get(i).name===haction.text){
                             comboAction.curIn=i;
                             break;
                         }
@@ -339,7 +345,7 @@ z: popup.z+1
 
         Item{
             anchors.left: haction.right
-            anchors.leftMargin: 1
+            anchors.leftMargin: -4
             anchors.verticalCenter: alert.verticalCenter
             anchors.verticalCenterOffset: 4
             height: 30
@@ -362,7 +368,7 @@ z: popup.z+1
                     anchors.topMargin: 5
                     width: 54
                     height: 30
-                    font.pointSize: 10
+                    font.pointSize: (!mw.mac())?10:12
                     //clip: true
                     selectByMouse: true
                     validator: IntValidator{}
@@ -392,6 +398,7 @@ z: popup.z+1
                             source: "qrc:images/layout/colorpicker/arrow-up.png"
                         }
                         MouseArea{
+                            cursorShape: (alert.checked)?Qt.PointingHandCursor:Qt.ArrowCursor
                             anchors.fill: parent
                             onPressed: arrowup.source="qrc:images/layout/colorpicker/arrow-down.png"
                             onReleased: arrowup.source="qrc:images/layout/colorpicker/arrow-up.png"
@@ -412,6 +419,7 @@ z: popup.z+1
                             source: "qrc:images/layout/colorpicker/arrow-2-up.png"
                         }
                         MouseArea{
+                            cursorShape: (alert.checked)?Qt.PointingHandCursor:Qt.ArrowCursor
                             anchors.fill: parent
                             onPressed: arrowdown.source="qrc:images/layout/colorpicker/arrow-2-down.png"
                             onReleased: arrowdown.source="qrc:images/layout/colorpicker/arrow-2-up.png"
@@ -432,6 +440,7 @@ z: popup.z+1
         onClicked: {
             console.log("OK CLICKED")
             popup.visible=false
+            mw.markHardwareEditing(popup.oldname,false)
             if(popup.oldname===""){
                 var tmp=0;
                 if(alert.checked){
@@ -458,7 +467,7 @@ z: popup.z+1
         anchors.bottomMargin: 22
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: 9
+        label.font.pointSize: (!mw.mac())?9:12
     }
     PushButton{
         id: cancelButton
@@ -468,6 +477,7 @@ z: popup.z+1
             console.log("CANCEL CLICKED")
             popup.visible=false
             //mw.markEditing(popup.oldname,false)
+            mw.markHardwareEditing(popup.oldname,false)
             if(popup.oldname!="")
                 mw.checkHardwareMonitor(popup.oldname)
             popup.oldname="";            
@@ -477,7 +487,7 @@ z: popup.z+1
         anchors.bottom: okButton.bottom
         label.text: "Cancel"
         label.color: "black"
-        label.font.pointSize: 9
+        label.font.pointSize: (!mw.mac())?9:12
     }
 
     ComboBox1{

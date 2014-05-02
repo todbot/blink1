@@ -35,8 +35,10 @@ Email::Email(QString name,QObject *parent) :
 }
 void Email::checkMail(){
     qDebug()<<"checking mail "<<name<<" ...";
+    addToLog("checking mail "+name+" ...");
     if(editing){
         qDebug()<<name<<" in edit mode!";
+        addToLog(name+" in edit mode!");
         return;
     }
     if(edit){
@@ -99,12 +101,14 @@ void Email::checkState(){
 void Email::readyIMAP(){
     QString tmp=socket->readAll().data();
     pobrano+=tmp;
-    qDebug()<<"POBRANO************************************";
+    qDebug()<<"DOWNLOADED************************************";
     qDebug()<<pobrano;
-    qDebug()<<"************************************";
+    //qDebug()<<"************************************";
+    addToLog("DOWNLOADED "+pobrano);
     if(pobrano.indexOf("a00"+QString::number(ile)+" OK")==-1 && pobrano.indexOf("a00"+QString::number(ile)+" NO")==-1 && pobrano.indexOf("a00"+QString::number(ile)+" BAD")==-1 && ile!=0)
         return;
-    qDebug()<<"POBRANO CAŁOŚĆ!";
+    qDebug()<<"DOWNLOADED WHOLE MESSAGE!";
+    addToLog("DOWNLOADED WHOLE MESSAGE!");
     if(ile==1){
         if(pobrano.indexOf("NO [AUTHENTICATIONFAILED]")!=-1){
             value="WRONG LOGIN OR PASSWORD";
@@ -146,17 +150,18 @@ void Email::readyIMAP(){
             unreadCount=0;
             QStringList list=pobrano.split(QRegExp("(\\ |\\\n)"));
             qDebug()<<list;
-
             bool ok=false;
             int pom;
             ll2.clear();
             for(int i=2;i<list.count();i++){
                 pom=list.at(i).toInt(&ok);
                 qDebug()<<pom;
+                addToLog(QString::number(pom));
                 if(ok && pom!=0) { unreadCount++; ll.append(pom); ll2.append(pom);}else break;
                 ok=false;
             }
             qDebug()<<"LAST ID: "<<lastid;
+            addToLog("LAST ID: "+QString::number(lastid));
         }
     }
     if(ile==4 && !odznacz){
@@ -173,16 +178,18 @@ void Email::readyIMAP(){
         ile--;
         QByteArray ba=QString("a003 STORE "+QString::number(lastId)+" -FLAGS (\\Seen)\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"odznaczam!";
+        qDebug()<<"uncheck!";
+        addToLog("uncheck");
         //        qDebug()<<"******************************";
         //        out<<"******************************"<<endl;
         pobrano="";
         return;
     }
     if(ile==3 && odznacz){
-        qDebug()<<"odznaczone!";
+        qDebug()<<"unchecked!";
+        addToLog("unchecked!");
         odznacz=false;
-        qDebug()<<"******************************";
+        //qDebug()<<"******************************";
         //return;
     }
 
@@ -190,21 +197,25 @@ void Email::readyIMAP(){
     if(ile==0){
         QByteArray ba=QString("a001 LOGIN "+email+" "+passwd+"\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==1){
         QByteArray ba=QString("a002 select inbox\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==2){
         QByteArray ba=QString("a003 search unseen\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==3){
         if(unreadCount!=0 && ll.count()>0){
             //licznik=0;
             QByteArray ba=QString("a004 fetch "+QString::number(ll.at(0))+" BODY.PEEK[HEADER.FIELDS (From Subject)]\r\n").toUtf8();
             socket->write(ba);
-            qDebug()<<"wysyłam "<<ba.toLower();
+            qDebug()<<"sending "<<ba.toLower();
+            addToLog("sending "+ba.toLower());
             lastId=ll.at(0);
             ll.removeAt(0);
         }else{
@@ -279,12 +290,9 @@ void Email::readyIMAP(){
     pobrano="";
 }
 void Email::readyPOP3(){
-    QFile file("out.txt");
-    file.open(QIODevice::WriteOnly | QIODevice::Append);
-    QTextStream out(&file);
     QString tmp=socket->readAll().data();
     qDebug()<<tmp;
-    out<<tmp<<endl;
+    addToLog(tmp);
     if(tmp.startsWith("-ERR Invalid")){
         value="WRONG LOGIN OR PASSWORD";
         emit update2();
@@ -299,18 +307,18 @@ void Email::readyPOP3(){
     if(ile==0){
         QByteArray ba=QString("USER "+login+"\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
-        out<<"wysyłam "<<ba.toLower()<<endl;
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==1){
         QByteArray ba=QString("PASS "+passwd+"\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
-        //out<<"wysyłam "<<ba.toLower()<<endl;
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==2){
         QByteArray ba=QString("STAT\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
-        out<<"wysyłam "<<ba.toLower()<<endl;
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==3){
         QStringList list=tmp.split(QRegExp("(\\ |\\\n)"));
         if(lastId==-1) lastId=lastid;
@@ -318,14 +326,14 @@ void Email::readyPOP3(){
             lastid=list.at(1).toDouble();
             QByteArray ba=QString("RETR "+QString::number(lastid)+"\r\n").toUtf8();
             socket->write(ba);
-            qDebug()<<"wysyłam "<<ba.toLower();
-            out<<"wysyłam "<<ba.toLower()<<endl;
+            qDebug()<<"sending "<<ba.toLower();
+            addToLog("sending "+ba.toLower());
         }else{
             lastid=list.at(1).toDouble();
             QByteArray ba=QString("QUIT\r\n").toUtf8();
             socket->write(ba);
-            qDebug()<<"wysyłam "<<ba.toLower();
-            out<<"wysyłam "<<ba.toLower()<<endl;
+            qDebug()<<"sending "<<ba.toLower();
+            addToLog("sending "+ba.toLower());
             ile+=2;
             value="NO NEW MESSAGES";
             emit update2();
@@ -333,9 +341,6 @@ void Email::readyPOP3(){
     }else if(ile==5){
         qDebug()<<parseMail(tmp);
         QStringList t=parseMail(tmp);
-        for(int i=0;i<t.size();i++)
-            out<<t.at(i)<<" ";
-        out<<"\n";
         if(result==0){
             value="NEW MESSAGE";
             emit update2();
@@ -361,13 +366,12 @@ void Email::readyPOP3(){
 
         QByteArray ba=QString("QUIT\r\n").toUtf8();
         socket->write(ba);
-        qDebug()<<"wysyłam "<<ba.toLower();
-        out<<"wysyłam "<<ba.toLower()<<endl;
+        qDebug()<<"sending "<<ba.toLower();
+        addToLog("sending "+ba.toLower());
     }else if(ile==6){
         socket->close();
     }
     ile++;
-    file.close();
 }
 void Email::err(QAbstractSocket::SocketError e){
     value="CONNECTION ERROR";

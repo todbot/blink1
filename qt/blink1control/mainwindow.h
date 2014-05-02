@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include "Cursorshapearea.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMessageBox>
@@ -14,7 +14,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QFile>
-
+#include <QTextStream>
 #include "qtquick2applicationviewer.h"
 #include <QQmlContext>
 #include <QtQml>
@@ -160,6 +160,7 @@ public slots:
 
     void changeInputName(QString oldName,QString newName);
     void removeBigButton2(int idx);
+    void updateBigButtons();
     void setAutorun();
     void showhideDockIcon();
     void minButton();
@@ -206,6 +207,9 @@ public slots:
 
     void add_new_hardwaremonitor(QString name,int type,int lvl, int action, int role);
     void edit_hardwaremonitor(QString oldname,QString name,int type,int lvl, int action, int role);
+    void markHardwareEditing(QString s,bool e);
+    void addToLog(QString txt);
+    void resetAlertsOption();
 private:
     QNetworkAccessManager *nam;
     QtQuick2ApplicationViewer viewer;
@@ -272,6 +276,9 @@ private:
     bool enableServer;
     QString getTimeFromInt(int t);
     bool mk2;
+    bool logging;
+    QFile *logFile;
+    QTextStream *out;
 signals:
     void patternsUpdate();
     void inputsUpdate();

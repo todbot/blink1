@@ -19,14 +19,15 @@ class HardwareMonitor : public QObject
     Q_PROPERTY(int lvl READ getLvl WRITE setLvl NOTIFY update)
     Q_PROPERTY(int action READ getAction WRITE setAction NOTIFY update)
     Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY update)
-    Q_PROPERTY(QString status READ getStatus NOTIFY update2)
+    Q_PROPERTY(QString status READ getStatus WRITE setStatus NOTIFY update2)
     Q_PROPERTY(int freq READ getFreq WRITE setFreq NOTIFY update)
     Q_PROPERTY(int value READ getValue WRITE setValue NOTIFY update2)
     Q_PROPERTY(int extraValue READ getExtraValue WRITE setExtraValue NOTIFY update)
-    Q_PROPERTY(bool done READ getDone NOTIFY update2)
+    Q_PROPERTY(bool done READ getDone WRITE setDone NOTIFY update2)
     Q_PROPERTY(int role READ getRole WRITE setRole NOTIFY update)
 public:
     explicit HardwareMonitor(QString name,QObject *parent = 0);
+    ~HardwareMonitor();
     QString getName();
     void setName(QString name);
     int getType();
@@ -53,11 +54,14 @@ public:
     int getRole();
     void setRole(int role);
     bool checkValue(int value);
+    void setStatus(QString status);
+    void setDone(bool done);
 signals:
     void update();
     void update2();
     void runPattern(QString,bool);
     void addReceiveEvent(int,QString,QString);
+    void addToLog(QString txt);
 public slots:
     void checkMonitor();
     void checkBattery();
@@ -65,14 +69,16 @@ public slots:
     void checkRam();
     void readyReadCpu(int);
     void readyReadRam(int);
+    void readyReadBattery(int);
+    void setEditing(bool edit);
 private:
-    QString name,patternName;
+    QString name,patternName,status;
     int type;               //0-battery, 1-cpu, 2-ram,
     int action;             //0-< 1-<= 2-= 3-> 4->=
     int role;               //0-activity, 1-alert, 2-both
     int lvl,freq,value,extraValue,freqCounter;
-    bool done;
-    QProcess *p,*p2;
+    bool done,editing;
+    QProcess *p,*p2,*p3;
 };
 
 #endif // HARDWAREMONITOR_H

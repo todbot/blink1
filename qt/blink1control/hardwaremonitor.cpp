@@ -13,8 +13,18 @@ HardwareMonitor::HardwareMonitor(QString name,QObject *parent) :
     this->freqCounter=0;
     this->done=false;
     this->role=0;
+    this->status="NO VALUE";
+    this->p=NULL;
+    this->p2=NULL;
+    this->p3=NULL;
+    this->editing=false;
 }
 void HardwareMonitor::checkMonitor(){
+    if(editing){
+        return;
+    }
+    status="checking...";
+    emit update2();
     if(type==0){
         checkBattery();
     }else if(type==1){
@@ -24,25 +34,105 @@ void HardwareMonitor::checkMonitor(){
     }
 }
 void HardwareMonitor::checkBattery(){
-    #ifdef Q_OS_WIN
-        SYSTEM_POWER_STATUS status;
-        GetSystemPowerStatus(&status);
-        int life = status.BatteryLifePercent;
-        int BTime = status.BatteryLifeTime;
-        qDebug()<<status.ACLineStatus;  //1-charging 0-no charging
-        qDebug()<<status.BatteryFlag;   //1- battery, 128-no battery
+#ifdef Q_OS_WIN
+    SYSTEM_POWER_STATUS stat;
+    GetSystemPowerStatus(&stat);
+    int life = stat.BatteryLifePercent;
+    int BTime = stat.BatteryLifeTime;
+    qDebug()<<stat.ACLineStatus;  //1-charging 0-no charging
+    qDebug()<<stat.BatteryFlag;   //1- battery, 128-no battery
+    addToLog(QString(stat.ACLineStatus));
+    addToLog(QString(stat.BatteryFlag));
+    bool battery="true";
+    if(stat.BatteryFlag==128) battery=false;
+    if(stat.BatteryFlag!=128) {
+        qDebug()<<life << "% and " << BTime << "Battery Life!\n";
+        addToLog(QString::number(life) + "% and " + QString::number(BTime) + "Battery Life!");
+    }
+    value=life;
 
-        if(status.BatteryFlag!=128) qDebug()<<life << "% and " << BTime << "Battery Life!\n";
-        if(status.BatteryFlag==128){
+    if(!battery){
+        value=-1;
+        status="NO BATTERY";
+        done=false;
+    }else{
+        if(role==0 || role==2){
+            extraValue=(BTime!=-1)?BTime:0;
+            status=QString::number(value)+"%";
+        }else{
+            status="Level not reached.";
+        }
+        if(checkValue(value)){
+            if(!done){
+                if(role>0){
+                    emit addReceiveEvent(0,QString::number(value)+"% Battery",name);
+                    emit runPattern(patternName,false);
+                }
+            }
+            if(role==1)
+                status="Level reached!";
+            done=true;
+        }else{
+            done=false;
+        }
+    }
+    emit update2();
+#endif
+#ifdef Q_OS_MAC
+    if(p3!=NULL) return;
+    p3=new QProcess();
+    p3->start("pmset -g batt");
+    connect(p3,SIGNAL(finished(int)),this,SLOT(readyReadBattery(int)));
+#endif
+}
+
+void HardwareMonitor::readyReadBattery(int st){
+#ifdef Q_OS_MAC
+    bool battery=true;
+    bool correct=true;
+    int BTime;
+    if(st==0){
+        QString tmp2=p3->readAllStandardOutput();
+        tmp2=tmp2.simplified();
+        QStringList pom2=tmp2.split(QRegExp("(  +|\r\n|\n|;)"));
+        if(pom2.count()>0){
+            QString source=pom2.at(0).mid(pom2.at(0).indexOf("\'")+1);
+            source=source.remove(source.length()-1,1);
+            qDebug()<<"Source "<<source;
+            addToLog("Source "+source);
+            if(source.contains("AC")){
+                qDebug()<<"no battery";
+                addToLog("no battery");
+                battery=false;
+            }
+            if(battery){
+                if(pom2.count()>3){
+                    qDebug()<<"Battery status "<<pom2.at(2);
+                    addToLog("Battery status "+pom2.at(2));
+                    qDebug()<<pom2.at(3);
+                    qDebug()<<"Time: "<<pom2.at(4);
+                    addToLog("Time: "+pom2.at(4));
+                    BTime=pom2.at(4).toInt();
+                    value=pom2.at(3).toInt();
+                }else{
+                    correct=false;
+                }
+            }
+        }else{
+            correct=false;
+        }
+    }
+    if(st==0 && correct){
+        if(!battery){
             value=-1;
-            extraValue=-5;
+            status="NO BATTERY";
             done=false;
         }else{
-            value=life;
             if(role==0 || role==2){
                 extraValue=(BTime!=-1)?BTime:0;
+                status=QString::number(value)+"%";
             }else{
-                extraValue=-3;
+                status="Level not reached.";
             }
             if(checkValue(value)){
                 if(!done){
@@ -52,90 +142,199 @@ void HardwareMonitor::checkBattery(){
                     }
                 }
                 if(role==1)
-                    extraValue=-2;
+                    status="Level reached!";
                 done=true;
             }else{
                 done=false;
             }
         }
-        emit update2();
-    #endif
-    #ifdef Q_OS_MAC
-
-    #endif
+    }else{
+        status="Internal error";
+        done=false;
+        freqCounter=0;
+    }
+    emit update2();
+    p3->close();
+    disconnect(p3);
+    //delete p3;
+    p3=NULL;
+#endif
 }
+
 void HardwareMonitor::checkCpu(){
-    #ifdef Q_OS_WIN
-        if(p!=NULL) return;
-        p=new QProcess();
-        p->start("wmic cpu get loadpercentage");
-        connect(p,SIGNAL(finished(int)),this,SLOT(readyReadCpu(int)));
-    #endif
+#ifdef Q_OS_WIN
+    if(p!=NULL) return;
+    p=new QProcess();
+    p->start("wmic cpu get loadpercentage");
+    connect(p,SIGNAL(finished(int)),this,SLOT(readyReadCpu(int)));
+#endif
+#ifdef Q_OS_MAC
+    if(p!=NULL) return;
+    p=new QProcess();
+    p->start("top -o cpu -l 1");
+    connect(p,SIGNAL(finished(int)),this,SLOT(readyReadCpu(int)));
+#endif
 }
 void HardwareMonitor::readyReadCpu(int st){
-    #ifdef Q_OS_WIN
+    bool correct=true;
+#ifdef Q_OS_WIN
+    if(st==0){
         QString tmpp=p->readAllStandardOutput();
         tmpp=tmpp.simplified();
         QStringList pomm=tmpp.split(QRegExp("( +|\r\n)"));
-        qDebug()<<pomm.at(1).toInt();
-        qDebug()<<"Status: "<<st;
-        value=pomm.at(1).toInt();
-        if(st==0){
-            extraValue=0;
-            if(role==0 || role==2){
-                extraValue=1;
-            }else{
-                extraValue=-3;
-            }
-            if(checkValue(value)){
-                if(!done){
-                    if(role>0){
-                        emit addReceiveEvent(0,QString::number(value)+"% CPU",name);
-                        emit runPattern(patternName,false);
-                    }
-                }
-                if(role==1)
-                    extraValue=-2;
-                done=true;
-            }else{
-                done=false;
-            }
+        if(pomm.count()>0){
+            qDebug()<<pomm.at(1).toInt();
+            qDebug()<<"Status: "<<st;
+            addToLog(pomm.at(1));
+            addToLog("Status: "+QString::number(st));
+            value=pomm.at(1).toInt();
         }else{
-            extraValue=-5;
+            correct=false;
+        }
+    }
+#endif
+#ifdef Q_OS_MAC
+    if(st==0){
+        QString tmp=p->readAllStandardOutput();
+        QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
+        //qDebug()<<pom;
+        int cpuMonitor=pom.indexOf("CPU");
+        if(cpuMonitor!=-1){
+            QString cpuUsage=pom.at(cpuMonitor+4);
+            cpuUsage=cpuUsage.left(cpuUsage.indexOf("%"));
+            qDebug()<<"CPU usage "<<cpuUsage.toDouble()<<"%";
+            addToLog("CPU usage "+cpuUsage+"%");
+            value=cpuUsage.toDouble();
+        }else{
+            correct=false;
+        }
+    }
+#endif
+    if(st==0 && correct){
+        if(role==0 || role==2){
+            status=QString::number(value)+"%";
+        }else{
+            status="Level not reached!";
+        }
+        if(checkValue(value)){
+            if(!done){
+                if(role>0){
+                    emit addReceiveEvent(0,QString::number(value)+"% CPU",name);
+                    emit runPattern(patternName,false);
+                }
+            }
+            if(role==1)
+                status="Level reached!";
+            done=true;
+        }else{
             done=false;
         }
-        emit update2();
-        p->close();
-        disconnect(p);
-        delete p;
-        p=NULL;
-    #endif
+    }else{
+        status="Internal error";
+        done=false;
+        freqCounter=0;
+    }
+    emit update2();
+    p->close();
+    disconnect(p);
+#ifdef Q_OS_WIN
+    delete p;
+#endif
+    p=NULL;
 }
 
 void HardwareMonitor::checkRam(){
-    #ifdef Q_OS_WIN
-        p2=new QProcess();
-        p2->start("wmic OS get FreePhysicalMemory,TotalVisibleMemorySize");
-        connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
-    #endif
+#ifdef Q_OS_WIN
+    p2=new QProcess();
+    p2->start("wmic OS get FreePhysicalMemory,TotalVisibleMemorySize");
+    connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
+#endif
+#ifdef Q_OS_MAC
+    if(p2!=NULL) return;
+    p2=new QProcess();
+    p2->start("top -o cpu -l 1");
+    connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
+#endif
 }
 void HardwareMonitor::readyReadRam(int st){
-    #ifdef Q_OS_WIN
+    bool correct=true;
+#ifdef Q_OS_WIN
+    if(st==0){
         QString tmp=p2->readAllStandardOutput();
         QStringList pom=tmp.split(QRegExp("(  +|\r\n)"));
         qDebug()<<pom;
-        double total=pom.at(4).toDouble()*1.0/(1024);
-        double used=pom.at(3).toDouble()*1.0/(1024);
-        qDebug()<<100.0-used*1.0/total*100<<"%";
-        qDebug()<<st;
-        value=100.0-used*1.0/total*100;
-        if(st==0)
-            extraValue=0;
-        else
-            extraValue=-1;
-        p2->close();
-        delete p2;
-    #endif
+        if(pom.count()>3){
+            double total=pom.at(4).toDouble()*1.0/(1024);
+            double used=pom.at(3).toDouble()*1.0/(1024);
+            qDebug()<<100.0-used*1.0/total*100<<"%";
+            qDebug()<<st;
+            value=100.0-used*1.0/total*100;
+            addToLog(QString::number(value)+"%");
+            addToLog(QString::number(st));
+        }else{
+            correct=false;
+        }
+    }
+#endif
+#ifdef Q_OS_MAC
+    if(st==0){
+        QString tmp=p2->readAllStandardOutput();
+        QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
+        int ramMonitor=pom.indexOf("PhysMem:");
+        if(ramMonitor!=-1){
+            QString used=pom.at(ramMonitor+7);
+            int v=used.indexOf(QRegExp("[a-zA-Z]"));
+            long long int nused=used.left(v).toLongLong();
+            QString vv=used.mid(v);
+            if(vv=="M") nused*=1024*1024;
+            else if(vv=="K") nused*=1024;
+
+            QString free=pom.at(ramMonitor+9);
+            v=free.indexOf(QRegExp("[a-zA-Z]"));
+            long long int nused2=free.left(v).toLongLong();
+            vv=free.mid(v);
+            if(vv=="M") nused2*=1024*1024;
+            else if(vv=="K") nused2*=1024;
+
+            qDebug()<<"RAM usage "<<nused*1.0/(nused+nused2)*100.0<<"%";
+            value=nused*1.0/(nused+nused2)*100.0;
+            addToLog("RAM usage "+QString::number(value)+"%");
+        }else{
+            correct=false;
+        }
+    }
+#endif
+    if(st==0 && correct){
+        if(role==0 || role==2){
+            status=QString::number(value)+"%";
+        }else{
+            status="Level not reached!";
+        }
+        if(checkValue(value)){
+            if(!done){
+                if(role>0){
+                    emit addReceiveEvent(0,QString::number(value)+"% RAM",name);
+                    emit runPattern(patternName,false);
+                }
+            }
+            if(role==1)
+                status="Level reached!";
+            done=true;
+        }else{
+            done=false;
+        }
+    }else{
+        status="Internal error";
+        done=false;
+        freqCounter=0;
+    }
+    emit update2();
+    p2->close();
+    disconnect(p2);
+#ifdef Q_OS_WIN
+    delete p2;
+#endif
+    p2=NULL;
 }
 QString HardwareMonitor::getName(){
     return name;
@@ -204,11 +403,18 @@ QJsonObject HardwareMonitor::toJson()
     obj.insert("action", action);
     obj.insert("patternName", patternName);
     obj.insert("freq", freq);
-    obj.insert("freqCounter", freqCounter);
+    if(status!="checking...")
+        obj.insert("freqCounter", freqCounter);
+    else
+        obj.insert("freqCounter", 0);
     obj.insert("value", value);
     obj.insert("extraValue", extraValue);
     obj.insert("done", done);
     obj.insert("role", role);
+    if(status!="checking...")
+        obj.insert("status",status);
+    else
+        obj.insert("status",QString("NO VALUE"));
     return obj;
 }
 void HardwareMonitor::fromJson( QJsonObject obj)
@@ -224,34 +430,14 @@ void HardwareMonitor::fromJson( QJsonObject obj)
     setExtraValue(obj.value("extraValue").toDouble());
     done=obj.value("done").toBool();
     setRole(obj.value("role").toDouble());
+    setStatus(obj.value("status").toString());
 }
 void HardwareMonitor::changeFreqCounter(){
     if(freq==0) freq=3;
     freqCounter=(freqCounter+1)%freq;
 }
 QString HardwareMonitor::getStatus(){
-    if(type==0){
-        if(extraValue>=-1){
-            return QString::number(value)+"%";
-        }else if(extraValue==-2){
-            return "Level reached!";
-        }else if(extraValue==-3){
-            return "Level not reached.";
-        }else{
-            return "No battery!";
-        }
-    }else if(type==1){
-        if(extraValue>=-1){
-            return QString::number(value)+"%";
-        }else if(extraValue==-2){
-            return "Level reached!";
-        }else if(extraValue==-3){
-            return "Level not reached.";
-        }else{
-            return "Internal error!";
-        }
-    }
-    return "";
+    return status;
 }
 bool HardwareMonitor::getDone(){
     return done;
@@ -281,4 +467,48 @@ bool HardwareMonitor::checkValue(int value){
             result=true;
     }
     return result;
+}
+void HardwareMonitor::setStatus(QString status){
+    this->status=status;
+}
+HardwareMonitor::~HardwareMonitor(){
+    if(p!=NULL){
+        p->close();
+        disconnect(p);
+        delete p;
+    }
+    if(p2!=NULL){
+        p2->close();
+        disconnect(p2);
+        delete p2;
+    }
+    if(p3!=NULL){
+        p3->close();
+        disconnect(p3);
+        delete p3;
+    }
+}
+void HardwareMonitor::setDone(bool done){
+    this->done=done;
+}
+void HardwareMonitor::setEditing(bool e){
+    this->editing=e;
+    this->status="In edit mode";
+    this->done=false;
+    if(p!=NULL){
+        p->close();
+        disconnect(p);
+        delete p;
+    }
+    if(p2!=NULL){
+        p2->close();
+        disconnect(p2);
+        delete p2;
+    }
+    if(p3!=NULL){
+        p3->close();
+        disconnect(p3);
+        delete p3;
+    }
+    emit update2();
 }

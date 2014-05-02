@@ -30,6 +30,7 @@ public:
     QString name() const;
     void setName(const QString& name);
     QString type() const;
+    QString type2() const;
     void setType(const QString& type);
     QString arg1() const;
     void setArg1(const QString& arg1);

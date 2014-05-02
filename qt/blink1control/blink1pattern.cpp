@@ -45,7 +45,7 @@ QJsonObject Blink1Pattern::toJson2()
 {
     QJsonObject obj;
     obj.insert("name", name());
-    obj.insert("pattern", patternStrWithLeds());
+    obj.insert("pattern", patternStr());
     return obj;
 }
 void Blink1Pattern::resetObj()
@@ -64,7 +64,7 @@ QString Blink1Pattern::patternStr()
 {
     QString str = QString("%1").arg( mrepeats );
     for( int i=0; i<colors.count(); i++) {
-        str.append( QString(",%1,%2").arg(colors.at(i).name()).arg(times.at(i)));
+        str.append( QString(",%1,%2").arg(colors.at(i).name().replace("#","%23")).arg(times.at(i)));
     }
     return str;
 }

@@ -63,14 +63,16 @@ Rectangle{
             visible: lv.contentHeight>lv.height
         }
 
-        delegate: Text{
-            width: parent.width
+        delegate: Text{            
+            width: parent.width-10
             text: model.modelData
             wrapMode: TextInput.WrapAnywhere
             anchors.left: parent.left
             anchors.leftMargin: 2
+            font.pointSize: (!mw.mac())?8:12
             //clip: true
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
