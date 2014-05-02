@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     bigbuttons.cpp \
     email.cpp \
     simplecrypt.cpp \
-    hardwaremonitor.cpp
+    hardwaremonitor.cpp \
+    Cursorshapearea.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
@@ -45,7 +46,8 @@ HEADERS  += mainwindow.h \
     bigbuttons.h \
     email.h \
     simplecrypt.h \
-    hardwaremonitor.h
+    hardwaremonitor.h \
+    Cursorshapearea.h
 
 #FORMS    += mainwindow.ui
 

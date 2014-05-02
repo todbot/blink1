@@ -6,6 +6,7 @@ Image {
     property alias label: label
 
     signal clicked
+    signal pressed
 
     Text {
         id: label
@@ -15,9 +16,13 @@ Image {
     }
 
     MouseArea {
+        cursorShape: Qt.PointingHandCursor
         anchors.fill: parent
         onClicked: parent.clicked()
-        onPressed: source = downSrc
+        onPressed: {
+            source = downSrc
+            parent.pressed();
+        }
         onReleased: source = upSrc
     }
 

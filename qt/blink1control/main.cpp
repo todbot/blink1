@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName("ThingM");
     QApplication::setOrganizationDomain("thingm.com");
 
-    MainWindow *w=new MainWindow();
+    MainWindow w;
     //w->show();
 
     return a.exec();

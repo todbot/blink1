@@ -80,6 +80,7 @@ Image{
             bigButtons2.restoreName()
 
             inputsList2M.currentIndex=-1
+            inputsList2H.currentIndex=-1
 
         }
     }
@@ -129,7 +130,7 @@ Image{
         Text{
             text: "Device"
             color: "white"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             anchors.left: parent.left
             anchors.leftMargin: 50
             anchors.top: parent.top
@@ -137,6 +138,8 @@ Image{
         }
         Image{
             id: virtualBlink1
+            property color col1: "black"
+            property color col2: "black"
             //anchors.left: parent.left
             //anchors.leftMargin: 10
             anchors.horizontalCenter: parent.horizontalCenter
@@ -156,15 +159,13 @@ Image{
 
             ColorOverlay{
                 source: pods
-                property color col: "black"
-                color: if(!mw.isMk2 || (mw.led===0 || mw.led===1)){ virtualBlink1Color.color; col=virtualBlink1Color.color}else{ col;}
+                color: if(!mw.isMk2 || (mw.led===0 || mw.led===1)){ virtualBlink1Color.color; virtualBlink1.col1=virtualBlink1Color.color}else{ virtualBlink1.col1;}
                 anchors.fill: pods
                 opacity: 0.5
             }
             ColorOverlay{
                 source: pods2
-                property color col: "black"
-                color: if(mw.isMk2) { if(mw.led===0 || mw.led===2){ virtualBlink1Color.color; col=virtualBlink1Color.color;} else {col;}}else{ "transparent"}
+                color: if(mw.isMk2) { if(mw.led===0 || mw.led===2){ virtualBlink1Color.color; virtualBlink1.col2=virtualBlink1Color.color;} else {virtualBlink1.col2;}}else{ "transparent"}
                 anchors.fill: pods2
                 opacity: 0.5
             }
@@ -186,7 +187,7 @@ Image{
         Text{
             text: "Status:"
             id: blinkStatuss
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             anchors.left: parent.left
             anchors.leftMargin: 25
             anchors.bottom: parent.bottom
@@ -197,7 +198,7 @@ Image{
         Text{
             id: blinkStatus
             text: mw.blink1
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             anchors.left: devicePanel.left
             anchors.leftMargin: 130
             anchors.top: blinkStatuss.top
@@ -209,7 +210,7 @@ Image{
             anchors.left: blinkStatuss.left
             anchors.top: blinkStatuss.bottom
             anchors.topMargin: 10
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             color: "grey"
         }
         Text{
@@ -218,7 +219,24 @@ Image{
             anchors.left: blinkStatus.left
             anchors.top: activePattern.top
             color: "black"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
+            elide: Text.ElideMiddle
+            width: 140
+            MouseArea{
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: {
+                    if(mw.activePattern==="") return;
+                    showFullName.fullName=mw.activePattern
+                    showFullName.x=devicePanel.x+activePatternName.x
+                    showFullName.y=devicePanel.y+activePatternName.y+activePatternName.height
+                    showFullName.width=130
+                    showFullName.visible=true
+                }
+                onExited: {
+                    showFullName.visible=false
+                }
+            }
         }
         Text{
             id: blinkid
@@ -229,7 +247,7 @@ Image{
             //selectByMouse: true
             //readOnly: true
             color: "grey"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
         }
         TextInput{
             id: blinkidText
@@ -239,7 +257,7 @@ Image{
             selectByMouse: true
             readOnly: true
             color: "black"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
         }
 
         Text{
@@ -251,7 +269,7 @@ Image{
             //selectByMouse: true
             //readOnly: true
             color: "grey"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             MouseArea{
                 anchors.fill: parent
                 acceptedButtons: Qt.RightButton
@@ -268,7 +286,7 @@ Image{
             selectByMouse: true
             readOnly: true
             color: "black"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             MouseArea{
                 anchors.fill: parent
                 acceptedButtons: Qt.RightButton
@@ -288,7 +306,7 @@ Image{
         Text{
             id: recentEventsTitle
             text: "Recent Events"
-            font.pointSize: 10
+            font.pointSize: (!mw.mac())?10:13
             anchors.left: parent.left
             anchors.leftMargin: 50
             anchors.top: parent.top
@@ -316,9 +334,15 @@ Image{
                 z: -1
                 onClicked: exitEditMode()
             }
+            onContentYChanged: {
+                if(currentItem){
+                    currentItem.children[0].source=currentItem.children[0].upSrc
+                }
+            }
 
             delegate: Row{
                 spacing: 5
+
                 PushButton{
                     width: 10
                     height: 10
@@ -328,19 +352,25 @@ Image{
                     label.text: ""
                     anchors.verticalCenter: parent.verticalCenter
                     onClicked: {
+                        recentEvents.currentIndex=index
                         exitEditMode()
                         mw.removeRecentEvent(index)
+                    }
+                    onPressed: {
+                        recentEvents.currentIndex=index
                     }
                 }
                 Text{
                     text: model.modelData.substring(model.modelData.indexOf("-")+1)
                     width: 170
                     wrapMode: Text.WrapAnywhere
+                    font.pointSize: (!mw.mac())?8:12
                 }
                 Text{
                     text: model.modelData.substring(0,model.modelData.indexOf("-"))
                     color: "grey"
                     wrapMode: Text.WrapAnywhere
+                    font.pointSize: (!mw.mac())?8:12
                 }
             }
         }
@@ -353,7 +383,7 @@ Image{
             upSrc: "qrc:images/layout/dissmiss-all-up.png"
             downSrc: "qrc:images/layout/dissmiss-all-down.png"
             label.color: "#555555"
-            label.font.pointSize: 8
+            label.font.pointSize: (!mw.mac())?8:10
             onClicked:{
                 //anchors.fill: parent
                 onClicked: mw.removeAllRecentEvents()
@@ -387,7 +417,7 @@ Image{
             visible: tabs.current!=5
             label.text: "Add Pattern"
             label.color: "black"
-            label.font.pointSize:  if(mw.mac()) 10; else 8;
+            label.font.pointSize:  if(mw.mac()) 11; else 8;
             upSrc: "qrc:images/layout/btn-add2-up.png"
             downSrc: "qrc:images/layout/btn-add2-down.png"
             anchors.right: parent.right
@@ -431,8 +461,6 @@ Image{
                 flickable: lista
                 hideScrollBarsWhenStopped: false
                 visible: lista.childrenRect.height>295//lista.model.length>8
-
-
             }
             onSelectedIndexChanged: {
                 if(editModeIndex != -1)
@@ -467,11 +495,27 @@ Image{
                         currentItem.children[1].children[1].children[0].visible=true
                         currentItem.children[1].children[1].focus=false
                         if(currentItem.children[1].children[1].oldName!="")
-                            currentItem.children[1].children[1].text=currentItem.children[1].children[1].oldName
+                            currentItem.children[1].children[1].text=cutPath2(currentItem.children[1].children[1].oldName)
                     }
                 }
             }
             spacing: 5
+            onContentYChanged: {
+                if(currentItem){
+                    for(var i=0;i<currentItem.children[1].children.length;i++){
+                        if(currentItem.children[1].children[i].objectName==="delButton"){
+                            currentItem.children[1].children[i].source="qrc:images/layout/colorpicker/ico-delete-up.png"
+                        }else if(currentItem.children[1].children[i].objectName==="addButton"){
+                            currentItem.children[1].children[i].source="qrc:images/layout/colorpicker/ico-add-up.png"
+                        }else if(currentItem.children[1].children[i].objectName==="repeatButton"){
+                            currentItem.children[1].children[i].source=currentItem.children[1].children[i].up
+                        }else if(currentItem.children[1].children[i].objectName==="editButton"){
+                            currentItem.children[1].children[i].source="qrc:images/layout/colorpicker/ico-edit-up.png"
+                        }
+                    }
+                }
+            }
+
             delegate: Item{
                 height: pname.height<25?29:pname.height+10
                 width: 347
@@ -522,17 +566,19 @@ Image{
                     anchors.leftMargin: 5
                     Item{
                         width: 22
-                        height: 22
+                        height: parent.height
                         Image{
                             anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
                             source: (model.modelData.playing===0)?"qrc:images/layout/colorpicker/pattern-play-up.png":"qrc:images/layout/colorpicker/pattern-stop-up.png"
                             MouseArea{
+                                cursorShape: Qt.PointingHandCursor
                                 z: 5
                                 anchors.fill: parent
                                 propagateComposedEvents: true
                                 onClicked: {
                                     colorwheel1.indexOfColorPattern=-1
-                                    mw.playPattern(pname.text)
+                                    mw.playPattern(model.modelData.name)
                                     colors.currentIndex=-1
                                 }
                             }
@@ -546,10 +592,17 @@ Image{
                         //height: 25
                         clip: true
                         wrapMode: TextInput.WrapAnywhere
-                        width: 95//(lista.currentIndex===index & !editMode)?78:105
-                        text: model.modelData.name
+                        width: 93//(lista.currentIndex===index & !editMode)?78:105
+                        text: {
+                            if(editMode){
+                                 model.modelData.name
+                            }else{
+                                 cutPath2(model.modelData.name)
+                            }
+                        }
                         selectByMouse: true
-                        maximumLength: 15
+                        maximumLength: 20
+                        font.pointSize: (!mw.mac())?8:12
                         onAccepted: {
                             ma.visible=true
                             pname.focus=false
@@ -561,11 +614,18 @@ Image{
                         }
                         MouseArea {
                             id: ma
+                            cursorShape: (editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                             propagateComposedEvents: true
                             anchors.fill: parent
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             onClicked: {
-                                if(editModeIndex != -1) return;
+                                if(editModeIndex != -1){
+                                    if(editMode) return;
+                                    else{
+                                        exitEditMode()
+                                    }
+                                }
+
                                 lista.currentIndex=index
                                 colors.currentIndex=-1
                             }
@@ -580,6 +640,20 @@ Image{
                                 pname.oldName=pname.text
                                 colors.currentIndex=-1
                                 lista.currentIndex=index
+                            }
+                            hoverEnabled: true
+                            onEntered: {
+                                if(editModeIndex != -1) return;
+                                lista.currentIndex=index
+                                colors.currentIndex=-1
+                                showFullName.fullName=model.modelData.name
+                                showFullName.visible=true
+                                showFullName.x=colorPatternsPanel.x+lista.x+lista.currentItem.x+30
+                                showFullName.y=colorPatternsPanel.y+lista.y+lista.currentItem.y+lista.currentItem.height-lista.contentY
+                                showFullName.width=100
+                            }
+                            onExited: {
+                                showFullName.visible=false
                             }
                         }
                     }
@@ -615,6 +689,7 @@ Image{
                             radius: 3
                             anchors.verticalCenter: parent.verticalCenter
                             MouseArea{
+                                cursorShape: (editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton|Qt.RightButton
                                 onClicked: {
@@ -641,8 +716,10 @@ Image{
                         anchors.verticalCenterOffset: -1
                         //text: "(+)"
                         source: "qrc:images/layout/colorpicker/ico-add-up.png"
+                        objectName: "addButton"
 
                         MouseArea {
+                            cursorShape: (editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                             id: mouseArea
                             anchors.fill: parent
                             propagateComposedEvents: true
@@ -661,10 +738,12 @@ Image{
                     Image{
                         anchors.verticalCenter: parent.verticalCenter
                         id: icon
+                        objectName: "repeatButton"
                         property string up: "qrc:images/layout/colorpicker/ico-repeat-up.png"
                         property string down: "qrc:images/layout/colorpicker/ico-repeat-down.png"
                         source: up//(model.modelData.repeats!==0)?"qrc:images/layout/colorpicker/ico-repeat-up.png":"qrc:images/layout/colorpicker/ico-play-once-up.png"
                         MouseArea{
+                            cursorShape: (editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                             anchors.fill: parent
                             propagateComposedEvents: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -719,6 +798,7 @@ Image{
                         }
 
                         width: 13
+                        font.pointSize: (!mw.mac())?8:12
                         text: {
                             var tmp
                             var tmp2=+model.modelData.repeats
@@ -729,6 +809,7 @@ Image{
                         }
                         font.bold: true
                         MouseArea{
+                            cursorShape: (editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                             anchors.fill: parent
                             propagateComposedEvents: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -761,11 +842,13 @@ Image{
                     Image{
                         anchors.verticalCenter: parent.verticalCenter
                         //anchors.left: colors.right
+                        objectName: "editButton"
                         visible: lista.currentIndex===index && !editMode && !model.modelData.isReadOnly
                         //text: "(e)"
                         source: "qrc:images/layout/colorpicker/ico-edit-up.png"
 
                         MouseArea {
+                            cursorShape: Qt.PointingHandCursor
                             id: mouseAreae
                             anchors.fill: parent
                             propagateComposedEvents: true
@@ -788,11 +871,13 @@ Image{
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     anchors.rightMargin: 10
+                    objectName: "delButton"
                     //text: "(X)"
                     source: "qrc:images/layout/colorpicker/ico-delete-up.png"
                     //anchors.top: parent.top
                     // anchors.topMargin: 2
                     MouseArea {
+                        cursorShape: (editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                         anchors.fill: parent
                         propagateComposedEvents: true
                         onPressed: parent.source="qrc:images/layout/colorpicker/ico-delete-down.png"
@@ -811,6 +896,7 @@ Image{
                     }
                 }
                 MouseArea{
+                    cursorShape: (!editMode)?Qt.PointingHandCursor:Qt.ArrowCursor
                     z: parent.z+6
                     visible: !editMode
                     anchors.verticalCenter: parent.verticalCenter
@@ -834,7 +920,7 @@ Image{
                     }
                 }
 
-                Image{
+                /*Image{
                     anchors.fill: parent
                     source: {
                         if(!editMode)
@@ -843,14 +929,49 @@ Image{
                             "qrc:images/layout/colorpicker/pattern-bg.png"
                     }
                     z:1
+                }*/
+                Rectangle{
+                    width: parent.width
+                    height: parent.height
+                    anchors.fill: parent
+                    border.color: "#CDCFD2"
+                    border.width: 1
+                    radius: 4
+                    color: "white"
+                    z:1
+                    Rectangle{
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 125
+                        height: parent.height-10
+                        width: 1
+                        color: "#EEEEEE"
+                    }
+                    Rectangle{
+                        visible: !editMode
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 26
+                        height: parent.height-10
+                        width: 1
+                        color: "#CDCFD2"
+                    }
+                    Image{
+                        visible: !editMode
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        source: "qrc:/images/layout/colorpicker/arrow-2-up.png"
+                    }
                 }
+
                 Rectangle{
                     id: back
                     anchors.left: parent.left
-                    anchors.leftMargin: 120
+                    anchors.leftMargin: 130
                     anchors.verticalCenter: parent.verticalCenter
                     z:3
-                    width: 200
+                    width: 190
                     height: parent.height-5
                     opacity: 0.8
                     color: "white"
@@ -874,6 +995,7 @@ Image{
                     anchors.horizontalCenterOffset: 10
                     text: "Pattern locked"
                     color: "black"
+                    font.pointSize: (!mw.mac())?8:12
                 }
             }
         }
@@ -918,6 +1040,7 @@ Image{
                         height: 85
                         width: parent.width
                         orientation: ListView.Horizontal
+                        interactive: false
                         ListModel{
                             id: bigButton1model
                             property int currentIndex: 0
@@ -945,14 +1068,14 @@ Image{
                         }
 
                         model: bigButton1model
-                        spacing: 15
+                        spacing: 1
                         clip: true
                         delegate: Item{
-                            width: 70
-                            height: 85
+                            width: 79
+                            height: 84
                             PushButton{
-                                width: 70
-                                height: 70
+                                width: 64
+                                height: 64
                                 upSrc: "qrc:/images/layout/"+src+"-up.png"
                                 downSrc: "qrc:/images/layout/"+src+"-down.png"
                                 anchors.top: parent.top
@@ -977,12 +1100,13 @@ Image{
                             }
                             Text{
                                 text: name
-                                font.pointSize: 8
+                                font.pointSize: (!mw.mac())?10:12
                                 anchors.bottom: parent.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: "#666666"
                             }
                             MouseArea{
+                                cursorShape: Qt.PointingHandCursor
                                 anchors.fill: parent
                                 onClicked: {
                                     exitEditMode()
@@ -1005,9 +1129,9 @@ Image{
                         id: bigButtons2
                         anchors.left: bigButtons1.left
                         anchors.top: bigButtons1.bottom
-                        anchors.topMargin: 20
-                        height: 98
-                        width: (model.length*81)>400?400:model.length*81
+                        anchors.topMargin: 15
+                        height: 105
+                        width: (model.length*80)>400?400:model.length*80
                         orientation: ListView.Horizontal
                         Component.onCompleted: positionViewAtEnd()
                         MouseArea{
@@ -1022,7 +1146,7 @@ Image{
                             visible: bigButtons2.model.length>5
                         }
                         model: mw.getBigButtons
-                        spacing: 15
+                        spacing: 1
                         clip: true
 
                         function restoreName(){
@@ -1036,17 +1160,24 @@ Image{
                                 }
                             }
                         }
-
+                        onContentXChanged: {
+                            if(currentItem)
+                                currentItem.children[2].source=currentItem.children[2].upSrc
+                        }
                         delegate: Item{
-                            width: 66
+                            width: 79
                             height: 84
                             TextInput{
                                 id: bbti
                                 text: model.modelData.name
-                                maximumLength: 13
+                                wrapMode: Text.WrapAnywhere
+                                width: parent.width
+                                horizontalAlignment: Text.AlignHCenter
+                                font.pointSize: (!mw.mac())?10:12
+                                maximumLength: 12
                                 color: "#666666"
                                 selectByMouse: true
-                                anchors.bottom: parent.bottom
+                                anchors.top: button.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 property string oldName:""
                                 onAccepted: {
@@ -1059,6 +1190,7 @@ Image{
                                     bor.visible=false
                                 }
                                 MouseArea{
+                                    cursorShape: Qt.PointingHandCursor
                                     id: bbma
                                     anchors.fill: parent
                                     onDoubleClicked: {
@@ -1079,12 +1211,13 @@ Image{
                                 color: "transparent"
                                 border.width: 1
                                 border.color: "red"
-                                width: 66
-                                height: bbti.height+2
-                                anchors.bottom: parent.bottom
+                                width: parent.width
+                                height: bbti.height
+                                anchors.top: button.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
                             }
                             PushButton{
+                                objectName: "colButton"
                                 id: button
                                 label.text: ""
                                 anchors.top: parent.top
@@ -1094,11 +1227,12 @@ Image{
                                 onClicked: {
                                     exitEditMode()
                                     bigButtons2.restoreName()
-                                    bigButtons2.currentIndex=index
+                                    bigButtons2.currentIndex=index                                    
                                     mw.playBigButton(index)
                                     //colorwheel1.setColor(model.modelData.col+"")
                                     colorwheel1.setQColorAndTime(model.modelData.col, 1.0);
                                 }
+                                onPressed: bigButtons2.currentIndex=index
 
                                 Rectangle{
                                     width: 54
@@ -1107,16 +1241,21 @@ Image{
                                     anchors.centerIn: parent
                                     radius: 5
                                     MouseArea{
+                                        cursorShape: Qt.PointingHandCursor
                                         anchors.fill: parent
                                         acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                        onPressed: button.source=button.downSrc
+                                        onPressed: {
+                                            bigButtons2.currentIndex=index
+                                            button.source=button.downSrc
+                                        }
                                         onReleased: button.source=button.upSrc
                                         onClicked: {
                                             bigButtons2.restoreName()
                                             if (mouse.button == Qt.RightButton){
                                                 bigButtons2.currentIndex=index
-                                                bigButtonsMenu.popup()
                                                 bbti.oldName=bbti.text
+                                                bigButtonsMenu.popup()
+                                                if(mw.mac()) mw.updateBigButtons()
                                             }else{
                                                 exitEditMode()
                                                 bigButtons2.currentIndex=index
@@ -1124,6 +1263,7 @@ Image{
                                                 //colorwheel1.setColor(model.modelData.col+"")
                                                 colorwheel1.setQColorAndTime(model.modelData.col, 1.0);
                                             }
+                                            //console.log(bigButtons2.currentIndex)
                                         }
                                     }
                                     Image{
@@ -1137,7 +1277,7 @@ Image{
                     PushButton{
                         anchors.left: bigButtons2.right
                         anchors.top: bigButtons2.top
-                        anchors.leftMargin: 5
+                        anchors.leftMargin: 3
                         label.text: ""
                         upSrc: "qrc:images/layout/btn-add-up.png"
                         downSrc: "qrc:images/layout/btn-add-down.png"
@@ -1148,10 +1288,20 @@ Image{
                         }
                         Text{
                             anchors.top: parent.bottom
-                            anchors.topMargin: 5
+                            anchors.topMargin: 2
+                            font.pointSize: (!mw.mac())?10:12
                             anchors.horizontalCenter: parent.horizontalCenter
                             color: "#666666"
                             text: "Add"
+                            MouseArea{
+                                cursorShape: Qt.PointingHandCursor
+                                anchors.fill: parent
+                                onClicked: {
+                                    exitEditMode()
+                                    mw.addNewBigButton("BigButton", colorwheel1.getCurrentColor());
+                                    bigButtons2.positionViewAtEnd()
+                                }
+                            }
                         }
                     }
                 }
@@ -1189,27 +1339,31 @@ Image{
                     anchors.topMargin: 20
                     Text {
                         text: "Name"
-                        width: 160
+                        width: 170
                         font.bold: true
                         color: "#999999"
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
                         text: "Pattern"
-                        width: 145
+                        width: 170
                         font.bold: true
                         color: "#999999"
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
                         text: "Last seen"
-                        width: 160
+                        width: 138
                         font.bold: true
                         color: "#999999"
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
                         text: "Source"
                         width: 160
                         font.bold: true
                         color: "#999999"
+                        font.pointSize: (!mw.mac())?8:12
                     }
                 }
                 ListView {
@@ -1264,15 +1418,23 @@ Image{
                         z: -1
                         onClicked: {exitEditMode(); inputsList.restoreName() }
                     }
+                    onContentYChanged: {
+                        if(currentItem){
+                            var pom=currentItem.children[1].children.length-1;
+                            currentItem.children[1].children[pom].source=currentItem.children[1].children[pom].upSrc
+                        }
+                    }
+
                     delegate:Item{
                         id: del
                         property bool edit: false
                         height: {
-                            if(pName.height<25 && ti.height<25) 29
+                            //if(pName.height<25 && ti.height<25) 29
+                            if(ti.height<25) 29
                             else{
-                                if(pName.height>ti.height)
-                                    pName.height+7
-                                else
+                                //if(pName.height>ti.height)
+                                //    pName.height+7
+                                //else
                                     ti.height+7
                             }
                         }
@@ -1283,7 +1445,7 @@ Image{
                         }
                         Row{
                             id: c
-                            spacing: 29
+                            spacing: 32
                             height: parent.height
                             width: parent.width
                             anchors.top: parent.top
@@ -1302,6 +1464,7 @@ Image{
                                 selectByMouse: true
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: -5
+                                font.pointSize: (!mw.mac())?8:12
                                 onAccepted: {
                                     mai.visible=true
                                     focus=false
@@ -1314,6 +1477,7 @@ Image{
                                 }
 
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: mai
                                     anchors.fill: parent
                                     onClicked: {
@@ -1343,20 +1507,26 @@ Image{
                                 }
                             }
                             Text{
+                                elide: Text.ElideMiddle
                                 id: pName
                                 //height: 25
-                                wrapMode: TextInput.WrapAnywhere
+                                //wrapMode: TextInput.WrapAnywhere
                                 height: 29
                                 //clip: true
-                                width: 130
+                                width: 100
                                 text: if(model.modelData.patternName==="") "no pattern chosen"; else model.modelData.patternName
                                 font.underline: (model.modelData.patternName==="")?true:false
                                 color: (model.modelData.patternName==="")?"#777777":"black"
-                                font.pointSize: if(mw.mac()) 10; else 8;
+                                font.pointSize: if(mw.mac()) 11; else 8;
                                 anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: 2
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: ma2
-                                    anchors.fill: parent
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    width: parent.width+20
+                                    height: parent.height
                                     onClicked: {
                                         exitEditMode();
                                         inputsList.restoreName();
@@ -1381,7 +1551,7 @@ Image{
                                     anchors.left: parent.left
                                     anchors.leftMargin: -10
                                     anchors.top: parent.top
-                                    anchors.topMargin: -5
+                                    anchors.topMargin: -7
                                     z: parent.z-1
                                     Image{
                                         source: "qrc:images/layout/colorpicker/arrow-2-up.png"
@@ -1391,13 +1561,18 @@ Image{
                                     }
                                 }
                             }
+                            Item{
+                                height: 1
+                                width: 31
+                            }
 
                             Text{
                                 id: lTime
                                 anchors.verticalCenter: parent.verticalCenter
                                 height: 25
-                                width: 160
+                                width: 130
                                 text: model.modelData.time
+                                font.pointSize: (!mw.mac())?8:12
                             }
                             Text{
                                 id: lSource
@@ -1405,6 +1580,7 @@ Image{
                                 height: 25
                                 width: 160
                                 text: model.modelData.arg2
+                                font.pointSize: (!mw.mac())?8:12
                             }
 
                             PushButton{
@@ -1416,9 +1592,9 @@ Image{
                                 anchors.verticalCenterOffset: -5
                                 onClicked: {
                                     exitEditMode();
-                                    mw.removeInput(model.modelData.name)
                                     inputsList.restoreName();
                                     inputsList.currentIndex=-1
+                                    mw.removeInput(model.modelData.name)
                                 }
                             }
                         }
@@ -1483,30 +1659,35 @@ Image{
                         text: "Name"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 110
+                        width: 70
                         text: "Type"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 153
+                        width: 183
                         text: "Path"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 133
+                        width: 128
                         text: "Last val"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
                         width: 133
                         text: "Frequency"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                 }
                 ListView {
@@ -1574,13 +1755,18 @@ Image{
                         z: -1
                         onClicked: {exitEditMode(); inputsList2.restoreName(); inputsList2.restorePath() }
                     }
-
+                    onContentYChanged: {
+                        if(currentItem){
+                            var pom=currentItem.children[1].children.length-1;
+                            currentItem.children[1].children[pom].source=currentItem.children[1].children[pom].upSrc
+                        }
+                    }
                     delegate:Item{
                         id: del2
                         property bool edit:false
                         property bool edit2:false
                         height:  {
-                            if(lpath.height<25 && ti2.height<25) 25
+                            if(lpath.height<25 && ti2.height<25) 29
                             else{
                                 if(lpath.height>ti2.height)
                                     lpath.height+7
@@ -1628,6 +1814,7 @@ Image{
                                 text: model.modelData.name
                                 selectByMouse: true
                                 clip: true
+                                font.pointSize: (!mw.mac())?8:12
                                 onAccepted: {
                                     mai2.visible=true
                                     focus=false
@@ -1639,6 +1826,7 @@ Image{
                                     del2.edit=false
                                 }
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: mai2
                                     anchors.fill: parent
                                     onClicked: {
@@ -1672,12 +1860,14 @@ Image{
                             Text{
                                 id: pName2
                                 //height: 25
-                                width: 80
+                                width: 68
                                 text: model.modelData.type
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: -5
+                                font.pointSize: (!mw.mac())?8:12
                                 MouseArea {
                                     id: ma22
+                                    cursorShape: Qt.PointingHandCursor
                                     anchors.fill: parent
                                     onClicked: {
                                         exitEditMode();
@@ -1726,6 +1916,7 @@ Image{
                                 clip: true
                                 wrapMode: TextInput.WrapAnywhere
                                 text: cutPath(wholepath)
+                                font.pointSize: (!mw.mac())?8:12
                                 onAccepted: {
                                     map.visible=true
                                     lpath.focus=false
@@ -1740,6 +1931,7 @@ Image{
                                 }
 
                                 MouseArea{
+                                    cursorShape: Qt.PointingHandCursor
                                     id: map
                                     anchors.fill: parent
                                     onClicked: {
@@ -1801,6 +1993,7 @@ Image{
                                 height: 25
                                 width: 133
                                 text: model.modelData.arg2
+                                font.pointSize: (!mw.mac())?8:12
                             }
 
                             Text{
@@ -1808,7 +2001,8 @@ Image{
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: -5
                                 //height: 25
-                                width: 100
+                                width: 70
+                                font.pointSize: (!mw.mac())?8:12
                                 text: {
                                     var tmp=model.modelData.freq
                                     if(tmp==1) "5 sec";
@@ -1819,6 +2013,7 @@ Image{
                                     else ""
                                 }
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: ma222
                                     anchors.fill: parent
                                     onClicked: {
@@ -1856,6 +2051,10 @@ Image{
                                     }
                                 }
                             }
+                            Item{
+                                width: 5
+                                height: 1
+                            }
 
                             PushButton{
                                 anchors.verticalCenter: parent.verticalCenter
@@ -1867,10 +2066,10 @@ Image{
                                 z: 5
                                 onClicked: {
                                     exitEditMode();
-                                    mw.removeInput(model.modelData.name)
                                     inputsList2.restoreName();
                                     inputsList2.restorePath();
                                     inputsList2.currentIndex=-1
+                                    mw.removeInput(model.modelData.name)
                                 }
                             }
                         }
@@ -1940,30 +2139,35 @@ Image{
                         text: "Name"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 150
+                        width: 145
                         text: "Mail Account"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 90
+                        width: 72
                         text: "Refresh rate"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 143
+                        width: 133
                         text: "Pattern"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
                         width: 133
                         text: "Last status"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                 }
                 ListView {
@@ -2008,7 +2212,12 @@ Image{
                         z: -1
                         onClicked: {exitEditMode(); }
                     }
-
+                    onContentYChanged: {
+                        if(currentItem){
+                            var pom=currentItem.children[1].children.length-1;
+                            currentItem.children[1].children[pom].source=currentItem.children[1].children[pom].upSrc
+                        }
+                    }
                     delegate:Item{
                         id: del2M
                         property bool edit:false
@@ -2038,9 +2247,9 @@ Image{
                             }
                             onDoubleClicked: {
                                 if(mailpopup.visible) return;
-                                if(mailpopup.oldname!=""){
+                                /*if(mailpopup.oldname!=""){
                                     mw.markEditing(mailpopup.oldname,false);
-                                }
+                                }*/
                                 mailpopup.oldname=model.modelData.name
                                 mw.markEditing(model.modelData.name,true)
                                 mailpopup.editData(model.modelData.name,model.modelData.type,model.modelData.server,model.modelData.login,model.modelData.passwd,model.modelData.port,model.modelData.ssl,model.modelData.result,model.modelData.parser)
@@ -2066,6 +2275,7 @@ Image{
                                 width: 133
                                 text: model.modelData.name
                                 clip: true
+                                font.pointSize: (!mw.mac())?8:12
                             }
                             Text{
                                 id: mailaccount
@@ -2075,6 +2285,7 @@ Image{
                                 //height: 25
                                 width: 150
                                 text: model.modelData.email
+                                font.pointSize: (!mw.mac())?8:12
                             }
                             Text{
                                 id: pFreqM
@@ -2082,6 +2293,7 @@ Image{
                                 anchors.verticalCenterOffset: -5
                                 //height: 25
                                 width: 70
+                                font.pointSize: (!mw.mac())?8:12
                                 text: {
                                     var tmp=model.modelData.freq
                                     if(tmp===12) "1 min";
@@ -2092,6 +2304,7 @@ Image{
                                     else ""
                                 }
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: ma222M
                                     anchors.fill: parent
                                     onClicked: {
@@ -2130,18 +2343,24 @@ Image{
                             Text{
                                 id: pNameM
                                 //height: 25
-                                wrapMode: TextInput.WrapAnywhere
+                                //wrapMode: TextInput.WrapAnywhere
+                                elide: Text.ElideMiddle
                                 height: 29
                                 //clip: true
-                                width: 130
+                                width: 100
                                 text: if(model.modelData.patternName==="") "no pattern chosen"; else model.modelData.patternName
                                 font.underline: (model.modelData.patternName==="")?true:false
                                 color: (model.modelData.patternName==="")?"#777777":"black"
-                                font.pointSize: if(mw.mac()) 10; else 8;
+                                font.pointSize: if(mw.mac()) 11; else 8;
                                 anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: 2
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: ma2M
-                                    anchors.fill: parent
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    width: parent.width+20
+                                    height: parent.height
                                     onClicked: {
                                         exitEditMode();
                                         inputsList2M.currentIndex=index
@@ -2164,7 +2383,7 @@ Image{
                                     anchors.left: parent.left
                                     anchors.leftMargin: -10
                                     anchors.top: parent.top
-                                    anchors.topMargin: -5
+                                    anchors.topMargin: -7
                                     z: parent.z-1
                                     Image{
                                         source: "qrc:images/layout/colorpicker/arrow-2-up.png"
@@ -2174,16 +2393,22 @@ Image{
                                     }
                                 }
                             }
+                            Item{
+                                height: 1
+                                width: 1
+                            }
+
                             Text{
                                 id: llastvalM
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: 2
-                                horizontalAlignment: Text.AlignHCenter
+                                //horizontalAlignment: Text.AlignHCenter
                                 height: 30
                                 width: 133
                                 text: model.modelData.value
                                 color: (text==="CONNECTION ERROR")? "#c80b0b": "black"
                                 font.underline: (model.modelData.getErrorsList.length>0)? true: false
+                                font.pointSize: (!mw.mac())?8:12
                                 MouseArea{
                                     anchors.fill: parent
                                     cursorShape: (model.modelData.getErrorsList.length>0)?Qt.PointingHandCursor:Qt.ArrowCursor
@@ -2210,8 +2435,8 @@ Image{
                                 z: 5
                                 onClicked: {
                                     exitEditMode();
-                                    mw.remove_email(model.modelData.name)
                                     inputsList2M.currentIndex=-1
+                                    mw.remove_email(model.modelData.name)
                                 }
                             }
                         }
@@ -2247,7 +2472,7 @@ Image{
                 //// KONIEC Mail LIST
             }
 
-            Rectangle {                
+            Rectangle {
                 id: hardwarelist
                 z: 10
                 property string title: "Hardware"
@@ -2282,34 +2507,38 @@ Image{
                         text: "Name"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 150
+                        width: 95
                         text: "Type"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 90
+                        width: 125
                         text: "Refresh rate"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        width: 143
+                        width: 155
                         text: "Pattern"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
                         width: 133
                         text: "Last status"
                         color: "#999999"
                         font.bold: true
+                        font.pointSize: (!mw.mac())?8:12
                     }
                 }
                 ListView {
-                    visible: false
                     id: inputsList2H
                     z: 100
                     property variant pnm: mw.getPatternsNames
@@ -2351,7 +2580,12 @@ Image{
                         z: -1
                         onClicked: {exitEditMode(); }
                     }
-
+                    onContentYChanged: {
+                        if(currentItem){
+                            var pom=currentItem.children[1].children.length-1;
+                            currentItem.children[1].children[pom].source=currentItem.children[1].children[pom].upSrc
+                        }
+                    }
                     delegate:Item{
                         id: del2H
                         property bool edit:false
@@ -2376,6 +2610,7 @@ Image{
                             onDoubleClicked: {
                                 console.log(model.modelData.done)
                                 if(hardwarepopup.visible) return;
+                                mw.markHardwareEditing(model.modelData.name,true)
                                 hardwarepopup.oldname=model.modelData.name
                                 hardwarepopup.editData(model.modelData.name,model.modelData.type,model.modelData.role,model.modelData.action,model.modelData.lvl)
                                 hardwarepopup.visible=true
@@ -2400,6 +2635,7 @@ Image{
                                 width: 133
                                 text: model.modelData.name
                                 clip: true
+                                font.pointSize: (!mw.mac())?8:12
                             }
                             Text{
                                 id: typeHardware
@@ -2407,7 +2643,8 @@ Image{
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: -5
                                 //height: 25
-                                width: 150
+                                width: 100
+                                font.pointSize: (!mw.mac())?8:12
                                 text: {
                                     var tmp=model.modelData.type
                                     if(tmp===0){
@@ -2425,6 +2662,7 @@ Image{
                                 anchors.verticalCenterOffset: -5
                                 //height: 25
                                 width: 70
+                                font.pointSize: (!mw.mac())?8:12
                                 text: {
                                     var tmp=model.modelData.freq
                                     if(tmp===12) "1 min";
@@ -2435,6 +2673,7 @@ Image{
                                     else ""
                                 }
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: ma222H
                                     anchors.fill: parent
                                     onClicked: {
@@ -2470,21 +2709,32 @@ Image{
                                     }
                                 }
                             }
+                            Item{
+                                height: 1
+                                width: 30
+                            }
+
                             Text{
                                 id: pNameH
                                 //height: 25
-                                wrapMode: TextInput.WrapAnywhere
+                                //wrapMode: TextInput.WrapAnywhere
+                                elide: Text.ElideMiddle
                                 height: 29
                                 //clip: true
-                                width: 130
+                                width: 100
                                 text: if(model.modelData.patternName==="") "no pattern chosen"; else model.modelData.patternName
                                 font.underline: (model.modelData.patternName==="")?true:false
                                 color: (model.modelData.patternName==="")?"#777777":"black"
-                                font.pointSize: if(mw.mac()) 10; else 8;
+                                font.pointSize: if(mw.mac()) 11; else 8;
                                 anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: 2
                                 MouseArea {
+                                    cursorShape: Qt.PointingHandCursor
                                     id: ma2H
-                                    anchors.fill: parent
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    width: parent.width+20
+                                    height: parent.height
                                     onClicked: {
                                         exitEditMode();
                                         inputsList2H.currentIndex=index
@@ -2507,7 +2757,7 @@ Image{
                                     anchors.left: parent.left
                                     anchors.leftMargin: -10
                                     anchors.top: parent.top
-                                    anchors.topMargin: -5
+                                    anchors.topMargin: -7
                                     z: parent.z-1
                                     Image{
                                         source: "qrc:images/layout/colorpicker/arrow-2-up.png"
@@ -2517,20 +2767,26 @@ Image{
                                     }
                                 }
                             }
+                            Item{
+                                height: parent.height
+                                width: 21
+                            }
+
                             Text{
                                 id: llastvalH
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: 2
-                                horizontalAlignment: Text.AlignHCenter
+                                //horizontalAlignment: Text.AlignHCenter
                                 height: 30
-                                width: 133
+                                width: 105
                                 text: model.modelData.status
-                                color: (model.modelData.done)? "red": "black"
-                                font.bold: (model.modelData.done)
+                                color: (model.modelData.done && model.modelData.status!="checking..." && model.modelData.status!="NO VALUE")? "#c80b0b": "black"
+                                font.bold: (model.modelData.done && model.modelData.status!="checking..." && model.modelData.status!="NO VALUE")
+                                font.pointSize: (!mw.mac())?8:12
                                 MouseArea{
                                     anchors.fill: parent
                                     onClicked: {
-                                        inputsList2M.currentIndex=index
+                                        inputsList2H.currentIndex=index
                                     }
                                 }
                             }
@@ -2545,8 +2801,8 @@ Image{
                                 z: 5
                                 onClicked: {
                                     exitEditMode();
-                                    mw.remove_hardwareMonitor(model.modelData.name)
                                     inputsList2H.currentIndex=-1
+                                    mw.remove_hardwareMonitor(model.modelData.name)
                                 }
                             }
                         }
@@ -2560,7 +2816,6 @@ Image{
                     }
                 }
                 PushButton{
-                    visible: false
                     label.text: ""
                     anchors.left: toolsTitleH.left
                     //anchors.top: inputsList2.bottom
@@ -2600,6 +2855,7 @@ Image{
             onTriggered: {
                 bigButtons2.currentItem.children[0].children[0].visible=false
                 bigButtons2.currentItem.children[0].focus=true
+                bigButtons2.currentItem.children[1].visible=true
                 bigButtons2.currentItem.children[0].forceActiveFocus()
             }
         }
@@ -2626,7 +2882,7 @@ Image{
         MenuItem {
             text: "Delete button"
             onTriggered: {
-                mw.removeBigButton2(bigButtons2.currentIndex)
+                mw.removeBigButton2(bigButtons2.currentIndex)           
             }
         }
     }
@@ -2804,6 +3060,7 @@ Image{
         }
         ListView{
             id: ledmodel
+            interactive: false
             visible: tabs.current!=5
             anchors.left: ledtitle.left
             anchors.top: ledtitle.top
@@ -2857,6 +3114,7 @@ Image{
                 height: 30
                 width: ledtitle.width-22
                 MouseArea{
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     onClicked: {
                         mw.led=index
@@ -2871,13 +3129,13 @@ Image{
                     anchors.top: parent.top
                     anchors.topMargin: 10
                     text: name
-                    font.pointSize: 8
+                    font.pointSize: (!mw.mac())?8:11
                     color: "#555555"
                     verticalAlignment: Qt.AlignCenter
                 }
                 Image{
                     anchors.left: parent.left
-                    anchors.leftMargin: 30
+                    anchors.leftMargin: 40
                     source: "qrc:images/layout/colorpicker/"+src
                     z: 3
                 }
@@ -2886,10 +3144,21 @@ Image{
     }
     function cutPath(path){
         var new_path=""
-        if(path.length>30){
-            new_path=path.substring(0,10);
+        if(path.length>60){
+            new_path=path.substring(0,15);
             new_path+="..."
-            new_path+=path.substring(path.length-10);
+            new_path+=path.substring(path.length-15);
+        }else{
+            new_path=path
+        }
+        return new_path
+    }
+    function cutPath2(path){
+        var new_path=""
+        if(path.length>=15){
+            new_path=path.substring(0,4);
+            new_path+="..."
+            new_path+=path.substring(path.length-4);
         }else{
             new_path=path
         }
@@ -3176,6 +3445,26 @@ Image{
         onClick: {
             dropDownMenu.visible=false
             background2.visible=false
+        }
+    }
+    Rectangle{
+        id: showFullName
+        property string fullName: ""
+        color: "#F0E68C"
+        border.width: 1
+        border.color: "black"
+        visible: false
+        height: txt.height+4
+        width: 100
+        z: 999
+        Text{
+            anchors.centerIn: parent
+            id: txt
+            color: "black"
+            width: parent.width-4
+            wrapMode: Text.WrapAnywhere
+            text: parent.fullName
+            font.pointSize: (!mw.mac())?8:12
         }
     }
 }

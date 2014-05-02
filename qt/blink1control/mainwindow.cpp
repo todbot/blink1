@@ -37,10 +37,25 @@ MainWindow::MainWindow(QWidget *parent) :
     dockIcon=true;
     startmin=false;
     enableServer=false;
+    logging=false;
     srand(0);
+    logFile=NULL;
+    out=NULL;
 
     loadSettings();
-
+    qDebug()<<"LOGGING: "<<logging;    
+    if(logging){
+        logFile=new QFile("log.txt");
+        if (!logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append)){
+            qDebug()<<"File open error";
+            delete logFile;
+            logFile=NULL;
+            out=NULL;
+        }else{
+            out=new QTextStream(logFile);
+        }
+    }
+    addToLog("LOGGING: "+QString::number(logging));
     if(bigButtons2.count()==0){
         bigButtons2.prepend(new BigButtons("Away",QColor("#FFFF00")));
         bigButtons2.prepend(new BigButtons("Busy",QColor("#FF0000")));
@@ -101,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     activePatternName="";
     updateBlink1();
-
+    qmlRegisterType<QsltCursorShapeArea>("CursorTools", 1, 0, "CursorShapeArea");
     viewer.rootContext()->setContextProperty("mw", this);
     viewer.setMainQmlFile(QStringLiteral("qml/qml/main.qml"));
     viewer.setFlags(Qt::WindowMaximizeButtonHint | Qt::MSWindowsFixedSizeDialogHint |Qt::WindowMinimizeButtonHint);
@@ -125,6 +140,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }else{
         viewer.showExpanded();
     }
+
     startStopServer();
     led=0;
     emit ledsUpdate();
@@ -212,8 +228,8 @@ void MainWindow::updateInputs()
         blinkKey="none";
     }
     blinkStatusAction->setText(blinkStatus);
-    blinkIdAction->setText("Blink1 Id: "+blinkKey);
-    iftttKeyAction->setText("IFTTT Key: "+iftttKey);
+    blinkIdAction->setText("Blink1 id: "+blinkKey);
+    iftttKeyAction->setText("IFTTT.COM ID: "+iftttKey);
 
     emit iftttUpdate();
     QString type;
@@ -296,6 +312,7 @@ void MainWindow::updateInputs()
         it2->next();
         QString mailname=it2->key();
         qDebug()<<mailname;
+        addToLog(mailname);
         if(emails.value(mailname)->getFreqCounter()==0){
             emails.value(mailname)->checkMail();
         }
@@ -310,6 +327,7 @@ void MainWindow::updateInputs()
         it3->next();
         QString name=it3->key();
         qDebug()<<name;
+        addToLog(name);
         if(hardwareMonitors.value(name)->getFreqCounter()==0){
             hardwareMonitors.value(name)->checkMonitor();
         }
@@ -496,9 +514,11 @@ void MainWindow::checkIfttt(QString txt, Blink1Input *in)
 void MainWindow::addRecentEvent(int date, QString name, QString from)
 {
     qDebug()<<name<<from;
+    addToLog(name+" "+from);
     QString text = getTimeFromInt(QDateTime::currentDateTime().toTime_t()/*date*/) + "-" + name + " from " + from;
     recentEvents.prepend(text);
     qDebug()<<date;
+    addToLog(QString::number(date));
     emit recentEventsUpdate();
 }
 
@@ -549,8 +569,6 @@ void MainWindow::replyFinished(QNetworkReply* r){
     }
 }
 
-
-
 void MainWindow::slotCheckTimeout(){
     counter=0;
     it->toFront();
@@ -558,8 +576,6 @@ void MainWindow::slotCheckTimeout(){
 
 MainWindow::~MainWindow()
 {
-    if(server.isListening())
-        server.close();
     delete minimizeAction;
     delete restoreAction;
     delete quitAction;
@@ -571,6 +587,11 @@ MainWindow::~MainWindow()
 
     delete blink1timer;
     delete checkTimer;
+
+    if(logging){
+        delete logFile;
+        delete out;
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *)
@@ -580,6 +601,10 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 void MainWindow::quit()
 {
+    if(server.isListening())
+        server.close();
+    if(logging)
+        logFile->close();
     if(blink1dev!=NULL){
         led=0;
         blink1_fadeToRGBN(blink1dev, 0, 0,0,0 ,led);
@@ -599,6 +624,7 @@ void MainWindow::saveSettings()
     settings.setValue("dockIcon",dockIconAction->isChecked());
     settings.setValue("startmin",startmin);
     settings.setValue("server",serverAction->isChecked());
+    settings.setValue("logging",logging);
     // save patterns
     QJsonArray qarrp;
     foreach (QString nm, patterns.keys() ) {
@@ -651,6 +677,7 @@ void MainWindow::loadSettings()
     QString sIftttKey = settings.value("iftttKey", "").toString();
     QRegExp re("^[a-f0-9]+$");
     qDebug()<<sIftttKey;
+    addToLog(sIftttKey);
     qDebug()<<re.exactMatch(sIftttKey.toLower());
     if(sIftttKey=="" || sIftttKey=="none" || !re.exactMatch(sIftttKey.toLower())){
         sIftttKey="";
@@ -667,6 +694,7 @@ void MainWindow::loadSettings()
     dockIcon=settings.value("dockIcon",true).toBool();
     startmin=settings.value("startmin","").toBool();
     enableServer=settings.value("server","").toBool();
+    logging=settings.value("logging","").toBool();
     QString sPatternStr = settings.value("patterns","").toString();
     if( sPatternStr.length() ) {
         QJsonDocument doc = QJsonDocument::fromJson( sPatternStr.toLatin1() );
@@ -708,6 +736,7 @@ void MainWindow::loadSettings()
             Email* bp = new Email("");
             connect(bp,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
             connect(bp,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
+            connect(bp,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
             bp->fromJson( qarrm.at(i).toObject() );
             emails.insert( bp->getName(), bp );
         }
@@ -721,6 +750,7 @@ void MainWindow::loadSettings()
             HardwareMonitor* bp = new HardwareMonitor("");
             connect(bp,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
             connect(bp,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
+            connect(bp,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
             bp->fromJson( qarrm.at(i).toObject() );
             hardwareMonitors.insert( bp->getName(), bp );
         }
@@ -822,7 +852,7 @@ void MainWindow::createActions()
     blinkIdAction->setDisabled(true);
     iftttKeyAction->setDisabled(true);
     #endif
-    minimizeAction = new QAction(tr("Start minimized"), this);
+    minimizeAction = new QAction(tr("Start minimize"), this);
     connect(minimizeAction,SIGNAL(triggered()),this,SLOT(minimalize()));
     minimizeAction->setCheckable(true);
     minimizeAction->setChecked(startmin);
@@ -842,6 +872,7 @@ void MainWindow::createActions()
     settingAction=new QAction("Open Settings",this);
     connect(settingAction,SIGNAL(triggered()),this,SLOT(normal()));
     alertsAction=new QAction("Reset Alerts",this);
+    connect(alertsAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
     serverAction=new QAction("Enable API server",this);
     serverAction->setCheckable(true);
     serverAction->setChecked(enableServer);
@@ -1029,6 +1060,7 @@ void MainWindow::startStopServer(){
         server.listen(QHostAddress::LocalHost, 8934);
     }
     qDebug()<<"SERVES IS "<<server.isListening();
+    addToLog("SERVER IS "+QString::number(server.isListening()));
 }
 void MainWindow::acceptConnection()
 {
@@ -1043,7 +1075,11 @@ void MainWindow::startRead()
 {
     QTcpSocket *client=(QTcpSocket*)sender();
     QString mssg=client->readLine();
-    if(mssg.startsWith("/blink1/")){
+    if(mssg.indexOf("/blink1/")!=-1){
+        //mssg=mssg.mid(8);
+        qDebug()<<"MESSAGE: "<<mssg;
+        addToLog("MESSAGE: "+mssg);
+        mssg=QString(mssg).split(QRegExp(" "))[1];
         mssg=mssg.mid(8);
         QStringList tokens = QString(mssg).split(QRegExp("(\\?|\\=|\\&)"));
 
@@ -1065,18 +1101,19 @@ void MainWindow::startRead()
 
         }else if(tokens[0]=="regenerateblink1id"){
             QJsonObject ob;
-            QString tmp;
-            if(blink1dev!=NULL) tmp=blink1_getSerialForDev(blink1dev); else tmp="-";
-            ob.insert("blink_id",tmp+""+tmp);
             ob.insert("blink_id_old",iftttKey);
-            iftttKey=tmp+""+tmp;
-            QJsonArray ja;
-            int n=blink1_enumerateByVidPid(blink1_vid(),blink1_pid());
-            if(n>0){
-                for(int i=0;i<n;i++)
-                    ja.append(QJsonValue(QString(blink1_getCachedSerial(i))));
+            QString ifttt_tmp="";
+            srand(time(NULL));
+            for(int i=0;i<8;i++){
+                int tmp=rand()%55+48;
+                while((tmp>=58 && tmp<=96))
+                    tmp=rand()%55+48;
+                ifttt_tmp.append(QChar(tmp).toLatin1());
             }
-            ob.insert("blink1_serialnums",ja);
+            iftttKey=ifttt_tmp+iftttKey.right(8);
+            emit deviceUpdate();
+
+            ob.insert("blink_id",iftttKey);
             ob.insert("status",QString("regenerate id"));
             QJsonDocument jd(ob);
             QByteArray ba=jd.toJson();
@@ -1084,21 +1121,48 @@ void MainWindow::startRead()
             emit iftttUpdate();
         }else if(tokens[0]=="enumerate"){
             QJsonObject ob;
-            ob.insert("blink_id",iftttKey);
             QJsonArray ja;
+            ob.insert("blink_id_old",iftttKey);
+            QString ifttt_tmp="";
+            ifttt_tmp=iftttKey.left(8);
+            if(blink1dev!=NULL){
+                blink1_close(blink1dev);
+                blink1dev=NULL;
+            }
+            blink1_disableDegamma();
             int n=blink1_enumerate();
+            blink1dev =  blink1_open();
+            if( n ) {
+                char ser[10];
+                char iftttkey2[20];
+                sprintf(ser,"%s",blink1_getCachedSerial(0));
+                sprintf(iftttkey2, "%s",ser);
+                blinkStatus="blink(1) connected";
+                blinkKey=ser;
+                iftttKey=ifttt_tmp+iftttkey2;
+                mk2=blink1_isMk2(blink1dev);
+                emit deviceUpdate();
+            }else {
+                blinkStatus="no blink(1) found";
+                iftttKey=ifttt_tmp+"00000000";
+                blinkKey="none";
+            }
+            ob.insert("blink_id",iftttKey);
+
             if(n>0){
                 for(int i=0;i<n;i++)
                     ja.append(QJsonValue(QString(blink1_getCachedSerial(i))));
             }
+
             ob.insert("blink1_serialnums",ja);
             ob.insert("status",QString("enumerate"));
             QJsonDocument jd(ob);
             QByteArray ba=jd.toJson();
             client->write(ba);
-
+            emit iftttUpdate();
 
         }else if(tokens[0]=="fadeToRGB"){
+            qDebug()<<tokens;
             QJsonObject ob;
             ob.insert("rgb",tokens[2].replace("%23","#"));
             double time=0.1;
@@ -1118,6 +1182,24 @@ void MainWindow::startRead()
             client->write(ba);
         }else if(tokens[0]=="logging"){
             QJsonObject ob;
+            if(logging){
+                logFile->close();
+                delete logFile;
+                delete out;
+                logFile=NULL;
+                out=NULL;
+            }
+            logging=tokens[2].toInt();
+            if(logging){
+                logFile=new QFile("log.txt");
+                if (!logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append)){
+                    qDebug()<<"File open error";
+                    delete logFile;
+                    logFile=NULL;
+                }else{
+                    out=new QTextStream(logFile);
+                }
+            }
             ob.insert("loglevel",tokens[2]);
             ob.insert("status",QString("logging"));
             QJsonDocument jd(ob);
@@ -1145,25 +1227,34 @@ void MainWindow::startRead()
                     }
                 }
             }
-            QByteArray ba=QJsonDocument(qarrp).toJson();
+            QJsonObject jo;
+            jo.insert("inputs",qarrp);
+            QByteArray ba=QJsonDocument(jo).toJson();
             client->write(ba);
         }else if(tokens[0]=="input/del"){
-            removeInput(tokens[2]);
+            /*removeInput(tokens[2]);
             QJsonObject ob;
-            ob.insert("status",QString("input del"));
+            ob.insert("status",QString("input del"));*/
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
             QJsonDocument jd(ob);
             QByteArray ba=jd.toJson();
             client->write(ba);
         }else if(tokens[0]=="input/delall"){
-            inputs.clear();
-            emit inputsUpdate();
+            //inputs.clear();
+            //emit inputsUpdate();
+            /*foreach (QString nm, inputs.keys() ) {
+                removeInput(nm);
+            }
             QJsonObject ob;
-            ob.insert("status",QString("input delall"));
+            ob.insert("status",QString("input delall"));*/
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
             QJsonDocument jd(ob);
             QByteArray ba=jd.toJson();
             client->write(ba);
         }else if(tokens[0]=="input/ifttt"){
-            Blink1Input *bp=new Blink1Input();
+            /*Blink1Input *bp=new Blink1Input();
             bp->setName(tokens[2].replace("+"," "));
             bp->setType("IFTTT.COM");
             bool test=false;
@@ -1194,9 +1285,14 @@ void MainWindow::startRead()
             counter++;
             if(test){
                 checkInput2(bp,client);
-            }
+            }*/
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
         }else if(tokens[0]=="input/url"){
-            Blink1Input *bp=new Blink1Input();
+            /*Blink1Input *bp=new Blink1Input();
             bp->setName(tokens[2].replace("+"," "));
             bp->setType("URL");
             bool test=false;
@@ -1227,10 +1323,15 @@ void MainWindow::startRead()
             counter++;
             if(test){
                 checkInput2(bp,client);
-            }
+            }*/
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
 
         }else if(tokens[0]=="input/file"){
-            Blink1Input *bp=new Blink1Input();
+            /*Blink1Input *bp=new Blink1Input();
             bp->setName(tokens[2].replace("+"," "));
             bp->setType("FILE");
             bool test=false;
@@ -1261,9 +1362,14 @@ void MainWindow::startRead()
             counter++;
             if(test){
                 checkInput2(bp,client);
-            }
+            }*/
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
         }else if(tokens[0]=="input/script"){
-            Blink1Input *bp=new Blink1Input();
+            /*Blink1Input *bp=new Blink1Input();
             bp->setName(tokens[2].replace("+"," "));
             bp->setType("SCRIPT");
             bool test=false;
@@ -1294,18 +1400,33 @@ void MainWindow::startRead()
             counter++;
             if(test){
                 checkInput2(bp,client);
-            }
+            }*/
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
         }else if(tokens[0]=="input/cpuload"){
-
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
         }else if(tokens[0]=="input/netload"){
-
+            QJsonObject ob;
+            ob.insert("status",QString("input not implemented yet"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
         }else if(tokens[0]=="patterns"){
             QJsonArray qarrp;
             foreach (QString nm, patterns.keys() ) {
                 QJsonObject obj = patterns.value(nm)->toJson2();
                 qarrp.append(obj);
             }
-            QByteArray ba=QJsonDocument(qarrp).toJson();
+            QJsonObject jo;
+            jo.insert("patterns",qarrp);
+            QByteArray ba=QJsonDocument(jo).toJson();
             client->write(ba);
         }else if(tokens[0]=="pattern/add"){
             Blink1Pattern *bp=new Blink1Pattern();
@@ -1343,7 +1464,19 @@ void MainWindow::startRead()
             QJsonDocument jd(ob);
             QByteArray ba=jd.toJson();
             client->write(ba);
+        }else{
+            QJsonObject ob;
+            ob.insert("status",QString("unknown command"));
+            QJsonDocument jd(ob);
+            QByteArray ba=jd.toJson();
+            client->write(ba);
         }
+    }else{
+        QJsonObject ob;
+        ob.insert("status",QString("unknown command"));
+        QJsonDocument jd(ob);
+        QByteArray ba=jd.toJson();
+        client->write(ba);
     }
 }
 void MainWindow::discardClient(){
@@ -1458,6 +1591,7 @@ void MainWindow::new_input_and_pattern(QString name,QString type,QString rule,QS
     inputs.insert(name,bi);
     inputsAmount++;
     qDebug()<<pname<<" "<<repeats<<" ";
+    addToLog(pname+" "+QString::number(repeats));
 }
 void MainWindow::edit_input_and_pattern(QString name,QString type,QString rule,QString pname,int repeats,QString old_name){
     Blink1Input *bi=new Blink1Input();
@@ -1611,7 +1745,7 @@ void MainWindow::createNewIFTTTInput(){
     bp->setName("Nazwa"+QString::number(counter));
     bp->setType("IFTTT.COM");
     bp->setArg1("RULE");
-    bp->setArg2("");
+    bp->setArg2("NO VALUE");
     bp->setPatternName("");
     inputs.insert(bp->name(),bp);
     emit inputsUpdate();
@@ -1623,8 +1757,8 @@ void MainWindow::createNewInput(){
         counter++;
     bp->setName("Nazwa"+QString::number(counter));
     bp->setType("FILE");
-    bp->setArg1("path");
-    bp->setArg2("no-value");
+    bp->setArg1("Click double times to change path");
+    bp->setArg2("NO VALUE");
     bp->setPatternName("");
     inputs.insert(bp->name(),bp);
     emit inputsUpdate();
@@ -1660,8 +1794,13 @@ void MainWindow::changeInputName(QString oldName,QString newName){
 }
 void MainWindow::removeBigButton2(int idx){
     bigButtons2.removeAt(idx);
+    if(!mac())
+        emit bigButtonsUpdate();
+}
+void MainWindow::updateBigButtons(){
     emit bigButtonsUpdate();
 }
+
 void MainWindow::checkInput(QString key){
     DataInput *dI = new DataInput(this);
     connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
@@ -1738,6 +1877,7 @@ void MainWindow::mark(){
 }
 void MainWindow::add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser){
     qDebug()<<"NEW EMAIL "+name;
+    addToLog("NEW EMAIL "+name);
     if(name=="") name="name";
     int ile=0;
     while(emails.contains(name)){
@@ -1748,6 +1888,7 @@ void MainWindow::add_new_mail(QString name,int type, QString server, QString log
     Email *e=new Email(name);
     connect(e,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
     connect(e,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
+    connect(e,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
     e->setServer(server);
     e->setType(type);
     e->setLogin(login);
@@ -1768,6 +1909,7 @@ void MainWindow::add_new_mail(QString name,int type, QString server, QString log
 }
 void MainWindow::edit_mail(QString oldname, QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser){
     qDebug()<<"EDIT EMAIL "+name;
+    addToLog("EDIT EMAIL "+name);
     QString value;
     if(emails.contains(oldname)){
         Email *e=emails.value(oldname);
@@ -1775,6 +1917,7 @@ void MainWindow::edit_mail(QString oldname, QString name,int type, QString serve
         if(name=="") name="name";
         if(oldname!=name){
             int tmpfreq=e->getFreq();
+            int tmplastid=e->getLastid();
             QString tmpPatt=e->getPatternName();
             emails.remove(oldname);
             disconnect(e);
@@ -1788,8 +1931,10 @@ void MainWindow::edit_mail(QString oldname, QString name,int type, QString serve
             e=new Email(name);
             e->setFreq(tmpfreq);
             e->setPatternName(tmpPatt);
+            e->setLastid(tmplastid);
             connect(e,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
             connect(e,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
+            connect(e,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
         }
         qDebug()<<"EDIT EMAIL "+name;
         e->setServer(server);
@@ -1849,6 +1994,7 @@ void MainWindow::setPatternNameToEmail(QString name, QString pn){
 }
 void MainWindow::checkMail(QString name){
     qDebug()<<"checking email "<<name;
+    addToLog("checking email "+name);
     if(emails.contains(name)){
         emails.value(name)->checkMail();
         emit emailsUpdate();
@@ -1863,6 +2009,7 @@ void MainWindow::setHostId(QString hostId){
     hostId.replace("_","0");
     iftttKey=hostId+iftttKey.right(8);
     qDebug()<<iftttKey;
+    addToLog(iftttKey);
     emit iftttUpdate();
 }
 bool MainWindow::checkHex( QString newText){
@@ -1920,6 +2067,7 @@ void MainWindow::setPatternNameToHardwareMonitor(QString name, QString pn){
 }
 void MainWindow::checkHardwareMonitor(QString name){
     qDebug()<<"checking hardware monitor "<<name;
+    addToLog("checking hardware monitor "+name);
     if(hardwareMonitors.contains(name)){
         hardwareMonitors.value(name)->checkMonitor();
         emit hardwareUpdate();
@@ -1946,7 +2094,7 @@ void MainWindow::copyPattern(QString name){
 }
 void MainWindow::add_new_hardwaremonitor(QString name,int type,int lvl, int action, int role){
     qDebug()<<"NEW HARDWARE MONITOR "+name;
-
+    addToLog("NEW HARDWARE MONITOR "+name);
     if(name=="") name="name";
     int ile=0;
     while(hardwareMonitors.contains(name)){
@@ -1956,6 +2104,7 @@ void MainWindow::add_new_hardwaremonitor(QString name,int type,int lvl, int acti
     HardwareMonitor *e=new HardwareMonitor(name);
     connect(e,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
     connect(e,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
+    connect(e,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
     e->setType(type);
     e->setLvl(lvl);
     e->setAction(action);
@@ -1966,10 +2115,7 @@ void MainWindow::add_new_hardwaremonitor(QString name,int type,int lvl, int acti
 }
 void MainWindow::edit_hardwaremonitor(QString oldname,QString name,int type,int lvl, int action, int role){
     qDebug()<<"EDIT HARDWAREMONITOR "+name;
-    qDebug()<<"TYPE "<<type;
-    qDebug()<<"LVL "<<lvl;
-    qDebug()<<"ACTION "<<action;
-    qDebug()<<"ROLE "<<role;
+    addToLog("EDIT HARDWAREMONITOR "+name);
     QString value;
     if(hardwareMonitors.contains(oldname)){
         HardwareMonitor *e=hardwareMonitors.value(oldname);
@@ -1978,6 +2124,7 @@ void MainWindow::edit_hardwaremonitor(QString oldname,QString name,int type,int 
         if(oldname!=name){
             int tmpfreq=e->getFreq();
             QString tmpPatt=e->getPatternName();
+            bool done=e->getDone();
             hardwareMonitors.remove(oldname);
             disconnect(e);
             delete e;
@@ -1990,8 +2137,10 @@ void MainWindow::edit_hardwaremonitor(QString oldname,QString name,int type,int 
             e=new HardwareMonitor(name);
             e->setFreq(tmpfreq);
             e->setPatternName(tmpPatt);
+            e->setDone(done);
             connect(e,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
             connect(e,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
+            connect(e,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
         }
         e->setAction(action);
         e->setType(type);
@@ -2000,4 +2149,22 @@ void MainWindow::edit_hardwaremonitor(QString oldname,QString name,int type,int 
         hardwareMonitors.insert(name,e);
         e->checkMonitor();
     }
+}
+void MainWindow::markHardwareEditing(QString s,bool e){
+    if(hardwareMonitors.contains(s)){
+        hardwareMonitors.value(s)->setEditing(e);
+    }
+}
+void MainWindow::addToLog(QString txt){
+    if(logging){
+        //qDebug()<<txt;
+        (*out)<<txt<<"\n";
+        out->flush();
+    }
+}
+void MainWindow::resetAlertsOption(){
+    if(patterns.contains(activePatternName)){
+        patterns.value(activePatternName)->stop();
+    }
+    on_buttonOff_clicked();
 }

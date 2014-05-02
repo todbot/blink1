@@ -31,6 +31,7 @@ Image {
             height: 20
             color: "transparent"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
@@ -59,6 +60,7 @@ Image {
                 anchors.left: parent.left
                 anchors.leftMargin: 30
                 anchors.verticalCenter: parent.verticalCenter
+                font.pointSize: (!mw.mac())?8:12
                 text: {
                     if(checked)
                         "Unlock pattern"
@@ -72,6 +74,7 @@ Image {
             height: 20
             color: "transparent"
             MouseArea{
+                cursorShape: Qt.PointingHandCursor
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
@@ -96,6 +99,7 @@ Image {
                 anchors.leftMargin: 30
                 anchors.verticalCenter: parent.verticalCenter
                 text: "Copy pattern"
+                font.pointSize: (!mw.mac())?8:12
             }
         }
     }

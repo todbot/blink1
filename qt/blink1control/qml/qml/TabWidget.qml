@@ -95,9 +95,10 @@ Item {
                     text: stack.children[index].title
                     elide: Text.ElideRight
                     font.bold: tabWidget.current == index
-                    font.pointSize: 12
+                    font.pointSize: (!mw.mac())?12:16
                 }
                 MouseArea {
+                    cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent
                     onClicked: tabWidget.current = index
                 }

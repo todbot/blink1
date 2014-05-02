@@ -35,7 +35,7 @@ Image {
         anchors.right: parent.right
         anchors.rightMargin: 20
         anchors.top: parent.top
-        anchors.topMargin: 6
+        anchors.topMargin: 3
         label.text: ""
         upSrc: "qrc:/images/layout/close-single-up.png"
         downSrc: "qrc:/images/layout/close-single-hover.png"
@@ -47,6 +47,7 @@ Image {
         anchors.leftMargin: 55
         anchors.top: parent.top
         anchors.topMargin: 70
+        font.pointSize: (!mw.mac())?8:12
     }
 
     ListView{
@@ -85,6 +86,7 @@ Image {
                 text: model.modelData
                 width: 500
                 wrapMode: Text.WrapAnywhere
+                font.pointSize: (!mw.mac())?8:12
             }
         }
     }
@@ -101,6 +103,6 @@ Image {
         anchors.bottomMargin: 22
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: 9
+        label.font.pointSize: (!mw.mac())?9:12
     }
 }
