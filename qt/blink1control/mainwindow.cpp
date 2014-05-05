@@ -1478,6 +1478,7 @@ void MainWindow::startRead()
         QByteArray ba=jd.toJson();
         client->write(ba);
     }
+    client->close();
 }
 void MainWindow::discardClient(){
     QTcpSocket *s=(QTcpSocket*)sender();
