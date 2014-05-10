@@ -3,7 +3,7 @@
 
 #include <HttpServer>
 
-#include "fvupdater.h"
+//#include "fvupdater.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,11 +15,11 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationDomain("thingm.com");
 
     // Set this to your own appcast URL, of course
-    FvUpdater::sharedUpdater()->SetFeedURL("http://todbot.com/blink1/tst/blink1control/Appcast.xml");
+    //FvUpdater::sharedUpdater()->SetFeedURL("http://todbot.com/blink1/tst/blink1control/Appcast.xml");
 
     // Check for updates silently -- this will not block the initialization of
     // your application, just start a HTTP request and return immediately.
-    FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
+    //FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
 
     MainWindow w;
     w.show();

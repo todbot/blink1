@@ -65,7 +65,7 @@ private:
     QMenu *trayIconMenu;
 
     QTimer* blink1timer;
-    hid_device* blink1dev;
+    blink1_device* blink1dev;
 
     uint8_t mode;
     QColor cc;  // current color

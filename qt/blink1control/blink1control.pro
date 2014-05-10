@@ -92,7 +92,7 @@ win32 {
 
     message( "MYAPPDIR = $$MYAPPDIR" )
     # but this line doesn't work, because of forward slashes presumably
-    QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
+    #QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
 }
 
 # win32:
@@ -131,7 +131,7 @@ OTHER_FILES += \
     DropDownMenu.qml \
     MyInfo.plist
 
-CONFIG += CONSOLE
+#CONFIG += CONSOLE
 win32{
     RC_FILE =blink1.rc
 }
