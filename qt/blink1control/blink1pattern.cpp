@@ -89,7 +89,7 @@ void Blink1Pattern::fromPatternStr(QString tmp){
 void Blink1Pattern::fromPatternStrWithLeds(QString tmp){
     QStringList list=tmp.split(",");
     setRepeats(list.at(0).toDouble());
-    if(list.count()>=4 && list.at(3).indexOf(QRegExp("#([0-9a-fA-F]{6})"))!=-1){
+    if((list.count()>=4 && list.at(3).indexOf(QRegExp("#([0-9a-fA-F]{6})"))!=-1) || list.count()==3){
         fromPatternStr(tmp);
         return;
     }

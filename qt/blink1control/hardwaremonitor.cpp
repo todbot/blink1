@@ -10,7 +10,7 @@ HardwareMonitor::HardwareMonitor(QString name,QObject *parent) :
     this->patternName="";
     this->freq=60;
     this->value=0;
-    this->freqCounter=0;
+    this->freqCounter=1;
     this->done=false;
     this->role=0;
     this->status="NO VALUE";
@@ -93,14 +93,16 @@ void HardwareMonitor::readyReadBattery(int st){
     int BTime;
     if(st==0){
         QString tmp2=p3->readAllStandardOutput();
-        tmp2=tmp2.simplified();
+        //tmp2=tmp2.simplified();
+        qDebug()<<tmp2;
         QStringList pom2=tmp2.split(QRegExp("(  +|\r\n|\n|;)"));
-        if(pom2.count()>0){
+        qDebug()<<pom2;
+        if(pom2.count()>1){
             QString source=pom2.at(0).mid(pom2.at(0).indexOf("\'")+1);
             source=source.remove(source.length()-1,1);
             qDebug()<<"Source "<<source;
             addToLog("Source "+source);
-            if(source.contains("AC")){
+            if(!pom2.at(1).contains("InternalBattery")){
                 qDebug()<<"no battery";
                 addToLog("no battery");
                 battery=false;
@@ -113,7 +115,7 @@ void HardwareMonitor::readyReadBattery(int st){
                     qDebug()<<"Time: "<<pom2.at(4);
                     addToLog("Time: "+pom2.at(4));
                     BTime=pom2.at(4).toInt();
-                    value=pom2.at(3).toInt();
+                    value=(pom2.at(2).left(pom2.at(2).length()-1)).toInt();
                 }else{
                     correct=false;
                 }
@@ -171,7 +173,7 @@ void HardwareMonitor::checkCpu(){
 #ifdef Q_OS_MAC
     if(p!=NULL) return;
     p=new QProcess();
-    p->start("top -o cpu -l 1");
+    p->start("sh -c \"top -l 1 | grep 'CPU usage:'\"");//"top -o cpu -l 1");
     connect(p,SIGNAL(finished(int)),this,SLOT(readyReadCpu(int)));
 #endif
 }
@@ -196,11 +198,13 @@ void HardwareMonitor::readyReadCpu(int st){
 #ifdef Q_OS_MAC
     if(st==0){
         QString tmp=p->readAllStandardOutput();
+        tmp=tmp.remove(",");
         QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
-        //qDebug()<<pom;
-        int cpuMonitor=pom.indexOf("CPU");
+        qDebug()<<pom;
+        int cpuMonitor=pom.indexOf("user");
+        //qDebug()<<cpuMonitor;
         if(cpuMonitor!=-1){
-            QString cpuUsage=pom.at(cpuMonitor+4);
+            QString cpuUsage=pom.at(cpuMonitor-1);
             cpuUsage=cpuUsage.left(cpuUsage.indexOf("%"));
             qDebug()<<"CPU usage "<<cpuUsage.toDouble()<<"%";
             addToLog("CPU usage "+cpuUsage+"%");
@@ -245,6 +249,7 @@ void HardwareMonitor::readyReadCpu(int st){
 
 void HardwareMonitor::checkRam(){
 #ifdef Q_OS_WIN
+    if(p2!=NULL) return;
     p2=new QProcess();
     p2->start("wmic OS get FreePhysicalMemory,TotalVisibleMemorySize");
     connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
@@ -252,7 +257,7 @@ void HardwareMonitor::checkRam(){
 #ifdef Q_OS_MAC
     if(p2!=NULL) return;
     p2=new QProcess();
-    p2->start("top -o cpu -l 1");
+    p2->start("sh -c \"top -o cpu -l 1 | grep 'PhysMem:'\"");
     connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
 #endif
 }
@@ -279,22 +284,31 @@ void HardwareMonitor::readyReadRam(int st){
 #ifdef Q_OS_MAC
     if(st==0){
         QString tmp=p2->readAllStandardOutput();
+        tmp=tmp.remove(",");
+        tmp=tmp.remove(".");
         QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
-        int ramMonitor=pom.indexOf("PhysMem:");
-        if(ramMonitor!=-1){
-            QString used=pom.at(ramMonitor+7);
+        //qDebug()<<pom;
+        int ramMonitor=pom.indexOf("used");
+        int freeM=pom.indexOf("free");
+        if(freeM==-1){
+            freeM=pom.indexOf("unused");
+        }
+        if(ramMonitor!=-1 && freeM!=-1){
+            QString used=pom.at(ramMonitor-1);
             int v=used.indexOf(QRegExp("[a-zA-Z]"));
-            long long int nused=used.left(v).toLongLong();
+            long long int nused=used.left(v).toLongLong();            
             QString vv=used.mid(v);
             if(vv=="M") nused*=1024*1024;
             else if(vv=="K") nused*=1024;
+            else if(vv=="G") nused*=1024*1024*1024;
 
-            QString free=pom.at(ramMonitor+9);
+            QString free=pom.at(freeM-1);
             v=free.indexOf(QRegExp("[a-zA-Z]"));
             long long int nused2=free.left(v).toLongLong();
             vv=free.mid(v);
             if(vv=="M") nused2*=1024*1024;
             else if(vv=="K") nused2*=1024;
+            else if(vv=="G") nused2*=1024*1024*1024;
 
             qDebug()<<"RAM usage "<<nused*1.0/(nused+nused2)*100.0<<"%";
             value=nused*1.0/(nused+nused2)*100.0;

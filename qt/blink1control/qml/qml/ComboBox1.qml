@@ -13,12 +13,32 @@ Rectangle{
         hiden()
     }
 
+    function getCount(){
+        if(items.count!=undefined)
+            return items.count
+        else
+            return items.length
+    }
+
     id: comboPattern
     property alias curIn: lv.currentIndex
     property string inputName: ""
     visible: false
     width: 145
-    height: 118
+    //height: (getCount()*13>118)?118:((getCount()*13<30)?30:getCount()*13)//118
+    height: {
+        var ile=13;
+        if(mw.mac()) ile=15
+        if(getCount()*ile>118)
+            118
+        else{
+            if(getCount()*ile<30)
+                30
+            else
+                getCount()*ile
+        }
+    }
+
     //source: "qrc:images/layout/combobox-big-dropdown.png"
     color: "white"
     border.width: 1
@@ -29,9 +49,11 @@ Rectangle{
         //model: inputsList.pnm
         width: parent.width
         height: parent.height
-        spacing: 5
+        //spacing: 5
         clip: true
         z: parent.z+1
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
         onCurrentIndexChanged: {
             curIndexChange(currentIndex)
         }
@@ -41,7 +63,7 @@ Rectangle{
             Rectangle{
                 y: lv.currentItem.y
                 x: lv.currentItem.x-2
-                width: lv.currentItem.width
+                width: lv.currentItem.width+10
                 height: lv.currentItem.height
                 color: "black"
                 opacity: 0.2
@@ -60,7 +82,7 @@ Rectangle{
         ScrollBar{
             flickable: lv
             hideScrollBarsWhenStopped: false
-            visible: lv.contentHeight>lv.height
+            visible: lv.contentHeight>118
         }
 
         delegate: Text{            
@@ -88,7 +110,7 @@ Rectangle{
                     //mw.updateInputsPatternName(comboPattern.inputName,model.modelData)
                 }
             }
-            Rectangle{
+            /*Rectangle{
                 id: sep
                 //source: separator
                 color: "lightgrey"
@@ -97,7 +119,7 @@ Rectangle{
                 anchors.left: parent.left
                 height: 1
                 width: parent.width
-            }
+            }*/
         }
     }
 }

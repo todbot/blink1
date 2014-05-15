@@ -140,7 +140,7 @@ Text{
             anchors.verticalCenter: parent.verticalCenter
             text: "Description:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -182,7 +182,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Account type:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
 
         Text{
@@ -246,7 +246,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Mail server:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -286,7 +286,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Username:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -326,7 +326,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Password:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -366,7 +366,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Port:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -445,7 +445,7 @@ z: popup.z+1
             anchors.topMargin: 3
             text: "Use SSL"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         MouseArea{
             cursorShape: Qt.PointingHandCursor
@@ -463,7 +463,7 @@ z: popup.z+1
         anchors.topMargin: 15
         text: "Blink when:"
         color: "black"
-        font.pointSize: (!mw.mac())?8:10
+        font.pointSize: (!mw.mac())?8:11
         width: 75
     }
 
@@ -598,7 +598,7 @@ z: popup.z+1
                 anchors.top: parent.top
                 text: "Unread e-mails"
                 color: "black"
-                font.pointSize: (!mw.mac())?8:10
+                font.pointSize: (!mw.mac())?8:11
             }
         }
     }
@@ -649,7 +649,7 @@ z: popup.z+1
                 anchors.top: parent.top
                 text: "Subject contains:"
                 color: "black"
-                font.pointSize: (!mw.mac())?8:10
+                font.pointSize: (!mw.mac())?8:11
                 width: 120
             }
             Rectangle{
@@ -726,7 +726,7 @@ z: popup.z+1
                 anchors.top: parent.top
                 text: "Sender contains:"
                 color: "black"
-                font.pointSize: (!mw.mac())?8:10
+                font.pointSize: (!mw.mac())?8:11
                 width: 120
             }
             Rectangle{
@@ -833,7 +833,7 @@ z: popup.z+1
                 name: "GMAIL"
             }
         }
-        height: types.count*20
+        height: types.count*(mw.mac()?15:14)
         z: 99999999
         visible: false
 

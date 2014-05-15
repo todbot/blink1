@@ -296,20 +296,6 @@ void DataInput::onProcessFinished()
     emit toDelete(this);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void DataInput::startQml()
 {
     QNetworkRequest nr;
@@ -461,23 +447,6 @@ void DataInput::onProcessFinishedQml()
     }
     emit toDelete(this);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void DataInput::onError()
 {
