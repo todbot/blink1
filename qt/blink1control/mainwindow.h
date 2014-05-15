@@ -40,6 +40,11 @@
 #include <QAction>
 
 #include <QMenu>
+#include <QUrlQuery>
+#include <QPair>
+#include <QDesktopWidget>
+#include <QFont>
+#include <QFontMetrics>
 namespace Ui {
 class MainWindow;
 }
@@ -112,12 +117,13 @@ public slots:
     QList<QObject*> getBigButtons();
 
     void setColorToBlink(QColor,QString,int f=100);
+    void setColorToBlink2(QColor,int f);
     void removeRecentEvent(int idx);
     void removeAllRecentEvents();
 
     void removePattern(QString key);
     void removeInputAndPattern(QString key);
-    void removeInput(QString key);
+    void removeInput(QString key,bool update=false);
     void new_input_and_pattern(QString name,QString type,QString rule,QString pname,int repeats);
     void edit_input_and_pattern(QString name,QString type,QString rule,QString pname,int repeats,QString old_name);
     void addColorAndTimeToPattern(QString pname,QString color,double time);
@@ -188,7 +194,8 @@ public slots:
     void mark();
     void add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
     void edit_mail(QString oldname, QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
-    void remove_email(QString name);
+    void remove_email(QString name,bool update=false);
+    void updateMail();
     void setFreqToEmail(QString name,int freq);
     void setPatternNameToEmail(QString name, QString pn);
     void checkMail(QString name);
@@ -199,7 +206,8 @@ public slots:
     void changePatternReadOnly(QString s, bool ro);
     void copyPattern(QString name);
 
-    void remove_hardwareMonitor(QString name);
+    void remove_hardwareMonitor(QString name,bool update=false);
+    void updateHardware();
     void setFreqToHardwareMonitor(QString name,int freq);
     void setPatternNameToHardwareMonitor(QString name, QString pn);
 
@@ -210,6 +218,9 @@ public slots:
     void markHardwareEditing(QString s,bool e);
     void addToLog(QString txt);
     void resetAlertsOption();
+    bool checkIfCorrectPositionX(int x);
+    bool checkIfCorrectPositionY(int y,int bar);
+    int checkWordWidth(QString s,int size);
 private:
     QNetworkAccessManager *nam;
     QtQuick2ApplicationViewer viewer;
@@ -300,6 +311,9 @@ private slots:
     void setVRet(QString);
     void checkIfttt(QString);
     void checkIfttt(QString,Blink1Input*);
+    bool checkIfColor(QString);
+    bool checkIfNumber(QString,int);
+    bool checkIfPatternsStr(QString);
 };
 
 #endif // MAINWINDOW_H
