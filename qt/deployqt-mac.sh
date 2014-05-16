@@ -4,11 +4,11 @@
 #
 #
 
-APP_NAME=Blink1Control.app
+APP_NAME=Blink1Control
 
 BUILD_DIR=build-blink1control-Desktop_Qt_5_2_1_clang_64bit-Release
 
-EXE_PATH=${BUILD_DIR}/${APP_NAME}
+EXE_PATH=${BUILD_DIR}/${APP_NAME}.app
 
 
 # 
@@ -21,6 +21,6 @@ cp ../commandline/libBlink1.dylib ${EXE_PATH}/Contents/Frameworks
 
 # zip up
 pushd ${BUILD_DIR}
-zip -r ../${APP_NAME}-mac.zip ${APP_NAME}
+zip -r ../${APP_NAME}-mac.zip ${APP_NAME}.app
 popd
 
