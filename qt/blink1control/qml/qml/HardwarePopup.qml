@@ -118,7 +118,7 @@ Text{
             anchors.verticalCenter: parent.verticalCenter
             text: "Name:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -159,7 +159,7 @@ z: popup.z+1
             anchors.verticalCenter: parent.verticalCenter
             text: "Type:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
 
         Text{
@@ -248,7 +248,7 @@ z: popup.z+1
             anchors.left: activity.right
             anchors.leftMargin: 15
             anchors.verticalCenter: activity.verticalCenter
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
     }
 
@@ -292,7 +292,7 @@ z: popup.z+1
             anchors.left: alert.right
             anchors.leftMargin: 15
             anchors.verticalCenter: alert.verticalCenter
-            font.pointSize: (!mw.mac())?8:10
+            font.pointSize: (!mw.mac())?8:11
         }
 
         Text{
@@ -506,7 +506,7 @@ z: popup.z+1
                 name: "RAM"
             }
         }
-        height: htypes.count*20
+        height: htypes.count*(mw.mac()?15:14)
         z: 99999999
         visible: false
 
@@ -547,7 +547,7 @@ z: popup.z+1
                 name: ">= (higher than or equal)"
             }
         }
-        height: actions.count*20
+        height: actions.count*(mw.mac()?15:14)
         z: 99999999
         visible: false
 
