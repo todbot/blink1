@@ -33,6 +33,7 @@ class Email : public QObject
     Q_PROPERTY(QVariantList getErrorsList READ getErrorsList NOTIFY errorsUpdate)
 public:
     explicit Email(QString name, QObject *parent = 0);
+    ~Email();
     QJsonObject toJson();
     void fromJson( QJsonObject obj);
     QString getName();

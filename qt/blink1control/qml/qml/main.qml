@@ -23,8 +23,17 @@ Image{
                 var dx = mouseX - previousPosition.x
                 var dy = mouseY - previousPosition.y
                 //viewerWidget.pos = Qt.point(viewerWidget.x + dx,viewerWidget.pos.y + dy)
-                viewerWidget.setX(viewerWidget.x+dx);
-                viewerWidget.setY(viewerWidget.y+dy);
+                if(mw.checkIfCorrectPositionX(viewerWidget.x+dx)){
+                    viewerWidget.setX(viewerWidget.x+dx);
+                }else{
+                    previousPosition.x=mouseX
+                }
+
+                if(mw.checkIfCorrectPositionY(viewerWidget.y+dy,belka.height)){
+                    viewerWidget.setY(viewerWidget.y+dy);
+                }else{
+                    previousPosition.y=mouseY
+                }
             }
         }
     }
@@ -904,14 +913,13 @@ Image{
                     width: 27
                     height: parent.height
                     onClicked: {
-                        console.log("drop down menu")
+                        //console.log("drop down menu")
                         background2.visible=true
                         dropDownMenu.visible=true
                         dropDownMenu.checked=model.modelData.isReadOnly
                         dropDownMenu.pattern_name=model.modelData.name
                         dropDownMenu.x=colorPatternsPanel.x+lista.x+lista.currentItem.x+lista.currentItem.width-dropDownMenu.width
                         var tmp=colorPatternsPanel.y+lista.y+lista.currentItem.y+lista.currentItem.height-lista.contentY
-                        console.log("TMP: "+tmp)
                         if(tmp+dropDownMenu.height<mainWindow.height){
                             dropDownMenu.y=tmp-10
                         }else{
@@ -1255,7 +1263,7 @@ Image{
                                                 bigButtons2.currentIndex=index
                                                 bbti.oldName=bbti.text
                                                 bigButtonsMenu.popup()
-                                                if(mw.mac()) mw.updateBigButtons()
+                                                if(mw.mac()) w.updateBigButtons()
                                             }else{
                                                 exitEditMode()
                                                 bigButtons2.currentIndex=index
@@ -1441,7 +1449,19 @@ Image{
                         width: 800
                         MouseArea{
                             anchors.fill: parent
-                            onClicked: { exitEditMode(); inputsList.restoreName(); inputsList.currentIndex=index; }
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            onClicked: {
+                                exitEditMode();
+                                inputsList.restoreName();
+                                inputsList.currentIndex=index;
+                                if(mouse.button==Qt.RightButton){
+                                    iftttMenu.name=ti.inputname
+                                    iftttMenu.popup()
+                                    inputsList.restoreName();
+                                    inputsList.currentIndex=index
+                                    if(mw.mac()) mw.update()
+                                }
+                            }
                         }
                         Row{
                             id: c
@@ -1535,7 +1555,7 @@ Image{
                                         comboPattern.visible=true
                                         //comboPattern.x=pName.x
                                         comboPattern.x=tabs.parent.x+tabs.x+pattlist.x+inputsList.x+pName.x
-                                        comboPattern.y=tabs.parent.y+tabs.y+pattlist.y+tableTitle.y+inputsList.y+pName.parent.y
+                                        comboPattern.y=tabs.parent.y+tabs.y+pattlist.y+tableTitle.y+inputsList.y+pName.parent.y+inputsList.currentItem.y-inputsList.contentY+pName.y-1
                                         for(var i=0;i<inputsList.pnm.length;i++)
                                             if(inputsList.pnm[i]===pName.text){
                                                 comboPattern.curIn=i;
@@ -1594,7 +1614,7 @@ Image{
                                     exitEditMode();
                                     inputsList.restoreName();
                                     inputsList.currentIndex=-1
-                                    mw.removeInput(model.modelData.name)
+                                    mw.removeInput(model.modelData.name,true)
                                 }
                             }
                         }
@@ -1790,6 +1810,7 @@ Image{
                                     inputsList2.restoreName();
                                     inputsList2.restorePath();
                                     inputsList2.currentIndex=index
+                                    if(mw.mac()) mw.update()
                                 }
                             }
                         }
@@ -1878,7 +1899,7 @@ Image{
                                         comboPattern2.visible=true
                                         //comboPattern2.x=pName2.x
                                         comboPattern2.x=tabs.parent.x+tabs.x+toolslist.x+inputsList2.x+pName2.x
-                                        comboPattern2.y=tabs.parent.y+tabs.y+toolslist.y+tableTitle2.y+inputsList2.y+pName2.parent.y
+                                        comboPattern2.y=tabs.parent.y+tabs.y+toolslist.y+tableTitle2.y+inputsList2.y+pName2.parent.y+inputsList2.currentItem.y-inputsList2.contentY+pName2.y
                                         for(var i=0;i<comboPattern2.items.count;i++){
                                             if(comboPattern2.items.get(i).name===pName2.text){
                                                 comboPattern2.curIn=i;
@@ -2025,7 +2046,7 @@ Image{
                                         comboFreq.visible=true
                                         //comboFreq.x=pFreq.x
                                         comboFreq.x=tabs.parent.x+tabs.x+toolslist.x+inputsList2.x+pFreq.x
-                                        comboFreq.y=tabs.parent.y+tabs.y+toolslist.y+tableTitle2.y+inputsList2.y+pFreq.parent.y
+                                        comboFreq.y=tabs.parent.y+tabs.y+toolslist.y+tableTitle2.y+inputsList2.y+pFreq.parent.y+inputsList2.currentItem.y-inputsList2.contentY+pFreq.y
                                         for(var i=0;i<comboFreq.items.count;i++){
                                             if(comboFreq.items.get(i).name===pFreq.text){
                                                 comboFreq.curIn=i;
@@ -2069,7 +2090,7 @@ Image{
                                     inputsList2.restoreName();
                                     inputsList2.restorePath();
                                     inputsList2.currentIndex=-1
-                                    mw.removeInput(model.modelData.name)
+                                    mw.removeInput(model.modelData.name,true)
                                 }
                             }
                         }
@@ -2243,6 +2264,7 @@ Image{
                                     mailMenu.name=ti2M.inputname
                                     mailMenu.popup()
                                     inputsList2M.currentIndex=index
+                                    if(mw.mac()) mw.updateMail()
                                 }
                             }
                             onDoubleClicked: {
@@ -2314,7 +2336,7 @@ Image{
                                         comboFreqM.visible=true
                                         //comboFreqM.x=pFreqM.x
                                         comboFreqM.x=tabs.parent.x+tabs.x+maillist.x+inputsList2M.x+pFreqM.x
-                                        comboFreqM.y=tabs.parent.y+tabs.y+maillist.y+tableTitle2M.y+inputsList2M.y+pFreqM.parent.y
+                                        comboFreqM.y=tabs.parent.y+tabs.y+maillist.y+tableTitle2M.y+inputsList2M.y+pFreqM.parent.y+inputsList2M.currentItem.y-inputsList2M.contentY+2
                                         for(var i=0;i<comboFreqM.items.count;i++){
                                             if(comboFreqM.items.get(i).name===pFreqM.text){
                                                 comboFreqM.curIn=i;
@@ -2367,7 +2389,7 @@ Image{
 
                                         comboPatternM.visible=true
                                         comboPatternM.x=tabs.parent.x+tabs.x+maillist.x+inputsList2M.x+pNameM.x
-                                        comboPatternM.y=tabs.parent.y+tabs.y+maillist.y+tableTitle2M.y+inputsList2M.y+pNameM.parent.y
+                                        comboPatternM.y=tabs.parent.y+tabs.y+maillist.y+tableTitle2M.y+inputsList2M.y+pNameM.parent.y+inputsList2M.currentItem.y-inputsList2M.contentY+pNameM.y-1
                                         for(var i=0;i<inputsList2M.pnm.length;i++)
                                             if(inputsList2M.pnm[i]===pNameM.text){
                                                 comboPatternM.curIn=i;
@@ -2436,7 +2458,7 @@ Image{
                                 onClicked: {
                                     exitEditMode();
                                     inputsList2M.currentIndex=-1
-                                    mw.remove_email(model.modelData.name)
+                                    mw.remove_email(model.modelData.name,true)
                                 }
                             }
                         }
@@ -2605,10 +2627,11 @@ Image{
                                     hardwareMenu.name=ti2H.inputname
                                     hardwareMenu.popup()
                                     inputsList2H.currentIndex=index
+                                    if(mw.mac()) mw.updateHardware()
                                 }
                             }
                             onDoubleClicked: {
-                                console.log(model.modelData.done)
+                                //console.log(model.modelData.done)
                                 if(hardwarepopup.visible) return;
                                 mw.markHardwareEditing(model.modelData.name,true)
                                 hardwarepopup.oldname=model.modelData.name
@@ -2683,7 +2706,7 @@ Image{
                                         comboFreqH.visible=true
                                         //comboFreqM.x=pFreqM.x
                                         comboFreqH.x=tabs.parent.x+tabs.x+hardwarelist.x+inputsList2H.x+pFreqH.x
-                                        comboFreqH.y=tabs.parent.y+tabs.y+hardwarelist.y+tableTitle2H.y+inputsList2H.y+pFreqH.parent.y
+                                        comboFreqH.y=tabs.parent.y+tabs.y+hardwarelist.y+tableTitle2H.y+inputsList2H.y+pFreqH.parent.y+inputsList2H.currentItem.y-inputsList2H.contentY+pFreqH.y+pFreqH.y-2
                                         for(var i=0;i<comboFreqH.items.count;i++){
                                             if(comboFreqH.items.get(i).name===pFreqH.text){
                                                 comboFreqH.curIn=i;
@@ -2741,7 +2764,7 @@ Image{
 
                                         comboPatternH.visible=true
                                         comboPatternH.x=tabs.parent.x+tabs.x+hardwarelist.x+inputsList2H.x+pNameH.x
-                                        comboPatternH.y=tabs.parent.y+tabs.y+hardwarelist.y+tableTitle2H.y+inputsList2H.y+pNameH.parent.y
+                                        comboPatternH.y=tabs.parent.y+tabs.y+hardwarelist.y+tableTitle2H.y+inputsList2H.y+pNameH.parent.y+inputsList2H.currentItem.y-inputsList2H.contentY+pNameH.y-1
                                         for(var i=0;i<inputsList2H.pnm.length;i++)
                                             if(inputsList2H.pnm[i]===pNameH.text){
                                                 comboPatternH.curIn=i;
@@ -2802,7 +2825,7 @@ Image{
                                 onClicked: {
                                     exitEditMode();
                                     inputsList2H.currentIndex=-1
-                                    mw.remove_hardwareMonitor(model.modelData.name)
+                                    mw.remove_hardwareMonitor(model.modelData.name,true)
                                 }
                             }
                         }
@@ -2904,15 +2927,23 @@ Image{
         }
     }
     Menu {
+        id: iftttMenu
+        property string name: ""
+        MenuItem {
+            text: "Delete ifttt tool"
+            onTriggered: {  inputsList.currentIndex=-1; mw.removeInput(iftttMenu.name);}
+        }
+    }
+    Menu {
         id: toolsMenu
         property string name: ""
         MenuItem {
-            text: "Delete tool"
-            onTriggered: { mw.removeInput(toolsMenu.name); inputsList2.currentIndex=-1}
-        }
-        MenuItem {
             text: "Test tool"
             onTriggered: mw.checkInput(toolsMenu.name)
+        }
+        MenuItem {
+            text: "Delete tool"
+            onTriggered: {  inputsList2.currentIndex=-1; mw.removeInput(toolsMenu.name);}
         }
     }
     Menu {
@@ -2924,7 +2955,7 @@ Image{
         }
         MenuItem {
             text: "Delete mail"
-            onTriggered: {mw.remove_email(mailMenu.name); inputsList2M.currentIndex=-1}
+            onTriggered: { inputsList2M.currentIndex=-1; mw.remove_email(mailMenu.name);}
         }
     }
     Menu {
@@ -2936,7 +2967,7 @@ Image{
         }
         MenuItem {
             text: "Delete hardware monitor"
-            onTriggered: {/*mw.remove_email(mailMenu.name);*/ inputsList2H.currentIndex=-1}
+            onTriggered: { inputsList2H.currentIndex=-1; mw.remove_hardwareMonitor(hardwareMenu.name)}
         }
     }
     Menu {
@@ -3144,10 +3175,13 @@ Image{
     }
     function cutPath(path){
         var new_path=""
-        if(path.length>60){
-            new_path=path.substring(0,15);
+        //if(path.length>60){
+        var size=8;
+        if(mw.mac()) size=12;
+        if(mw.checkWordWidth(path,size)>183){
+            new_path=path.substring(0,10);
             new_path+="..."
-            new_path+=path.substring(path.length-15);
+            new_path+=path.substring(path.length-10);
         }else{
             new_path=path
         }
@@ -3155,10 +3189,14 @@ Image{
     }
     function cutPath2(path){
         var new_path=""
-        if(path.length>=15){
-            new_path=path.substring(0,4);
+        //if(path.length>=15){
+        var size=8;
+        if(mw.mac()) size=12;
+        var ile=mw.mac()?3:4;
+        if(mw.checkWordWidth(path,size)>90){
+            new_path=path.substring(0,ile);
             new_path+="..."
-            new_path+=path.substring(path.length-4);
+            new_path+=path.substring(path.length-ile);
         }else{
             new_path=path
         }
@@ -3215,7 +3253,6 @@ Image{
         MouseArea{
             anchors.fill: parent
             onClicked: {
-                console.log("CLICK")
                 parent.visible=false
                 comboPatternM.hide()
                 comboFreqM.hide()
@@ -3434,7 +3471,6 @@ Image{
             onClicked: {
                 parent.visible=false
                 dropDownMenu.visible=false
-                console.log("CLICK")
             }
         }
     }

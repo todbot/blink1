@@ -16,7 +16,7 @@ Email::Email(QString name,QObject *parent) :
     this->patternName="";
     this->lastid=-1;
     this->freq=60;
-    this->freqCounter=0;
+    this->freqCounter=1;
     this->value="NO VALUE";
     this->email="";
     this->unreadCount=0;
@@ -33,6 +33,20 @@ Email::Email(QString name,QObject *parent) :
 
     this->editing=false;
 }
+Email::~Email(){
+    if(socket!=NULL){
+        socket->abort();
+        delete socket;
+    }
+    if(time!=NULL){
+        disconnect(time);
+        time->stop();
+        delete time;
+    }
+    if(sc!=NULL)
+        delete sc;
+}
+
 void Email::checkMail(){
     qDebug()<<"checking mail "<<name<<" ...";
     addToLog("checking mail "+name+" ...");
