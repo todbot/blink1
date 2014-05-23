@@ -1101,6 +1101,12 @@ void MainWindow::startRead()
     QString mssg=client->readLine();
     mssg=mssg.replace("%23","#");
     bool invalid=false;
+
+    client->write("HTTP/1.0 200 OK\n");
+    client->write("Connecton: close\n");
+    client->write("Content-type: plain/text\n");
+    client->write("\n");
+
     if(mssg.indexOf("/blink1/")!=-1){
         //mssg=mssg.mid(8);
         qDebug()<<"MESSAGE: "<<mssg;
