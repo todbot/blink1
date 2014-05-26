@@ -80,9 +80,6 @@ macx {
     # FIXME: libBlink1 should be in .app/Contents/Frameworks now
     QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
 }
-# mac: note to deploy must do commandline magic of:
-# % macdeployqt Blink1Control.app -qmldir=./Blink1Control.app/Contents/Resources/qml -verbose=2
-# % mv test2.app/Contents/MacOS/libBlink1.dylib test2.app/Contents/Frameworks
 
 win32 {
     # confusingly, these both get run, why?
@@ -131,7 +128,7 @@ OTHER_FILES += \
     DropDownMenu.qml \
     MyInfo.plist
 
-CONFIG += CONSOLE
+#CONFIG += CONSOLE
 win32{
     RC_FILE =blink1.rc
 }
