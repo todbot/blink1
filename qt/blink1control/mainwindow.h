@@ -221,6 +221,9 @@ public slots:
     bool checkIfCorrectPositionX(int x);
     bool checkIfCorrectPositionY(int y,int bar);
     int checkWordWidth(QString s,int size);
+    void changeColorOnVirtualBlink(QColor);
+    bool checkIfColorIsTooBright(QString);
+    bool checkIfColorIsTooDark(QString);
 private:
     QNetworkAccessManager *nam;
     QtQuick2ApplicationViewer viewer;
@@ -290,6 +293,7 @@ private:
     bool logging;
     QFile *logFile;
     QTextStream *out;
+    bool fromPattern;
 signals:
     void patternsUpdate();
     void inputsUpdate();

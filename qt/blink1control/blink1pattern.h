@@ -39,7 +39,7 @@ public:
     void setPlaycount(int p);
     int isPlaying();
     void stop();
-    void play();
+    void play(QColor currentVirtualBlinkColor=QColor("black"));
 
     QList<QColor> getColorList();
     void resetObj();
@@ -81,6 +81,10 @@ private:
     QList<QColor> colors;
     QList<float> times;
     QList<int> leds;
+    double deltaR,deltaG,deltaB;
+    double startR,startG,startB;
+    int count;
+    int currentColor;
 
 public slots:
     void update();
@@ -88,6 +92,7 @@ signals:
     void colorChange();
     void setColor(QColor,QString,int);
     void playChange();
+    void changeColorOnVirtualBlink(QColor);
 
 };
 

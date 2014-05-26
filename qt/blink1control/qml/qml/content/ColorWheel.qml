@@ -97,20 +97,29 @@ Rectangle {
                             color: colorCode
                             border.width: (gridSimpleColors.borderIndex == index)?3:0//parseInt(parent.width / 5):0
                             border.color: "black"
+                            Rectangle{
+                                visible: mw.checkIfColorIsTooDark(colorCode) && gridSimpleColors.borderIndex == index
+                                anchors.centerIn: parent
+                                color: "transparent"
+                                border.width: 2
+                                border.color: "white"
+                                width: parent.width-2
+                                height: parent.height-2
+                                radius: 2
+                            }
 
-
-                            MouseArea {                                
+                            MouseArea {
                                 anchors.fill: parent
-                                onClicked: {                                    
+                                onClicked: {
                                     setColorRgb(parseInt(parent.color.r*255), parseInt(parent.color.g*255), parseInt(parent.color.b*255));
                                     gridSimpleColors.borderIndex = index
                                 }
                             }
-                    }
+                        }
                         MouseArea {
                             cursorShape: Qt.PointingHandCursor
                             anchors.fill: parent
-                            onClicked: {                                
+                            onClicked: {
                                 setColorRgb(parseInt(rectCol.color.r*255), parseInt(rectCol.color.g*255), parseInt(rectCol.color.b*255));
                                 gridSimpleColors.borderIndex = index
                             }
@@ -140,16 +149,16 @@ Rectangle {
         height: 180
         fillMode: Image.Stretch
         //source: "ColorWheelImg/transparent.png"
-Image{
-    //anchors.centerIn: parent
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.verticalCenter: parent.verticalCenter
-    anchors.horizontalCenterOffset: -2
-    anchors.verticalCenterOffset: 1
-    source: "ColorWheelImg/gradient-circle.png"
-    width: 200
-    height: 200
-}
+        Image{
+            //anchors.centerIn: parent
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenterOffset: -2
+            anchors.verticalCenterOffset: 1
+            source: "ColorWheelImg/gradient-circle.png"
+            width: 200
+            height: 200
+        }
         Rectangle {
             id: pointer
             x: 85
@@ -270,23 +279,23 @@ Image{
                 cursorShape: Qt.PointingHandCursor
             }
             style: SliderStyle {
-                    groove: Rectangle {
-                        implicitWidth: 200
-                        implicitHeight: 8
-                        color: "transparent"
-                        radius: 8
-                    }
-                    handle: Rectangle {
-                        anchors.centerIn: parent
-                        color: control.pressed ? "white" : "lightgray"
-                        //color: "transparent"
-                        border.color: "gray"
-                        border.width: 2
-                        width: 20
-                        height: 20
-                        radius: 12
-                    }                    
+                groove: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 8
+                    color: "transparent"
+                    radius: 8
                 }
+                handle: Rectangle {
+                    anchors.centerIn: parent
+                    color: control.pressed ? "white" : "lightgray"
+                    //color: "transparent"
+                    border.color: "gray"
+                    border.width: 2
+                    width: 20
+                    height: 20
+                    radius: 12
+                }
+            }
 
             onValueChanged: {
                 if(!sliderValue.updateValueWhileDragging)
@@ -307,8 +316,8 @@ Image{
                 spinGreen.value = green;
                 spinBlue.value = blue;
                 textHex.text = currentColor.color = "#" + intToHex(spinRed.value) + intToHex(spinGreen.value) + intToHex(spinBlue.value);
-currentColorName=textHex.text
-            }            
+                currentColorName=textHex.text
+            }
         }
 
         Rectangle{
@@ -333,10 +342,6 @@ currentColorName=textHex.text
     }
 
 
-
-
-
-
     Rectangle {
         id: rectangleRGB
         width: 107
@@ -349,7 +354,7 @@ currentColorName=textHex.text
         Label {
             id: label1
             x: 0
-            y: 9
+            y: -5//9
             text: "Time (s):"
             font.pointSize: if(mw.mac()) 11; else 8;
         }
@@ -367,7 +372,7 @@ currentColorName=textHex.text
             id: spinTime
             font.pointSize: (!mw.mac())?10:12
             x: 47
-            y: 6
+            y: -6
             width: 62
             //height: 20
             maximumValue: 360
@@ -375,8 +380,8 @@ currentColorName=textHex.text
             value: 0
             stepSize: 0.1
             onValueChanged: {
-                            time = spinTime.value;
-                        }
+                time = spinTime.value;
+            }
         }
 
         Label {
@@ -405,7 +410,7 @@ currentColorName=textHex.text
             maximumValue: 255
             value: 255
 
-            onValueChanged: {                
+            onValueChanged: {
                 if(!rec.start) return;
                 if(!pointerArea.pressed && !sliderValue.pressed)// && !editMode)
                     rgbToHsl();
@@ -416,7 +421,7 @@ currentColorName=textHex.text
         Label {
             id: label3
             x: 31
-            y: 70
+            y: 65//70
             text: "G:"
             font.pointSize:  if(mw.mac()) 11; else 8;
         }
@@ -433,11 +438,11 @@ currentColorName=textHex.text
             id: spinGreen
             font.pointSize: (!mw.mac())?10:12
             x: 47
-            y: 66
+            y: 62//66
             width: 62
             //height: 20
             maximumValue: 255
-            onValueChanged: {                
+            onValueChanged: {
                 if(!rec.start) return;
                 if(!pointerArea.pressed && !sliderValue.pressed)// && !editMode)
                     rgbToHsl();
@@ -448,7 +453,7 @@ currentColorName=textHex.text
         Label {
             id: label4
             x: 32
-            y: 100
+            y: 90//100
             text: "B:"
             font.pointSize:  if(mw.mac()) 11; else 8;
         }
@@ -465,11 +470,11 @@ currentColorName=textHex.text
             id: spinBlue
             font.pointSize: (!mw.mac())?10:12
             x: 47
-            y: 96
+            y: 88//96
             width: 62
             //height: 20
             maximumValue: 255
-            onValueChanged: {                
+            onValueChanged: {
                 if(!rec.start) return;
                 if(!pointerArea.pressed && !sliderValue.pressed)// && !editMode)
                     rgbToHsl();
@@ -480,7 +485,7 @@ currentColorName=textHex.text
         TextField {
             id: textHex
             x: 47
-            y: 125
+            y: 132//125
             width: 62
             height: 22
             text: "FF0000"
@@ -503,7 +508,7 @@ currentColorName=textHex.text
         Label {
             id: label5
             x: 0
-            y: 129
+            y: 134//129
             width: 42
             height: 14
             text: "HEX #"
@@ -542,8 +547,8 @@ currentColorName=textHex.text
     function getWheelCirclePos(x, y)
     {
         var angle;
-//        x = Math.ceil(x-(imageColorWheel.width/2));
-//        y = Math.ceil((imageColorWheel.height/2)-y);
+        //        x = Math.ceil(x-(imageColorWheel.width/2));
+        //        y = Math.ceil((imageColorWheel.height/2)-y);
         if(x<0 && y<0) {
             x = -x;
             y = -y;
@@ -835,12 +840,12 @@ currentColorName=textHex.text
         sliderValue.value = brightness;
 
 
-//        colorRectangle.rotation = sliderHue.value + 315;
-//        colorSelector.rotation = sliderHue.value - 90;
+        //        colorRectangle.rotation = sliderHue.value + 315;
+        //        colorSelector.rotation = sliderHue.value - 90;
 
         currentColor.color = "#" + intToHex(spinRed.value) + intToHex(spinGreen.value) + intToHex(spinBlue.value);
         textHex.text = intToHex(spinRed.value) + intToHex(spinGreen.value) + intToHex(spinBlue.value);
-currentColorName = textHex.text;
+        currentColorName = textHex.text;
         spinTime.value = parseFloat(time);
     }
     function getCurrentColor() {
