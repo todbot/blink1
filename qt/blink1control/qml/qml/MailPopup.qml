@@ -256,20 +256,25 @@ z: popup.z+1
             border.color: "#CDCFD2"
             width: parent.width
             height: parent.height
-            TextInput{
-                id: mailserver
-                color: "black"
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.leftMargin: 5
-                anchors.topMargin: 5
-                width: 290
-                height: 30
-                font.pointSize: (!mw.mac())?10:12
-                //clip: true
-                selectByMouse: true
-                maximumLength: 24
-                KeyNavigation.tab: username
+            Item{
+                anchors.fill: parent
+                clip: true
+
+                TextInput{
+                    id: mailserver
+                    color: "black"
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.leftMargin: 5
+                    anchors.topMargin: 5
+                    width: 290
+                    height: 30
+                    font.pointSize: (!mw.mac())?10:12
+                    //clip: true
+                    selectByMouse: true
+                    maximumLength: 40
+                    KeyNavigation.tab: username
+                }
             }
         }
     }
@@ -296,20 +301,24 @@ z: popup.z+1
             border.color: "#CDCFD2"
             width: parent.width
             height: parent.height
-            TextInput{
-                id: username
-                color: "black"
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.leftMargin: 5
-                anchors.topMargin: 5
-                width: 290
-                height: 30
-                font.pointSize: (!mw.mac())?10:12
-                //clip: true
-                selectByMouse: true
-                maximumLength: 24
-                KeyNavigation.tab: password
+            Item{
+                anchors.fill: parent
+                clip: true
+                TextInput{
+                    id: username
+                    color: "black"
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.leftMargin: 5
+                    anchors.topMargin: 5
+                    width: 290
+                    height: 30
+                    font.pointSize: (!mw.mac())?10:12
+                    //clip: true
+                    selectByMouse: true
+                    maximumLength: 40
+                    KeyNavigation.tab: password
+                }
             }
         }
     }
@@ -336,21 +345,25 @@ z: popup.z+1
             border.color: "#CDCFD2"
             width: parent.width
             height: parent.height
-            TextInput{
-                echoMode: TextInput.Password
-                id: password
-                color: "black"
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.leftMargin: 5
-                anchors.topMargin: 5
-                width: 290
-                height: 30
-                font.pointSize: (!mw.mac())?10:12
-                //clip: true
-                selectByMouse: true
-                maximumLength: 24
-                KeyNavigation.tab: port
+            Item{
+                anchors.fill: parent
+                clip: true
+                TextInput{
+                    echoMode: TextInput.Password
+                    id: password
+                    color: "black"
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.leftMargin: 5
+                    anchors.topMargin: 5
+                    width: 290
+                    height: 30
+                    font.pointSize: (!mw.mac())?10:12
+                    //clip: true
+                    selectByMouse: true
+                    maximumLength: 40
+                    KeyNavigation.tab: port
+                }
             }
         }
     }

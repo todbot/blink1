@@ -7,6 +7,8 @@ Blink1Input::Blink1Input(QObject *parent) :
     mdate=-1;
     mfreq=3;
     mfreqCounter=0;
+    toDelete=false;
+    isChecking=false;
 }
 
 

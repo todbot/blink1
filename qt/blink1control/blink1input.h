@@ -63,6 +63,9 @@ private:
     int mdate;
     int mfreq;
     int mfreqCounter;
+public:
+    bool toDelete;
+    bool isChecking;
 
 };
 

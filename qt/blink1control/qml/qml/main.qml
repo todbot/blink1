@@ -694,7 +694,26 @@ Image{
                             height: 15
                             color: model.modelData
                             border.color: "black"
-                            border.width: (colors.currentIndex==index)?3:0
+                            border.width: {
+                                if(colors.currentIndex==index)
+                                    3
+                                else{
+                                    if(mw.checkIfColorIsTooBright(model.modelData))
+                                        1
+                                    else
+                                        0
+                                }
+                            }
+                            Rectangle{
+                                visible: mw.checkIfColorIsTooDark(model.modelData) && colors.currentIndex==index
+                                anchors.centerIn: parent
+                                color: "transparent"
+                                border.width: 2
+                                border.color: "white"
+                                width: parent.width-2
+                                height: parent.height-2
+                                radius: 3
+                            }
                             radius: 3
                             anchors.verticalCenter: parent.verticalCenter
                             MouseArea{
