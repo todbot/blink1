@@ -114,7 +114,7 @@ void Blink1Pattern::update()
 {
     if(!mplaying) return;
 
-    mplaypos++;
+    /*mplaypos++;
     if(mplaypos==colors.count()){
         mplaypos=0;
         mplaycount++;
@@ -122,19 +122,69 @@ void Blink1Pattern::update()
     if(mplaycount==mrepeats+(mrepeats!=-1)?1:0){
         stop();
         return;
-    }
+    }*/
     t->stop();
     delete t;
-    t=new QTimer(this);
+    t=NULL;
+    /*t=new QTimer(this);
     t->setInterval((int)(activeTime()*1000));
     t->setSingleShot(true);
     connect(t,SIGNAL(timeout()),this,SLOT(update()));
     t->start();
 
-    emit setColor(activeColor(),mname,activeTime());
+    emit setColor(activeColor(),mname,activeTime());*/
+    //emit changeColorOnVirtualBlink(QColor(255,255,0));
+
+    currentColor++;
+    if(currentColor<count){
+        startR+=deltaR;
+        startG+=deltaG;
+        startB+=deltaB;
+        t=new QTimer(this);
+        t->setInterval(50);
+        t->setSingleShot(true);
+        connect(t,SIGNAL(timeout()),this,SLOT(update()));
+        t->start();
+        emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+    }else{
+        currentColor=0;
+        mplaypos++;
+        if(mplaypos==colors.count()){
+            mplaypos=0;
+            mplaycount++;
+        }
+        count=activeTime()*1000/50;
+        currentColor=0;
+        startR+=deltaR;
+        startG+=deltaG;
+        startB+=deltaB;
+        deltaR=(activeColor().red()-startR)*1.0/count;
+        deltaG=(activeColor().green()-startG)*1.0/count;
+        deltaB=(activeColor().blue()-startB)*1.0/count;
+        //startR=activeColor().red();
+        //startG=activeColor().green();
+        //startB=activeColor().blue();
+        t=new QTimer(this);
+        t->setInterval(50);
+        t->setSingleShot(true);
+        connect(t,SIGNAL(timeout()),this,SLOT(update()));
+        t->start();
+        emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+
+        if(mplaycount==mrepeats+(mrepeats!=-1)?1:0){
+            stop();
+            return;
+        }
+        emit setColor(activeColor(),mname,activeTime());
+    }
+    /*qDebug()<<"curCol "<<currentColor;
+    qDebug()<<"next color: "<<activeColor().name();
+    qDebug()<<"Delta: "<<deltaR<<" "<<deltaG<<" "<<deltaB;
+    qDebug()<<"Start: "<<startR<<" "<<startG<<" "<<startB;
+    qDebug()<<QColor(startR,startG,startB).name();*/
 }
 
-void Blink1Pattern::play()
+void Blink1Pattern::play(QColor currentVirtualBlinkColor)
 {
     //qDebug() << "play:";
     if(mplaying) return;
@@ -143,10 +193,31 @@ void Blink1Pattern::play()
     mplaying=true;
     emit playChange();
     t=new QTimer(this);
-    t->setInterval((int)(activeTime()*1000));
+    /*t->setInterval((int)(activeTime()*1000));
+    t->setSingleShot(true);
+    connect(t,SIGNAL(timeout()),this,SLOT(update()));
+    t->start();*/
+    count=activeTime()*1000/50;
+    currentColor=0;
+    startR=currentVirtualBlinkColor.red();
+    startG=currentVirtualBlinkColor.green();
+    startB=currentVirtualBlinkColor.blue();
+    deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0/count;
+    deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0/count;
+    deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0/count;
+
+
+
+    t->setInterval(50);//(int)(activeTime()*1000));
     t->setSingleShot(true);
     connect(t,SIGNAL(timeout()),this,SLOT(update()));
     t->start();
+    /*qDebug()<<"Count "<<count;
+    qDebug()<<"next color: "<<activeColor().name();
+    qDebug()<<"Delta: "<<deltaR<<" "<<deltaG<<" "<<deltaB;
+    qDebug()<<"Start: "<<startR<<" "<<startG<<" "<<startB;
+    qDebug()<<QColor(startR,startG,startB).name();*/
+    emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
     emit setColor(activeColor(),mname,activeTime());
 }
 
