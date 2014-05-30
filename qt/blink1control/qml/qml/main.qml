@@ -1282,7 +1282,7 @@ Image{
                                                 bigButtons2.currentIndex=index
                                                 bbti.oldName=bbti.text
                                                 bigButtonsMenu.popup()
-                                                if(mw.mac()) w.updateBigButtons()
+                                                if(mw.mac()) mw.updateBigButtons()
                                             }else{
                                                 exitEditMode()
                                                 bigButtons2.currentIndex=index
