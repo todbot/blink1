@@ -168,6 +168,7 @@ void DataInput::onFinished()
     {
     case 0: {
         txt = reply->readAll();
+        qDebug()<<txt;
         QString dateString = "";
         if(input->type().toUpper() == "IFTTT.COM") {
 

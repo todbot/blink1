@@ -244,7 +244,7 @@ void MainWindow::updateInputs()
     delete it;
     it = new QMapIterator<QString, Blink1Input*>(inputs);
     it->toFront();
-    /*while(it->hasNext())
+    while(it->hasNext())
     {
         it->next();
         key = it->key();
@@ -309,7 +309,7 @@ void MainWindow::updateInputs()
                     inputs[key]->changeFreqCounter();
                 }
             }
-    }*/
+    }
 
     delete it2;
     it2 = new QMapIterator<QString, Email*>(emails);
