@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     srand(0);
     logFile=NULL;
     out=NULL;
+    mode = NONE;
+    counter=0;
 
     loadSettings();
     qDebug()<<"LOGGING: "<<logging;    
@@ -66,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
         emit bigButtonsUpdate();
     }
 
-    cc = QColor(0,0,0);
+    cc = QColor(100,100,100);
 
     QIcon ico = QIcon(":/images/blink1-icon0.png");
     setWindowIcon(ico);
@@ -105,9 +107,6 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
     trayIcon->show();
 
-    mode=NONE;
-
-    counter=0;
 
 
     nam = new QNetworkAccessManager(this);
@@ -156,6 +155,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     it2 = new QMapIterator<QString, Email*>(emails);
     it3 = new QMapIterator<QString, HardwareMonitor*>(hardwareMonitors);
+
+    setColorToBlink2(cc,400);
 }
 
 void MainWindow::qu(QQuickCloseEvent*){
@@ -351,6 +352,7 @@ void MainWindow::updateInputs()
 
 void MainWindow::checkIfttt(QString txt)
 {
+    //qDebug() << "todtest: checkIfttt(txt) " << txt;
     int date=-1;
     QString dateString = "";
     QString name = "";
@@ -440,6 +442,8 @@ void MainWindow::checkIfttt(QString txt)
 }
 void MainWindow::checkIfttt(QString txt, Blink1Input *in)
 {
+    //qDebug() << "todtest: checkIfttt(txt,in) " << txt << "," << in;
+
     int date=-1;
     QString dateString = "";
     QString name = "";
@@ -844,7 +848,7 @@ void MainWindow::updateBlink1()
     }
 
     if( setBlink1 ) {
-        qDebug() << "updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc;
+        qDebug() << "todtest: updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc;
         if(blink1dev!=NULL) 
             blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue() ,led);
         if(!fromPattern)
@@ -858,7 +862,7 @@ void MainWindow::colorChanged(QColor c)
     cc = c; 
     fadeSpeed = 0;  // FIXME: should get fadespeed from pattern
     mode=RGBSET;
-    qDebug("colorChanged");
+    //qDebug("todtest: colorChanged");
     updateBlink1();
 }
 
@@ -1102,6 +1106,10 @@ void MainWindow::showhideDockIcon(){
     settings.setValue("LSUIElement",(dockIconAction->isChecked())?0:1);
     #endif
 }
+
+//
+// HTTP Server begin
+//
 void MainWindow::startStopServer(){
     if(!serverAction->isChecked()){
         for(int i=0;i<clientConnections.count();i++)
@@ -1151,8 +1159,8 @@ void MainWindow::startRead()
     QUrlQuery qurlquery = QUrlQuery( qurl.query() );
     QString path = qurl.path();
     
-    path = path.replace( QRegExp("/$"), ""); // replace optional trailing slash
-    QString cmd = QString(path).replace("/blink1","");  // remove /blink1 cmd xprefix
+    path = path.replace( QRegExp("/$"), ""); // replace optional trailing slash from path
+    QString cmd = QString(path).replace("/blink1","");  // remove /blink1 cmd prefix
     
     if( cmd == "/id" ) { 
         resp.insert("blink_id",iftttKey);
@@ -1376,6 +1384,10 @@ void MainWindow::discardClient(){
     clientConnections.removeAll(s);
     s->deleteLater();
 }
+
+//
+// HTTP Server end
+//
 
 QList<QObject*> MainWindow::getList(){
     QList<QObject*> patternsList;
