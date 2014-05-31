@@ -47,7 +47,8 @@ HEADERS  += mainwindow.h \
     email.h \
     simplecrypt.h \
     hardwaremonitor.h \
-    Cursorshapearea.h
+    Cursorshapearea.h \
+    patternsReadOnly.h
 
 #FORMS    += mainwindow.ui
 

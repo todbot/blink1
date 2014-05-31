@@ -13,6 +13,8 @@
 #include <QSsl>
 #include <QSslError>
 
+#include "patternsReadOnly.h"
+
 enum {
     NONE = 0,
     RGBSET,
@@ -649,6 +651,7 @@ void MainWindow::saveSettings()
     QJsonArray qarrp;
     foreach (QString nm, patterns.keys() ) {
         if(!patterns.value(nm)) continue;
+        if(patterns.value(nm)->isSystem()) continue;
         QJsonObject obj = patterns.value(nm)->toJson();
         qarrp.append(obj);
     }
@@ -715,6 +718,20 @@ void MainWindow::loadSettings()
     startmin=settings.value("startmin","").toBool();
     enableServer=settings.value("server","").toBool();
     logging=settings.value("logging","").toBool();
+
+    // read only patterns
+    QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
+    qDebug() <<  patternsReadOnly;
+    qDebug() << doc.toJson();
+    QJsonArray qarr = doc.array();
+    for( int i=0; i< qarr.size(); i++ ) {
+        Blink1Pattern* bp = new Blink1Pattern();
+        bp->fromJson( qarr.at(i).toObject() );
+        patterns.insert( bp->name(), bp );
+        connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlink(QColor,QString,int)));
+        connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
+    }
+
     QString sPatternStr = settings.value("patterns","").toString();
     if( sPatternStr.length() ) {
         QJsonDocument doc = QJsonDocument::fromJson( sPatternStr.toLatin1() );
@@ -1037,10 +1054,10 @@ void MainWindow::setAutorun(){
 #ifdef Q_OS_MAC
         QStringList arg;
         arg.append("unload");
-        arg.append(QDir::homePath()+"/Library/LaunchAgents/test2.plist");
+        arg.append(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
         QProcess *myProcess = new QProcess();
         myProcess->start("launchctl", arg);
-        QFile file(QDir::homePath()+"/Library/LaunchAgents/test2.plist");
+        QFile file(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
         if( file.exists())
             file.remove();
 #endif
@@ -1056,16 +1073,16 @@ void MainWindow::setAutorun(){
                 QDir d(QDir::homePath()+"/Library");
                 d.mkdir(QDir::homePath()+"/Library/LaunchAgents");
             }
-            QFile file(QDir::homePath()+"/Library/LaunchAgents/test2.plist");
+            QFile file(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
             file.open(QIODevice::WriteOnly | QIODevice::Text);
             QTextStream out(&file);
-            out <<"<plist version=\"1.0\"><dict><key>Label</key><string>test2</string><key>RunAtLoad</key><true/><key>Program</key><string>/Applications/test2.app/Contents/MacOS/test2</string></dict></plist>";
+            out <<"<plist version=\"1.0\"><dict><key>Label</key><string>Blink1Control</string><key>RunAtLoad</key><true/><key>Program</key><string>/Applications/Blink1Control.app/Contents/MacOS/Blink1Control</string></dict></plist>";
             file.close();
 
             QProcess *myProcess = new QProcess();
             QStringList arg;
             arg.append("load");
-            arg.append(QDir::homePath()+"/Library/LaunchAgents/test2.plist");
+            arg.append(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
             myProcess->start("launchctl", arg);
         #endif
         #ifdef Q_OS_WIN
@@ -1090,7 +1107,7 @@ void MainWindow::startStopServer(){
         connect(&server, SIGNAL(newConnection()),this, SLOT(acceptConnection()));
         server.listen(QHostAddress::LocalHost, 8934);
     }
-    qDebug()<<"SERVES IS "<<server.isListening();
+    qDebug()<<"SERVER IS "<<server.isListening();
     addToLog("SERVER IS "+QString::number(server.isListening()));
 }
 void MainWindow::acceptConnection()
@@ -1106,201 +1123,104 @@ void MainWindow::startRead()
 {
     QTcpSocket *client=(QTcpSocket*)sender();
     QString mssg=client->readLine();
-    mssg=mssg.replace("%23","#");
-    bool invalid=false;
 
-    client->write("HTTP/1.0 200 OK\n");
+    client->write("HTTP/1.0 200 OK\n");  // FIXME: not always 200 OK
     client->write("Connecton: close\n");
     client->write("Content-type: plain/text\n");
     client->write("\n");
 
-    if(mssg.indexOf("/blink1/")!=-1){
-        //mssg=mssg.mid(8);
-        qDebug()<<"MESSAGE: "<<mssg;
-        addToLog("MESSAGE: "+mssg);
+    QJsonObject resp;  // response object
+    
+    // msg line in form: "GET /path?querystring HTTP/1.0", we want middle part
+    QStringList qsl = mssg.split(" ");
+    if( qsl.count() < 2 ) { 
+        resp.insert("status",QString("bad request"));  // FIXME:should set HTTP header
+        QJsonDocument jd(resp);
+        client->write( jd.toJson() );
+        client->close();
+        return;
+    }
 
-        mssg=QString(mssg).split(QRegExp(" "))[1];        
-        mssg=mssg.mid(8);
-        QStringList tokens = QString(mssg).split(QRegExp("(\\?|\\=|\\&)"));
-        QList<QPair<QString,QString> > args;
-        if(mssg.indexOf("?")!=-1)
-            args=QUrlQuery(mssg.mid(mssg.indexOf("?")+1)).queryItems();
-        QString request=mssg.left(mssg.indexOf("?"));
-        qDebug()<<request;
-        qDebug()<<args;
-        if(request=="id"){
-            QJsonObject ob;
-            ob.insert("blink_id",iftttKey);
-            QJsonArray ja;
-            int n=blink1_getCachedCount();
-            if(n>0){
-                for(int i=0;i<n;i++)
-                    ja.append(QJsonValue(QString(blink1_getCachedSerial(i))));
-            }
-            ob.insert("blink1_serialnums",ja);
-            ob.insert("status",QString("blink1 id"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="regenerateblink1id"){
-            QJsonObject ob;
-            ob.insert("blink_id_old",iftttKey);
-            QString ifttt_tmp="";
-            srand(time(NULL));
-            for(int i=0;i<8;i++){
-                int tmp=rand()%55+48;
-                while((tmp>=58 && tmp<=96))
-                    tmp=rand()%55+48;
-                ifttt_tmp.append(QChar(tmp).toLatin1());
-            }
-            iftttKey=ifttt_tmp+iftttKey.right(8);
-            emit deviceUpdate();
-
-            ob.insert("blink_id",iftttKey);
-            ob.insert("status",QString("regenerate id"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-            emit iftttUpdate();
-        }else if(request=="enumerate"){
-            QJsonObject ob;
-            QJsonArray ja;
-            ob.insert("blink_id_old",iftttKey);
-            QString ifttt_tmp="";
-            ifttt_tmp=iftttKey.left(8);
-            if(blink1dev!=NULL){
-                blink1_close(blink1dev);
-                blink1dev=NULL;
-            }
-            blink1_disableDegamma();
-            int n=blink1_enumerate();
-            blink1dev =  blink1_open();
-            if( n ) {
-                char ser[10];
-                char iftttkey2[20];
-                sprintf(ser,"%s",blink1_getCachedSerial(0));
-                sprintf(iftttkey2, "%s",ser);
-                blinkStatus="blink(1) connected";
-                blinkKey=ser;
-                iftttKey=ifttt_tmp+iftttkey2;
-                mk2=blink1_isMk2(blink1dev);
-                emit deviceUpdate();
-            }else {
-                blinkStatus="no blink(1) found";
-                iftttKey=ifttt_tmp+"00000000";
-                blinkKey="none";
-            }
-            ob.insert("blink_id",iftttKey);
-
-            if(n>0){
-                for(int i=0;i<n;i++)
-                    ja.append(QJsonValue(QString(blink1_getCachedSerial(i))));
-            }
-
-            ob.insert("blink1_serialnums",ja);
-            ob.insert("status",QString("enumerate"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-            emit iftttUpdate();
-
-        }else if(request=="fadeToRGB"){
-            //qDebug()<<tokens;
-            if(args.count()==2 && args.at(0).first=="rgb" && checkIfColor(args.at(0).second) && args.at(1).first=="time" && checkIfNumber(args.at(1).second,1)){
-                QJsonObject ob;
-                QString cc=args.at(0).second;
-                ob.insert("rgb",cc);
-                double time=0.1;
-                time=args.at(1).second.toDouble();
-                ob.insert("status",request+": "+cc+" t:"+QString::number(time));
-                ob.insert("time",QString::number(time));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-                setColorToBlink2(QColor(cc),time*1000);
-            }else{
-                invalid=true;
-            }
-            /*QJsonObject ob;
-            ob.insert("rgb",tokens[2].replace("%23","#"));
-            double time=0.1;
-            if(tokens.length()==5) time=tokens[4].toDouble();
-            ob.insert("status",tokens[0]+": "+tokens[2]+" t:"+QString::number(time));
-            ob.insert("time",QString::number(time));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-            setColorToBlink(QColor(tokens[2].replace("%23","#"))," ",time*1000);*/
-        }else if(request=="on"){
-            stopPattern(activePatternName);
-            QJsonObject ob;
-            QString cc="#FFFFFF";
-            ob.insert("rgb",cc);
-            double time=0.1;
-            ob.insert("status",request+": "+cc+" t:"+QString::number(time));
-            ob.insert("time",QString::number(time));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-            setColorToBlink2(QColor(cc),time*1000);
-        }else if(request=="off"){
-            stopPattern(activePatternName);
-            QJsonObject ob;
-            QString cc="#000000";
-            ob.insert("rgb",cc);
-            double time=0.1;
-            ob.insert("status",request+": "+cc+" t:"+QString::number(time));
-            ob.insert("time",QString::number(time));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-            setColorToBlink2(QColor(cc),time*1000);
-        }else if(request=="lastColor"){
-            QJsonObject ob;
-            ob.insert("lastColor",cc.name());
-            ob.insert("status",QString("last color"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="logging"){
-            if(args.count()==1 && args.at(0).first=="loglevel" && (args.at(0).second=="0" || args.at(0).second=="1")){
-                QJsonObject ob;
-                if(logging){
-                    logFile->close();
-                    delete logFile;
-                    delete out;
-                    logFile=NULL;
-                    out=NULL;
-                }
-                logging=args.at(0).second.toInt();
-                if(logging){
-                    logFile=new QFile("log.txt");
-                    if (!logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append)){
-                        qDebug()<<"File open error";
-                        delete logFile;
-                        logFile=NULL;
-                    }else{
-                        out=new QTextStream(logFile);
-                    }
-                }
-                ob.insert("loglevel",logging);
-                ob.insert("status",QString("logging"));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }else{
-                invalid=true;
-            }
-
-            /*QJsonObject ob;
-            if(logging){
+    QString query = qsl[1];  // get /path?querystring part, ignore HTTP method & version for now
+    QUrl qurl = QUrl( query );
+    QUrlQuery qurlquery = QUrlQuery( qurl.query() );
+    QString path = qurl.path();
+    
+    path = path.replace( QRegExp("/$"), ""); // replace optional trailing slash
+    QString cmd = QString(path).replace("/blink1","");  // remove /blink1 cmd xprefix
+    
+    if( cmd == "/id" ) { 
+        resp.insert("blink_id",iftttKey);
+        QJsonArray ja;
+        int n=blink1_getCachedCount();
+        if(n>0){
+            for(int i=0;i<n;i++)
+                ja.append(QJsonValue(QString(blink1_getCachedSerial(i))));
+        }
+        resp.insert("blink1_serialnums",ja);
+        resp.insert("status",QString("blink1 id"));
+    }
+    else if( cmd == "/regenerateblink1id" ) { 
+        resp.insert("blink_id_old",iftttKey);
+        QString ifttt_tmp="";
+        srand(time(NULL));
+        for(int i=0;i<8;i++){
+            int tmp=rand()%55+48;
+            while((tmp>=58 && tmp<=96))
+                tmp=rand()%55+48;
+            ifttt_tmp.append(QChar(tmp).toLatin1());
+        }
+        iftttKey=ifttt_tmp+iftttKey.right(8);
+        emit deviceUpdate();
+        
+        resp.insert("blink_id",iftttKey);
+        resp.insert("status",QString("regenerate id"));
+        emit iftttUpdate();
+    }
+    else if( cmd == "/on" ) { 
+        stopPattern(activePatternName);
+        QString cstr = "#FFFFFF";
+        double time=0.1;
+        resp.insert("rgb",cstr);
+        resp.insert("status", cmd+": "+cstr+" t:"+QString::number(time));
+        resp.insert("time",QString::number(time));
+        setColorToBlink2(QColor(cstr),time*1000);
+    }
+    else if( cmd == "/off" ) { 
+        stopPattern(activePatternName);
+        QString cstr = "#FFFFFF";
+        double time=0.1;
+        resp.insert("rgb",cstr);
+        resp.insert("status", cmd+": "+cstr+" t:"+QString::number(time));
+        resp.insert("time",QString::number(time));
+        setColorToBlink2(QColor(cstr),time*1000);
+    }
+    else if( cmd == "/fadeToRGB" ) {
+        stopPattern(activePatternName);
+        bool ok;
+        QString cstr  = qurlquery.queryItemValue("rgb");
+        double time = qurlquery.queryItemValue("time").toDouble(&ok);
+        if( !ok ) time = 0.1;
+        resp.insert("rgb",cstr);
+        resp.insert("time",QString::number(time));
+        resp.insert("status", cmd+": "+cstr+" t:"+QString::number(time));
+        setColorToBlink2(QColor(cstr),time*1000);
+    }
+    else if( cmd=="/lastColor" ) {
+        resp.insert("lastColor",cc.name());
+        resp.insert("status",QString("last color"));
+    }
+    else if( cmd=="/logging" ) {
+        QString levelstr = qurlquery.queryItemValue("loglevel");
+        if( levelstr == "1" || levelstr == "0" ) { 
+            if(logging) {
                 logFile->close();
                 delete logFile;
                 delete out;
                 logFile=NULL;
                 out=NULL;
             }
-            logging=tokens[2].toInt();
+            logging = levelstr.toInt();
             if(logging){
                 logFile=new QFile("log.txt");
                 if (!logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append)){
@@ -1311,384 +1231,133 @@ void MainWindow::startRead()
                     out=new QTextStream(logFile);
                 }
             }
-            ob.insert("loglevel",tokens[2]);
-            ob.insert("status",QString("logging"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);*/
-        }else if(request=="inputs"){
-            int enable=-1;
-            /*if(tokens.count()==3)
-                enable=(tokens[2]=="on")?0:1;*/
-            if(args.count()==0 || (args.count()==1 && args.at(0).first=="enable" && (args.at(0).second=="on" || args.at(0).second=="off"))){
-                if(args.count()==1)
-                    enable=(args.at(0).second=="on")?0:1;
-                QJsonArray qarrp;
-                foreach (QString nm, inputs.keys() ) {
-                    qDebug()<<nm;
-                    if(enable==-1){
-                        QJsonObject obj = inputs.value(nm)->toJson2();
-                        qarrp.append(obj);
-                    }else if(enable==0){
-                        if(!inputs.value(nm)->pause()){
-                            QJsonObject obj = inputs.value(nm)->toJson2();
-                            qarrp.append(obj);
-                        }
-                    }else if(enable==1){
-                        if(inputs.value(nm)->pause()){
-                            QJsonObject obj = inputs.value(nm)->toJson2();
-                            qarrp.append(obj);
-                        }
-                    }
-                }
-                QJsonObject jo;
-                jo.insert("inputs",qarrp);
-                QByteArray ba=QJsonDocument(jo).toJson();
-                client->write(ba);
-            }else{
-                invalid=true;
-            }
-            /*QJsonArray qarrp;
-            foreach (QString nm, inputs.keys() ) {
-                qDebug()<<nm;
-                if(enable==-1){
+        }
+        resp.insert("loglevel",logging);
+        resp.insert("status",QString("logging"));
+    }
+    else if( cmd=="/inputs" ) {
+        int enable=-1;
+        QString enablestr = qurlquery.queryItemValue("enable");
+        if( enablestr == "on" || enablestr=="off" ) {  // FIXME: find better way to do this
+            enable = (enablestr=="on") ? 1:0;
+        }
+        QJsonArray qarrp;
+        foreach (QString nm, inputs.keys() ) {  /// FIXME: this prints wrong name
+            qDebug()<<nm;
+            if(enable==-1){
+                QJsonObject obj = inputs.value(nm)->toJson2();
+                qarrp.append(obj);
+            }else if(enable==0){
+                if(!inputs.value(nm)->pause()){
                     QJsonObject obj = inputs.value(nm)->toJson2();
                     qarrp.append(obj);
-                }else if(enable==0){
-                    if(!inputs.value(nm)->pause()){
-                        QJsonObject obj = inputs.value(nm)->toJson2();
-                        qarrp.append(obj);
-                    }
-                }else if(enable==1){
-                    if(inputs.value(nm)->pause()){
-                        QJsonObject obj = inputs.value(nm)->toJson2();
-                        qarrp.append(obj);
-                    }
+                }
+            }else if(enable==1){
+                if(inputs.value(nm)->pause()){
+                    QJsonObject obj = inputs.value(nm)->toJson2();
+                    qarrp.append(obj);
                 }
             }
-            QJsonObject jo;
-            jo.insert("inputs",qarrp);
-            QByteArray ba=QJsonDocument(jo).toJson();
-            client->write(ba);*/
-        }else if(request=="input/del"){
-            /*removeInput(tokens[2]);
-            QJsonObject ob;
-            ob.insert("status",QString("input del"));*/
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="input/delall"){
-            //inputs.clear();
-            //emit inputsUpdate();
-            /*foreach (QString nm, inputs.keys() ) {
-                removeInput(nm);
-            }
-            QJsonObject ob;
-            ob.insert("status",QString("input delall"));*/
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="input/ifttt"){
-            /*Blink1Input *bp=new Blink1Input();
-            bp->setName(tokens[2].replace("+"," "));
-            bp->setType("IFTTT.COM");
-            bool test=false;
-            if(tokens[3]=="pname"){
-                bp->setPatternName(tokens[4]);
-                bp->setArg1(tokens[6].replace("+"," "));
-                if(tokens.count()==9){
-                    test=(tokens[8]=="on" || tokens[8]=="true")?true:false;
-                }
-            }else{
-                bp->setPatternName(tokens[2]);
-                bp->setArg1(tokens[4].replace("+"," "));
-                if(tokens.count()==7){
-                    test=(tokens[6]=="on" || tokens[6]=="true")?true:false;
-                }
-            }
-            bp->setArg2("no-value");
-            if(!test){
-                inputs.insert(bp->name(),bp);
-                emit inputsUpdate();
-                QJsonObject ob;
-                ob.insert("input",bp->toJson3());
-                ob.insert("status",QString("input "+bp->type().toLower()));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }
-            counter++;
-            if(test){
-                checkInput2(bp,client);
-            }*/
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="input/url"){
-            /*Blink1Input *bp=new Blink1Input();
-            bp->setName(tokens[2].replace("+"," "));
-            bp->setType("URL");
-            bool test=false;
-            if(tokens[3]=="pname"){
-                bp->setPatternName(tokens[4]);
-                bp->setArg1(tokens[6]);
-                if(tokens.count()==9){
-                    test=(tokens[8]=="on" || tokens[8]=="true")?true:false;
-                }
-            }else{
-                bp->setPatternName(tokens[2]);
-                bp->setArg1(tokens[4]);
-                if(tokens.count()==7){
-                    test=(tokens[6]=="on" || tokens[6]=="true")?true:false;
-                }
-            }
-            bp->setArg2("no-value");
-            if(!test){
-                inputs.insert(bp->name(),bp);
-                emit inputsUpdate();
-                QJsonObject ob;
-                ob.insert("input",bp->toJson3());
-                ob.insert("status",QString("input "+bp->type().toLower()));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }
-            counter++;
-            if(test){
-                checkInput2(bp,client);
-            }*/
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-
-        }else if(request=="input/file"){
-            /*Blink1Input *bp=new Blink1Input();
-            bp->setName(tokens[2].replace("+"," "));
-            bp->setType("FILE");
-            bool test=false;
-            if(tokens[3]=="pname"){
-                bp->setPatternName(tokens[4]);
-                bp->setArg1(tokens[6]);
-                if(tokens.count()==9){
-                    test=(tokens[8]=="on" || tokens[8]=="true")?true:false;
-                }
-            }else{
-                bp->setPatternName(tokens[2]);
-                bp->setArg1(tokens[4]);
-                if(tokens.count()==7){
-                    test=(tokens[6]=="on" || tokens[6]=="true")?true:false;
-                }
-            }
-            bp->setArg2("no-value");
-            if(!test){
-                inputs.insert(bp->name(),bp);
-                emit inputsUpdate();
-                QJsonObject ob;
-                ob.insert("input",bp->toJson3());
-                ob.insert("status",QString("input "+bp->type().toLower()));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }
-            counter++;
-            if(test){
-                checkInput2(bp,client);
-            }*/
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="input/script"){
-            /*Blink1Input *bp=new Blink1Input();
-            bp->setName(tokens[2].replace("+"," "));
-            bp->setType("SCRIPT");
-            bool test=false;
-            if(tokens[3]=="pname"){
-                bp->setPatternName(tokens[4]);
-                bp->setArg1(tokens[6]);
-                if(tokens.count()==9){
-                    test=(tokens[8]=="on" || tokens[8]=="true")?true:false;
-                }
-            }else{
-                bp->setPatternName(tokens[2]);
-                bp->setArg1(tokens[4]);
-                if(tokens.count()==7){
-                    test=(tokens[6]=="on" || tokens[6]=="true")?true:false;
-                }
-            }
-            bp->setArg2("no-value");
-            if(!test){
-                inputs.insert(bp->name(),bp);
-                emit inputsUpdate();
-                QJsonObject ob;
-                ob.insert("input",bp->toJson3());
-                ob.insert("status",QString("input "+bp->type().toLower()));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }
-            counter++;
-            if(test){
-                checkInput2(bp,client);
-            }*/
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="input/cpuload"){
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="input/netload"){
-            QJsonObject ob;
-            ob.insert("status",QString("input not implemented yet"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
-        }else if(request=="patterns"){
-            QJsonArray qarrp;
-            foreach (QString nm, patterns.keys() ) {
-                QJsonObject obj = patterns.value(nm)->toJson2();
-                qarrp.append(obj);
-            }
-            QJsonObject jo;
-            jo.insert("patterns",qarrp);
-            QByteArray ba=QJsonDocument(jo).toJson();
-            client->write(ba);
-        }else if(request=="pattern/add"){
-            if(args.count()==2 && args.at(0).first=="pname" && args.at(1).first=="pattern" && checkIfPatternsStr(args.at(1).second)){
-                Blink1Pattern *bp=new Blink1Pattern();
-                bp->setName(args.at(0).second);
-                bp->fromPatternStrWithLeds(args.at(1).second);
-                patterns.insert(bp->name(),bp);
-                connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlink(QColor,QString,int)));
-                connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
-                emit patternsUpdate();
-                emit patternsUpdate2();
-                QJsonObject ob;
-                ob.insert("status",QString("pattern add"));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }else{
-                invalid=true;
-            }
-            /*Blink1Pattern *bp=new Blink1Pattern();
-            bp->setName(tokens[2]);
-            QString tmp=tokens[4].replace("%23","#");
-            bp->fromPatternStrWithLeds(tmp);
+        }
+        resp.insert("inputs",qarrp);
+        resp.insert("status",QString("inputs"));
+    }
+    else if( cmd=="/input/del" ) {
+        //removeInput(tokens[2]);
+        //QJsonObject ob;
+        //resp.insert("status",QString("input del"));
+        resp.insert("status",QString("input/del not implemented yet"));
+    }
+    else if( cmd=="/input/delall" ) {
+        //inputs.clear();
+        //emit inputsUpdate();
+        /*foreach (QString nm, inputs.keys() ) {
+          removeInput(nm);
+          }
+          QJsonObject ob;
+          resp.insert("status",QString("input delall"));*/
+        resp.insert("status",QString("input/dellall not implemented yet"));
+    }
+    else if( cmd=="/input/ifttt" ) {
+        resp.insert("status",QString("input/ifttt not implemented yet"));
+    }
+    else if( cmd=="/pattern" || cmd=="/patterns" ) {
+        QJsonArray qarrp;
+        foreach (QString nm, patterns.keys() ) {
+            QJsonObject obj = patterns.value(nm)->toJson2();
+            qarrp.append(obj);
+        }
+        resp.insert("patterns",qarrp);
+        resp.insert("status",QString("patterns"));
+    }
+    else if( cmd=="/pattern/play" ) {
+        QString pname = qurlquery.queryItemValue("pname");
+        QString status = "pattern play";
+        if( patterns.contains(pname) ) { 
+            playPattern2(pname);  // FIXME: why playPattern2() and not playPattern()?
+        } else { 
+            status = "pattern not found";
+        }
+        resp.insert("pname", pname);
+        resp.insert("status",status);
+    }
+    else if( cmd=="/pattern/stop" ) {
+        QString pname = qurlquery.queryItemValue("pname");
+        QString status = "pattern stop";
+        if( patterns.contains(pname) ) { 
+            stopPattern(pname);
+        } else { 
+            status = "pattern not found";
+        }
+        resp.insert("pname", pname);
+        resp.insert("status",status);
+    }
+    else if( cmd=="/pattern/add" ) { 
+        QString pname   = qurlquery.queryItemValue("pname");
+        QString pattstr = qurlquery.queryItemValue("pattern");
+        QString status = "pattern added";
+        if( pname != "" && pattstr != "" ) {
+            Blink1Pattern *bp=new Blink1Pattern();
+            bp->setName( pname );
+            bp->fromPatternStrWithLeds( pattstr );
             patterns.insert(bp->name(),bp);
             connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlink(QColor,QString,int)));
+            connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
             emit patternsUpdate();
-            emit patternsUpdate2();
-            QJsonObject ob;
-            ob.insert("status",QString("pattern add"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);*/
-        }else if(request=="pattern/del"){
-            if(args.count()==1 && args.at(0).first=="pname"){
-                QString pname=args.at(0).second;
-                pname=pname.replace("+"," ");
-                removePattern(pname);
-                update2();
-                QJsonObject ob;
-                ob.insert("status",QString("pattern del"));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }else{
-                invalid=true;
-            }
-            /*removePattern(tokens[2]);
-            update2();
-            QJsonObject ob;
-            ob.insert("status",QString("pattern del"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);*/
-        }else if(request=="pattern/delall"){
-                foreach(QString pname,patterns.keys()){
-                    pname=pname.replace("+"," ");
-                    removePattern(pname);
-                }
-                update2();
-                QJsonObject ob;
-                ob.insert("status",QString("pattern delall"));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-        }else if(request=="pattern/play"){
-            if(args.count()==1 && args.at(0).first=="pname"){
-                QString pname=args.at(0).second;
-                pname=pname.replace("+"," ");
-                playPattern2(pname);
-                QJsonObject ob;
-                ob.insert("status",QString("pattern play"));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }else{
-                invalid=true;
-            }
-            /*playPattern2(tokens[2]);
-            QJsonObject ob;
-            ob.insert("status",QString("pattern play"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);*/
-        }else if(request=="pattern/stop"){
-            if(args.count()==1 && args.at(0).first=="pname"){
-                QString pname=args.at(0).second;
-                pname=pname.replace("+"," ");
-                stopPattern(pname);
-                QJsonObject ob;
-                ob.insert("status",QString("pattern stop"));
-                QJsonDocument jd(ob);
-                QByteArray ba=jd.toJson();
-                client->write(ba);
-            }else{
-                invalid=true;
-            }
-            /*stopPattern(tokens[2]);
-            QJsonObject ob;
-            ob.insert("status",QString("pattern stop"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);*/
-        }else{
-            QJsonObject ob;
-            ob.insert("status",QString("unknown command"));
-            QJsonDocument jd(ob);
-            QByteArray ba=jd.toJson();
-            client->write(ba);
+            emit patternsUpdate2();  // FIXME: why all this? and why two emits? 
+
+        } else {
+            status = "pattern not added";
         }
-    }else{
-        QJsonObject ob;
-        ob.insert("status",QString("unknown command"));
-        QJsonDocument jd(ob);
-        QByteArray ba=jd.toJson();
-        client->write(ba);
+        resp.insert("pname", pname);
+        resp.insert("pattern", pattstr);
+        resp.insert("status", status);
     }
-    if(invalid){
-        QJsonObject ob;
-        ob.insert("status",QString("invalid command"));
-        QJsonDocument jd(ob);
-        QByteArray ba=jd.toJson();
-        client->write(ba);
+    else if( cmd=="/pattern/del" ) { 
+        QString pname   = qurlquery.queryItemValue("pname");
+        QString status = "pattern deleted";
+        if( patterns.contains(pname) ) { 
+            removePattern(pname);
+            update2();
+        } else {
+            status = "pattern not found";
+        }
+        resp.insert("pname", pname);
+        resp.insert("status", status);
     }
+    else if( cmd=="/pattern/delall" ) {
+        foreach(QString pname,patterns.keys()){
+            removePattern(pname);
+        }
+        update2();
+        QJsonObject ob;
+        resp.insert("status",QString("pattern delall"));
+    }
+    else {
+        resp.insert("status",QString("unknown command"));
+    }
+
+    client->write( QJsonDocument(resp).toJson() );
     client->close();
 }
 void MainWindow::discardClient(){
