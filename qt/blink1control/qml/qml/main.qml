@@ -1000,15 +1000,16 @@ Image{
                     z:3
                     width: 190
                     height: parent.height-5
-                    opacity: 0.8
+                    opacity: 0.3
                     color: "white"
                     visible: model.modelData.isReadOnly
                 }
                 Image{
                     visible: model.modelData.isReadOnly
                     anchors.verticalCenter: back.verticalCenter
-                    anchors.right: tt.left
-                    anchors.rightMargin: 3
+                    //anchors.right: tt.left
+                    anchors.right: parent.right
+                    anchors.rightMargin: 30
                     source: "qrc:images/layout/lock_small.png"
                     z:4
                 }
@@ -1020,7 +1021,7 @@ Image{
                     anchors.verticalCenter: back.verticalCenter
                     anchors.horizontalCenter: back.horizontalCenter
                     anchors.horizontalCenterOffset: 10
-                    text: "Pattern locked"
+                    text: ""  // "locked"
                     color: "black"
                     font.pointSize: (!mw.mac())?8:12
                 }

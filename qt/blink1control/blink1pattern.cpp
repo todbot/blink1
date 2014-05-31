@@ -11,6 +11,7 @@ Blink1Pattern::Blink1Pattern( QObject *parent) : QObject(parent)
     mdate=QDateTime::currentDateTime().toTime_t();
     t=NULL;
     mreadonly=false;
+    msystem=false;
 }
 
 Blink1Pattern::Blink1Pattern(const char* name, QObject *parent) : QObject(parent)
@@ -28,7 +29,7 @@ void Blink1Pattern::fromJson( QJsonObject obj)
     fromPatternStrWithLeds(tmp);
     setDate(obj.value("date").toDouble());
     setReadOnly(obj.value("readonly").toBool());
-
+    setSystem(obj.value("system").toBool());
 }
 
 QJsonObject Blink1Pattern::toJson()
@@ -39,6 +40,7 @@ QJsonObject Blink1Pattern::toJson()
     obj.insert("pattern", patternStrWithLeds());
     obj.insert("date",date());
     obj.insert("readonly",isReadOnly());
+    obj.insert("system",isReadOnly());
     return obj;
 }
 QJsonObject Blink1Pattern::toJson2()
@@ -58,6 +60,7 @@ void Blink1Pattern::resetObj()
     colors = QList<QColor>();
     times = QList<float>();
     mreadonly=false;
+    msystem=false;
 }
 
 QString Blink1Pattern::patternStr()
@@ -350,6 +353,13 @@ void Blink1Pattern::setReadOnly(bool ro){
 }
 bool Blink1Pattern::isReadOnly(){
     return mreadonly;
+}
+void Blink1Pattern::setSystem(bool sy){
+    this->msystem=sy;
+    emit colorChange();
+}
+bool Blink1Pattern::isSystem(){
+    return msystem;
 }
 int Blink1Pattern::isPlaying(){
     return (mplaying)?1:0;

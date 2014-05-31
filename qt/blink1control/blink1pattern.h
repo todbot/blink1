@@ -21,6 +21,8 @@ class Blink1Pattern : public QObject
     Q_PROPERTY(QVariantList leds READ getLeds NOTIFY colorChange)
     Q_PROPERTY(int playing READ isPlaying NOTIFY playChange)
     Q_PROPERTY(bool isReadOnly READ isReadOnly WRITE setReadOnly NOTIFY colorChange)
+    Q_PROPERTY(bool isSystem READ isSystem WRITE setSystem NOTIFY colorChange)
+
 public:
     Blink1Pattern(QObject *parent=0);
     Blink1Pattern(const char* name, QObject *parent=0);
@@ -67,6 +69,8 @@ public:
     int getCurrentLed();
     void setReadOnly(bool ro);
     bool isReadOnly();
+    void setSystem(bool sy);
+    bool isSystem();
 
     QTimer *t;
 private:
@@ -77,7 +81,8 @@ private:
     bool mplaying;
     int mdate;
     bool mreadonly;
-    //int isSingleShot;
+    bool msystem;
+    //Int isSingleShot;
     QList<QColor> colors;
     QList<float> times;
     QList<int> leds;
