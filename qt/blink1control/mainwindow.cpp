@@ -614,11 +614,6 @@ void MainWindow::quit()
         server.close();
     if(logging)
         logFile->close();
-    if(blink1dev!=NULL){
-        led=0;
-        blink1_fadeToRGBN(blink1dev, 0, 0,0,0 ,led);
-        blink1_close(blink1dev);
-    }
     saveSettings();
     trayIcon->hide();
     foreach (QString name, patterns.keys()) {
@@ -634,6 +629,13 @@ void MainWindow::quit()
     foreach (QString name, hardwareMonitors.keys()) {
        remove_hardwareMonitor(name);
     }
+
+    if(blink1dev!=NULL){
+        led=0;
+        blink1_fadeToRGBN(blink1dev, 0, 0,0,0 ,led);
+        blink1_close(blink1dev);
+    }
+
     QTimer::singleShot(500, qApp, SLOT(quit()));
 }
 
@@ -842,18 +844,21 @@ void MainWindow::updateBlink1()
     }
 
     if( setBlink1 ) {
-        if(blink1dev!=NULL)
+        qDebug() << "updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc;
+        if(blink1dev!=NULL) 
             blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue() ,led);
         if(!fromPattern)
             QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor", Q_ARG(QVariant, cc.name()));
     }
 }
 
+// called by QML
 void MainWindow::colorChanged(QColor c)
 {
-    cc = c; // cr = c.red(); cg = c.green(); cb = c.blue();
-            fadeSpeed=0;
+    cc = c; 
+    fadeSpeed = 0;  // FIXME: should get fadespeed from pattern
     mode=RGBSET;
+    qDebug("colorChanged");
     updateBlink1();
 }
 
@@ -1198,13 +1203,18 @@ void MainWindow::startRead()
     else if( cmd == "/fadeToRGB" ) {
         stopPattern(activePatternName);
         bool ok;
-        QString cstr  = qurlquery.queryItemValue("rgb");
-        double time = qurlquery.queryItemValue("time").toDouble(&ok);
+        QString cstr = qurlquery.queryItemValue("rgb");
+        double time  = qurlquery.queryItemValue("time").toDouble(&ok);
+        QColor c = QColor(cstr);
+        QString status = "fadeToRGB: invalid color";
         if( !ok ) time = 0.1;
+        if( c.isValid() ) {
+            status = "fadeToRGB: "+cstr+" t:"+QString::number(time);
+            setColorToBlink2( c,time*1000);
+        }
         resp.insert("rgb",cstr);
         resp.insert("time",QString::number(time));
-        resp.insert("status", cmd+": "+cstr+" t:"+QString::number(time));
-        setColorToBlink2(QColor(cstr),time*1000);
+        resp.insert("status", status);
     }
     else if( cmd=="/lastColor" ) {
         resp.insert("lastColor",cc.name());

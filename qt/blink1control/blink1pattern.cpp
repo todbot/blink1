@@ -24,7 +24,7 @@ Blink1Pattern::Blink1Pattern(const char* name, QObject *parent) : QObject(parent
 void Blink1Pattern::fromJson( QJsonObject obj)
 {
     setName( obj.value("name").toString() );
-    setRepeats(obj.value("repeats").toDouble());
+    setRepeats(obj.value("repeats").toInt());
     QString tmp=obj.value("pattern").toString();
     fromPatternStrWithLeds(tmp);
     setDate(obj.value("date").toDouble());
@@ -81,17 +81,23 @@ QString Blink1Pattern::patternStrWithLeds()
     return str;
 }
 
+// parse pattern string "repeats,color1,color1time,color2,color2time,..."
 void Blink1Pattern::fromPatternStr(QString tmp){
+    tmp.replace(" ",""); // remove any whitepsace from mucking up parsing
     QStringList list=tmp.split(",");
-    setRepeats(list.at(0).toDouble());
-    for(int i=1;i<list.count();i+=2){
-        addColorAndTime(list.at(i),list.at(i+1).toDouble());
+    // minimal pattern string is "reps,color,time" & pair count must be even
+    if( list.count() > 3 && (list.count()-1) % 2 == 0 ) { 
+        setRepeats(list.at(0).toInt());
+        for(int i=1;i<list.count();i+=2){
+            addColorAndTime(list.at(i),list.at(i+1).toDouble());
+        }
     }
 }
-
+// parse pattern string "repeats,color1,color1time,led1,color2,color2time,led2,..."
 void Blink1Pattern::fromPatternStrWithLeds(QString tmp){
+    tmp.replace(" ",""); // remove any whitepsace from mucking up parsing
     QStringList list=tmp.split(",");
-    setRepeats(list.at(0).toDouble());
+    setRepeats(list.at(0).toInt());
     if((list.count()>=4 && list.at(3).indexOf(QRegExp("#([0-9a-fA-F]{6})"))!=-1) || list.count()==3){
         fromPatternStr(tmp);
         return;
