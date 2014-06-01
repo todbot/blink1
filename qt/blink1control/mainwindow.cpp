@@ -351,9 +351,63 @@ void MainWindow::updateInputs()
 
 }
 
+// checkIFttt() parses the /eventsall JSON response from api.thingm.com
+// param txt is full json response from ifttt api server
+// Scans through received IFTTT events, find matches to input's rule names.
+// On match and if date is newer than last saved date, 
+// execute the pattern bound to that rule and update event list
 void MainWindow::checkIfttt(QString txt)
 {
-    //qDebug() << "todtest: checkIfttt(txt) " << txt;
+    qDebug() << "todtest: checkIfttt(txt) " << txt;
+    QJsonDocument respdoc = QJsonDocument::fromJson( txt.toLatin1() );
+    QJsonObject respobj = respdoc.object();
+    QJsonValue statval = respobj.value( QString("status") );  // should really check status :)
+    qDebug() << "checkIfttt: status: " << statval.toString();
+
+    // uh-oh, this is bad if this happens
+    if( !respobj.contains(QString("events")) ) { 
+        // we need some way to notify user (maybe set arg2 on all iftt items? yuk)
+    } 
+
+    // march through each item of the events array, comparing to each input
+    QJsonArray events = respobj.value( QString("events") ).toArray();
+    foreach( const QJsonValue& val, events) {
+        QJsonObject ev = val.toObject();
+        QString evid      = ev["blink1_id"].toString();
+        QString evdatestr = ev["date"].toString();
+        QString evname    = ev["name"].toString();
+        QString evsource  = ev["source"].toString();
+        int evdate = evdatestr.toInt();
+        qDebug() << "ev: name:"<<evname<<", date:"<< evdate;
+        
+        foreach ( Blink1Input* input, inputs ) {
+            qDebug() << "blink1input: "<< input->name() << "arg1: "<<input->arg1();
+            // is this an IFTTT input and does the event name match?
+            // FIXME: type should be just "ifttt" or enum 
+            // FIXME: name should be same as rule name (aka arg1)
+            if( input->type() == "IFTTT.COM" && input->arg1() == evname ) { 
+                // is the event newer than our last event, then trigger!
+                if( evdate > input->date() ) {
+                    input->setDate(evdate); // save for next go around
+                    input->setArg2(evsource); 
+                    patterns.value( input->patternName() )->play(cc);  // FIXME: why is cc being passed?
+                    addRecentEvent(evdate, evsource, "IFTTT");
+                }
+            }
+        } // foreach input
+    } // foreach event
+}
+
+/* 
+// okay, rewrote checkIfttt(str) to use Qt Json Parser, see above,
+// the below is commented out, soon to be removed
+// which one of these is getting called? this one or the next one?
+// why is it use hand-parsing of json?
+// why doesn't it work?
+// just... why?
+void MainWindow::checkIfttt_milo(QString txt)
+{
+    qDebug() << "todtest: checkIfttt(txt) " << txt;
     int date=-1;
     QString dateString = "";
     QString name = "";
@@ -441,9 +495,12 @@ void MainWindow::checkIfttt(QString txt)
         startIdx = tmpIdx+1;
     }
 }
+*/
+/* 
+looks like this one is unused
 void MainWindow::checkIfttt(QString txt, Blink1Input *in)
 {
-    //qDebug() << "todtest: checkIfttt(txt,in) " << txt << "," << in;
+    qDebug() << "todtest: checkIfttt(txt,in) " << txt << "," << in;
 
     int date=-1;
     QString dateString = "";
@@ -524,6 +581,7 @@ void MainWindow::checkIfttt(QString txt, Blink1Input *in)
         startIdx = tmpIdx+1;
     }
 }
+*/
 
 void MainWindow::addRecentEvent(int date, QString name, QString from)
 {
@@ -1742,6 +1800,7 @@ void MainWindow::checkInput(QString key){
     dI->start();
     inputs[key]->isChecking=true;
 }
+/* looks like this one is not used,commenting out
 void MainWindow::checkInput2(Blink1Input *in,QTcpSocket *client){
     DataInput *dI = new DataInput(this);
     connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
@@ -1753,6 +1812,7 @@ void MainWindow::checkInput2(Blink1Input *in,QTcpSocket *client){
     dI->responseTo=client;
     dI->start();
 }
+*/
 void MainWindow::changeLed(int l){
     this->led=l;
 }

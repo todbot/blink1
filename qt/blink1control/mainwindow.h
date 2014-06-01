@@ -171,7 +171,7 @@ public slots:
     void showhideDockIcon();
     void minButton();
     void checkInput(QString key);
-    void checkInput2(Blink1Input *in,QTcpSocket *client);
+    // unused? void checkInput2(Blink1Input *in,QTcpSocket *client);
     void startStopServer();
     void acceptConnection();
     void startRead();
@@ -314,7 +314,8 @@ private slots:
     void setColor(QColor);
     void setVRet(QString);
     void checkIfttt(QString);
-    void checkIfttt(QString,Blink1Input*);
+    void checkIfttt_milo(QString);
+    // unused? void checkIfttt(QString,Blink1Input*);
     bool checkIfColor(QString);
     bool checkIfNumber(QString,int);
     bool checkIfPatternsStr(QString);
