@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(ico);
 
     blink1timer = new QTimer(this);
+    blink1timer->stop();  // errant timer causing extra updateBlink1() calls?
     connect(blink1timer, SIGNAL(timeout()), this, SLOT(updateBlink1()));
 
     blink1_disableDegamma();  // for mk2 only
@@ -156,7 +157,7 @@ MainWindow::MainWindow(QWidget *parent) :
     it2 = new QMapIterator<QString, Email*>(emails);
     it3 = new QMapIterator<QString, HardwareMonitor*>(hardwareMonitors);
 
-    setColorToBlink2(cc,400);
+    setColorToBlink2(cc,400);  // give a default non-black color to let people know it works
 }
 
 void MainWindow::qu(QQuickCloseEvent*){
@@ -834,7 +835,6 @@ void MainWindow::updateBlink1()
         setBlink1 = true;
         mode = NONE;
         fadeSpeed = 0;
-
     }
     else if( mode == OFF ) {
         cc = QColor(0,0,0); //cr = cg = cb = 0;
@@ -848,7 +848,7 @@ void MainWindow::updateBlink1()
     }
 
     if( setBlink1 ) {
-        qDebug() << "todtest: updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc;
+        qDebug() << "todtest:         updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc;
         if(blink1dev!=NULL) 
             blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue() ,led);
         if(!fromPattern)
@@ -856,7 +856,7 @@ void MainWindow::updateBlink1()
     }
 }
 
-// called by QML
+// called by QML?
 void MainWindow::colorChanged(QColor c)
 {
     cc = c; 
@@ -1006,29 +1006,34 @@ void MainWindow::on_buttonBusyColorSpot_clicked()
 int MainWindow::getSize(){
     return inputsAmount;
 }
-void MainWindow::setColorToBlink(QColor c,QString s,int f){
+
+// this is used as a slot but not declared a slot?
+void MainWindow::setColorToBlink(QColor c,QString s,int fademillis){
     fromPattern=true;
     if(s!="")
         cc=c;
     mode=RGBSET;
     activePatternName=s;
-    fadeSpeed=f;
+    fadeSpeed=fademillis;
     emit updatePatternName();
     if(patterns.contains(s)){
         led=patterns.value(s)->getCurrentLed();
         emit ledsUpdate();
     }
+    qDebug()<<"todtest: setColorToBlink: fadespeed:"<<fadeSpeed << "color: "<<c<<" s: "<<s;
     updateBlink1();
     if(s!="")// && !fromPattern)
         QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));    
     fromPattern=false;
 }
-void MainWindow::setColorToBlink2(QColor c,int f){
+// why is there this method too?
+void MainWindow::setColorToBlink2(QColor c,int fademillis){
     cc=c;
     mode=RGBSET;
     activePatternName="";
-    fadeSpeed=f;
+    fadeSpeed=fademillis;
     emit updatePatternName();
+    qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed;
     updateBlink1();
     QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
 }
