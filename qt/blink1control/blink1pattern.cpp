@@ -195,7 +195,6 @@ void Blink1Pattern::update()
 
 void Blink1Pattern::play(QColor currentVirtualBlinkColor)
 {
-    //qDebug() << "play:";
     if(mplaying) return;
     mplaycount=0;
     mplaypos=0;
@@ -216,9 +215,9 @@ void Blink1Pattern::play(QColor currentVirtualBlinkColor)
     deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0/count;
 
 
-
     t->setInterval(50);//(int)(activeTime()*1000));
     t->setSingleShot(true);
+
     connect(t,SIGNAL(timeout()),this,SLOT(update()));
     t->start();
     /*qDebug()<<"Count "<<count;

@@ -3075,10 +3075,10 @@ Image{
             editMode: lista.currentItem && lista.currentIndex != -1 && lista.currentItem.editMode//lista.currentItem.editMode
             indexOfColorPattern: -1
             onCurrentColorNameChanged: {
-                if(bigButton1model.currentIndex == 0)
+                if(bigButton1model.currentIndex == 0) //wtf
+                //if( colorwheel1.isUserAction() ) // this doesn't work fully
                 {
-                    //                var c = getCurrentColor();
-                    mw.colorChanged(getCurrentColor());
+                    mw.colorChanged(getCurrentColor());  // need to only call this when user is doing it, not during patterns
                 }
                 if(colorwheel1.editMode && indexOfColorPattern != -1)
                 {
