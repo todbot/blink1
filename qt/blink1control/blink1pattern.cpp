@@ -184,7 +184,7 @@ void Blink1Pattern::update()
             stop();
             return;
         }
-        emit setColor(activeColor(),mname,activeTime());
+        emit setColor(activeColor(),mname,activeTime()*1000); // convert to millis
     }
     /*qDebug()<<"curCol "<<currentColor;
     qDebug()<<"next color: "<<activeColor().name();
@@ -227,7 +227,7 @@ void Blink1Pattern::play(QColor currentVirtualBlinkColor)
     qDebug()<<"Start: "<<startR<<" "<<startG<<" "<<startB;
     qDebug()<<QColor(startR,startG,startB).name();*/
     emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
-    emit setColor(activeColor(),mname,activeTime());
+    emit setColor(activeColor(),mname,activeTime()*1000); // convert to millis
 }
 
 void Blink1Pattern::stop()
