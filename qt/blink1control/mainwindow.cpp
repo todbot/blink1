@@ -728,8 +728,8 @@ void MainWindow::loadSettings()
 
     // read only patterns
     QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
-    qDebug() <<  patternsReadOnly;
-    qDebug() << doc.toJson();
+    //qDebug() <<  patternsReadOnly;
+    //qDebug() << doc.toJson();
     QJsonArray qarr = doc.array();
     for( int i=0; i< qarr.size(); i++ ) {
         Blink1Pattern* bp = new Blink1Pattern();
@@ -848,7 +848,7 @@ void MainWindow::updateBlink1()
     }
 
     if( setBlink1 ) {
-        qDebug() << "todtest:         updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc;
+        qDebug() << "todtest:         updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc.name();
         if(blink1dev!=NULL) 
             blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue() ,led);
         if(!fromPattern)
@@ -857,15 +857,16 @@ void MainWindow::updateBlink1()
 }
 
 // called by QML?
+// called by colorwheel on colorwheel change,
+// (which gets changed by pattern, so got race condition)
 void MainWindow::colorChanged(QColor c)
 {
     cc = c; 
-    fadeSpeed = 0;  // FIXME: should get fadespeed from pattern
+    fadeSpeed = 0;
     mode=RGBSET;
     //qDebug("todtest: colorChanged");
     updateBlink1();
 }
-
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
@@ -1020,7 +1021,7 @@ void MainWindow::setColorToBlink(QColor c,QString s,int fademillis){
         led=patterns.value(s)->getCurrentLed();
         emit ledsUpdate();
     }
-    qDebug()<<"todtest: setColorToBlink: fadespeed:"<<fadeSpeed << "color: "<<c<<" s: "<<s;
+    qDebug()<<"todtest: setColorToBlink: fadespeed:"<<fadeSpeed << " color: " <<c.name() << " s: "<<s;
     updateBlink1();
     if(s!="")// && !fromPattern)
         QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));    
@@ -1033,7 +1034,7 @@ void MainWindow::setColorToBlink2(QColor c,int fademillis){
     activePatternName="";
     fadeSpeed=fademillis;
     emit updatePatternName();
-    qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed;
+    qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed << " color: " << c.name();
     updateBlink1();
     QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
 }
