@@ -358,11 +358,11 @@ void MainWindow::updateInputs()
 // execute the pattern bound to that rule and update event list
 void MainWindow::checkIfttt(QString txt)
 {
-    qDebug() << "todtest: checkIfttt(txt) " << txt;
+    //qDebug() << "todtest: checkIfttt(txt) " << txt;
     QJsonDocument respdoc = QJsonDocument::fromJson( txt.toLatin1() );
     QJsonObject respobj = respdoc.object();
     QJsonValue statval = respobj.value( QString("status") );  // should really check status :)
-    qDebug() << "checkIfttt: status: " << statval.toString();
+    //qDebug() << "checkIfttt: status: " << statval.toString();
 
     // uh-oh, this is bad if this happens
     if( !respobj.contains(QString("events")) ) { 
@@ -378,10 +378,10 @@ void MainWindow::checkIfttt(QString txt)
         QString evname    = ev["name"].toString();
         QString evsource  = ev["source"].toString();
         int evdate = evdatestr.toInt();
-        qDebug() << "ev: name:"<<evname<<", date:"<< evdate;
+        //qDebug() << "ev: name:"<<evname<<", date:"<< evdate;
         
         foreach ( Blink1Input* input, inputs ) {
-            qDebug() << "blink1input: "<< input->name() << "arg1: "<<input->arg1();
+            //qDebug() << "blink1input: "<< input->name() << "arg1: "<<input->arg1();
             // is this an IFTTT input and does the event name match?
             // FIXME: type should be just "ifttt" or enum 
             // FIXME: name should be same as rule name (aka arg1)
@@ -1218,14 +1218,16 @@ void MainWindow::startRead()
         return;
     }
 
-    QString query = qsl[1];  // get /path?querystring part, ignore HTTP method & version for now
-    QUrl qurl = QUrl( query );
+    // get /path?querystring part, ignore HTTP method & version for now
+    QString query = qsl[1];
+    QUrl qurl = QUrl( query ); 
     QUrlQuery qurlquery = QUrlQuery( qurl.query() );
     QString path = qurl.path();
     
     path = path.replace( QRegExp("/$"), ""); // replace optional trailing slash from path
     QString cmd = QString(path).replace("/blink1","");  // remove /blink1 cmd prefix
     
+    // command parsing
     if( cmd == "/id" ) { 
         resp.insert("blink_id",iftttKey);
         QJsonArray ja;
@@ -1439,6 +1441,7 @@ void MainWindow::startRead()
         resp.insert("status",QString("unknown command"));
     }
 
+    // write out built-up response to client
     client->write( QJsonDocument(resp).toJson() );
     client->close();
 }
@@ -1726,7 +1729,7 @@ void MainWindow::createNewIFTTTInput(){
     bp->setName("Name"+QString::number(counter));
     bp->setType("IFTTT.COM");
     bp->setArg1("RULE");
-    bp->setArg2("NO VALUE");
+    bp->setArg2("no value");
     bp->setPatternName("");
     inputs.insert(bp->name(),bp);
     emit inputsUpdate();
@@ -1738,8 +1741,8 @@ void MainWindow::createNewInput(){
         counter++;
     bp->setName("Name"+QString::number(counter));
     bp->setType("FILE");
-    bp->setArg1("Click double times to change path");
-    bp->setArg2("NO VALUE");
+    bp->setArg1("Double click to change path");
+    bp->setArg2("no value");
     bp->setFreqCounter(1);
     bp->setPatternName("");
     inputs.insert(bp->name(),bp);
