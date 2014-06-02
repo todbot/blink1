@@ -33,9 +33,9 @@ versions in the "mac" and "win" directories.
    - Mac OS X: [Blink1Control-mac.zip](https://github.com/todbot/blink1/releases)
    - Windows:  [Blink1Control-win.zip](https://github.com/todbot/blink1/releases)
 
-- Previous versions of Blink1Control written in Cocoa or .NET (not recommended)
-  - Mac version: [Blink1Control-mac-old.zip](http://thingm.com/blink1/downloads/old/Blink1Control-mac-old.zip)
-  - Win version: [Blink1Control-win-old.zip](http://thingm.com/blink1/downloads/old/Blink1Control-win-old.zip)
+- Previous versions of Blink1Control written in Cocoa or .NET (not recommended) -
+[Blink1Control-mac-old.zip](http://thingm.com/blink1/downloads/old/Blink1Control-mac-old.zip) -
+[Blink1Control-win-old.zip](http://thingm.com/blink1/downloads/old/Blink1Control-win-old.zip)
 
 ### Toy / Test Applications ###
 
