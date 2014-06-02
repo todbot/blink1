@@ -23,7 +23,7 @@ QML_IMPORT_PATH =
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
-TARGET = Blink1Control#test2
+TARGET = Blink1Control
 VERSION = 0.9.8
 TEMPLATE = app
 
@@ -66,7 +66,8 @@ win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 
 QMAKE_CXXFLAGS += -DUSE_HIDAPI
 #QMAKE_CFLAGS += -DUSE_HIDAPI
-INCLUDEPATH += $$BLINK1_LIB_DIR $$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
+INCLUDEPATH += $$BLINK1_LIB_DIR
+#$$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
 DEPENDPATH += $$BLINK1_LIB_DIR
 
 # for tasteful-server
