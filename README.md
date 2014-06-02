@@ -12,13 +12,35 @@ websites or typing any commands."
 Ready-to-run Applications to play with
 ---------------------------------------
 
-- Blink1Control  -- GUI for IFTTT and other data sources to blink(1).  Download:
-[(Mac OSX)](http://thingm.com/blink1/downloads/Blink1Control-mac.zip) /
-[(Windows)](http://thingm.com/blink1/downloads/Blink1Control-win.zip)
+### Blink1Control ###
 
+GUI application for hooking events to blink(1)
+
+Blink1Control is the primary user-level application for controlling blink(1).
+It is an event-based system, where events on your computer or on the Net
+trigger color patterns on the blink(1).
+
+It can receive events from:
+> - [IFTTT](http://ifttt.com/channels)'s many channels
+> - various email services using IMAP/POP/Gmail
+> - execute scripts or check files 
+> - hardware monitors like CPU, battery, RAM
+
+This verison of Blink1Control supercedes the Mac-specific and Windows-specific
+versions in the "mac" and "win" directories.
+
+- **Download Blink1Control** 
+   - Mac OS X: [Blink1Control-mac.zip](https://github.com/todbot/blink1/releases)
+   - Windows:  [Blink1Control-win.zip](https://github.com/todbot/blink1/releases)
+
+- Previous versions of Blink1Control written in Cocoa or .NET (not recommended)
+  - Mac version: [Blink1Control-mac-old.zip](http://thingm.com/blink1/downloads/old/Blink1Control-mac-old.zip)
+  - Win version: [Blink1Control-win-old.zip](http://thingm.com/blink1/downloads/old/Blink1Control-win-old.zip)
+
+### Toy / Test Applications ###
 
 And then these are more "toy" or "test" applications to just play around with your blink(1):
-- BlinkATweet -- Watch real-time Twitter stream for keywords, flash blink(1) when found.  Download:
+- *BlinkATweet* -- Watch real-time Twitter stream for keywords, flash blink(1) when found.  Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/BlinkATweet-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/BlinkATweet-win.zip)
 
@@ -34,13 +56,18 @@ And then these are more "toy" or "test" applications to just play around with yo
 [(Mac OSX)](http://thingm.com/blink1/downloads/Blink1Test0-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/Blink1Test0-win.zip)
 
+
+### blink1-tool ###
+
 For script-writers, programmers and hackers, there's the command-line tool:
 
-- blink1-tool -- command-line program for use in your own scripts. Download for: 
+- **blink1-tool** -- command-line program for use in your own scripts. 
+  - Download for: 
 [(Mac OSX)](http://thingm.com/blink1/downloads/blink1-tool-mac.zip) / 
 [(Windows)](http://thingm.com/blink1/downloads/blink1-tool-win.zip) /
 [(Linux64)](http://thingm.com/blink1/downloads/blink1-tool-linux_x86_64.zip) /
 [(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-raspi.zip)
+
 
 What is in this repo
 --------------------
@@ -53,6 +80,7 @@ The following directories exist:
 - python           -- Python APIs
 - go               -- Go library
 - libraries        -- libraries common to all systems (mostly just HTML app code)
+- qt               -- Blink1Control lives here, along with some Qt sample apps
 - mac              -- Mac OS X details and GUI control application
 - mac/scripts      -- command-line scripts to do cool things
 - windows          -- Windows details and GUI control application
