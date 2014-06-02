@@ -93,6 +93,7 @@ public slots:
     void on_buttonMoodlight_clicked();
     void on_buttonOff_clicked();
     void on_buttonWhite_clicked();
+    void on_buttonStrobe_clicked();
     void on_buttonColorwheel_clicked();
     void on_buttonBusyColorSpot_clicked();
 
