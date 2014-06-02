@@ -314,8 +314,6 @@ private slots:
     void setColor(QColor);
     void setVRet(QString);
     void checkIfttt(QString);
-    //void checkIfttt_milo(QString);
-    // unused? void checkIfttt(QString,Blink1Input*);
     bool checkIfColor(QString);
     bool checkIfNumber(QString,int);
     bool checkIfPatternsStr(QString);
