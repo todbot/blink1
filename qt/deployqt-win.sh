@@ -10,23 +10,24 @@
 #
 
 # name of resulting directory you want, containing the application
-APP_DIR=windeploy
+APP_DIR=Blink1Control
 
+# (paths are from the soon-to-be-created APP_DIR
 # path to built application executable
-EXE_PATH=./build-blink1control-Desktop_Qt_5_2_1_MinGW_32bit-Release/release/Blink1Control.exe 
+EXE_PATH=../../build-blink1control-Desktop_Qt_5_2_1_MinGW_32bit-Release/release/Blink1Control.exe 
 
 # where QML files live
-QML_DIR=./blink1control/qml
+QML_DIR=../../blink1control/qml
 
 # Where "windeployqt.exe" lives (and the mingw libs)
 QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
 
 # location of blnik1-lib.dll (do "make lib" in that dir first to get it)
-BLINK1_LIB_PATH=../commandline/blink1-lib.dll
+BLINK1_LIB_PATH=../../../commandline/blink1-lib.dll
 
 # make the place where we're going to put the whole app
-mkdir windeployqt
-cd windeployqt
+mkdir windeploy/${APP_DIR}
+pushd windeploy/${APP_DIR}
 
 if [ -e $EXE_PATH ] ; then 
     # copy the built executable
@@ -45,8 +46,12 @@ if [ -e $EXE_PATH ] ; then
     ${QT_BIN_PATH}/windeployqt Blink1Control.exe
 
     # Build a zip bundle
-    # zip -r ${APP_DIR}.zip ${APP_DIR}
+    cd ..
+    zip -r ${APP_DIR}-win.zip ${APP_DIR}
+
+    echo "created ./windeploy/${APP_DIR}-win.zip"
 else
     echo "file not found: ${EXE_PATH}"
 fi
 
+popd
