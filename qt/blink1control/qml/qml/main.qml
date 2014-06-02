@@ -1085,6 +1085,14 @@ Image{
                                 src: "btn-moodlight"
                             }
                             ListElement{
+                                name: "Strobe light"
+                                src: "btn-strobe"
+                            }
+                            ListElement{
+                                name: "White"
+                                src: "btn-white"
+                            }
+                            ListElement{
                                 name: "Off"
                                 src: "btn-off"
                             }
@@ -1121,6 +1129,10 @@ Image{
                                     }else if(index==2){
                                         mw.on_buttonMoodlight_clicked()
                                     }else if(index==3){
+                                        mw.on_buttonStrobe_clicked()
+                                    }else if(index==4){
+                                        mw.on_buttonWhite_clicked()
+                                    }else if(index==5){
                                         mw.on_buttonOff_clicked()
                                         ledmodel.currentIndex=0
                                     }

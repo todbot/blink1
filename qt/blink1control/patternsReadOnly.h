@@ -19,6 +19,14 @@ QString patternsReadOnly =
 "  \"readonly\": true, \"system\": true, " 
 "  \"pattern\": \"3,#ff0000,0.5,0,#000000,0.5,\" },"
 
+"{ \"date\": 996, \"name\": \"yellow flashes\","
+"  \"readonly\": true, \"system\": true, " 
+"  \"pattern\": \"3,#ffff00,0.5,0,#000000,0.5,\" },"
+
+"{ \"date\": 996, \"name\": \"purple flashes\","
+"  \"readonly\": true, \"system\": true, " 
+"  \"pattern\": \"3,#ff00ff,0.5,0,#000000,0.5,\" },"
+
 "{ \"date\": 995, \"name\": \"patternA\","
 "  \"readonly\": true, \"system\": true, " 
 "  \"pattern\": \"3,#ff4cff,0.7,0,#630000,0.2,0,#00ff00,0.1,0\" },"
@@ -26,6 +34,10 @@ QString patternsReadOnly =
 "{ \"date\": 994, \"name\": \"patternB\","
 "  \"readonly\": true, \"system\": true, " 
 "  \"pattern\": \"3,#ff4cff,0.7,0,#630000,0.2,0,#0000ff,0.1,0\" },"
+
+"{ \"date\": 993, \"name\": \"groovy\","
+"  \"readonly\": true, \"system\": true, " 
+"  \"pattern\": \"3,#ff4cff,1.0,0, #630000,0.2,0,#0000ff,0.1,0\" },"
 
 "{ \"date\": 993, \"name\": \"policecar\","
 "  \"readonly\": true, \"system\": true, " 

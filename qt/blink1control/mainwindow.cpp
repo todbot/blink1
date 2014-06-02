@@ -22,7 +22,8 @@ enum {
     OFF,
     RANDOM,
     RGBCYCLE,
-    MOODLIGHT
+    MOODLIGHT,
+    STROBE
 };
 
 
@@ -678,9 +679,7 @@ void MainWindow::loadSettings()
 
 void MainWindow::updateBlink1()
 {
-
     bool setBlink1 = false;
-    if(mode!=RGBCYCLE && mode!=RANDOM) blink1timer->stop();
 
     if( mode == RANDOM ) {
         cc = QColor( rand() % 255, rand() % 255, rand() % 255 );
@@ -700,32 +699,42 @@ void MainWindow::updateBlink1()
             rgbCounter=0;
         }
         rgbCounter+=15;
+        fadeSpeed = 300;
         setBlink1 = true;
-        fadeSpeed = 200;
+    }
+    else if( mode == STROBE ) { 
+        cc = (cc==QColor("#000000")) ? QColor("#ffffff") : QColor("#000000");
+        fadeSpeed = 10;
+        setBlink1 = true;
     }
     else if( mode == ON ) {
-        cc = QColor(255,255,255); //cr = cg = cb = 255;
-        setBlink1 = true;
         mode = NONE;
-        fadeSpeed = 0;
+        cc = QColor(255,255,255); 
+        fadeSpeed = 10;
+        setBlink1 = true;
     }
     else if( mode == OFF ) {
-        cc = QColor(0,0,0); //cr = cg = cb = 0;
-        setBlink1 = true;
         mode = NONE;
-        fadeSpeed = 0;
+        cc = QColor(0,0,0); 
+        fadeSpeed = 10;
+        setBlink1 = true;
     }
     else if( mode == RGBSET ) {
         mode = NONE;
+        // uses existing global fadespeed?
         setBlink1 = true;
     }
 
     if( setBlink1 ) {
         qDebug() << "todtest:         updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc.name();
         if(blink1dev!=NULL) 
-            blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue() ,led);
+            blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue(), led);
         if(!fromPattern)
             QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor", Q_ARG(QVariant, cc.name()));
+    }
+
+    if( mode == NONE ) {
+        blink1timer->stop();
     }
 }
 
@@ -841,7 +850,25 @@ void MainWindow::on_buttonMoodlight_clicked()
     if(mode==RANDOM) return;
     blink1timer->stop();
     mode = RANDOM;
+    fadeSpeed = 600;
+    blink1timer->start(500);
+    updateBlink1();
+}
+
+void MainWindow::on_buttonStrobe_clicked()
+{
+    led=0;
+    blink1timer->stop();
+    mode = STROBE;
     blink1timer->start(200);
+    updateBlink1();
+}
+
+void MainWindow::on_buttonWhite_clicked()
+{
+    mode = RGBSET;
+    led=0;
+    cc = QColor("#cccccc");
     updateBlink1();
 }
 
@@ -850,12 +877,6 @@ void MainWindow::on_buttonOff_clicked()
     mode = OFF;
     led=0;
     emit ledsUpdate();
-    updateBlink1();
-}
-
-void MainWindow::on_buttonWhite_clicked()
-{
-    mode = ON;
     updateBlink1();
 }
 
