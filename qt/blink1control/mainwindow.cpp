@@ -602,9 +602,12 @@ void MainWindow::loadSettings()
 
     // read only patterns
     QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
-    //qDebug() <<  patternsReadOnly;
-    //qDebug() << doc.toJson();
+    if( doc.isNull() ) {
+        qDebug() << "ERROR!: patternsReadOnly syntax error!";
+    }
+    //qDebug() << doc.toJson( QJsonDocument::Indented );
     QJsonArray qarr = doc.array();
+
     for( int i=0; i< qarr.size(); i++ ) {
         Blink1Pattern* bp = new Blink1Pattern();
         bp->fromJson( qarr.at(i).toObject() );
