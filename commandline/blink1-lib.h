@@ -47,23 +47,7 @@ typedef struct usbDevice   blink1_device; /**< opaque blink1 structure */
 typedef struct hid_device_ blink1_device; /**< opaque blink1 structure */
 #endif
 
-
-int blink1_vid(void);  // return VID for blink(1)
-int blink1_pid(void);  // return PID for blink(1)
-
-
-const char*  blink1_getCachedPath(int i);
-const char*  blink1_getCachedSerial(int i);
-int          blink1_getCacheIndexByPath( const char* path );
-int          blink1_getCacheIndexBySerial( const char* serial );
-int          blink1_getCacheIndexByDev( blink1_device* dev );
-int          blink1_clearCacheDev( blink1_device* dev );
-
-const char*  blink1_getSerialForDev(blink1_device* dev);
-int          blink1_getCachedCount(void);
-
-int          blink1_isMk2ById(int i);
-int          blink1_isMk2(blink1_device* dev);
+//static const char blink1lib_version[] = BLINK1_VERSION;
 
 // scan USB for blink(1) devices
 int          blink1_enumerate();
@@ -140,6 +124,25 @@ void blink1_disableDegamma();
 int blink1_degamma(int n);
 
 void blink1_sleep(uint16_t delayMillis);
+
+
+int blink1_vid(void);  // return VID for blink(1)
+int blink1_pid(void);  // return PID for blink(1)
+
+
+const char*  blink1_getCachedPath(int i);
+const char*  blink1_getCachedSerial(int i);
+int          blink1_getCacheIndexByPath( const char* path );
+int          blink1_getCacheIndexBySerial( const char* serial );
+int          blink1_getCacheIndexByDev( blink1_device* dev );
+int          blink1_clearCacheDev( blink1_device* dev );
+
+const char*  blink1_getSerialForDev(blink1_device* dev);
+int          blink1_getCachedCount(void);
+
+int          blink1_isMk2ById(int i);
+int          blink1_isMk2(blink1_device* dev);
+
 
 #ifdef __cplusplus
 }
