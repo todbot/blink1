@@ -24,6 +24,7 @@ Rectangle {
     property bool start: false
     property real time: 1
 
+
     Component.onCompleted: {
         var text;
         var multiplerB = 42;
@@ -417,7 +418,7 @@ Rectangle {
                 gridSimpleColors.borderIndex = -1
             }
         }
-
+    
         Label {
             id: label3
             x: 31
@@ -537,6 +538,15 @@ Rectangle {
         text: qsTr("Text")
         font.pixelSize: 12
         visible: false
+    }
+
+    // to distinguish between user clicking and it being changed programmatically
+    // (really, there must be a better way to do this)
+    // FIXME: how to get all UI elements of color picker?
+    // if this were a proper GUI control group, would be easy
+    function isUserAction()
+    {
+        return (pointerArea.pressed || sliderValue.pressed );
     }
 
     function getDistance(x,y)

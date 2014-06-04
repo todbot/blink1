@@ -23,7 +23,7 @@ QML_IMPORT_PATH =
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
-TARGET = Blink1Control#test2
+TARGET = Blink1Control
 VERSION = 0.9.8
 TEMPLATE = app
 
@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     email.cpp \
     simplecrypt.cpp \
     hardwaremonitor.cpp \
-    Cursorshapearea.cpp
+    Cursorshapearea.cpp \
+    httpserver.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
@@ -47,7 +48,9 @@ HEADERS  += mainwindow.h \
     email.h \
     simplecrypt.h \
     hardwaremonitor.h \
-    Cursorshapearea.h
+    Cursorshapearea.h \
+    patternsReadOnly.h \
+    httpserver.h
 
 #FORMS    += mainwindow.ui
 
@@ -65,7 +68,8 @@ win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 
 QMAKE_CXXFLAGS += -DUSE_HIDAPI
 #QMAKE_CFLAGS += -DUSE_HIDAPI
-INCLUDEPATH += $$BLINK1_LIB_DIR $$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
+INCLUDEPATH += $$BLINK1_LIB_DIR
+#$$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
 DEPENDPATH += $$BLINK1_LIB_DIR
 
 # for tasteful-server

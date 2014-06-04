@@ -23,7 +23,6 @@ void DataInput::start()
     {
     case 0: {
         url = "http://api.thingm.com/blink1/eventsall/" + iftttKey;
-//        url = "http://api.thingm.com/blink1/events/04CE5FA11A002B8E";
         nr.setUrl(QUrl(url));
         reply = networkManager->get(nr);
         connect(reply, SIGNAL(finished()), this, SLOT(onFinished()));
@@ -64,8 +63,6 @@ void DataInput::start()
             QFile f(input->arg1());
             if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
             {
-                //qDebug() << "File error:";
-                //qDebug() << "File not found.";
                 emit setValueRet("NOT FOUND");
                 input->setArg2("NOT FOUND");
                 input->setDate(-1);
@@ -127,7 +124,6 @@ void DataInput::start()
         connect(process, SIGNAL(readyReadStandardError()), this, SLOT(onError()));
         connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onError()));
         connect(process, SIGNAL(finished(int)), this, SLOT(onProcessFinished()));
-//        QString path = QStandardPaths::displayName(QStandardPaths::DocumentsLocation);
         QString path = QStandardPaths::locate(QStandardPaths::DocumentsLocation, input->arg1());
         QFile f(path);
         QFileInfo fileInfo;
@@ -141,8 +137,6 @@ void DataInput::start()
             }
         }else
         {
-            //qDebug() << "Script error:";
-            //qDebug() << "Script doesn't' exist!";
             emit setValueRet("NOT FOUND");
             input->setArg2("NOT FOUND");
             input->setDate(-1);
@@ -249,7 +243,6 @@ void DataInput::onProcessFinished()
         QThread::usleep(200);
     process->close();
     process->deleteLater();
-    //qDebug()<<processOutput;
     int idx = processOutput.indexOf(QRegExp("#([0-9a-fA-F]{6})"));
     QColor c=QColor("#000000");
     if(idx!=-1)
@@ -292,158 +285,6 @@ void DataInput::onProcessFinished()
         }
         if(!found)
             input->setArg2("NO VALUE");
-    }
-    emit toDelete(this);
-}
-
-void DataInput::startQml()
-{
-    QNetworkRequest nr;
-    QString url;
-    int typeNumber = typeToInt(type);
-    switch(typeNumber)
-    {
-    case 0: {
-        url = "http://api.thingm.com/blink1/events/" + iftttKey;
-//        url = "http://api.thingm.com/blink1/events/04CE5FA11A002B8E";
-        nr.setUrl(QUrl(url));
-        reply = networkManager->get(nr);
-        connect(reply, SIGNAL(finished()), this, SLOT(onFinishedQml()));
-        connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(onError()));
-    }
-        break;
-
-    case 1: {
-        url = rule;
-        QUrl correctUrl(url);
-        if(correctUrl.isValid())
-        {
-            nr.setUrl(QUrl(url));
-            reply = networkManager->get(nr);
-            connect(reply, SIGNAL(finished()), this, SLOT(onFinishedQml()));
-            connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(onError()));
-        }
-        else
-        {
-            emit setValueRet("NOT FOUND");
-            emit toDelete(this);
-        }
-    }
-        break;
-
-    case 2: {
-        QFile f(rule);
-        if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            //qDebug() << "File error:";
-            //qDebug() << "File not found.";
-            emit setValueRet("NOT FOUND");
-            emit toDelete(this);
-            return;
-        }
-        QString txt = "";
-        QTextStream in(&f);
-        txt.append(in.readAll());
-        int idx=txt.indexOf(QRegExp("#([0-9a-fA-F]{6})"));
-        QColor c=QColor("#000000");
-        f.close();
-        if(idx!=-1)
-        {
-            c=QColor(txt.mid(idx,7));
-            emit setColor(c);
-            emit setValueRet(c.name().toUpper());
-        }
-        else
-        {
-            emit setColor(c);
-            emit setValueRet("NO VALUE");
-
-        }
-        emit toDelete(this);
-    }
-        break;
-
-    case 3: {
-        process = new QProcess;
-        connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(onProcessOutput()));
-        connect(process, SIGNAL(readyReadStandardError()), this, SLOT(onError()));
-        connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onError()));
-        connect(process, SIGNAL(finished(int)), this, SLOT(onProcessFinishedQml()));
-        QString path = QStandardPaths::locate(QStandardPaths::DocumentsLocation, rule);
-        QFile f(path);
-        if(f.exists())
-            process->start(path);
-        else
-        {
-            //qDebug() << "Script error:";
-            //qDebug() << "Script doesn't' exist!";
-            emit setValueRet("NOT FOUND");
-            emit toDelete(this);
-        }
-    }
-        break;
-
-    default: {
-        emit toDelete(this);
-    }
-        break;
-    }
-}
-
-void DataInput::onFinishedQml()
-{
-    QString txt;
-
-    int typeNumber = typeToInt(type);
-    switch(typeNumber)
-    {
-    case 0: {
-//        emit runPattern(pattern->name(), true);
-    }
-        break;
-
-    case 1: {
-
-        txt = reply->readAll();
-        int idx=txt.indexOf(QRegExp("#([0-9a-fA-F]{6})"));
-        QColor c=QColor("#000000");
-        if(idx!=-1)
-        {
-            c=QColor(txt.mid(idx,7));
-            emit setColor(c);
-            emit setValueRet(c.name().toUpper());
-        }
-        else
-        {
-            emit setColor(c);
-            emit setValueRet("NO VALUE");
-        }
-    }
-        break;
-    }
-    delete reply;
-    emit toDelete(this);
-}
-
-
-void DataInput::onProcessFinishedQml()
-{
-    while(readingProcess)
-        QThread::usleep(200);
-    process->close();
-    process->deleteLater();
-    int idx = processOutput.indexOf(QRegExp("#([0-9a-fA-F]{6})"));
-    QColor c=QColor("#000000");
-    if(idx!=-1)
-    {
-        c=QColor(processOutput.mid(idx,7));
-        emit setColor(c);
-        emit setValueRet(c.name().toUpper());
-    }
-    else
-    {
-        emit setColor(c);
-        emit setValueRet("NO VALUE");
     }
     emit toDelete(this);
 }
