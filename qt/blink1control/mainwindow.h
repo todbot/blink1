@@ -45,6 +45,9 @@
 #include <QDesktopWidget>
 #include <QFont>
 #include <QFontMetrics>
+
+class HttpServer;
+
 namespace Ui {
 class MainWindow;
 }
@@ -53,52 +56,41 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     Q_PROPERTY(int led READ getLed WRITE setLed NOTIFY ledsUpdate)
-    Q_PROPERTY(int getSize READ getSize NOTIFY patternsUpdate)
-    Q_PROPERTY(QString activePattern READ getActivePatternName NOTIFY updatePatternName)
+    Q_PROPERTY(QString activePattern READ getActivePatternName NOTIFY updateActivePatternName)
     Q_PROPERTY(QString blink1 READ getBlinkStatus NOTIFY iftttUpdate)
-    Q_PROPERTY(bool isMk2 READ getIsMk2 NOTIFY deviceUpdate)
+    Q_PROPERTY(bool isMk2 READ isMk2 NOTIFY deviceUpdate)
     Q_PROPERTY(QString iftttKey READ getIftttKey NOTIFY iftttUpdate)
     Q_PROPERTY(QString blinkKey READ getBlinkKey NOTIFY iftttUpdate)
-    Q_PROPERTY(QList<QObject*> getList READ getList NOTIFY patternsUpdate)
+    Q_PROPERTY(QList<QObject*> getPatternsList READ getPatternsList NOTIFY patternsUpdate)
     Q_PROPERTY(QList<QObject*> getInputsList READ getInputsList NOTIFY inputsUpdate)
     Q_PROPERTY(QList<QObject*> getMailsList READ getMailsList NOTIFY emailsUpdate)
     Q_PROPERTY(QList<QObject*> getHardwareList READ getHardwareList NOTIFY hardwareUpdate)
     Q_PROPERTY(QList<QObject*> getIFTTTList READ getIFTTTList NOTIFY inputsUpdate)
     Q_PROPERTY(QVariantList getRecentEvents READ getRecentEvents NOTIFY recentEventsUpdate)
     Q_PROPERTY(QList<QObject*> getBigButtons READ getBigButtons NOTIFY bigButtonsUpdate)
-    Q_PROPERTY(QVariantList getPatternsNames READ getPatternsNames NOTIFY patternsUpdate2)
-
-    Q_PROPERTY(QString valueRet READ valueRet WRITE setvalueRet NOTIFY changeValRef)
+    Q_PROPERTY(QVariantList getPatternsNames READ getPatternsNames NOTIFY updatePatternsNamesOnUi)
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void closeEvent(QCloseEvent *);
-    QString valueRet() const;
-    void setvalueRet(const QString& name);
+
     bool closing;
+
 public slots:
     void quit();
-    void minimalize();
-    void normal();
-    void iconActivated(QSystemTrayIcon::ActivationReason reason);
-    void messageClicked();
+    void changeMinimizeOption();
+    void showNormal();
+    void showMinimize();
     void updateBlink1();
 
-    void colorChanged(QColor);
-
-    void onColorDialogChange(QColor);
+    void changeColorFromQml(QColor);
 
     void on_buttonRGBcycle_clicked();
     void on_buttonMoodlight_clicked();
     void on_buttonOff_clicked();
     void on_buttonWhite_clicked();
+    void on_buttonStrobe_clicked();
     void on_buttonColorwheel_clicked();
-    void on_buttonBusyColorSpot_clicked();
-
-    void slotCheckTimeout();
-    void replyFinished(QNetworkReply*);
-    int getSize();
 
     static bool comparePatternsFunction(Blink1Pattern *bi1,Blink1Pattern *bi2){
         return bi1->date()>bi2->date();
@@ -107,7 +99,7 @@ public slots:
         return bi1->date()<bi2->date();
     }
 
-    QList<QObject*> getList();
+    QList<QObject*> getPatternsList();
     QList<QObject*> getMailsList();
     QList<QObject*> getHardwareList();
     QList<QObject*> getInputsList();
@@ -116,39 +108,37 @@ public slots:
     QVariantList getPatternsNames();
     QList<QObject*> getBigButtons();
 
-    void setColorToBlink(QColor,QString,int f=100);
-    void setColorToBlink2(QColor,int f);
+    void setColorToBlinkAndActiveChangePatternName(QColor,QString,int f=100);
+    void setColorToBlink(QColor,int f);
     void removeRecentEvent(int idx);
     void removeAllRecentEvents();
 
     void removePattern(QString key);
-    void removeInputAndPattern(QString key);
     void removeInput(QString key,bool update=false);
-    void new_input_and_pattern(QString name,QString type,QString rule,QString pname,int repeats);
-    void edit_input_and_pattern(QString name,QString type,QString rule,QString pname,int repeats,QString old_name);
     void addColorAndTimeToPattern(QString pname,QString color,double time);
     void addNewPattern(QColor col, double time);
 
-    void update();
+    void updateInputsList();
     void setPatternNameToInput(QString name, QString pn);
     void setFreqToInput(QString name, int freq);
 
-    QVariantList getPattern(QString key);
-    QVariantList getPatternTimes(QString key);
-    int getPatternColorSize(QString key);
-    int getPatternRepeats(QString key);
     QString getActivePatternName();
     QString getBlinkStatus();
     QString getIftttKey();
     QString getBlinkKey();
-    void playPattern(QString name);
-    void playPattern2(QString name);
 
+    void playOrStopPattern(QString name);
+    void playPattern(QString name);
     void stopPattern(QString name);
 
     void removeColorAndTimeFromPattern(QString name,int idx);
-    void changeRepeats(QString name);
-    void changeRepeatsTo(QString name, int to);
+    void changePatternRepeats(QString name);
+    void changePatternRepeatsTo(QString name, int to);
+    void changePatternName(QString oldName,QString newName);
+    int getLedFromPattern(QString name, int idx);
+    void setLedToPattern(QString name,int idx, int led);
+    void changePatternReadOnly(QString s, bool ro);
+    void copyPattern(QString name);
 
     void addNewBigButton(QString name, QColor col);
     void updateBigButtonColor(int idx, QColor col);
@@ -156,42 +146,37 @@ public slots:
     void updateBigButtonPatternName(int idx, QString name);
     void updateBigButtonLed(int idx, int l);
     void playBigButton(int idx);
+    void removeBigButton2(int idx);
+    void updateBigButtons();
+    void editColorAndTimeInPattern(QString pname,QString color,double time, int index);
+
     void updateInputsArg1(QString name, QString arg1);
     void updateInputsType(QString name, QString type);
     void updateInputsPatternName(QString name, QString pn);
     void createNewIFTTTInput();
-    void createNewInput();
-    void changePatternName(QString oldName,QString newName);
-    void update2();
-
+    void createNewInput();    
+    void updatePatternsList();
     void changeInputName(QString oldName,QString newName);
-    void removeBigButton2(int idx);
-    void updateBigButtons();
+
     void setAutorun();
-    void showhideDockIcon();
-    void minButton();
+    void showhideDockIcon();    
     void checkInput(QString key);
-    void checkInput2(Blink1Input *in,QTcpSocket *client);
     void startStopServer();
-    void acceptConnection();
-    void startRead();
-    void discardClient();
     void changeLed(int l);
-    bool getIsMk2();
+    bool isMk2();
     QString selectFile(QString name);
+
     void setLed(int l);
     int getLed();
-    int getLedFromPattern(QString name, int idx);
-    void setLedToPattern(QString name,int idx, int led);
+
     bool mac();
 
-    void fromQmlRequest(QString type, QString rule);
     void addRecentEvent(int date, QString name, QString from);
 
-    void editColorAndTimeInPattern(QString pname,QString color,double time, int index);
-    void qu(QQuickCloseEvent*);
-    void qu2(bool);
-    void mark();
+    void viewerClosingSlot(QQuickCloseEvent*);
+    void viewerVisibleChangedSlot(bool);
+    void markViewerAsClosing();
+
     void add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
     void edit_mail(QString oldname, QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
     void remove_email(QString name,bool update=false);
@@ -199,12 +184,11 @@ public slots:
     void setFreqToEmail(QString name,int freq);
     void setPatternNameToEmail(QString name, QString pn);
     void checkMail(QString name);
+    void markEmailEditing(QString s,bool e);
+
     QString getHostId();
     void setHostId(QString hostId);
     bool checkHex( QString newText);
-    void markEditing(QString s,bool e);
-    void changePatternReadOnly(QString s, bool ro);
-    void copyPattern(QString name);
 
     void remove_hardwareMonitor(QString name,bool update=false);
     void updateHardware();
@@ -212,20 +196,31 @@ public slots:
     void setPatternNameToHardwareMonitor(QString name, QString pn);
 
     void checkHardwareMonitor(QString name);
-
     void add_new_hardwaremonitor(QString name,int type,int lvl, int action, int role);
     void edit_hardwaremonitor(QString oldname,QString name,int type,int lvl, int action, int role);
     void markHardwareEditing(QString s,bool e);
+
     void addToLog(QString txt);
     void resetAlertsOption();
+
     bool checkIfCorrectPositionX(int x);
     bool checkIfCorrectPositionY(int y,int bar);
     int checkWordWidth(QString s,int size);
     void changeColorOnVirtualBlink(QColor);
     bool checkIfColorIsTooBright(QString);
     bool checkIfColorIsTooDark(QString);
+
+    // FUNCTIONS FOR HTTP SERVER
+    void regenerateBlink1Id();
+    QJsonArray getCatchedBlinkId();
+    QColor getCurrentColor();
+    QMap<QString,Blink1Pattern*> getFullPatternList();
+    QMap<QString,Blink1Input*> getFullInputList();
+    void addNewPattern(QString name, QString patternStr);
+    void startOrStopLogging(bool);
+    bool getLogging();
+
 private:
-    QNetworkAccessManager *nam;
     QtQuick2ApplicationViewer viewer;
 
     void loadSettings();
@@ -251,38 +246,37 @@ private:
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
 
-    QTimer* blink1timer, *checkTimer;
+    QTimer* blink1timer;
     blink1_device* blink1dev;
 
     uint8_t mode;
-    QColor cc;  // current color
+    QColor cc;
+
+    QList<QString> recentEvents;
+    QList<BigButtons*> bigButtons2;
 
     QMap<QString,Blink1Pattern*> patterns;
     QMap<QString,Blink1Input*> inputs;
     QMap<QString,Email*> emails;
     QMap<QString,HardwareMonitor*> hardwareMonitors;
-    QMapIterator<QString, Blink1Input*> *it;
-    QMapIterator<QString, Email*> *it2;
-    QMapIterator<QString, HardwareMonitor*> *it3;
-    int counter;
+    QMapIterator<QString, Blink1Input*> *inputsIterator;
+    QMapIterator<QString, Email*> *emailsIterator;
+    QMapIterator<QString, HardwareMonitor*> *hardwaresIterator;
+
+    int duplicateCounter;
     QString activePatternName;
-    int inputsAmount;
+
     QString blinkStatus;
     QString blinkKey;
     QString iftttKey;
     int rgbCycle;
     int rgbCounter;
     int fadeSpeed;
+
     int led;
-    QList<QString> recentEvents;
-    QList<BigButtons*> bigButtons2;
-    QTcpServer server;
-    QList<QTcpSocket *> clientConnections;
-    QString mvalueRet;
 
     QTimer *inputsTimer;
     int inputTimerCounter;
-    int dataInputCount;
     bool isIftttChecked;
     bool autorun;
     bool dockIcon;
@@ -294,16 +288,18 @@ private:
     QFile *logFile;
     QTextStream *out;
     bool fromPattern;
+
+    HttpServer *httpserver;
 signals:
     void patternsUpdate();
+    void updatePatternsNamesOnUi();
+
     void inputsUpdate();
-    void updatePatternName();
+    void updateActivePatternName();
     void recentEventsUpdate();
     void bigButtonsUpdate();
     void emailsUpdate();
-    void hardwareUpdate();
-    void changeValRef();
-    void patternsUpdate2();
+    void hardwareUpdate();    
     void iftttUpdate();
     void ledsUpdate();
     void deviceUpdate();
@@ -311,13 +307,8 @@ private slots:
     void updateInputs();
     void deleteDataInput(DataInput *dI);
     void runPattern(QString, bool);
-    void setColor(QColor);
-    void setVRet(QString);
+    void setColorFromDataInput(QColor);
     void checkIfttt(QString);
-    void checkIfttt(QString,Blink1Input*);
-    bool checkIfColor(QString);
-    bool checkIfNumber(QString,int);
-    bool checkIfPatternsStr(QString);
 };
 
 #endif // MAINWINDOW_H

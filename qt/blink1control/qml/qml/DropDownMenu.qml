@@ -120,7 +120,7 @@ Image {
                     click()
                     mw.stopPattern(pattern_name)
                     mw.removePattern(pattern_name)
-                    mw.update2()
+                    mw.updatePatternsList()
                 }
             }
 

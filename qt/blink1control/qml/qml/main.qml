@@ -44,7 +44,7 @@ Image{
         downSrc: "qrc:images/layout/minimalize-hover.png"
         anchors.right: closeButton.left
         anchors.top: parent.top
-        onClicked: mw.minButton()
+        onClicked: mw.showMinimize()
     }
     PushButton{
         z: 1
@@ -54,7 +54,7 @@ Image{
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.rightMargin: 30
-        onClicked: { mw.mark(); mw.quit(); }
+        onClicked: { mw.markViewerAsClosing(); mw.quit(); }
     }
     function exitEditMode(){
         if(lista.currentIndex != -1 && lista.currentItem) {
@@ -104,7 +104,7 @@ Image{
                     mw.removePattern(inputsList.pnm[lista.currentIndex+1])
                     lista.currentIndex=-1
                     editModeIndex=-1
-                    mw.update2()
+                    mw.updatePatternsList()
                 }else if(tmp!=-1){
                     //console.log("usuwam color")
                     mw.removeColorAndTimeFromPattern(inputsList.pnm[lista.currentIndex+1],tmp)
@@ -447,7 +447,7 @@ Image{
             anchors.rightMargin: -8
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 5
-            model: mw.getList//myModel
+            model: mw.getPatternsList//myModel
             property int selectedIndex: -1
             currentIndex: -1
             clip: true
@@ -587,7 +587,7 @@ Image{
                                 propagateComposedEvents: true
                                 onClicked: {
                                     colorwheel1.indexOfColorPattern=-1
-                                    mw.playPattern(model.modelData.name)
+                                    mw.playOrStopPattern(model.modelData.name)
                                     colors.currentIndex=-1
                                 }
                             }
@@ -781,7 +781,7 @@ Image{
                                 mw.stopPattern(inputsList.pnm[lista.currentIndex+1])
                                 lista.restoreName()
                                 if(mouse.button==Qt.LeftButton){
-                                    mw.changeRepeats(model.modelData.name)
+                                    mw.changePatternRepeats(model.modelData.name)
                                     //console.log("zmiana repeats "+model.modelData.name)
                                     colors.currentIndex=-1
                                     //lista.selectedIndex=index
@@ -847,7 +847,7 @@ Image{
                                 mw.stopPattern(inputsList.pnm[lista.currentIndex+1])
                                 lista.restoreName()
                                 if(mouse.button==Qt.LeftButton){
-                                    mw.changeRepeats(model.modelData.name)
+                                    mw.changePatternRepeats(model.modelData.name)
                                     //console.log("zmiana repeats "+model.modelData.name)
                                     colors.currentIndex=-1
                                     //lista.selectedIndex=index
@@ -919,7 +919,7 @@ Image{
                             editModeIndex = -1;
                             colors.currentIndex = -1;
                             colorwheel1.indexOfColorPattern = -1;
-                            mw.update2()
+                            mw.updatePatternsList()
                         }
                     }
                 }
@@ -1000,15 +1000,16 @@ Image{
                     z:3
                     width: 190
                     height: parent.height-5
-                    opacity: 0.8
+                    opacity: 0.3
                     color: "white"
                     visible: model.modelData.isReadOnly
                 }
                 Image{
                     visible: model.modelData.isReadOnly
                     anchors.verticalCenter: back.verticalCenter
-                    anchors.right: tt.left
-                    anchors.rightMargin: 3
+                    //anchors.right: tt.left
+                    anchors.right: parent.right
+                    anchors.rightMargin: 30
                     source: "qrc:images/layout/lock_small.png"
                     z:4
                 }
@@ -1020,7 +1021,7 @@ Image{
                     anchors.verticalCenter: back.verticalCenter
                     anchors.horizontalCenter: back.horizontalCenter
                     anchors.horizontalCenterOffset: 10
-                    text: "Pattern locked"
+                    text: ""  // "locked"
                     color: "black"
                     font.pointSize: (!mw.mac())?8:12
                 }
@@ -1084,6 +1085,14 @@ Image{
                                 src: "btn-moodlight"
                             }
                             ListElement{
+                                name: "Strobe light"
+                                src: "btn-strobe"
+                            }
+                            ListElement{
+                                name: "White"
+                                src: "btn-white"
+                            }
+                            ListElement{
                                 name: "Off"
                                 src: "btn-off"
                             }
@@ -1114,12 +1123,16 @@ Image{
                                     bigButton1model.currentIndex = index;
                                     if(index==0){
                                         mw.on_buttonColorwheel_clicked()
-                                        mw.colorChanged(colorwheel1.getCurrentColor());
+                                        mw.changeColorFromQml(colorwheel1.getCurrentColor());
                                     }else if(index==1){
                                         mw.on_buttonRGBcycle_clicked()
                                     }else if(index==2){
                                         mw.on_buttonMoodlight_clicked()
                                     }else if(index==3){
+                                        mw.on_buttonStrobe_clicked()
+                                    }else if(index==4){
+                                        mw.on_buttonWhite_clicked()
+                                    }else if(index==5){
                                         mw.on_buttonOff_clicked()
                                         ledmodel.currentIndex=0
                                     }
@@ -1140,7 +1153,7 @@ Image{
                                     bigButton1model.currentIndex = index;
                                     if(index==0){
                                         mw.on_buttonColorwheel_clicked()
-                                        mw.colorChanged(colorwheel1.getCurrentColor());
+                                        mw.changeColorFromQml(colorwheel1.getCurrentColor());
                                     }else if(index==1){
                                         mw.on_buttonRGBcycle_clicked()
                                     }else if(index==2){
@@ -1478,7 +1491,7 @@ Image{
                                     iftttMenu.popup()
                                     inputsList.restoreName();
                                     inputsList.currentIndex=index
-                                    if(mw.mac()) mw.update()
+                                    if(mw.mac()) mw.updateInputsList()
                                 }
                             }
                         }
@@ -1829,7 +1842,7 @@ Image{
                                     inputsList2.restoreName();
                                     inputsList2.restorePath();
                                     inputsList2.currentIndex=index
-                                    if(mw.mac()) mw.update()
+                                    if(mw.mac()) mw.updateInputsList()
                                 }
                             }
                         }
@@ -2288,11 +2301,8 @@ Image{
                             }
                             onDoubleClicked: {
                                 if(mailpopup.visible) return;
-                                /*if(mailpopup.oldname!=""){
-                                    mw.markEditing(mailpopup.oldname,false);
-                                }*/
                                 mailpopup.oldname=model.modelData.name
-                                mw.markEditing(model.modelData.name,true)
+                                mw.markEmailEditing(model.modelData.name,true)
                                 mailpopup.editData(model.modelData.name,model.modelData.type,model.modelData.server,model.modelData.login,model.modelData.passwd,model.modelData.port,model.modelData.ssl,model.modelData.result,model.modelData.parser)
                                 mailpopup.visible=true
                             }
@@ -2994,38 +3004,38 @@ Image{
         MenuItem {
             text: "inf"
             onTriggered: {
-                mw.changeRepeatsTo(inputsList.pnm[lista.currentIndex+1],-1)
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],-1)
             }
 
         }
         MenuItem {
             text: "0"
             onTriggered: {
-                mw.changeRepeatsTo(inputsList.pnm[lista.currentIndex+1],0)
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],0)
             }
         }
         MenuItem {
             text: "x1"
             onTriggered: {
-                mw.changeRepeatsTo(inputsList.pnm[lista.currentIndex+1],1)
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],1)
             }
         }
         MenuItem {
             text: "x2"
             onTriggered: {
-                mw.changeRepeatsTo(inputsList.pnm[lista.currentIndex+1],2)
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],2)
             }
         }
         MenuItem {
             text: "x3"
             onTriggered: {
-                mw.changeRepeatsTo(inputsList.pnm[lista.currentIndex+1],3)
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],3)
             }
         }
         MenuItem {
             text: "x4"
             onTriggered: {
-                mw.changeRepeatsTo(inputsList.pnm[lista.currentIndex+1],4)
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],4)
             }
         }
     }
@@ -3074,10 +3084,10 @@ Image{
             editMode: lista.currentItem && lista.currentIndex != -1 && lista.currentItem.editMode//lista.currentItem.editMode
             indexOfColorPattern: -1
             onCurrentColorNameChanged: {
-                if(bigButton1model.currentIndex == 0)
+                if(bigButton1model.currentIndex == 0) //wtf
+                //if( colorwheel1.isUserAction() ) // this doesn't work fully
                 {
-                    //                var c = getCurrentColor();
-                    mw.colorChanged(getCurrentColor());
+                    mw.changeColorFromQml(getCurrentColor());  // need to only call this when user is doing it, not during patterns
                 }
                 if(colorwheel1.editMode && indexOfColorPattern != -1)
                 {

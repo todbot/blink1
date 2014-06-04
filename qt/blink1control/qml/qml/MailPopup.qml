@@ -119,7 +119,7 @@ Text{
         upSrc: "qrc:/images/layout/close-single-up.png"
         downSrc: "qrc:/images/layout/close-single-hover.png"
         onClicked: {
-            mw.markEditing(popup.oldname,false)
+            mw.markEmailEditing(popup.oldname,false)
             popup.oldname=""
             parent.visible=false
         }
@@ -775,7 +775,7 @@ z: popup.z+1
         upSrc: "qrc:/images/layout/button-ok-up.png"
         downSrc: "qrc:/images/layout/button-ok-down.png"
         onClicked: {
-            mw.markEditing(popup.oldname,false)
+            mw.markEmailEditing(popup.oldname,false)
             console.log("OK CLICKED")
             popup.visible=false
             if(popup.oldname===""){
@@ -817,7 +817,7 @@ z: popup.z+1
         onClicked: {
             console.log("CANCEL CLICKED")
             popup.visible=false
-            mw.markEditing(popup.oldname,false)
+            mw.markEmailEditing(popup.oldname,false)
             if(popup.oldname!="")
                 mw.checkMail(popup.oldname)
             popup.oldname="";            
