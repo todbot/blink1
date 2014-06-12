@@ -25,7 +25,7 @@ void Blink1Pattern::fromJson( QJsonObject obj)
     setName( obj.value("name").toString() );
     setRepeats(obj.value("repeats").toInt());
     QString tmp=obj.value("pattern").toString();
-    fromPatternStrWithLeds(tmp);
+    fromPatternStr(tmp);
     setDate(obj.value("date").toDouble());
     setReadOnly(obj.value("readonly").toBool());
     setSystem(obj.value("system").toBool());
@@ -66,7 +66,7 @@ QString Blink1Pattern::patternStr()
 {
     QString str = QString("%1").arg( mrepeats );
     for( int i=0; i<colors.count(); i++) {
-        str.append( QString(",%1,%2").arg(colors.at(i).name().replace("#","%23")).arg(times.at(i)));
+        str.append( QString(",%1,%2").arg(colors.at(i).name()).arg(times.at(i)));
     }
     return str;
 }
@@ -80,31 +80,56 @@ QString Blink1Pattern::patternStrWithLeds()
     return str;
 }
 
-// parse pattern string "repeats,color1,color1time,color2,color2time,..."
-void Blink1Pattern::fromPatternStr(QString tmp){
+// parse pattern string in one of two formats:
+//   "repeats,color1,color1time,led1,color2,color2time,led2,..."
+//   "repeats,color1,color1time,color2,color2time,..."
+// returns true if parsing was succesful, false if not
+bool Blink1Pattern::fromPatternStr(QString tmp) {
     tmp.replace(" ",""); // remove any whitepsace from mucking up parsing
+    qDebug() << "tmp: " << tmp;
     QStringList list=tmp.split(",");
-    // minimal pattern string is "reps,color,time" & pair count must be even
-    if( list.count() > 3 && (list.count()-1) % 2 == 0 ) { 
-        setRepeats(list.at(0).toInt());
+
+    // determine format type:
+    // if 3-tuple, then every 3rd entry has a '#'
+    // if 2-type, then every 2nd entry has a '#'
+    int count2=0, count3=0;
+    //int count3 =0;
+    for( int i=1; i<list.count(); i+=2 ) { 
+        if( list.at(i).contains('#') ) count2++;
+    }
+    for( int i=1; i<list.count(); i+=3 ) { 
+        if( list.at(i).contains('#') ) count3++;
+    }
+    int format = (count3>count2) ? 3 : (count2) ? 2 : 0;
+    // for pattern string "reps,color,time", min is 3 elemnets & pair count must be even
+    if( format==2 && list.count() >= 3 && (list.count()-1) % 2 == 0 ) { 
         for(int i=1;i<list.count();i+=2){
-            addColorAndTime(list.at(i),list.at(i+1).toDouble());
+            QString colorstr = list.at(i);
+            double time      = list.at(i+1).toDouble();
+            qDebug() << "colorstr2: "<<colorstr;
+            if( !colorstr.contains('#') ) // color must be in hexcode #cccccc format
+                return false;
+            addColorAndTime( colorstr, time );
         }
+        setRepeats(list.at(0).toInt());
+        return true;
     }
-}
-// parse pattern string "repeats,color1,color1time,led1,color2,color2time,led2,..."
-void Blink1Pattern::fromPatternStrWithLeds(QString tmp){
-    tmp.replace(" ",""); // remove any whitepsace from mucking up parsing
-    QStringList list=tmp.split(",");
-    setRepeats(list.at(0).toInt());
-    if((list.count()>=4 && list.at(3).indexOf(QRegExp("#([0-9a-fA-F]{6})"))!=-1) || list.count()==3){
-        fromPatternStr(tmp);
-        return;
+    // for pattern string "reps,color,time,led", min is 4 elemnets & pair count must be 3-tuple
+    else if( format==3 && list.count() >= 4 && (list.count()-1) % 3 == 0 ) {
+        for(int i=1;i<list.count();i+=3) {
+            QString colorstr = list.at(i);
+            double time      = list.at(i+1).toDouble();
+            int ledn         = list.at(i+2).toInt();
+            qDebug() << "colorstr3: "<<colorstr;
+            if( !colorstr.contains('#') )  // color must be in hexcode #cccccc format
+                return false;
+            addColorAndTime( colorstr, time );
+            editLed(colors.count()-1, ledn);
+        }
+        setRepeats(list.at(0).toInt());
+        return true;
     }
-    for(int i=1;i<list.count();i+=3){
-        addColorAndTime(list.at(i),list.at(i+1).toDouble());
-        editLed(colors.count()-1,list.at(i+2).toInt());
-    }
+    return false;
 }
 
 QString Blink1Pattern::name() const
@@ -289,7 +314,7 @@ QVariantList Blink1Pattern::getLeds(){
     }
     return v;
 }
-
+// colorstring is pre-qualified to be not-null and valid
 void Blink1Pattern::addColorAndTime(QString color, double time){
     colors.append(QString(color));
     times.append(time);

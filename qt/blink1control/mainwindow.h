@@ -115,7 +115,7 @@ public slots:
 
     void removePattern(QString key);
     void removeInput(QString key,bool update=false);
-    void addColorAndTimeToPattern(QString pname,QString color,double time);
+    //void addColorAndTimeToPattern(QString pname,QString color,double time);
     void addNewPattern(QColor col, double time);
 
     void updateInputsList();
@@ -219,7 +219,7 @@ public slots:
     QColor getCurrentColor();
     QMap<QString,Blink1Pattern*> getFullPatternList();
     QMap<QString,Blink1Input*> getFullInputList();
-    void addNewPatternFromPatternStr(QString name, QString patternStr);
+    bool addNewPatternFromPatternStr(QString name, QString patternStr);
     void startOrStopLogging(bool);
     bool getLogging();
     void updateColorsOnBigButtons2List();

@@ -1037,12 +1037,13 @@ void MainWindow::removeInput(QString key,bool update){
             emit inputsUpdate();
     }
 }
-
+/*
 void MainWindow::addColorAndTimeToPattern(QString pname,QString color,double time){
     if(patterns.value(pname)->getColors().count()>=8) return;
     patterns.value(pname)->addColorAndTime(color,time);
     patterns.value(pname)->editLed(patterns.value(pname)->getColorList().count()-1,led);
 }
+*/
 void MainWindow::addNewPattern(QColor col, double time){
     Blink1Pattern *bp=new Blink1Pattern();
     int tmp=patterns.count();
@@ -1652,17 +1653,27 @@ QColor MainWindow::getCurrentColor(){
 QMap<QString,Blink1Pattern*> MainWindow::getFullPatternList(){
     return patterns;
 }
-void MainWindow::addNewPatternFromPatternStr(QString name, QString patternStr){
+
+// called by httpserver
+// name must be defined and not empty
+// returns true on good parsing of patternStr and pattern was added
+// or false if not
+bool MainWindow::addNewPatternFromPatternStr(QString name, QString patternStr){
     Blink1Pattern *bp=new Blink1Pattern();
     bp->setName( name );
-    bp->fromPatternStrWithLeds( patternStr);
+    if( ! bp->fromPatternStr( patternStr) ) {
+        return false;
+    }
+
     patterns.insert(bp->name(),bp);
     connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndChangeActivePatternName(QColor,QString,int)));
     connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor,double)),this,SLOT(changeColorOnVirtualBlink(QColor,double)));
     emit patternsUpdate();
     emit updatePatternsNamesOnUi();
     emit updateActivePatternName();
+    return true;
 }
+
 void MainWindow::startOrStopLogging(bool log){
     if(logging) {
         logFile->close();
