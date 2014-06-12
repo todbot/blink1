@@ -24,7 +24,7 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 TARGET = Blink1Control
-VERSION = 0.9.8
+VERSION = 1.8
 TEMPLATE = app
 
 

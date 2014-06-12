@@ -201,12 +201,16 @@ void HttpServer::startRead(){
             QString pattstr = qurlquery.queryItemValue("pattern");
             QString status = "pattern added";
             if( pname != "" && pattstr != "" ) {
-                mw->addNewPatternFromPatternStr(pname,pattstr);
+                bool good = mw->addNewPatternFromPatternStr(pname,pattstr);
+                if( !good ) {
+                    status = "bad pattern";
+                }
             } else {
                 status = "pattern not added";
             }
+
             resp.insert("pname", pname);
-            resp.insert("pattern", pattstr);
+            resp.insert("pattern", pattstr);  // FIXME: should be parsed pattern
             resp.insert("status", status);
         }
         else if( cmd=="/pattern/del" ) {
