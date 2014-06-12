@@ -24,7 +24,7 @@ void Blink1Input::fromJson( QJsonObject obj)
     setPatternName(obj.value("patternName").toString());
 }
 
-QJsonObject Blink1Input::toJson()
+QJsonObject Blink1Input::toFullJsonReadyToSave()
 {
     QJsonObject obj;
     obj.insert("name", name());
@@ -37,7 +37,7 @@ QJsonObject Blink1Input::toJson()
     obj.insert("freqCounter",freqCounter());
     return obj;
 }
-QJsonObject Blink1Input::toJson3()
+QJsonObject Blink1Input::toJsonWithNameTypePNameArg1Arg2AndDate()
 {
     QJsonObject obj;
     obj.insert("arg1",arg1());
@@ -52,14 +52,14 @@ QJsonObject Blink1Input::toJson3()
     }
 
     obj.insert("pname",patternName());
-    obj.insert("type",type2());
+    obj.insert("type",lowerType());
     return obj;
 }
-QJsonObject Blink1Input::toJson2()
+QJsonObject Blink1Input::toJsonWithNameTypeAndArg1()
 {
     QJsonObject obj;
     obj.insert("iname", name());
-    obj.insert("type",type2());
+    obj.insert("type",lowerType());
     if(mtype!="IFTTT.COM") obj.insert("arg1",arg1());
     return obj;
 }
@@ -71,14 +71,14 @@ QString Blink1Input::name() const
 void Blink1Input::setName(const QString &name)
 {
     mname = name;
-    emit change();
+    emit updateValues();
 }
 
 QString Blink1Input::type() const
 {
     return mtype;
 }
-QString Blink1Input::type2() const
+QString Blink1Input::lowerType() const
 {
     if(mtype=="IFTTT.COM")
         return "ifttt";
@@ -88,7 +88,7 @@ QString Blink1Input::type2() const
 void Blink1Input::setType(const QString &type)
 {
     mtype = type;
-    emit change();
+    emit updateValues();
 }
 
 QString Blink1Input::arg1() const
@@ -98,7 +98,7 @@ QString Blink1Input::arg1() const
 void Blink1Input::setArg1(const QString &arg1)
 {
     marg1 = arg1;
-    emit change();
+    emit updateValues();
 }
 QString Blink1Input::arg2() const
 {
@@ -107,7 +107,7 @@ QString Blink1Input::arg2() const
 void Blink1Input::setArg2(const QString &arg2)
 {
     marg2 = arg2;
-    emit change();
+    emit updateValues();
 }
 QString Blink1Input::patternName() const{
     return mpatternName;
@@ -115,7 +115,7 @@ QString Blink1Input::patternName() const{
 
 void Blink1Input::setPatternName(const QString &patternName){
     mpatternName=patternName;
-    emit change();
+    emit updateValues();
 }
 bool Blink1Input::pause(){
     return mpause;
@@ -128,7 +128,7 @@ int Blink1Input::date(){
 }
 void Blink1Input::setDate(int date){
     mdate=date;
-    emit change();
+    emit updateTimeValue();
 }
 QString Blink1Input::getTime(){
     if(mdate==-1) return "0 secs ago";
@@ -152,14 +152,14 @@ QString Blink1Input::getTime(){
 }
 void Blink1Input::setFreq(int freq){
     mfreq=freq;
-    emit change();
+    emit updateValues();
 }
 int Blink1Input::freq(){
     return mfreq;
 }
 void Blink1Input::setFreqCounter(int freqC){
     mfreqCounter=freqC;
-    emit change();
+    emit updateValues();
 }
 int Blink1Input::freqCounter(){
     return mfreqCounter;
@@ -167,4 +167,7 @@ int Blink1Input::freqCounter(){
 void Blink1Input::changeFreqCounter(){
     if(mfreq==0) mfreq=3;
     mfreqCounter=(mfreqCounter+1)%mfreq;
+}
+void Blink1Input::updateTime(){
+    emit updateTimeValue();
 }

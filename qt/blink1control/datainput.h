@@ -20,7 +20,6 @@ public:
     ~DataInput();
 
     void start();
-    void startQml();
 
     void setType(QString t) { type = t; }
     void setRule(QString r) { rule = r; }
@@ -45,7 +44,6 @@ private:
     QString iftttKey;
     QString processOutput;
 
-
     int typeToInt(QString);
     bool readingProcess;
 private slots:
@@ -53,10 +51,6 @@ private slots:
     void onError();
     void onProcessOutput();
     void onProcessFinished();
-
-    void onFinishedQml();
-    void onProcessFinishedQml();
-
 
 signals:
     void toDelete(DataInput*);
@@ -66,8 +60,6 @@ signals:
     void iftttToCheck(QString);
     void iftttToCheck(QString,Blink1Input*);
     void addReceiveEvent(int date, QString name, QString from);
-
-
 
 };
 
