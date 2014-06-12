@@ -29,7 +29,7 @@ Email::Email(QString name,QObject *parent) :
     tmpLastId=-1;
     recentEventAdded=false;
     time=new QTimer();
-
+    connect(time,SIGNAL(timeout()),SLOT(checkState()));
     this->editing=false;
 }
 Email::~Email(){
@@ -96,7 +96,9 @@ void Email::checkMail(){
             socket->connectToHost(server,port);
         action_number=0;
         markAsUnread=false;
-        time->singleShot(5000,this,SLOT(checkState()));
+        //time->singleShot(5000,this,SLOT(checkState()));
+        time->setSingleShot(true);
+        time->start(5000);
     }
 }
 void Email::checkState(){

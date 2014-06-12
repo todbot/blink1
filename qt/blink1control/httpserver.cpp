@@ -201,7 +201,7 @@ void HttpServer::startRead(){
             QString pattstr = qurlquery.queryItemValue("pattern");
             QString status = "pattern added";
             if( pname != "" && pattstr != "" ) {
-                mw->addNewPattern(pname,pattstr);
+                mw->addNewPatternFromPatternStr(pname,pattstr);
             } else {
                 status = "pattern not added";
             }

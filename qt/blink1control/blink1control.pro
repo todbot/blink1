@@ -130,7 +130,8 @@ OTHER_FILES += \
     HostIdPopup.qml \
     ComboBox1.qml \
     DropDownMenu.qml \
-    MyInfo.plist
+    MyInfo.plist \
+    MyGroupBox.qml
 
 #CONFIG += CONSOLE
 win32{

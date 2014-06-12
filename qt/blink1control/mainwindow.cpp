@@ -252,8 +252,9 @@ void MainWindow::updateInputs()
         else
         {
                 if(type.toUpper() == "IFTTT.COM")
-                {
+                {                    
                     if(inputTimerCounter == 0){
+                        inputs[key]->updateTime();
                         if(!isIftttChecked)
                         {
                             isIftttChecked = true;
@@ -367,7 +368,8 @@ void MainWindow::checkIfttt(QString txt)
                 if( evdate > input->date() ) {
                     input->setDate(evdate); // save for next go around
                     input->setArg2(evsource); 
-                    patterns.value( input->patternName() )->play(cc);  // FIXME: why is cc being passed?
+                    if(patterns.contains(input->patternName()))
+                        patterns.value( input->patternName() )->play(cc);  // FIXME: why is cc being passed?
                     addRecentEvent(evdate, evsource, "IFTTT");
                 }
             }
@@ -442,7 +444,8 @@ void MainWindow::quit()
         blink1_close(blink1dev);
     }
 
-    QTimer::singleShot(500, qApp, SLOT(quit()));
+    //QTimer::singleShot(500, qApp, SLOT(quit()));
+    qApp->quit();
 }
 
 void MainWindow::saveSettings()
@@ -539,8 +542,8 @@ void MainWindow::loadSettings()
         Blink1Pattern* bp = new Blink1Pattern();
         bp->fromJson( qarr.at(i).toObject() );
         patterns.insert( bp->name(), bp );
-        connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndActiveChangePatternName(QColor,QString,int)));
-        connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
+        connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndChangeActivePatternName(QColor,QString,int)));
+        connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor,double)),this,SLOT(changeColorOnVirtualBlink(QColor,double)));
     }
 
     QString sPatternStr = settings.value("patterns","").toString();
@@ -551,8 +554,8 @@ void MainWindow::loadSettings()
             Blink1Pattern* bp = new Blink1Pattern();
             bp->fromJson( qarr.at(i).toObject() );
             patterns.insert( bp->name(), bp );
-            connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndActiveChangePatternName(QColor,QString,int)));
-            connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
+            connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndChangeActivePatternName(QColor,QString,int)));
+            connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor,double)),this,SLOT(changeColorOnVirtualBlink(QColor,double)));
         }
     }
     QString sInputStr = settings.value("inputs","").toString();
@@ -615,6 +618,7 @@ void MainWindow::updateBlink1()
         cc = QColor( rand() % 255, rand() % 255, rand() % 255 );
         fadeSpeed = 200;
         setBlink1 = true;
+        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     }
     else if( mode == RGBCYCLE ) {
         if(rgbCycle==0){
@@ -631,23 +635,27 @@ void MainWindow::updateBlink1()
         rgbCounter+=15;
         fadeSpeed = 300;
         setBlink1 = true;
+        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     }
     else if( mode == STROBE ) { 
         cc = (cc==QColor("#000000")) ? QColor("#ffffff") : QColor("#000000");
         fadeSpeed = 10;
         setBlink1 = true;
+        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     }
     else if( mode == ON ) {
         mode = NONE;
         cc = QColor(255,255,255); 
         fadeSpeed = 10;
         setBlink1 = true;
+        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     }
     else if( mode == OFF ) {
         mode = NONE;
         cc = QColor(0,0,0); 
         fadeSpeed = 10;
         setBlink1 = true;
+        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     }
     else if( mode == RGBSET ) {
         mode = NONE;
@@ -766,6 +774,7 @@ void MainWindow::on_buttonMoodlight_clicked()
 void MainWindow::on_buttonStrobe_clicked()
 {
     led=0;
+    emit ledsUpdate();
     blink1timer->stop();
     mode = STROBE;
     blink1timer->start(200);
@@ -776,16 +785,22 @@ void MainWindow::on_buttonWhite_clicked()
 {
     mode = RGBSET;
     led=0;
+    emit ledsUpdate();
     cc = QColor("#cccccc");
     updateBlink1();
+    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,0.0));
 }
 
 void MainWindow::on_buttonOff_clicked()
 {
+    foreach (QString name, patterns.keys()) {
+       stopPattern(name);
+    }
     mode = OFF;
     led=0;
     emit ledsUpdate();
     updateBlink1();
+
 }
 
 void MainWindow::on_buttonColorwheel_clicked()
@@ -795,7 +810,7 @@ void MainWindow::on_buttonColorwheel_clicked()
 }
 
 
-void MainWindow::setColorToBlinkAndActiveChangePatternName(QColor c,QString s,int fademillis){
+void MainWindow::setColorToBlinkAndChangeActivePatternName(QColor c,QString s,int fademillis){
     fromPattern=true;
     if(s!="")
         cc=c;
@@ -809,8 +824,8 @@ void MainWindow::setColorToBlinkAndActiveChangePatternName(QColor c,QString s,in
     }
     qDebug()<<"todtest: setColorToBlink: fadespeed:"<<fadeSpeed << " color: " <<c.name() << " s: "<<s;
     updateBlink1();
-    if(s!="")// && !fromPattern)
-        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
+    //if(s!="")// && !fromPattern)
+        //QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
     fromPattern=false;
 }
 
@@ -822,7 +837,7 @@ void MainWindow::setColorToBlink(QColor c,int fademillis){
     emit updateActivePatternName();
     qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed << " color: " << c.name();
     updateBlink1();
-    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
+    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
 }
 void MainWindow::changeMinimizeOption(){
     startmin=!startmin;
@@ -839,12 +854,13 @@ void MainWindow::showNormal(){
 void MainWindow::playBigButton(int idx){
     blink1timer->stop();
     QString tmp=bigButtons2.at(idx)->getPatternName();
-    this->led=bigButtons2.at(idx)->getLed();
-    emit ledsUpdate();
     if(tmp==""){
+        this->led=bigButtons2.at(idx)->getLed();
+        emit ledsUpdate();
         cc=bigButtons2.at(idx)->getCol();
         mode=RGBSET;
         updateBlink1();
+        QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,0.0));
     }else{
         if(patterns.contains(tmp))
             patterns.value(tmp)->play(cc);
@@ -1003,6 +1019,7 @@ void MainWindow::removePattern(QString key){
         patterns.remove(key);
         disconnect(tmp);
         delete tmp;
+        changePatternNameInAllMonitors(key,"");
         emit updatePatternsNamesOnUi();
     }
 }
@@ -1035,8 +1052,8 @@ void MainWindow::addNewPattern(QColor col, double time){
     bp->addColorAndTime(col.name(),time);
     bp->setRepeats(3);
     patterns.insert(bp->name(),bp);
-    connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndActiveChangePatternName(QColor,QString,int)));
-    connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
+    connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndChangeActivePatternName(QColor,QString,int)));
+    connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor,double)),this,SLOT(changeColorOnVirtualBlink(QColor,double)));
     emit patternsUpdate();
     emit updatePatternsNamesOnUi();
 }
@@ -1173,6 +1190,7 @@ void MainWindow::changePatternName(QString oldName,QString newName){
     }
     patterns.insert(newName,bp);
     bp->setName(newName);
+    changePatternNameInAllMonitors(oldName,newName);
     emit updatePatternsNamesOnUi();
 }
 void MainWindow::updatePatternsList(){
@@ -1237,9 +1255,10 @@ QString MainWindow::selectFile(QString name){
     return "";
 }
 void MainWindow::setLed(int l){
+    qDebug()<<"LED "<<l;
     led=l;
     emit ledsUpdate();
-    mode = 1;
+    //mode = 1;
     updateBlink1();
 }
 int MainWindow::getLed(){
@@ -1424,7 +1443,7 @@ void MainWindow::markEmailEditing(QString s,bool e){
 void MainWindow::changePatternReadOnly(QString s, bool ro){
     if(patterns.contains(s)){
         patterns.value(s)->setReadOnly(ro);
-        emit patternsUpdate();
+        //emit patternsUpdate();
     }
 }
 
@@ -1491,8 +1510,8 @@ void MainWindow::copyPattern(QString name){
     }
     bp->setRepeats(oryg->repeats());
     patterns.insert(bp->name(),bp);
-    connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndActiveChangePatternName(QColor,QString,int)));
-    connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
+    connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndChangeActivePatternName(QColor,QString,int)));
+    connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor,double)),this,SLOT(changeColorOnVirtualBlink(QColor,double)));
     emit patternsUpdate();
     emit updatePatternsNamesOnUi();
 }
@@ -1588,8 +1607,9 @@ int MainWindow::checkWordWidth(QString s,int size){
     QFont f(QFont().defaultFamily(),size);
     return QFontMetrics(f).width(s);
 }
-void MainWindow::changeColorOnVirtualBlink(QColor c){
+void MainWindow::changeColorOnVirtualBlink(QColor c,double t){
     QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor", Q_ARG(QVariant, c.name()));
+    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, c),Q_ARG(QVariant,t));
 }
 bool MainWindow::checkIfColorIsTooBright(QString c){
     QColor col(c);
@@ -1632,13 +1652,13 @@ QColor MainWindow::getCurrentColor(){
 QMap<QString,Blink1Pattern*> MainWindow::getFullPatternList(){
     return patterns;
 }
-void MainWindow::addNewPattern(QString name, QString patternStr){
+void MainWindow::addNewPatternFromPatternStr(QString name, QString patternStr){
     Blink1Pattern *bp=new Blink1Pattern();
     bp->setName( name );
     bp->fromPatternStrWithLeds( patternStr);
     patterns.insert(bp->name(),bp);
-    connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlink(QColor,QString,int)));
-    connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor)),this,SLOT(changeColorOnVirtualBlink(QColor)));
+    connect(bp,SIGNAL(setColor(QColor,QString,int)),this,SLOT(setColorToBlinkAndChangeActivePatternName(QColor,QString,int)));
+    connect(bp,SIGNAL(changeColorOnVirtualBlink(QColor,double)),this,SLOT(changeColorOnVirtualBlink(QColor,double)));
     emit patternsUpdate();
     emit updatePatternsNamesOnUi();
     emit updateActivePatternName();
@@ -1668,4 +1688,39 @@ bool MainWindow::getLogging(){
 }
 QMap<QString,Blink1Input*> MainWindow::getFullInputList(){
     return inputs;
+}
+void MainWindow::changePatternNameInAllMonitors(QString from, QString to){
+    for(int i=0;i<bigButtons2.count();i++){
+        if(bigButtons2.at(i)->getPatternName()==from)
+            bigButtons2.at(i)->setPatternName(to);
+    }
+    foreach (QString name, inputs.keys()) {
+       if(inputs.value(name)->patternName()==from)
+           inputs.value(name)->setPatternName(to);
+    }
+    foreach (QString name, emails.keys()) {
+        if(emails.value(name)->getPatternName()==from)
+            emails.value(name)->setPatternName(to);
+    }
+    foreach (QString name, hardwareMonitors.keys()) {
+        if(hardwareMonitors.value(name)->getPatternName()==from)
+            hardwareMonitors.value(name)->setPatternName(to);
+    }
+}
+QVariantList MainWindow::getFullColorsFromPattern(QString patternName){
+    QVariantList colorsList;
+    if(patterns.contains(patternName)){
+        QList<QColor> tmp=patterns.value(patternName)->getColorList();
+        for(int i=0;i<tmp.count();i++){
+            colorsList.append(QVariant(tmp.at(i).name()));
+        }
+    }
+    return colorsList;
+}
+void MainWindow::updateColorsOnBigButtons2List(){
+    QList<BigButtons*> tmp=bigButtons2;
+    bigButtons2.clear();
+    emit updateBigButtons();
+    bigButtons2=tmp;
+    emit updateBigButtons();
 }

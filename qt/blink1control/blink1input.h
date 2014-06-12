@@ -17,7 +17,7 @@ class Blink1Input : public QObject
     Q_PROPERTY(int freq READ freq WRITE setFreq NOTIFY updateValues)
     Q_PROPERTY(int freqCounter READ freqCounter WRITE setFreqCounter NOTIFY updateValues)
     Q_PROPERTY(QString patternName READ patternName WRITE setPatternName NOTIFY updateValues)
-    Q_PROPERTY(QString time READ getTime NOTIFY updateValues)
+    Q_PROPERTY(QString time READ getTime NOTIFY updateTimeValue)
 
 public:
     explicit Blink1Input(QObject *parent = 0);
@@ -48,9 +48,10 @@ public:
     void setFreqCounter(int freqC);
     int freqCounter();
     void changeFreqCounter();
-
+    void updateTime();
 signals:
     void updateValues();
+    void updateTimeValue();
 public slots:
 
 private:

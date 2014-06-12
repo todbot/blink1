@@ -39,7 +39,7 @@ QJsonObject Blink1Pattern::toFullJsonReadyToSave()
     obj.insert("pattern", patternStrWithLeds());
     obj.insert("date",date());
     obj.insert("readonly",isReadOnly());
-    obj.insert("system",isReadOnly());
+    obj.insert("system",isSystem());
     return obj;
 }
 QJsonObject Blink1Pattern::toJsonWithNameAndPatternStr()
@@ -135,7 +135,7 @@ void Blink1Pattern::update()
         t->setSingleShot(true);
         connect(t,SIGNAL(timeout()),this,SLOT(update()));
         t->start();
-        emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+        emit changeColorOnVirtualBlink(QColor(startR,startG,startB),activeTime());
     }else{
         currentColor=0;
         mplaypos++;
@@ -148,16 +148,21 @@ void Blink1Pattern::update()
         startR+=deltaR;
         startG+=deltaG;
         startB+=deltaB;
-        deltaR=(activeColor().red()-startR)*1.0/count;
-        deltaG=(activeColor().green()-startG)*1.0/count;
-        deltaB=(activeColor().blue()-startB)*1.0/count;
-
+        if(count==0){
+            deltaR=(activeColor().red()-startR)*1.0;
+            deltaG=(activeColor().green()-startG)*1.0;
+            deltaB=(activeColor().blue()-startB)*1.0;
+        }else{
+            deltaR=(activeColor().red()-startR)*1.0/count;
+            deltaG=(activeColor().green()-startG)*1.0/count;
+            deltaB=(activeColor().blue()-startB)*1.0/count;
+        }
         t=new QTimer(this);
         t->setInterval(50);
         t->setSingleShot(true);
         connect(t,SIGNAL(timeout()),this,SLOT(update()));
         t->start();
-        emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+        emit changeColorOnVirtualBlink(QColor(startR,startG,startB),activeTime());
 
         if(mplaycount==mrepeats+(mrepeats!=-1)?1:0){
             stop();
@@ -181,10 +186,15 @@ void Blink1Pattern::play(QColor currentVirtualBlinkColor)
     startR=currentVirtualBlinkColor.red();
     startG=currentVirtualBlinkColor.green();
     startB=currentVirtualBlinkColor.blue();
-    deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0/count;
-    deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0/count;
-    deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0/count;
-
+    if(count==0){
+        deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0;
+        deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0;
+        deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0;
+    }else{
+        deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0/count;
+        deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0/count;
+        deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0/count;
+    }
 
     t->setInterval(50);
     t->setSingleShot(true);
@@ -192,7 +202,7 @@ void Blink1Pattern::play(QColor currentVirtualBlinkColor)
     connect(t,SIGNAL(timeout()),this,SLOT(update()));
     t->start();
 
-    emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+    emit changeColorOnVirtualBlink(QColor(startR,startG,startB),activeTime());
     emit setColor(activeColor(),mname,activeTime()*1000); // convert to millis
 }
 
@@ -200,9 +210,12 @@ void Blink1Pattern::stop()
 {
     mplaycount=0;
     mplaypos=0;
+    bool tmp=mplaying;
     mplaying=false;
-    emit updatePlayIconOnUi();
-    emit setColor(QColor("#000000"),"",0);
+    if(tmp){
+        emit updatePlayIconOnUi();
+        emit setColor(QColor("#000000"),"",0);
+    }
     if(t!=NULL){
         t->stop();
         delete t;
