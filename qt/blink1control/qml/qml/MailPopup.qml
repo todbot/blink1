@@ -9,8 +9,7 @@ Image {
     source: "qrc:/images/layout/popup-bg-mail.png"
 
     property alias name: description
-    property alias type: comboPattern.lv
-    property alias lv: comboPattern.lv
+    property alias type: accountType
     property alias mailserver: mailserver
     property alias username: username
     property alias password: password
@@ -24,14 +23,10 @@ Image {
     property alias senderinput: senderinput
     property string oldname: ""
 
-    signal openPopup()
-    signal closePopup()
-    property alias combo: comboPattern
-
     function clearData(){
         name.text=""
         type.currentIndex=0
-        accounttype.text="IMAP"
+        accountType.currentIndex=0
         mailserver.text=""
         username.text=""
         password.text=""
@@ -57,13 +52,12 @@ Image {
 
         name.text=arg1
         type.currentIndex=arg2
-        accounttype.text=type.currentItem.text
         mailserver.text=arg3
         username.text=arg4
         password.text=arg5
-        ssl.checked=arg7        
+        ssl.checked=arg7
 
-        port.text=arg6        
+        port.text=arg6
         if(arg8===0){
             unreads.checked=true
             unreadinput.readOnly=false
@@ -79,9 +73,9 @@ Image {
         }
     }
 
-MouseArea{
-    anchors.fill: parent
-}
+    MouseArea{
+        anchors.fill: parent
+    }
     MouseArea{
         z:0
         width: parent.width
@@ -89,27 +83,27 @@ MouseArea{
         anchors.top: parent.top
         anchors.left: parent.left
         property variant previousPosition
-            onPressed: {
-                previousPosition = Qt.point(mouseX, mouseY)
+        onPressed: {
+            previousPosition = Qt.point(mouseX, mouseY)
+        }
+        onPositionChanged: {
+            if (pressedButtons == Qt.LeftButton) {
+                var dx = mouseX - previousPosition.x
+                var dy = mouseY - previousPosition.y
+                popup.x=popup.x+dx;
+                popup.y=popup.y+dy;
             }
-            onPositionChanged: {
-                if (pressedButtons == Qt.LeftButton) {
-                    var dx = mouseX - previousPosition.x
-                    var dy = mouseY - previousPosition.y
-                    popup.x=popup.x+dx;
-                    popup.y=popup.y+dy;
-                }
-            }
+        }
     }
-Text{
-    color: "white"
-    font.pointSize: (!mw.mac())?10:13
-    text: "Mail Settings"
-    anchors.left: parent.left
-    anchors.top: parent.top
-    anchors.leftMargin: 40
-    anchors.topMargin: 15
-}
+    Text{
+        color: "white"
+        font.pointSize: (!mw.mac())?10:13
+        text: "Mail Settings"
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.leftMargin: 40
+        anchors.topMargin: 15
+    }
     PushButton{
         anchors.right: parent.right
         anchors.rightMargin: 20
@@ -119,7 +113,9 @@ Text{
         upSrc: "qrc:/images/layout/close-single-up.png"
         downSrc: "qrc:/images/layout/close-single-hover.png"
         onClicked: {
-            mw.markEditing(popup.oldname,false)
+            mw.markEmailEditing(popup.oldname,false)
+            if(popup.oldname!="")
+                mw.checkMail(popup.oldname)
             popup.oldname=""
             parent.visible=false
         }
@@ -160,7 +156,6 @@ Text{
                 width: 290
                 height: 30
                 font.pointSize: (!mw.mac())?10:12
-                //clip: true
                 selectByMouse: true
                 maximumLength: 24
                 KeyNavigation.tab: mailserver
@@ -175,7 +170,7 @@ Text{
         anchors.topMargin: 7
         height: 30
         width: 300
-z: popup.z+1
+        z: popup.z+1
 
         Text{
             anchors.left: parent.left
@@ -184,51 +179,54 @@ z: popup.z+1
             color: "black"
             font.pointSize: (!mw.mac())?8:11
         }
-
-        Text{
-            id: accounttype
-            wrapMode: TextInput.WrapAnywhere
-            height: 30
+        MyComboBox{
+            id: accountType
             width: 300
-            text: "IMAP"
-            color: "black"
-            font.pointSize: (!mw.mac())?9:12
             anchors.left: parent.left
-            anchors.leftMargin: 82
+            anchors.leftMargin: 75
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: 8
-            MouseArea {
-                cursorShape: Qt.PointingHandCursor
-                id: ma2
-                anchors.fill: parent
-                onClicked: {
-                    comboPattern.visible=true
-                    comboPattern.z=popup.z+9999
-                    comboPattern.x=accounttypes.x+accounttype.x-8
-                    comboPattern.y=accounttypes.y
-                    for(var i=0;i<comboPattern.items.count;i++){
-                        if(comboPattern.items.get(i).name===accounttype.text){
-                            comboPattern.curIn=i;
-                            break;
-                        }
+            model: types
+            onClick2: {
+                if(idx==1){
+                    unreadinput.readOnly=true
+                    unreadinput.text="1"
+                    unreadinput.parent.source="qrc:images/layout/spinbox-bg-disable.png"
+                    if(ssl.checked){
+                        port.text="995"
+                    }else{
+                        port.text="110"
                     }
+                }else if(idx==0){
+                    if(unreads.checked){
+                        unreadinput.readOnly=false
+                        unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
+                    }
+                    if(ssl.checked){
+                        port.text="993"
+                    }else{
+                        port.text="143"
+                    }
+                }else if(idx==2){
+                    if(unreads.checked){
+                        unreadinput.readOnly=false
+                        unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
+                    }
+                    ssl.checked=true
+                    port.text="993";
+                    mailserver.text="imap.gmail.com"
                 }
-
             }
-            Image{
-                height: 29
-                width: 300
-                source: "qrc:images/layout/colorpicker/select-300-bg.png"
-                anchors.left: parent.left
-                anchors.leftMargin: -7
-                anchors.top: parent.top
-                anchors.topMargin: -7
-                z: parent.z-1
-                Image{
-                    source: "qrc:images/layout/colorpicker/arrow-2-up.png"
-                    anchors.right: parent.right
-                    anchors.rightMargin: 5
-                    anchors.verticalCenter: parent.verticalCenter
+
+            ListModel{
+                id: types
+                ListElement{
+                    text: "IMAP"
+                }
+                ListElement{
+                    text: "POP3"
+                }
+                ListElement{
+                    text: "GMAIL"
                 }
             }
         }
@@ -270,7 +268,6 @@ z: popup.z+1
                     width: 290
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
-                    //clip: true
                     selectByMouse: true
                     maximumLength: 40
                     KeyNavigation.tab: username
@@ -314,7 +311,6 @@ z: popup.z+1
                     width: 290
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
-                    //clip: true
                     selectByMouse: true
                     maximumLength: 40
                     KeyNavigation.tab: password
@@ -399,7 +395,6 @@ z: popup.z+1
                 width: 290
                 height: 30
                 font.pointSize: (!mw.mac())?10:12
-                //clip: true
                 selectByMouse: true
                 validator: IntValidator{}
                 maximumLength: 8
@@ -432,17 +427,17 @@ z: popup.z+1
             source: "qrc:/images/layout/checkbox-normal.png"
             onCheckedChanged: {
                 if(checked){
-                    if(lv.currentIndex==1){
+                    if(type.currentIndex==1){
                         port.text="995"
-                    }else if(lv.currentIndex==0 || lv.currentIndex==2){
+                    }else if(type.currentIndex==0 || type.currentIndex==2){
                         port.text="993"
                     }
 
                     source="qrc:/images/layout/checkbox-selected.png"
                 }else{
-                    if(lv.currentIndex==1){
+                    if(type.currentIndex==1){
                         port.text="110"
-                    }else if(lv.currentIndex==0 || lv.currentIndex==2){
+                    }else if(type.currentIndex==0 || type.currentIndex==2){
                         port.text="143"
                     }
 
@@ -496,13 +491,13 @@ z: popup.z+1
                 onClicked: {
                     sender.checked=false
                     subject.checked=false
-                    parent.checked=true                   
+                    parent.checked=true
                     port.KeyNavigation.tab=unreadinput
                 }
             }
             onCheckedChanged: {
                 if(checked){
-                    if(lv.currentIndex!=1){
+                    if(type.currentIndex!=1){
                         unreadinput.readOnly=false
                         unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
                         unreadinput.forceActiveFocus()
@@ -527,8 +522,6 @@ z: popup.z+1
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: -5
-                //radius: 3
-                //border.color: "#CDCFD2"
                 source: unreads.checked?"qrc:images/layout/spinbox-bg.png":"qrc:images/layout/spinbox-bg-disable.png"
                 width: parent.width
                 height: parent.height
@@ -543,7 +536,6 @@ z: popup.z+1
                     width: 54
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
-                    //clip: true
                     selectByMouse: true
                     validator: IntValidator{}
                     onTextChanged: {
@@ -551,7 +543,6 @@ z: popup.z+1
                         text=parseInt(text)
                         if(parseInt(text)<1) text="1";
                     }
-                    //readOnly: !unreads.checked
                     maximumLength: 8
                     KeyNavigation.tab: description
                 }
@@ -685,7 +676,6 @@ z: popup.z+1
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
                     selectByMouse: true
-                    //readOnly: !subject.checked
                     maximumLength: 12
                     KeyNavigation.tab: description
                 }
@@ -761,9 +751,7 @@ z: popup.z+1
                     width: 140
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
-                    //clip: true
                     selectByMouse: true
-                    //readOnly: !sender.checked
                     maximumLength: 12
                     KeyNavigation.tab: description
                 }
@@ -775,7 +763,7 @@ z: popup.z+1
         upSrc: "qrc:/images/layout/button-ok-up.png"
         downSrc: "qrc:/images/layout/button-ok-down.png"
         onClicked: {
-            mw.markEditing(popup.oldname,false)
+            mw.markEmailEditing(popup.oldname,false)
             console.log("OK CLICKED")
             popup.visible=false
             if(popup.oldname===""){
@@ -817,10 +805,10 @@ z: popup.z+1
         onClicked: {
             console.log("CANCEL CLICKED")
             popup.visible=false
-            mw.markEditing(popup.oldname,false)
+            mw.markEmailEditing(popup.oldname,false)
             if(popup.oldname!="")
                 mw.checkMail(popup.oldname)
-            popup.oldname="";            
+            popup.oldname="";
         }
         anchors.right: okButton.left
         anchors.rightMargin: 5
@@ -828,83 +816,5 @@ z: popup.z+1
         label.text: "Cancel"
         label.color: "black"
         label.font.pointSize: (!mw.mac())?9:12
-    }
-
-    ComboBox1{
-        id: comboPattern
-        width: 300
-        items: types
-        ListModel{
-            id: types
-            ListElement{
-                name: "IMAP"
-            }
-            ListElement{
-                name: "POP3"
-            }
-            ListElement{
-                name: "GMAIL"
-            }
-        }
-        height: types.count*(mw.mac()?15:14)
-        z: 99999999
-        visible: false
-
-        onVisibleChanged: {
-            if(visible){
-                openPopup()
-                background.visible=true
-            }
-        }
-
-        onClick2: {
-            accounttype.text=types.get(idx).name
-            if(idx==1){
-                unreadinput.readOnly=true
-                unreadinput.text="1"
-                unreadinput.parent.source="qrc:images/layout/spinbox-bg-disable.png"
-                if(ssl.checked){
-                    port.text="995"
-                }else{
-                    port.text="110"
-                }
-            }else if(idx==0){
-                if(unreads.checked){
-                    unreadinput.readOnly=false
-                    unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
-                }
-                if(ssl.checked){
-                    port.text="993"
-                }else{
-                    port.text="143"
-                }
-            }else if(idx==2){
-                if(unreads.checked){
-                    unreadinput.readOnly=false
-                    unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
-                }
-                ssl.checked=true
-                port.text="993";
-                mailserver.text="imap.gmail.com"
-            }
-        }
-        onHiden: {
-            closePopup()
-            background.visible=false
-        }
-    }
-    Rectangle{
-        id: background
-        color: "lightgrey"
-        anchors.fill: parent
-        z: popup.z+999
-        visible: false
-        opacity: 0.1
-        MouseArea{
-            anchors.fill: parent
-            onClicked: {
-                combo.hide()
-            }
-        }
     }
 }

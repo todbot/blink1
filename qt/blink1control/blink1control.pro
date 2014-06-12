@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     email.cpp \
     simplecrypt.cpp \
     hardwaremonitor.cpp \
-    Cursorshapearea.cpp
+    Cursorshapearea.cpp \
+    httpserver.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
@@ -48,7 +49,8 @@ HEADERS  += mainwindow.h \
     simplecrypt.h \
     hardwaremonitor.h \
     Cursorshapearea.h \
-    patternsReadOnly.h
+    patternsReadOnly.h \
+    httpserver.h
 
 #FORMS    += mainwindow.ui
 
@@ -128,7 +130,8 @@ OTHER_FILES += \
     HostIdPopup.qml \
     ComboBox1.qml \
     DropDownMenu.qml \
-    MyInfo.plist
+    MyInfo.plist \
+    MyGroupBox.qml
 
 #CONFIG += CONSOLE
 win32{

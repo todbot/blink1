@@ -24,7 +24,7 @@ void HardwareMonitor::checkMonitor(){
         return;
     }
     status="checking...";
-    emit update2();
+    emit updateOnlyStatusAndCurrentValue();
     if(type==0){
         checkBattery();
     }else if(type==1){
@@ -76,7 +76,7 @@ void HardwareMonitor::checkBattery(){
             done=false;
         }
     }
-    emit update2();
+    emit updateOnlyStatusAndCurrentValue();
 #endif
 #ifdef Q_OS_MAC
     if(p3!=NULL) return;
@@ -93,7 +93,6 @@ void HardwareMonitor::readyReadBattery(int st){
     int BTime;
     if(st==0){
         QString tmp2=p3->readAllStandardOutput();
-        //tmp2=tmp2.simplified();
         qDebug()<<tmp2;
         QStringList pom2=tmp2.split(QRegExp("(  +|\r\n|\n|;)"));
         qDebug()<<pom2;
@@ -155,10 +154,9 @@ void HardwareMonitor::readyReadBattery(int st){
         done=false;
         freqCounter=0;
     }
-    emit update2();
+    emit updateOnlyStatusAndCurrentValue();
     p3->close();
     disconnect(p3);
-    //delete p3;
     p3=NULL;
 #endif
 }
@@ -202,7 +200,6 @@ void HardwareMonitor::readyReadCpu(int st){
         QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
         qDebug()<<pom;
         int cpuMonitor=pom.indexOf("user");
-        //qDebug()<<cpuMonitor;
         if(cpuMonitor!=-1){
             QString cpuUsage=pom.at(cpuMonitor-1);
             cpuUsage=cpuUsage.left(cpuUsage.indexOf("%"));
@@ -238,7 +235,7 @@ void HardwareMonitor::readyReadCpu(int st){
         done=false;
         freqCounter=0;
     }
-    emit update2();
+    emit updateOnlyStatusAndCurrentValue();
     p->close();
     disconnect(p);
 #ifdef Q_OS_WIN
@@ -342,7 +339,7 @@ void HardwareMonitor::readyReadRam(int st){
         done=false;
         freqCounter=0;
     }
-    emit update2();
+    emit updateOnlyStatusAndCurrentValue();
     p2->close();
     disconnect(p2);
 #ifdef Q_OS_WIN
@@ -361,7 +358,7 @@ int HardwareMonitor::getType(){
 }
 void HardwareMonitor::setType(int type){
     this->type=type;
-    emit update();
+    emit updateValues();
 }
 int HardwareMonitor::getLvl(){
     return lvl;
@@ -380,14 +377,14 @@ QString HardwareMonitor::getPatternName(){
 }
 void HardwareMonitor::setPatternName(QString patternName){
     this->patternName=patternName;
-    emit update();
+    emit updateValues();
 }
 int HardwareMonitor::getFreq(){
     return freq;
 }
 void HardwareMonitor::setFreq(int freq){
     this->freq=freq;
-    emit update();
+    emit updateValues();
 }
 int HardwareMonitor::getValue(){
     return value;
@@ -406,7 +403,7 @@ int HardwareMonitor::getFreqCounter(){
 }
 void HardwareMonitor::setFreqCounter(int freqCounter){
     this->freqCounter=freqCounter;
-    emit update();
+    emit updateValues();
 }
 QJsonObject HardwareMonitor::toJson()
 {
@@ -506,9 +503,6 @@ void HardwareMonitor::setDone(bool done){
     this->done=done;
 }
 void HardwareMonitor::setEditing(bool e){
-    this->editing=e;
-    this->status="In edit mode";
-    this->done=false;
     if(p!=NULL){
         p->close();
         disconnect(p);
@@ -524,5 +518,8 @@ void HardwareMonitor::setEditing(bool e){
         disconnect(p3);
         delete p3;
     }
-    emit update2();
+    this->editing=e;
+    this->status="In edit mode";
+    this->done=false;
+    emit updateOnlyStatusAndCurrentValue();
 }

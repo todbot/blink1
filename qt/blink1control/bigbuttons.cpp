@@ -22,17 +22,18 @@ QColor BigButtons::getCol(){
 }
 void BigButtons::setColor(QColor col){
     this->col=col;
-    emit update();
+    emit updateValues();
 }
 void BigButtons::setName(QString name){
     this->name=name;
-    emit update();
+    emit updateValues();
 }
 QString BigButtons::getPatternName(){
     return patternName;
 }
 void BigButtons::setPatternName(QString pn){
     this->patternName=pn;
+    emit updateValues();
 }
 QJsonObject BigButtons::toJson()
 {

@@ -2,7 +2,6 @@
 #include "blink1pattern.h"
 
 #include <QDebug>
-//#include <QJsonArray>
 
 Blink1Pattern::Blink1Pattern( QObject *parent) : QObject(parent)
 {
@@ -32,7 +31,7 @@ void Blink1Pattern::fromJson( QJsonObject obj)
     setSystem(obj.value("system").toBool());
 }
 
-QJsonObject Blink1Pattern::toJson()
+QJsonObject Blink1Pattern::toFullJsonReadyToSave()
 {
     QJsonObject obj;
     obj.insert("name", name());
@@ -40,10 +39,10 @@ QJsonObject Blink1Pattern::toJson()
     obj.insert("pattern", patternStrWithLeds());
     obj.insert("date",date());
     obj.insert("readonly",isReadOnly());
-    obj.insert("system",isReadOnly());
+    obj.insert("system",isSystem());
     return obj;
 }
-QJsonObject Blink1Pattern::toJson2()
+QJsonObject Blink1Pattern::toJsonWithNameAndPatternStr()
 {
     QJsonObject obj;
     obj.insert("name", name());
@@ -52,7 +51,7 @@ QJsonObject Blink1Pattern::toJson2()
 }
 void Blink1Pattern::resetObj()
 {
-    //mname = 0;
+    mname = "";
     mrepeats = 0;
     mplaycount = 0;
     mplaying = 0;
@@ -116,33 +115,15 @@ QString Blink1Pattern::name() const
 void Blink1Pattern::setName(const QString &name)
 {
     mname = name;
-    emit colorChange();
+    emit updateValues();
 }
 
 void Blink1Pattern::update()
 {
     if(!mplaying) return;
-
-    /*mplaypos++;
-    if(mplaypos==colors.count()){
-        mplaypos=0;
-        mplaycount++;
-    }
-    if(mplaycount==mrepeats+(mrepeats!=-1)?1:0){
-        stop();
-        return;
-    }*/
     t->stop();
     delete t;
     t=NULL;
-    /*t=new QTimer(this);
-    t->setInterval((int)(activeTime()*1000));
-    t->setSingleShot(true);
-    connect(t,SIGNAL(timeout()),this,SLOT(update()));
-    t->start();
-
-    emit setColor(activeColor(),mname,activeTime());*/
-    //emit changeColorOnVirtualBlink(QColor(255,255,0));
 
     currentColor++;
     if(currentColor<count){
@@ -154,7 +135,7 @@ void Blink1Pattern::update()
         t->setSingleShot(true);
         connect(t,SIGNAL(timeout()),this,SLOT(update()));
         t->start();
-        emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+        emit changeColorOnVirtualBlink(QColor(startR,startG,startB),activeTime());
     }else{
         currentColor=0;
         mplaypos++;
@@ -167,18 +148,21 @@ void Blink1Pattern::update()
         startR+=deltaR;
         startG+=deltaG;
         startB+=deltaB;
-        deltaR=(activeColor().red()-startR)*1.0/count;
-        deltaG=(activeColor().green()-startG)*1.0/count;
-        deltaB=(activeColor().blue()-startB)*1.0/count;
-        //startR=activeColor().red();
-        //startG=activeColor().green();
-        //startB=activeColor().blue();
+        if(count==0){
+            deltaR=(activeColor().red()-startR)*1.0;
+            deltaG=(activeColor().green()-startG)*1.0;
+            deltaB=(activeColor().blue()-startB)*1.0;
+        }else{
+            deltaR=(activeColor().red()-startR)*1.0/count;
+            deltaG=(activeColor().green()-startG)*1.0/count;
+            deltaB=(activeColor().blue()-startB)*1.0/count;
+        }
         t=new QTimer(this);
         t->setInterval(50);
         t->setSingleShot(true);
         connect(t,SIGNAL(timeout()),this,SLOT(update()));
         t->start();
-        emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+        emit changeColorOnVirtualBlink(QColor(startR,startG,startB),activeTime());
 
         if(mplaycount==mrepeats+(mrepeats!=-1)?1:0){
             stop();
@@ -186,11 +170,6 @@ void Blink1Pattern::update()
         }
         emit setColor(activeColor(),mname,activeTime()*1000); // convert to millis
     }
-    /*qDebug()<<"curCol "<<currentColor;
-    qDebug()<<"next color: "<<activeColor().name();
-    qDebug()<<"Delta: "<<deltaR<<" "<<deltaG<<" "<<deltaB;
-    qDebug()<<"Start: "<<startR<<" "<<startG<<" "<<startB;
-    qDebug()<<QColor(startR,startG,startB).name();*/
 }
 
 void Blink1Pattern::play(QColor currentVirtualBlinkColor)
@@ -199,33 +178,31 @@ void Blink1Pattern::play(QColor currentVirtualBlinkColor)
     mplaycount=0;
     mplaypos=0;
     mplaying=true;
-    emit playChange();
+    emit updatePlayIconOnUi();
     t=new QTimer(this);
-    /*t->setInterval((int)(activeTime()*1000));
-    t->setSingleShot(true);
-    connect(t,SIGNAL(timeout()),this,SLOT(update()));
-    t->start();*/
+
     count=activeTime()*1000/50;
     currentColor=0;
     startR=currentVirtualBlinkColor.red();
     startG=currentVirtualBlinkColor.green();
     startB=currentVirtualBlinkColor.blue();
-    deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0/count;
-    deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0/count;
-    deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0/count;
+    if(count==0){
+        deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0;
+        deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0;
+        deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0;
+    }else{
+        deltaR=(activeColor().red()-currentVirtualBlinkColor.red())*1.0/count;
+        deltaG=(activeColor().green()-currentVirtualBlinkColor.green())*1.0/count;
+        deltaB=(activeColor().blue()-currentVirtualBlinkColor.blue())*1.0/count;
+    }
 
-
-    t->setInterval(50);//(int)(activeTime()*1000));
+    t->setInterval(50);
     t->setSingleShot(true);
 
     connect(t,SIGNAL(timeout()),this,SLOT(update()));
     t->start();
-    /*qDebug()<<"Count "<<count;
-    qDebug()<<"next color: "<<activeColor().name();
-    qDebug()<<"Delta: "<<deltaR<<" "<<deltaG<<" "<<deltaB;
-    qDebug()<<"Start: "<<startR<<" "<<startG<<" "<<startB;
-    qDebug()<<QColor(startR,startG,startB).name();*/
-    emit changeColorOnVirtualBlink(QColor(startR,startG,startB));
+
+    emit changeColorOnVirtualBlink(QColor(startR,startG,startB),activeTime());
     emit setColor(activeColor(),mname,activeTime()*1000); // convert to millis
 }
 
@@ -233,16 +210,18 @@ void Blink1Pattern::stop()
 {
     mplaycount=0;
     mplaypos=0;
+    bool tmp=mplaying;
     mplaying=false;
-    emit playChange();
-    emit setColor(QColor("#000000"),"",0);
+    if(tmp){
+        emit updatePlayIconOnUi();
+        emit setColor(QColor("#000000"),"",0);
+    }
     if(t!=NULL){
         t->stop();
         delete t;
         t=NULL;
     }
 }
-
 
 int Blink1Pattern::repeats()
 {
@@ -257,20 +236,20 @@ int Blink1Pattern::playcount()
 void Blink1Pattern::setRepeats(int r)
 {
     mrepeats = r;
-    emit colorChange();
+    emit updateValues();
 }
 void Blink1Pattern::setPlaycount(int p)
 {
     mplaycount = p;
-    emit colorChange();
+    emit updateValues();
 }
 void Blink1Pattern::setColors(QList<QColor> lc){
     colors=lc;
-    emit colorChange();
+    emit updateValues();
 }
 void Blink1Pattern::setTimes(QList<float> lt){
     times=lt;
-    emit colorChange();
+    emit updateValues();
 }
 QColor Blink1Pattern::activeColor(){
     return colors.at(mplaypos);//mplaycount%colors.count());
@@ -315,29 +294,29 @@ void Blink1Pattern::addColorAndTime(QString color, double time){
     colors.append(QString(color));
     times.append(time);
     leds.append(0);
-    emit colorChange();
+    emit updateValues();
 }
 void Blink1Pattern::removeColorAndTime(int idx){
     if(colors.count()==1) return;
     colors.removeAt(idx);
     times.removeAt(idx);
     leds.removeAt(idx);
-    emit colorChange();
+    emit updateValues();
 }
 void Blink1Pattern::changeRepeats(){
     mrepeats=mrepeats+1;
     if(mrepeats==5) mrepeats=-1;
-    emit colorChange();
+    emit updateValues();
 }
 
 void Blink1Pattern::editColorAndTime(QString color, double time, int idx) {
     colors[idx] = QColor(color);
     times[idx] = time;
-    emit colorChange();
+    emit updateValues();
 }
 void Blink1Pattern::editLed(int idx, int led){
     leds[idx]=led;
-    emit colorChange();
+    emit updateValues();
 }
 int Blink1Pattern::getLed(int idx){
     return leds[idx];
@@ -349,19 +328,16 @@ int Blink1Pattern::date(){
 void Blink1Pattern::setDate(int date){
     this->mdate=date;
 }
-int Blink1Pattern::getCurrentLed(){
-    return leds.at(mplaypos);
-}
 void Blink1Pattern::setReadOnly(bool ro){
     this->mreadonly=ro;
-    emit colorChange();
+    emit updateValues();
 }
 bool Blink1Pattern::isReadOnly(){
     return mreadonly;
 }
 void Blink1Pattern::setSystem(bool sy){
     this->msystem=sy;
-    emit colorChange();
+    emit updateValues();
 }
 bool Blink1Pattern::isSystem(){
     return msystem;
@@ -374,4 +350,7 @@ QColor Blink1Pattern::getColor(int idx){
 }
 double Blink1Pattern::getTime(int idx){
     return times[idx];
+}
+int Blink1Pattern::getCurrentLed(){
+    return leds.at(mplaypos);
 }
