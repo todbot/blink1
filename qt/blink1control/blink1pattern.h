@@ -97,7 +97,7 @@ signals:
     void updateValues();
     void setColor(QColor,QString,int);
     void updatePlayIconOnUi();
-    void changeColorOnVirtualBlink(QColor);
+    void changeColorOnVirtualBlink(QColor,double);
 
 };
 

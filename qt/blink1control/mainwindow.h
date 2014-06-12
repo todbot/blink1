@@ -108,7 +108,7 @@ public slots:
     QVariantList getPatternsNames();
     QList<QObject*> getBigButtons();
 
-    void setColorToBlinkAndActiveChangePatternName(QColor,QString,int f=100);
+    void setColorToBlinkAndChangeActivePatternName(QColor,QString,int f=100);
     void setColorToBlink(QColor,int f);
     void removeRecentEvent(int idx);
     void removeAllRecentEvents();
@@ -206,9 +206,12 @@ public slots:
     bool checkIfCorrectPositionX(int x);
     bool checkIfCorrectPositionY(int y,int bar);
     int checkWordWidth(QString s,int size);
-    void changeColorOnVirtualBlink(QColor);
+    void changeColorOnVirtualBlink(QColor,double);
     bool checkIfColorIsTooBright(QString);
     bool checkIfColorIsTooDark(QString);
+
+    void changePatternNameInAllMonitors(QString from,QString to);
+    QVariantList getFullColorsFromPattern(QString patternName);
 
     // FUNCTIONS FOR HTTP SERVER
     void regenerateBlink1Id();
@@ -216,10 +219,10 @@ public slots:
     QColor getCurrentColor();
     QMap<QString,Blink1Pattern*> getFullPatternList();
     QMap<QString,Blink1Input*> getFullInputList();
-    void addNewPattern(QString name, QString patternStr);
+    void addNewPatternFromPatternStr(QString name, QString patternStr);
     void startOrStopLogging(bool);
     bool getLogging();
-
+    void updateColorsOnBigButtons2List();
 private:
     QtQuick2ApplicationViewer viewer;
 

@@ -128,7 +128,7 @@ int Blink1Input::date(){
 }
 void Blink1Input::setDate(int date){
     mdate=date;
-    emit updateValues();
+    emit updateTimeValue();
 }
 QString Blink1Input::getTime(){
     if(mdate==-1) return "0 secs ago";
@@ -167,4 +167,7 @@ int Blink1Input::freqCounter(){
 void Blink1Input::changeFreqCounter(){
     if(mfreq==0) mfreq=3;
     mfreqCounter=(mfreqCounter+1)%mfreq;
+}
+void Blink1Input::updateTime(){
+    emit updateTimeValue();
 }

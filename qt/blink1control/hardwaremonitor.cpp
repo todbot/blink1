@@ -154,7 +154,7 @@ void HardwareMonitor::readyReadBattery(int st){
         done=false;
         freqCounter=0;
     }
-    emit update2();
+    emit updateOnlyStatusAndCurrentValue();
     p3->close();
     disconnect(p3);
     p3=NULL;
@@ -503,9 +503,6 @@ void HardwareMonitor::setDone(bool done){
     this->done=done;
 }
 void HardwareMonitor::setEditing(bool e){
-    this->editing=e;
-    this->status="In edit mode";
-    this->done=false;
     if(p!=NULL){
         p->close();
         disconnect(p);
@@ -521,5 +518,8 @@ void HardwareMonitor::setEditing(bool e){
         disconnect(p3);
         delete p3;
     }
+    this->editing=e;
+    this->status="In edit mode";
+    this->done=false;
     emit updateOnlyStatusAndCurrentValue();
 }

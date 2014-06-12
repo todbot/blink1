@@ -33,6 +33,7 @@ QString BigButtons::getPatternName(){
 }
 void BigButtons::setPatternName(QString pn){
     this->patternName=pn;
+    emit updateValues();
 }
 QJsonObject BigButtons::toJson()
 {

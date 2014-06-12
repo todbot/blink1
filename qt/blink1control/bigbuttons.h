@@ -8,6 +8,7 @@ class BigButtons: public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY updateValues)
     Q_PROPERTY(QColor col READ getCol WRITE setColor NOTIFY updateValues)
+    Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY updateValues)
 public:
     BigButtons(QString,QColor);
     BigButtons(QString,QString);
