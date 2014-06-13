@@ -2844,8 +2844,21 @@ Image{
                 property string title: "Help"
                 property string src: "ico-help.png"
                 color: "transparent"
-                anchors.fill: parent
-            }
+                anchors.top: parent.top
+                width: parent.width
+                height: 600  // FIXME: hack
+                border.color: "red"  // debug
+
+                ScrollView { 
+                    anchors.fill: parent
+                    z: -1 
+                    WebView {
+                        id: helpWebView
+                        anchors.fill: parent
+                        url: "qrc:help/index.html"
+                    }
+                }
+           }
         }
     }
 

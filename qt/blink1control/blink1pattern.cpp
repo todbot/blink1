@@ -86,14 +86,12 @@ QString Blink1Pattern::patternStrWithLeds()
 // returns true if parsing was succesful, false if not
 bool Blink1Pattern::fromPatternStr(QString tmp) {
     tmp.replace(" ",""); // remove any whitepsace from mucking up parsing
-    qDebug() << "tmp: " << tmp;
     QStringList list=tmp.split(",");
 
     // determine format type:
     // if 3-tuple, then every 3rd entry has a '#'
     // if 2-type, then every 2nd entry has a '#'
     int count2=0, count3=0;
-    //int count3 =0;
     for( int i=1; i<list.count(); i+=2 ) { 
         if( list.at(i).contains('#') ) count2++;
     }
@@ -106,9 +104,8 @@ bool Blink1Pattern::fromPatternStr(QString tmp) {
         for(int i=1;i<list.count();i+=2){
             QString colorstr = list.at(i);
             double time      = list.at(i+1).toDouble();
-            qDebug() << "colorstr2: "<<colorstr;
             if( !colorstr.contains('#') ) // color must be in hexcode #cccccc format
-                return false;
+                return false;             // (might not need this with format check above
             addColorAndTime( colorstr, time );
         }
         setRepeats(list.at(0).toInt());
@@ -120,9 +117,8 @@ bool Blink1Pattern::fromPatternStr(QString tmp) {
             QString colorstr = list.at(i);
             double time      = list.at(i+1).toDouble();
             int ledn         = list.at(i+2).toInt();
-            qDebug() << "colorstr3: "<<colorstr;
             if( !colorstr.contains('#') )  // color must be in hexcode #cccccc format
-                return false;
+                return false; 
             addColorAndTime( colorstr, time );
             editLed(colors.count()-1, ledn);
         }

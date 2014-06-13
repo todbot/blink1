@@ -170,5 +170,6 @@
         <file>images/layout/colorpicker/select-180-bg-disabled.png</file>
         <file>images/layout/dropdown-bg.png</file>
         <file>images/layout/select-bg-right.png</file>
+        <file>help/index.html</file>
     </qresource>
 </RCC>
