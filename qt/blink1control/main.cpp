@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     // is this info used ever?  is it for the plist?
     QApplication::setApplicationName("blink1control");
-    QApplication::setApplicationVersion("0.9.9");
+    QApplication::setApplicationVersion( BLINK1CONTROL_VERSION );
     QApplication::setOrganizationName("ThingM");
     QApplication::setOrganizationDomain("thingm.com");
 

@@ -62,6 +62,7 @@ void HttpServer::startRead(){
             resp.insert("blink_id",mw->getIftttKey());
             QJsonArray ja=mw->getCatchedBlinkId();
             resp.insert("blink1_serialnums",ja);
+            resp.insert("blink1control_version", QString(BLINK1CONTROL_VERSION) );
             resp.insert("status",QString("blink1 id"));
         }
         else if( cmd == "/regenerateblink1id" ) {

@@ -616,7 +616,6 @@ void MainWindow::updateBlink1()
 
     if( mode == RANDOM ) {
         cc = QColor( rand() % 255, rand() % 255, rand() % 255 );
-        fadeSpeed = 200;
         setBlink1 = true;
         QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     }
@@ -757,7 +756,7 @@ void MainWindow::on_buttonRGBcycle_clicked()
     mode = RGBCYCLE;
     rgbCycle=0;
     rgbCounter=0;
-    blink1timer->start(200);
+    blink1timer->start(200);  // FIXME: timer timeotu and fadeSpeed are related
     updateBlink1();
 }
 
@@ -766,8 +765,8 @@ void MainWindow::on_buttonMoodlight_clicked()
     if(mode==RANDOM) return;
     blink1timer->stop();
     mode = RANDOM;
-    fadeSpeed = 600;
-    blink1timer->start(500);
+    fadeSpeed = 2000;
+    blink1timer->start( fadeSpeed );    // FIXME: timer timeotu and fadeSpeed are related
     updateBlink1();
 }
 
@@ -788,7 +787,8 @@ void MainWindow::on_buttonWhite_clicked()
     emit ledsUpdate();
     cc = QColor("#cccccc");
     updateBlink1();
-    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,0.0));
+    // what is this for?
+    //QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,0.0));
 }
 
 void MainWindow::on_buttonOff_clicked()
@@ -800,7 +800,6 @@ void MainWindow::on_buttonOff_clicked()
     led=0;
     emit ledsUpdate();
     updateBlink1();
-
 }
 
 void MainWindow::on_buttonColorwheel_clicked()

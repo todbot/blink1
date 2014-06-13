@@ -46,6 +46,9 @@
 #include <QFont>
 #include <QFontMetrics>
 
+
+#define BLINK1CONTROL_VERSION "1.9"
+
 class HttpServer;
 
 namespace Ui {
