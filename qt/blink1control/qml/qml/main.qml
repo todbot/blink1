@@ -2847,7 +2847,6 @@ Image{
                 anchors.top: parent.top
                 width: parent.width
                 height: 600  // FIXME: hack
-                border.color: "red"  // debug
 
                 ScrollView { 
                     anchors.fill: parent
@@ -2855,7 +2854,7 @@ Image{
                     WebView {
                         id: helpWebView
                         anchors.fill: parent
-                        url: "qrc:help/index.html"
+                        url: "http://thingm.com/blink1/blink1control-help/"
                     }
                 }
            }
