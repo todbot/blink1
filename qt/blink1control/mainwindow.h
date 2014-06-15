@@ -47,7 +47,7 @@
 #include <QFontMetrics>
 
 
-#define BLINK1CONTROL_VERSION "1.9"
+//#define BLINK1CONTROL_VERSION ""
 
 class HttpServer;
 
@@ -85,6 +85,7 @@ public slots:
     void showNormal();
     void showMinimize();
     void updateBlink1();
+    void showAboutDialog();
 
     void changeColorFromQml(QColor);
 
@@ -250,6 +251,7 @@ private:
     QAction *settingAction;
     QAction *alertsAction;
     QAction *serverAction;
+    QAction *aboutAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;

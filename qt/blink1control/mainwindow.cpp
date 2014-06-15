@@ -218,8 +218,8 @@ void MainWindow::updateInputs()
         blinkKey="none";
     }
     blinkStatusAction->setText(blinkStatus);
-    blinkIdAction->setText("Blink1 id: "+blinkKey);
-    iftttKeyAction->setText("IFTTT.COM ID: "+iftttKey);
+    blinkIdAction->setText("blink(1) id: "+blinkKey);
+    iftttKeyAction->setText("IFTTT Key: "+iftttKey);
 
     emit iftttUpdate();
     QString type;
@@ -694,15 +694,18 @@ void MainWindow::changeColorFromQml(QColor c)
 
 void MainWindow::createActions()
 {
+    aboutAction = new QAction(tr("About Blink1Control"),this);
+    connect(aboutAction, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
+
     blinkStatusAction=new QAction(blinkStatus,this);
-    blinkIdAction=new QAction("blink(1) id: "+blinkKey,this);
+    blinkIdAction =new QAction("blink(1) id: "+blinkKey,this);
     iftttKeyAction=new QAction("IFTTT key: "+iftttKey,this);
     #ifdef Q_OS_MAC
     blinkStatusAction->setDisabled(true);
     blinkIdAction->setDisabled(true);
     iftttKeyAction->setDisabled(true);
     #endif
-    minimizeAction = new QAction(tr("Start minimize"), this);
+    minimizeAction = new QAction(tr("Start minimized"), this);
     connect(minimizeAction,SIGNAL(triggered()),this,SLOT(changeMinimizeOption()));
     minimizeAction->setCheckable(true);
     minimizeAction->setChecked(startmin);
@@ -733,6 +736,7 @@ void MainWindow::createActions()
 void MainWindow::createTrayIcon()
 {
     trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(aboutAction);
     trayIconMenu->addAction(blinkStatusAction);
     trayIconMenu->addAction(blinkIdAction);
     trayIconMenu->addAction(iftttKeyAction);
@@ -854,6 +858,15 @@ void MainWindow::setColorToBlink(QColor c,int fademillis){
     updateBlink1();
     QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
 }
+
+void MainWindow::showAboutDialog(){
+    QString message = "Blink1Control for blink(1) and blink(1) mk2.\n";
+    message += "Version: " + QString(BLINK1CONTROL_VERSION)+ "\n";
+    message += "2013-2014 ThingM Corp.\n";
+    //QMessageBox::information(this, "Title", message, QMessageBox::Ok);
+    QMessageBox::about(this, QString("About Blink1Control"), message);
+}
+
 void MainWindow::changeMinimizeOption(){
     startmin=!startmin;
 }
