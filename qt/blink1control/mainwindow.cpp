@@ -152,9 +152,11 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 void MainWindow::viewerClosingSlot(QQuickCloseEvent*){
+    qDebug() << "viewerClosingSlot()";
     quit();
 }
 void MainWindow::viewerVisibleChangedSlot(bool v){
+    qDebug() << "viewerVisibleChangedSlot(): "<< v;
     if(!v && closing){
         quit();
     }
@@ -397,6 +399,8 @@ QString MainWindow::getTimeFromInt(int t)
 
 MainWindow::~MainWindow()
 {
+    qDebug() << "destructor";
+    closing = false; // for viewerVisibleChangedSlot()
     delete minimizeAction;
     delete restoreAction;
     delete quitAction;
@@ -416,6 +420,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::quit()
 {
+    qDebug() << "quit";
     if(httpserver->status()){
         httpserver->stop();
         delete httpserver;
@@ -423,7 +428,7 @@ void MainWindow::quit()
     if(logging)
         logFile->close();
     saveSettings();
-    trayIcon->hide();
+    trayIcon->hide(); // can cause Mac crash, see notes: http://qt-project.org/doc/qt-4.8/qsystemtrayicon.html
     foreach (QString name, patterns.keys()) {
        stopPattern(name);
        removePattern(name);
@@ -460,7 +465,7 @@ void MainWindow::saveSettings()
     settings.setValue("logging",logging);
     // save patterns
     QJsonArray qarrp;
-    foreach (QString nm, patterns.keys() ) {
+    foreach (QString nm, patterns.keys() ) {  // crashed here once?
         if(!patterns.value(nm)) continue;
         if(patterns.value(nm)->isSystem()) continue;
         QJsonObject obj = patterns.value(nm)->toFullJsonReadyToSave();
@@ -690,8 +695,8 @@ void MainWindow::changeColorFromQml(QColor c)
 void MainWindow::createActions()
 {
     blinkStatusAction=new QAction(blinkStatus,this);
-    blinkIdAction=new QAction("Blink1 id: "+blinkKey,this);
-    iftttKeyAction=new QAction("IFTTT.COM ID: "+iftttKey,this);
+    blinkIdAction=new QAction("blink(1) id: "+blinkKey,this);
+    iftttKeyAction=new QAction("IFTTT key: "+iftttKey,this);
     #ifdef Q_OS_MAC
     blinkStatusAction->setDisabled(true);
     blinkIdAction->setDisabled(true);
@@ -745,10 +750,21 @@ void MainWindow::createTrayIcon()
 
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayIconMenu);
+    //connect( trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), 
+    //         this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)) );
+}
+/*
+void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    qDebug() << "tray icon clicked!";
+    //switch(reason) {
+    //case QSystemTrayIcon::Trigger:
+        //trayIconMenu->popup(QCursor::pos());  // no, causes dupes on Mac, menu that doesn't go away on Win
+        //break;
+    // }
 
 }
-
-
+*/
 void MainWindow::on_buttonRGBcycle_clicked()
 {
     if(mode==RGBCYCLE) return;
@@ -848,7 +864,14 @@ void MainWindow::showMinimize(){
     closing=true;
 }
 void MainWindow::showNormal(){
+    qDebug() << "showNormal";
     viewer.show();
+    //from: http://stackoverflow.com/questions/6087887/bring-window-to-front-raise-show-activatewindow-don-t-work
+    // but doesn't work
+    //viewer.setWindowState( (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+    viewer.raise();  // for MacOS
+    viewer.requestActivate();
+    //viewer.activateWindow(); // for Windows
 }
 void MainWindow::playBigButton(int idx){
     blink1timer->stop();

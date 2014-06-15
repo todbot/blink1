@@ -95,6 +95,8 @@ public slots:
     void on_buttonStrobe_clicked();
     void on_buttonColorwheel_clicked();
 
+    //void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+
     static bool comparePatternsFunction(Blink1Pattern *bi1,Blink1Pattern *bi2){
         return bi1->date()>bi2->date();
     }
