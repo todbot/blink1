@@ -26,7 +26,9 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 TARGET = Blink1Control
-VERSION = 1.8
+#VERSION = $$system(git describe)  # should return tag like "v1.8"
+# but git isn't in PATH in Windows, so can't do it.
+VERSION = v1.8
 TEMPLATE = app
 
 
@@ -68,7 +70,10 @@ BLINK1_LIB_DIR=$$PWD/../../commandline
 macx:  LIBS += -L$$BLINK1_LIB_DIR -lBlink1
 win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 
-QMAKE_CXXFLAGS += -DUSE_HIDAPI
+DEFINES += BLINK1CONTROL_VERSION=\\\"$$VERSION\\\"
+message("DEFINES = $$DEFINES")
+
+QMAKE_CXXFLAGS += -DUSE_HIDAPI 
 #QMAKE_CFLAGS += -DUSE_HIDAPI
 INCLUDEPATH += $$BLINK1_LIB_DIR
 DEPENDPATH  += $$BLINK1_LIB_DIR
