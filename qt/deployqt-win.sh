@@ -32,7 +32,7 @@ QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
 # location of blnik1-lib.dll (do "make lib" in that dir first to get it)
 BLINK1_LIB_PATH=../../../commandline/blink1-lib.dll
 
-export PATH=${PATH}:${QT_BIN_PATH}a
+export PATH=${PATH}:${QT_BIN_PATH}
 
 # make the place where we're going to put the whole app
 rm -rf windeploy
