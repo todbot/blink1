@@ -3011,6 +3011,12 @@ Image{
     Menu {
         id: editHostIdMenu
         MenuItem {
+            text: "Copy IFTTT key"
+            onTriggered: {
+                mw.copyToClipboard( mw.getIftttKey() )
+            }
+        }
+        MenuItem {
             text: "Edit host id"
             onTriggered: {
                 hip.visible=true

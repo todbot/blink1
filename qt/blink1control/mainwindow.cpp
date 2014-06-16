@@ -14,6 +14,8 @@
 #include <QSsl>
 #include <QSslError>
 
+#include <QClipboard>
+
 #include "patternsReadOnly.h"
 
 enum {
@@ -681,6 +683,12 @@ void MainWindow::updateBlink1()
     }
 }
 
+void MainWindow::copyToClipboard(QString txt)
+{
+     QClipboard *clipboard = QApplication::clipboard();
+     clipboard->setText(txt);
+}
+
 // called by QML?
 // called by colorwheel on colorwheel change,
 // (which gets changed by pattern, so got race condition)
@@ -689,7 +697,6 @@ void MainWindow::changeColorFromQml(QColor c)
     cc = c; 
     fadeSpeed = 0;
     mode=RGBSET;
-    //qDebug("todtest: colorChanged");
     updateBlink1();
 }
 

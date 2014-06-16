@@ -47,8 +47,6 @@
 #include <QFontMetrics>
 
 
-//#define BLINK1CONTROL_VERSION ""
-
 class HttpServer;
 
 namespace Ui {
@@ -86,6 +84,7 @@ public slots:
     void showMinimize();
     void updateBlink1();
     void showAboutDialog();
+    void copyToClipboard( QString txt );
 
     void changeColorFromQml(QColor);
 
