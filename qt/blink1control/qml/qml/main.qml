@@ -2859,7 +2859,8 @@ Image{
                     WebView {
                         id: helpWebView
                         anchors.fill: parent
-                        url: "http://thingm.com/blink1/blink1control-help/"
+                        //url: "http://thingm.com/blink1/blink1control-help/"
+                        url: "../../help/help/index.html"
                     }
                 }
            }
