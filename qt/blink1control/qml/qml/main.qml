@@ -357,7 +357,10 @@ Image{
                         upSrc: "qrc:images/layout/delete-up.png"
                         downSrc: "qrc:images/layout/delete-down.png"
                         label.text: ""
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: parent.top 
+                        anchors.topMargin: 3
+                        //anchors.verticalCenter: parent.verticalCenter
+                        //anchors.verticalCenterOffset: -15 // too high
                         onClicked: {
                             recentEvents.currentIndex=index
                             exitEditMode()
@@ -368,12 +371,14 @@ Image{
                         }
                     }
                     Text{
+                        // FIXME: really?
                         text: model.modelData.substring(model.modelData.indexOf("-")+1)
                         width: 165
-                        wrapMode: Text.WrapAnywhere
+                        wrapMode: Text.WordWrap    //wrapMode: Text.WrapAnywhere
                         font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
+                        // FIXME: really?
                         text: model.modelData.substring(0,model.modelData.indexOf("-"))
                         color: "grey"
                         wrapMode: Text.WrapAnywhere
@@ -1395,7 +1400,7 @@ Image{
                         font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        text: "Last seen"
+                        text: "Last Checked"
                         width: 138
                         font.bold: true
                         color: "#999999"
