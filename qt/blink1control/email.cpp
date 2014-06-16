@@ -233,42 +233,43 @@ void Email::readyIMAP(){
             if(lastid<listOfUnreadEmailsIdToCheckLastId.at(listOfUnreadEmailsIdToCheckLastId.count()-1)){
                 if(result==0){
                     if(unreadCount>=parser.toInt()){
-                        value="NEW MEESSAGES("+QString::number(unreadCount)+")";
+                        value="New Messages("+QString::number(unreadCount)+")";
                         emit updateOnlyTextStatus();
                         if(!recentEventAdded){
-                            emit addReceiveEvent(0,"NEW MESSAGES("+QString::number(unreadCount)+")",name);
+                            emit addReceiveEvent(0,"New Message("+QString::number(unreadCount)+")","Mail:"+name);
                             emit runPattern(patternName,false);
                             recentEventAdded=true;
                         }
                     }else{
-                        value="MEESSAGES("+QString::number(unreadCount)+")";
+                        value="Messages("+QString::number(unreadCount)+")";
                         emit updateOnlyTextStatus();
                     }
                 }else if(result==1 || result==2){
                     if(matchingMessagesCount>0){
-                        value="NEW MATCHING MEESSAGES("+QString::number(matchingMessagesCount)+")";
+                        value="New Matching Messages("+QString::number(matchingMessagesCount)+")";
                         emit updateOnlyTextStatus();
                         if(!recentEventAdded){
-                            emit addReceiveEvent(0,"NEW MEESSAGES("+QString::number(matchingMessagesCount)+")",name);
+                            emit addReceiveEvent(0,"New messages("+QString::number(matchingMessagesCount)+")",
+                                                 "Mail:"+name);
                             emit runPattern(patternName,false);
                             recentEventAdded=true;
                         }
                     }else{
-                        value="NO MATCHING MEESSAGES";
+                        value="No Matching Messages";
                         emit updateOnlyTextStatus();
                     }
                 }
                 lastid=listOfUnreadEmailsIdToCheckLastId.at(listOfUnreadEmailsIdToCheckLastId.count()-1);
             }else{
                 if(result==0){
-                    value="MEESSAGES("+QString::number(unreadCount)+")";
+                    value="Messages("+QString::number(unreadCount)+")";
                     emit updateOnlyTextStatus();
                 }else if(result==1 || result==2){
                     if(matchingMessagesCount>0){
-                        value="MATCHING MESSAGES("+QString::number(matchingMessagesCount)+")";
+                        value="Matching Messages("+QString::number(matchingMessagesCount)+")";
                         emit updateOnlyTextStatus();
                     }else{
-                        value="NO MATCHING MEESSAGES";
+                        value="No Matching Messages";
                         emit updateOnlyTextStatus();
                     }
                 }
@@ -277,7 +278,7 @@ void Email::readyIMAP(){
         }else{
             lastid=-1;
             if(result==0){
-                value="NO NEW MESSAGES";
+                value="No New Messages";
                 emit updateOnlyTextStatus();
             }else if(result==1 || result==2){
                 value="NO MATCHING MESSAGES";
@@ -296,7 +297,7 @@ void Email::readyPOP3(){
     qDebug()<<tmp;
     addToLog(tmp);
     if(tmp.startsWith("-ERR Invalid")){
-        value="WRONG LOGIN OR PASSWORD";
+        value="Wrong Login or Password";
         emit updateOnlyTextStatus();
         socket->close();
         return;
@@ -337,31 +338,31 @@ void Email::readyPOP3(){
             qDebug()<<"sending "<<ba.toLower();
             addToLog("sending "+ba.toLower());
             action_number+=2;
-            value="NO NEW MESSAGES";
+            value="No New Messages";
             emit updateOnlyTextStatus();
         }
     }else if(action_number==5){
         qDebug()<<parseMail(tmp);
         QStringList t=parseMail(tmp);
         if(result==0){
-            value="NEW MESSAGE";
+            value="New Message";
             emit updateOnlyTextStatus();
             if(!recentEventAdded){
-                emit addReceiveEvent(0,"NEW MEESSAGE",name);
+                emit addReceiveEvent(0,"New Message","Mail:"+name);
                 emit runPattern(patternName,false);
                 recentEventAdded=true;
             }
         }else if(result==1 || result==2){
             if(matchingMessagesCount>0){
-                value="NEW MESSAGE";
+                value="New Message";
                 emit updateOnlyTextStatus();
                 if(!recentEventAdded){
-                    emit addReceiveEvent(0,"NEW MEESSAGE",name);
+                    emit addReceiveEvent(0,"New Message","Mail:"+name);
                     emit runPattern(patternName,false);
                     recentEventAdded=true;
                 }
             }else{
-                value="NO MATCHING MESSAGE";
+                value="No Matching Message";
                 emit updateOnlyTextStatus();
             }
         }
@@ -376,7 +377,7 @@ void Email::readyPOP3(){
     action_number++;
 }
 void Email::sockerErrorSlot(QAbstractSocket::SocketError e){
-    value="CONNECTION ERROR";
+    value="Connection Error";
     emit updateOnlyTextStatus();
     socket->close();
     qDebug()<<"ERROR"<<e;
