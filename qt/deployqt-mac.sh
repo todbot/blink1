@@ -1,6 +1,11 @@
 #!/bin/sh
 #
-#
+# Before running this, be sure to:
+# 1. Select "Release" build in QtComposer 
+# 2. Build Blink1Control
+# 3. Do QC Tests
+# 4. Type "./deployqt-mac.sh" (i.e. must be in this dir)
+# 5. Resulting zipped up app will be this directory as "Blink1Control-mac.zip"
 #
 #
 

@@ -2,6 +2,13 @@
 #
 # deployqt-win.sh --
 #  
+# Before running this, be sure to:
+# 1. Select "Release" build in QtComposer 
+# 2. Build Blink1Control
+# 3. Do QC Tests
+# 4. Type "./deployqt-win.sh" (i.e. must be in this dir)
+# 5. Resulting zipped up app will be this directory as "Blink1Control-win.zip"
+#
 # Wow this is such a hack.  
 # Is this really what one must do to make executables on Windows?
 # (though MacOSX is not much better)
@@ -25,7 +32,10 @@ QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
 # location of blnik1-lib.dll (do "make lib" in that dir first to get it)
 BLINK1_LIB_PATH=../../../commandline/blink1-lib.dll
 
+export PATH=${PATH}:${QT_BIN_PATH}a
+
 # make the place where we're going to put the whole app
+rm -rf windeploy
 mkdir windeploy/${APP_DIR}
 pushd windeploy/${APP_DIR}
 
@@ -55,3 +65,5 @@ else
 fi
 
 popd
+
+mv windeploy/${APP_DIR}-win.zip .
