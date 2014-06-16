@@ -33,7 +33,7 @@ void HttpServer::startRead(){
 
         client->write("HTTP/1.0 200 OK\n");  // FIXME: not always 200 OK
         client->write("Connecton: close\n");
-        client->write("Content-type: plain/text\n");
+        client->write("Content-type: text/plain\n");
         client->write("\n");
 
         QJsonObject resp;  // response object
@@ -129,11 +129,13 @@ void HttpServer::startRead(){
             foreach (QString nm, inputs.keys() ) {  /// FIXME: this prints wrong name
                 qDebug()<<nm;
                 if(enable==-1){
-                    QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
+                    //QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
+                    QJsonObject obj = inputs.value(nm)->toJsonWithNameTypePNameArg1Arg2AndDate(); //ithNameTypeAndArg1();
                     qarrp.append(obj);
                 }else if(enable==0){
                     if(!inputs.value(nm)->pause()){
-                        QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
+                        //QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
+                        QJsonObject obj = inputs.value(nm)->toJsonWithNameTypePNameArg1Arg2AndDate();//WithNameTypeAndArg1();
                         qarrp.append(obj);
                     }
                 }else if(enable==1){
