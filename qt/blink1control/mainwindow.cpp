@@ -365,14 +365,15 @@ void MainWindow::checkIfttt(QString txt)
             // is this an IFTTT input and does the event name match?
             // FIXME: type should be just "ifttt" or enum 
             // FIXME: name should be same as rule name (aka arg1)
-            if( input->type() == "IFTTT.COM" && input->arg1() == evname ) { 
+            if( input->type() == "IFTTT.COM" ) { 
                 // is the event newer than our last event, then trigger!
                 if( evdate > input->date() ) {
                     input->setDate(evdate); // save for next go around
                     input->setArg2(evsource); 
-                    if(patterns.contains(input->patternName()))
+                    if( input->arg1() == evname && 
+                        patterns.contains(input->patternName()))
                         patterns.value( input->patternName() )->play(cc);  // FIXME: why is cc being passed?
-                    addRecentEvent(evdate, evsource, "IFTTT");
+                    addRecentEvent(evdate, evname+" - "+evsource, "IFTTT");
                 }
             }
         } // foreach input
@@ -382,7 +383,7 @@ void MainWindow::checkIfttt(QString txt)
 void MainWindow::addRecentEvent(int date, QString name, QString from)
 {
     addToLog(name+" "+from);
-    QString text = getTimeFromInt(QDateTime::currentDateTime().toTime_t()/*date*/) + "-" + name + " from " + from;
+    QString text = getTimeFromInt(QDateTime::currentDateTime().toTime_t()/*date*/) + "-" + name + " via " + from;
     recentEvents.prepend(text);
     addToLog(QString::number(date));
     emit recentEventsUpdate();
@@ -1194,7 +1195,7 @@ void MainWindow::createNewIFTTTInput(){
         duplicateCounter++;
     bp->setName("Name"+QString::number(duplicateCounter));
     bp->setType("IFTTT.COM");
-    bp->setArg1("RULE");
+    bp->setArg1("My Rule Name");
     bp->setArg2("no value");
     bp->setPatternName("");
     inputs.insert(bp->name(),bp);
