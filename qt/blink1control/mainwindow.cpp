@@ -109,8 +109,9 @@ MainWindow::MainWindow(QWidget *parent) :
     createActions();
     createTrayIcon();
     trayIcon->setIcon( ico);
-    trayIcon->setToolTip("Blink1Control");
     trayIcon->show();
+    trayIcon->showMessage("Blink1Control running", (mac() ? "Click menubar icon for settings & options" :
+                                             "Click tray icon for settings, right-click for options"));
 
     activePatternName="";
     updateBlink1();
@@ -119,6 +120,12 @@ MainWindow::MainWindow(QWidget *parent) :
     viewer.setMainQmlFile(QStringLiteral("qml/qml/main.qml"));
     // using OS titlebar now so don't need this?
     //viewer.setFlags(Qt::WindowMaximizeButtonHint | Qt::MSWindowsFixedSizeDialogHint |Qt::WindowMinimizeButtonHint |Qt::FramelessWindowHint);
+    //viewer.setFlags(Qt::Tool   | Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
+    //viewer.setFlags(Qt::Dialog  | Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
+    //viewer.setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
+    //viewer.setWindowFlags( Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint );
+    viewer.setFlags( Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint );
+
     viewer.rootContext()->setContextProperty("viewerWidget", &viewer);
     #if 0
     viewer.setMinimumHeight(760); // for original bg.jpg
@@ -132,8 +139,6 @@ MainWindow::MainWindow(QWidget *parent) :
     viewer.setTitle("Blink(1) Control");
 
     inputsIterator=new QMapIterator<QString,Blink1Input*>(inputs);
-
-    this->setAttribute(Qt::WA_DeleteOnClose);
 
     inputTimerCounter = 0;
     inputsTimer = new QTimer(this);
@@ -151,18 +156,60 @@ MainWindow::MainWindow(QWidget *parent) :
     emit ledsUpdate();
     emit deviceUpdate();
 
-    //connect(&viewer,SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosingSlot(QQuickCloseEvent*)));
-    //if(mac()) connect(&viewer,SIGNAL(visibleChanged(bool)),this,SLOT(viewerVisibleChangedSlot(bool)));
-    // instead of above, just watch for when app is quitting, 
-    // and use static bool to make sure we don't quit twice
-    connect( qApp, SIGNAL(aboutToQuit), this, SIGNAL(quit) );
-
     emailsIterator = new QMapIterator<QString, Email*>(emails);
     hardwaresIterator = new QMapIterator<QString, HardwareMonitor*>(hardwareMonitors);
 
     setColorToBlink(cc,400);  // give a default non-black color to let people know it works
-}
 
+    //connect(&viewer,SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosingSlot(QQuickCloseEvent*)));
+    //if(mac()) connect(&viewer,SIGNAL(visibleChanged(bool)),this,SLOT(viewerVisibleChangedSlot(bool)));
+    // instead of above, just watch for when app is quitting, 
+    // and use static bool to make sure we don't quit twice
+    //connect( qApp, SIGNAL(aboutToQuit()), this, SLOT(quit()) );
+    /*
+    connect( &viewer, SIGNAL(changeEvent(QEvent *)), this, SLOT(viewerChangeEvent(QEvent*)) );
+    connect( &viewer, SIGNAL(statusChanged(QQuickView::Status)), this, SLOT(viewerStatusChanged(QQuickView::Status)) );
+    connect( &viewer, SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosing(QQuickCloseEvent*)));
+    connect( &viewer, SIGNAL(windowStateChanged(Qt::WindowState)),this,SLOT(viewerWindowStateChanged(Qt::WindowState)));
+    connect( &viewer, SIGNAL(activeChanged()),this,SLOT(viewerActiveChanged()));
+    connect( &viewer, SIGNAL(visibilityChanged(QWindow::Visibility)), this, SLOT(viewerVisibilityChanged(QWindow::Visibility)) );
+    */
+    qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
+    //this->setAttribute(Qt::WA_DeleteOnClose);  // what's this?
+}
+/*
+void MainWindow::changeEvent(QEvent* e)
+{
+    qDebug() << "changeEvent " << e;
+    QMainWindow::changeEvent(e);
+}
+// called only on minimize?
+void MainWindow::viewerVisibilityChanged(QWindow::Visibility visibility) {
+    qDebug() << "viewerVisibilityChanged: " << visibility;
+    
+}
+// called when window has focus
+void MainWindow::viewerActiveChanged() {
+    qDebug() << "viewerActiveChanged: " << viewer.isActive();
+}
+// called when minimize is finished
+void MainWindow::viewerWindowStateChanged(Qt::WindowState state) {
+    qDebug() << "viewerWindowStateChanged: " << state;
+    if( state == Qt::WindowMinimized ) { 
+        qDebug() << "minimized!";
+        viewer.hide();
+    }
+}
+void MainWindow::viewerStatusChanged(QQuickView::Status status) {
+    qDebug() << "viewerStatusChanged: " << status;
+}
+void MainWindow::viewerChangeEvent(QEvent* event) {
+    qDebug() << "viewerChangeEvent: " << event;
+}
+void MainWindow::viewerClosing(QQuickCloseEvent*event){
+    qDebug() << "viewerClosing: "<< event ;
+}
+*/
 /*
 // these three not needed now we're just watching QApp::aboutToQuit() and using quit() for everything
 void MainWindow::viewerClosingSlot(QQuickCloseEvent*){
@@ -446,7 +493,7 @@ void MainWindow::quit()
     // (app quit semantics are ill-defined in this weird universe
     // of not running the main window in a MainWindow: damn QML)
     static bool isQuit = false;
-    qDebug() << "quit :" << isQuit;
+    qDebug() << "quit isQuit:" << isQuit;
     if( isQuit ) return;
     isQuit = true;
 
@@ -789,21 +836,27 @@ void MainWindow::createTrayIcon()
 
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setContextMenu(trayIconMenu);
-    //connect( trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), 
-    //         this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)) );
+    trayIcon->setToolTip("Blink1Control");
+    connect( trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), 
+             this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)) );
 }
-/*
+
+// see: http://stackoverflow.com/questions/16431270/qt-context-menu-on-trigger
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    qDebug() << "tray icon clicked!";
+    qDebug() << "tray icon clicked! " << reason;
+    //if( reason == QSystemTrayIcon::DoubleClick ) { 
+    if( reason == QSystemTrayIcon::Trigger && !mac() ) { 
+        showNormal();
+    }
     //switch(reason) {
     //case QSystemTrayIcon::Trigger:
         //trayIconMenu->popup(QCursor::pos());  // no, causes dupes on Mac, menu that doesn't go away on Win
-        //break;
+        //Break;
     // }
 
 }
-*/
+
 void MainWindow::on_buttonRGBcycle_clicked()
 {
     if(mode==RGBCYCLE) return;
@@ -895,10 +948,11 @@ void MainWindow::setColorToBlink(QColor c,int fademillis){
 }
 
 void MainWindow::showAboutDialog(){
-    QString message = "Blink1Control for blink(1) and blink(1) mk2.\n";
+    QString message = "Blink1Control \n";
+    message += "   for blink(1) and blink(1) mk2.\n";
     message += "Version: " + QString(BLINK1CONTROL_VERSION)+ "\n";
     message += "2013-2014 ThingM Corp.\n";
-    //QMessageBox::information(this, "Title", message, QMessageBox::Ok);
+    message += "Visit blink1.thingm.com for more info\n";
     QMessageBox::about(this, QString("About Blink1Control"), message);
 }
 
@@ -913,14 +967,14 @@ void MainWindow::showMinimize(){
 }
 void MainWindow::showNormal(){
     qDebug() << "showNormal";
-    viewer.show();
+    viewer.showNormal();
+    viewer.raise();  // for MacOS
     //from: http://stackoverflow.com/questions/6087887/bring-window-to-front-raise-show-activatewindow-don-t-work
     // but doesn't work
     //viewer.setWindowState( (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
-    viewer.raise();  // for MacOS
     viewer.requestActivate();
     //viewer.activateWindow(); // for Windows
-}
+ }
 void MainWindow::playBigButton(int idx){
     blink1timer->stop();
     QString tmp=bigButtons2.at(idx)->getPatternName();
@@ -983,6 +1037,8 @@ void MainWindow::showhideDockIcon(){
     QSettings settings(QCoreApplication::applicationDirPath()+"/../Info.plist",QSettings::NativeFormat);
     settings.setValue("LSUIElement",(dockIconAction->isChecked())?0:1);
     #endif
+    // for window do something like:
+    // setWindowFlags(windowFlags() | Qt::Tool);
 }
 
 //
