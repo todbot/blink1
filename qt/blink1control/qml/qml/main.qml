@@ -3,7 +3,7 @@ import "content"
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
 import QtWebKit 3.0
-import QtWebKit.experimental 1.0
+//import QtWebKit.experimental 1.0
 Image{
     id: mainWindow
     source: "qrc:images/layout/bg-new.jpg"
@@ -2863,13 +2863,13 @@ Image{
                     WebView {
                         id: helpWebView
                         anchors.fill: parent
-                        // url: "http://thingm.com/blink1/blink1control-help/"
-                        url: "../../help/help/index.html"
+                        url: "http://thingm.com/blink1/blink1control-help/"
+                        //url: "../../help/help/index.html"  // doesn't  work on windows
                         //url: "file:../../help/help/index.html"
                         //url: Qt.resolvedUrl("../../help/help/index.html")
                         //url: "qrc:help/index.html"
                         //experimental.preferences.privateBrowsingEnabled: true 
-                        experimental.preferences.fileAccessFromFileURLsAllowed: true 
+                        //experimental.preferences.fileAccessFromFileURLsAllowed: true 
                        // onLoadingChanged: {
                         //    console.log("webView loadRequest:"+loadRequest.errorString+","+loadRequest.errorDomain+","+loadRequest.url);
                        // }
