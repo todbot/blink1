@@ -2,7 +2,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets network quick qml webkit
+QT       += core gui widgets network quick qml webkit webkitwidgets
 #QT       += core gui widgets network
 
 #CONFIG += debug

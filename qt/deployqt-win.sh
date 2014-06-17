@@ -39,31 +39,42 @@ rm -rf windeploy
 mkdir windeploy/${APP_DIR}
 pushd windeploy/${APP_DIR}
 
-if [ -e $EXE_PATH ] ; then 
-    # copy the built executable
-    cp ${EXE_PATH} .
-
-    # copy blink1-lib
-    cp ${BLINK1_LIB_PATH} .
-
-    # copy qml files  (seems like windeployqt should do this, but it doesn't)
-    cp -r ${QML_DIR} .
-
-    # copy mingw libs (seems like windeployqt should do this too)
-    cp ${QT_BIN_PATH}/lib*dll .
-
-    # windeploy to get rest of Qt dependencies
-    ${QT_BIN_PATH}/windeployqt Blink1Control.exe
-
-    # Build a zip bundle
-    cd ..
-    zip -r ${APP_DIR}-win.zip ${APP_DIR}
-
-    echo "created ./windeploy/${APP_DIR}-win.zip"
-else
+if [ ! -e $EXE_PATH ] ; then 
     echo "file not found: ${EXE_PATH}"
+    popd
+    exit
 fi
+
+# copy the built executable
+cp ${EXE_PATH} .
+
+# copy blink1-lib
+cp ${BLINK1_LIB_PATH} .
+
+# copy qml files  (seems like windeployqt should do this, but it doesn't)
+cp -r ${QML_DIR} .
+
+# copy mingw libs (seems like windeployqt should do this too)
+cp ${QT_BIN_PATH}/lib*dll .
+
+# windeploy to get rest of Qt dependencies
+${QT_BIN_PATH}/windeployqt Blink1Control.exe
+
+# fix bug in windeployqt
+# see: https://bugreports.qt-project.org/browse/QTBUG-35211
+cp ${QT_BIN_PATH}/QtWebProcess.exe .
+cp ${QT_BIN_PATH}/Qt5WebKitWidgets.dll .
+cp ${QT_BIN_PATH}/Qt5OpenGL.dll .
+cp ${QT_BIN_PATH}/Qt5PrintSupport.dll  .
+cp ${QT_BIN_PATH}/Qt5MultimediaWidgets.dll  .
+
+# Build a zip bundle
+cd ..
+zip -r ${APP_DIR}-win.zip ${APP_DIR}
+
+echo "created ${APP_DIR}-win.zip"
+mv ${APP_DIR}-win.zip ..
 
 popd
 
-mv windeploy/${APP_DIR}-win.zip .
+
