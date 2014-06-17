@@ -2,7 +2,12 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets network
+QT       += core gui widgets network quick qml webkit
+#QT       += core gui widgets network
+
+#CONFIG += debug
+#CONFIG += CONSOLE
+#CONFIG += release
 
 folder_01.source = qml/qml
 folder_01.target = qml
@@ -27,9 +32,9 @@ qtcAddDeployment()
 
 TARGET = Blink1Control
 TEMPLATE = app
+VERSION = v1.81
 #VERSION = $$system(git describe)  # should return tag like "v1.8"
 # but git isn't in PATH in Windows, so can't do it.
-VERSION = v1.8
 
 
 SOURCES += main.cpp\
@@ -106,7 +111,6 @@ OTHER_FILES += \
     MyGroupBox.qml \
     help/index.html
 
-#CONFIG += CONSOLE
 win32{
     RC_FILE =blink1.rc
 }

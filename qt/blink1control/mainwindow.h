@@ -75,8 +75,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    bool closing;
-
 public slots:
     void quit();
     void changeMinimizeOption();
@@ -120,7 +118,7 @@ public slots:
 
     void removePattern(QString key);
     void removeInput(QString key,bool update=false);
-    //void addColorAndTimeToPattern(QString pname,QString color,double time);
+    void addColorAndTimeToPattern(QString pname,QString color,double time);
     void addNewPattern(QColor col, double time);
 
     void updateInputsList();
@@ -178,9 +176,10 @@ public slots:
 
     void addRecentEvent(int date, QString name, QString from);
 
-    void viewerClosingSlot(QQuickCloseEvent*);
-    void viewerVisibleChangedSlot(bool);
-    void markViewerAsClosing();
+
+    //void viewerClosingSlot(QQuickCloseEvent*);
+    //void viewerVisibleChangedSlot(bool);
+    //void markViewerAsClosing();
 
     void add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
     void edit_mail(QString oldname, QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
@@ -208,8 +207,8 @@ public slots:
     void addToLog(QString txt);
     void resetAlertsOption();
 
-    bool checkIfCorrectPositionX(int x);
-    bool checkIfCorrectPositionY(int y,int bar);
+    //bool checkIfCorrectPositionX(int x);
+    //bool checkIfCorrectPositionY(int y,int bar);
     int checkWordWidth(QString s,int size);
     void changeColorOnVirtualBlink(QColor,double);
     bool checkIfColorIsTooBright(QString);

@@ -3,11 +3,12 @@ import "content"
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
 import QtWebKit 3.0
+import QtWebKit.experimental 1.0
 Image{
     id: mainWindow
-    source: "qrc:images/layout/bg.jpg"
+    source: "qrc:images/layout/bg-new.jpg"
     property int editModeIndex: -1
-
+/*
     MouseArea{
         id: belka
         z:0
@@ -37,6 +38,8 @@ Image{
             }
         }
     }
+*/
+/*
     PushButton{
         z: 1
         id: minButton
@@ -56,6 +59,7 @@ Image{
         anchors.rightMargin: 30
         onClicked: { mw.markViewerAsClosing(); mw.quit(); }
     }
+*/
     function exitEditMode(){
         if(lista.currentIndex != -1 && lista.currentItem) {
             lista.currentItem.editMode=false;
@@ -137,7 +141,7 @@ Image{
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.leftMargin: 15
-        anchors.topMargin: 55
+        anchors.topMargin: 12  // was 55 with bg.jpg
         Text{
             text: "Device"
             color: "white"
@@ -2859,8 +2863,16 @@ Image{
                     WebView {
                         id: helpWebView
                         anchors.fill: parent
-                        //url: "http://thingm.com/blink1/blink1control-help/"
+                        // url: "http://thingm.com/blink1/blink1control-help/"
                         url: "../../help/help/index.html"
+                        //url: "file:../../help/help/index.html"
+                        //url: Qt.resolvedUrl("../../help/help/index.html")
+                        //url: "qrc:help/index.html"
+                        //experimental.preferences.privateBrowsingEnabled: true 
+                        experimental.preferences.fileAccessFromFileURLsAllowed: true 
+                       // onLoadingChanged: {
+                        //    console.log("webView loadRequest:"+loadRequest.errorString+","+loadRequest.errorDomain+","+loadRequest.url);
+                       // }
                     }
                 }
            }
