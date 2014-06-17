@@ -542,7 +542,9 @@ void MainWindow::saveSettings()
     QJsonArray qarrp;
     foreach (QString nm, patterns.keys() ) {  // crashed here once?
         if(!patterns.value(nm)) continue;
-        if(patterns.value(nm)->isSystem()) continue;
+        Blink1Pattern* p = patterns.value(nm);
+        if(p->isSystem()) continue;  // don't save system patterns
+        if(p->getColors().count() == 0 ) continue; // disregard zero-length patterns
         QJsonObject obj = patterns.value(nm)->toFullJsonReadyToSave();
         qarrp.append(obj);
     }
