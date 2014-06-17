@@ -76,6 +76,7 @@ public:
     ~MainWindow();
 
 public slots:
+
     void quit();
     void changeMinimizeOption();
     void showNormal();
@@ -93,7 +94,7 @@ public slots:
     void on_buttonStrobe_clicked();
     void on_buttonColorwheel_clicked();
 
-    //void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
     static bool comparePatternsFunction(Blink1Pattern *bi1,Blink1Pattern *bi2){
         return bi1->date()>bi2->date();
@@ -176,7 +177,15 @@ public slots:
 
     void addRecentEvent(int date, QString name, QString from);
 
-
+    /*
+    void changeEvent(QEvent * event);
+    void viewerVisibilityChanged(QWindow::Visibility visibility);
+    void viewerActiveChanged();
+    void viewerWindowStateChanged(Qt::WindowState state);
+    void viewerClosing(QQuickCloseEvent*event);
+    void viewerChangeEvent(QEvent* event);
+    void viewerStatusChanged(QQuickView::Status status);
+    */
     //void viewerClosingSlot(QQuickCloseEvent*);
     //void viewerVisibleChangedSlot(bool);
     //void markViewerAsClosing();
@@ -227,6 +236,8 @@ public slots:
     void startOrStopLogging(bool);
     bool getLogging();
     void updateColorsOnBigButtons2List();
+
+
 private:
     QtQuick2ApplicationViewer viewer;
 
@@ -298,6 +309,7 @@ private:
     bool fromPattern;
 
     HttpServer *httpserver;
+
 signals:
     void patternsUpdate();
     void updatePatternsNamesOnUi();
