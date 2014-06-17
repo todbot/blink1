@@ -85,8 +85,10 @@ QString Blink1Pattern::patternStrWithLeds()
 //   "repeats,color1,color1time,color2,color2time,..."
 // returns true if parsing was succesful, false if not
 bool Blink1Pattern::fromPatternStr(QString tmp) {
+    //qDebug() << "fromPatternStr: "<<tmp;
     tmp.replace(" ",""); // remove any whitepsace from mucking up parsing
     QStringList list=tmp.split(",");
+    int lcount = list.count()-1;
 
     // determine format type:
     // if 3-tuple, then every 3rd entry has a '#'
@@ -98,9 +100,9 @@ bool Blink1Pattern::fromPatternStr(QString tmp) {
     for( int i=1; i<list.count(); i+=3 ) { 
         if( list.at(i).contains('#') ) count3++;
     }
-    int format = (count3>count2) ? 3 : (count2) ? 2 : 0;
+    int format = (count3>count2) ? 3 : (count3==count2) ? 0 : 2;
     // for pattern string "reps,color,time", min is 3 elemnets & pair count must be even
-    if( format==2 && list.count() >= 3 && (list.count()-1) % 2 == 0 ) { 
+    if( lcount % 2 == 0  && ((format==2 && lcount >= 2) || format==0) ) { 
         for(int i=1;i<list.count();i+=2){
             QString colorstr = list.at(i);
             double time      = list.at(i+1).toDouble();
@@ -112,7 +114,7 @@ bool Blink1Pattern::fromPatternStr(QString tmp) {
         return true;
     }
     // for pattern string "reps,color,time,led", min is 4 elemnets & pair count must be 3-tuple
-    else if( format==3 && list.count() >= 4 && (list.count()-1) % 3 == 0 ) {
+    else if( lcount % 3 == 0 && ((format==3 && lcount >= 3) || format==0) ) {
         for(int i=1;i<list.count();i+=3) {
             QString colorstr = list.at(i);
             double time      = list.at(i+1).toDouble();
@@ -125,6 +127,7 @@ bool Blink1Pattern::fromPatternStr(QString tmp) {
         setRepeats(list.at(0).toInt());
         return true;
     }
+
     return false;
 }
 
