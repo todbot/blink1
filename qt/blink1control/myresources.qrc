@@ -44,6 +44,7 @@
         <file>qml/qml/TabWidget.qml</file>
         <file>qml/qml/content/ColorWheel.qml</file>
         <file>images/layout/bg.jpg</file>
+        <file>images/layout/bg-new.jpg</file>
         <file>images/layout/btn-colorcycle.png</file>
         <file>images/layout/btn-colorpicker.png</file>
         <file>images/layout/btn-moodlight.png</file>
@@ -171,5 +172,22 @@
         <file>images/layout/dropdown-bg.png</file>
         <file>images/layout/select-bg-right.png</file>
         <file>help/index.html</file>
+        <file>help/blink1control-iftttkey.png</file>
+        <file>help/blink1control-iftttkeya.png</file>
+        <file>help/blink1control-intro-noted.png</file>
+        <file>help/blink1control-intro.png</file>
+        <file>help/blink1control-taskbar-mac1.png</file>
+        <file>help/blink1control-taskbar-win1.png</file>
+        <file>help/ifttt-blink1control1a.png</file>
+        <file>help/ifttt-blink1control2a.png</file>
+        <file>help/ifttt-recipe1a.png</file>
+        <file>help/ifttt-recipe2a.png</file>
+        <file>help/ifttt-recipe3a.png</file>
+        <file>help/ifttt-recipe4a.png</file>
+        <file>help/ifttt-recipe5a.png</file>
+        <file>help/ifttt1a.png</file>
+        <file>help/ifttt2a.png</file>
+        <file>help/ifttt3a.png</file>
+        <file>help/ifttt4a.png</file>
     </qresource>
 </RCC>

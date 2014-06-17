@@ -33,7 +33,7 @@ enum {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    closing=true;
+    //closing=true;
     fromPattern=false;
     mk2=false;
     blinkStatus="";
@@ -117,10 +117,16 @@ MainWindow::MainWindow(QWidget *parent) :
     qmlRegisterType<QsltCursorShapeArea>("CursorTools", 1, 0, "CursorShapeArea");
     viewer.rootContext()->setContextProperty("mw", this);
     viewer.setMainQmlFile(QStringLiteral("qml/qml/main.qml"));
-    viewer.setFlags(Qt::WindowMaximizeButtonHint | Qt::MSWindowsFixedSizeDialogHint |Qt::WindowMinimizeButtonHint | Qt::FramelessWindowHint);
+    // using OS titlebar now so don't need this?
+    //viewer.setFlags(Qt::WindowMaximizeButtonHint | Qt::MSWindowsFixedSizeDialogHint |Qt::WindowMinimizeButtonHint |Qt::FramelessWindowHint);
     viewer.rootContext()->setContextProperty("viewerWidget", &viewer);
-    viewer.setMinimumHeight(760);
+    #if 0
+    viewer.setMinimumHeight(760); // for original bg.jpg
     viewer.setMaximumHeight(760);
+    #else
+    viewer.setMinimumHeight(717); // for bg-new.jpg
+    viewer.setMaximumHeight(717);
+    #endif
     viewer.setMinimumWidth(1185);
     viewer.setMaximumWidth(1185);
     viewer.setTitle("Blink(1) Control");
@@ -129,10 +135,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->setAttribute(Qt::WA_DeleteOnClose);
 
-        inputTimerCounter = 0;
-        inputsTimer = new QTimer(this);
-        inputsTimer->singleShot(5000, this, SLOT(updateInputs()));
-        isIftttChecked = false;
+    inputTimerCounter = 0;
+    inputsTimer = new QTimer(this);
+    inputsTimer->singleShot(5000, this, SLOT(updateInputs()));
+    isIftttChecked = false;
 
     if(startmin){
         viewer.showMinimized();
@@ -144,8 +150,12 @@ MainWindow::MainWindow(QWidget *parent) :
     led=0;
     emit ledsUpdate();
     emit deviceUpdate();
-    connect(&viewer,SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosingSlot(QQuickCloseEvent*)));
-    if(mac()) connect(&viewer,SIGNAL(visibleChanged(bool)),this,SLOT(viewerVisibleChangedSlot(bool)));
+
+    //connect(&viewer,SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosingSlot(QQuickCloseEvent*)));
+    //if(mac()) connect(&viewer,SIGNAL(visibleChanged(bool)),this,SLOT(viewerVisibleChangedSlot(bool)));
+    // instead of above, just watch for when app is quitting, 
+    // and use static bool to make sure we don't quit twice
+    connect( qApp, SIGNAL(aboutToQuit), this, SIGNAL(quit) );
 
     emailsIterator = new QMapIterator<QString, Email*>(emails);
     hardwaresIterator = new QMapIterator<QString, HardwareMonitor*>(hardwareMonitors);
@@ -153,16 +163,23 @@ MainWindow::MainWindow(QWidget *parent) :
     setColorToBlink(cc,400);  // give a default non-black color to let people know it works
 }
 
+/*
+// these three not needed now we're just watching QApp::aboutToQuit() and using quit() for everything
 void MainWindow::viewerClosingSlot(QQuickCloseEvent*){
     qDebug() << "viewerClosingSlot()";
     quit();
 }
 void MainWindow::viewerVisibleChangedSlot(bool v){
     qDebug() << "viewerVisibleChangedSlot(): "<< v;
-    if(!v && closing){
-        quit();
-    }
+    //if(!v && closing){
+    //quit();
+    //}
 }
+void MainWindow::markViewerAsClosing(){
+    //closing=false;
+}
+*/
+
 void MainWindow::deleteDataInput(DataInput *dI)
 {
     if(dI->responseTo){
@@ -403,7 +420,9 @@ QString MainWindow::getTimeFromInt(int t)
 MainWindow::~MainWindow()
 {
     qDebug() << "destructor";
-    closing = false; // for viewerVisibleChangedSlot()
+    quit();
+
+    //closing = false; // for viewerVisibleChangedSlot()
     delete minimizeAction;
     delete restoreAction;
     delete quitAction;
@@ -423,7 +442,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::quit()
 {
-    qDebug() << "quit";
+    // secret isQuit bool so quit() knows not to run itself twice
+    // (app quit semantics are ill-defined in this weird universe
+    // of not running the main window in a MainWindow: damn QML)
+    static bool isQuit = false;
+    qDebug() << "quit :" << isQuit;
+    if( isQuit ) return;
+    isQuit = true;
+
     if(httpserver->status()){
         httpserver->stop();
         delete httpserver;
@@ -452,7 +478,6 @@ void MainWindow::quit()
         blink1_close(blink1dev);
     }
 
-    //QTimer::singleShot(500, qApp, SLOT(quit()));
     qApp->quit();
 }
 
@@ -683,6 +708,8 @@ void MainWindow::updateBlink1()
     }
 }
 
+// Given a string of text, put it on the system clipboard
+// Uses by the QML GUI to copy IFTTT key to clipboard on right-click
 void MainWindow::copyToClipboard(QString txt)
 {
      QClipboard *clipboard = QApplication::clipboard();
@@ -879,10 +906,10 @@ void MainWindow::changeMinimizeOption(){
     startmin=!startmin;
 }
 void MainWindow::showMinimize(){
-    closing=false;
+    //closing=false;
     viewer.showMinimized();
     viewer.hide();
-    closing=true;
+    //closing=true;
 }
 void MainWindow::showNormal(){
     qDebug() << "showNormal";
@@ -1080,13 +1107,14 @@ void MainWindow::removeInput(QString key,bool update){
             emit inputsUpdate();
     }
 }
-/*
+
+// used by color pattern editor when clicking "+" to add color spot
 void MainWindow::addColorAndTimeToPattern(QString pname,QString color,double time){
     if(patterns.value(pname)->getColors().count()>=8) return;
     patterns.value(pname)->addColorAndTime(color,time);
     patterns.value(pname)->editLed(patterns.value(pname)->getColorList().count()-1,led);
 }
-*/
+
 void MainWindow::addNewPattern(QColor col, double time){
     Blink1Pattern *bp=new Blink1Pattern();
     int tmp=patterns.count();
@@ -1327,9 +1355,6 @@ bool MainWindow::mac(){
 }
 void MainWindow::editColorAndTimeInPattern(QString pname,QString color,double time, int index){
     patterns.value(pname)->editColorAndTime(color, time, index);
-}
-void MainWindow::markViewerAsClosing(){
-    closing=false;
 }
 void MainWindow::add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser){
     qDebug()<<"NEW EMAIL "+name;
@@ -1635,6 +1660,9 @@ void MainWindow::resetAlertsOption(){
     }
     on_buttonOff_clicked();
 }
+/* 
+   not needed now we use real titlebars
+
 bool MainWindow::checkIfCorrectPositionX(int x){
     QRect desk=QApplication::desktop()->availableGeometry();
     if(x+100<desk.x()+desk.width() && x+viewer.width()-100>=desk.x())
@@ -1647,6 +1675,7 @@ bool MainWindow::checkIfCorrectPositionY(int y,int bar){
         return true;
     return false;
 }
+*/
 int MainWindow::checkWordWidth(QString s,int size){
     QFont f(QFont().defaultFamily(),size);
     return QFontMetrics(f).width(s);
