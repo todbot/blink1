@@ -18,6 +18,9 @@ EXE_PATH=${BUILD_DIR}/${APP_NAME}.app
 # macdeployqt copies all the needed Qt libs
 macdeployqt ${EXE_PATH} -qmldir=${EXE_PATH}/Contents/Resources/qml
 
+DO_WEBKIT=0
+if [ "$DO_WEBKIT" -eq 1 ] ; then
+echo "Copying extra WebKit stuff..."
 # except this one
 # fix bug in macdeployqt wrt QtWebKit
 # see: https://bugreports.qt-project.org/browse/QTBUG-35211
@@ -26,10 +29,10 @@ QT_PATH=`dirname ${QT_QMAKE}`
 LIBEXEC=$EXE_PATH/Contents/libexec
 mkdir -p ${LIBEXEC}
 cp ${QT_PATH}/../libexec/QtWebProcess ${LIBEXEC}
+fi
 
 # copy blink1 lib
 cp ../commandline/libBlink1.dylib ${EXE_PATH}/Contents/Frameworks
-
 
 # zip up
 rm -f ../${APP_NAME}-mac.zip

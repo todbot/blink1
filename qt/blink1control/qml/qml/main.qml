@@ -2860,6 +2860,19 @@ Image{
                 ScrollView { 
                     anchors.fill: parent
                     z: -1 
+                    Text {
+                        id: helpText
+                        anchors.margins: 10
+                        //anchors.fill: parent
+                        //width: parent.width-10;
+                        baseUrl: "../../help/help/"   // this works (on Mac at least)
+                        //text: "<b>Hello</b> <i>World!</i> <img src=\"ifttt1a.png\"><a href=\"index.html\">click me for help</a>"
+                        //text: "<b>Hello</b> <i>World!</i><p> <img src=\"ifttt1a.png\">"
+                        text: helpTextString
+                        textFormat: Text.RichText 
+                    }
+                }
+/*
                     WebView {
                         id: helpWebView
                         anchors.fill: parent
@@ -2875,6 +2888,7 @@ Image{
                        // }
                     }
                 }
+*/
            }
         }
     }

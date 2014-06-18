@@ -60,6 +60,10 @@ cp ${QT_BIN_PATH}/lib*dll .
 # windeploy to get rest of Qt dependencies
 ${QT_BIN_PATH}/windeployqt Blink1Control.exe
 
+
+DO_WEBKIT=0
+if [ "$DO_WEBKIT" -eq 1 ] ; then
+echo "Copying extra WebKit stuff..."
 # fix bug in windeployqt
 # see: https://bugreports.qt-project.org/browse/QTBUG-35211
 cp ${QT_BIN_PATH}/QtWebProcess.exe .
@@ -67,6 +71,7 @@ cp ${QT_BIN_PATH}/Qt5WebKitWidgets.dll .
 cp ${QT_BIN_PATH}/Qt5OpenGL.dll .
 cp ${QT_BIN_PATH}/Qt5PrintSupport.dll  .
 cp ${QT_BIN_PATH}/Qt5MultimediaWidgets.dll  .
+fi
 
 # Build a zip bundle
 cd ..

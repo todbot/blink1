@@ -115,6 +115,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     activePatternName="";
     updateBlink1();
+
+    // load help file index.html to text property of QML
+    QString helpfilepath = mac() ? "../Resources/help/help/index.html" : "./help/help/index.html";  // FIXME: better way?
+    QFile f(helpfilepath);
+    f.open(QFile::ReadOnly | QFile::Text);
+    QTextStream in(&f);
+    QString helpTextStr = in.readAll();
+    f.close();
+    //qDebug() << "helpTextStr: "<< helpTextStr;
+    viewer.rootContext()->setContextProperty("helpTextString", helpTextStr);
+
     qmlRegisterType<QsltCursorShapeArea>("CursorTools", 1, 0, "CursorShapeArea");
     viewer.rootContext()->setContextProperty("mw", this);
     viewer.setMainQmlFile(QStringLiteral("qml/qml/main.qml"));
@@ -125,8 +136,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //viewer.setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
     //viewer.setWindowFlags( Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint );
     viewer.setFlags( Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint );
+    //viewer.rootContext()->setContextProperty("viewerWidget", &viewer);  // FIXME: is this used anymore?
 
-    viewer.rootContext()->setContextProperty("viewerWidget", &viewer);
     #if 0
     viewer.setMinimumHeight(760); // for original bg.jpg
     viewer.setMaximumHeight(760);
