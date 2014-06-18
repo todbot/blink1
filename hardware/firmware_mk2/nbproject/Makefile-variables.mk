@@ -1,0 +1,20 @@
+#
+# Generated - do not edit!
+#
+# NOCDDL
+#
+CND_BASEDIR=`pwd`
+# PIC16F1455 configuration
+CND_ARTIFACT_DIR_PIC16F1455=dist/PIC16F1455/production
+CND_ARTIFACT_NAME_PIC16F1455=blink1mk2.production.hex
+CND_ARTIFACT_PATH_PIC16F1455=dist/PIC16F1455/production/blink1mk2.production.hex
+CND_PACKAGE_DIR_PIC16F1455=${CND_DISTDIR}/PIC16F1455/package
+CND_PACKAGE_NAME_PIC16F1455=blink1mk2.tar
+CND_PACKAGE_PATH_PIC16F1455=${CND_DISTDIR}/PIC16F1455/package/blink1mk2.tar
+# Copy_of_LPC_USB_Development_Kit_PIC16F1459 configuration
+CND_ARTIFACT_DIR_Copy_of_LPC_USB_Development_Kit_PIC16F1459=dist/Copy_of_LPC_USB_Development_Kit_PIC16F1459/production
+CND_ARTIFACT_NAME_Copy_of_LPC_USB_Development_Kit_PIC16F1459=blink1mk2.production.hex
+CND_ARTIFACT_PATH_Copy_of_LPC_USB_Development_Kit_PIC16F1459=dist/Copy_of_LPC_USB_Development_Kit_PIC16F1459/production/blink1mk2.production.hex
+CND_PACKAGE_DIR_Copy_of_LPC_USB_Development_Kit_PIC16F1459=${CND_DISTDIR}/Copy_of_LPC_USB_Development_Kit_PIC16F1459/package
+CND_PACKAGE_NAME_Copy_of_LPC_USB_Development_Kit_PIC16F1459=blink1mk2.tar
+CND_PACKAGE_PATH_Copy_of_LPC_USB_Development_Kit_PIC16F1459=${CND_DISTDIR}/Copy_of_LPC_USB_Development_Kit_PIC16F1459/package/blink1mk2.tar
