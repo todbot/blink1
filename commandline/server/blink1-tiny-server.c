@@ -7,8 +7,8 @@
 //
 //  localhost:8080/blink1/on
 //  localhost:8080/blink1/off
-//  localhost:8080/blink1/blink?rgb=#ff0ff&time=1000&count=3
-//  localhost:8080/blink1/fadeToRGB?rgb=#ff00ff&time=1000
+//  localhost:8080/blink1/blink?rgb=%23ff0ff&time=1.0&count=3
+//  localhost:8080/blink1/fadeToRGB?rgb=%23ff00ff&time=1.0
 //  
 //
 //
