@@ -117,13 +117,19 @@ MainWindow::MainWindow(QWidget *parent) :
     updateBlink1();
 
     // load help file index.html to text property of QML
-    QString helpfilepath = mac() ? "../Resources/help/help/index.html" : "./help/help/index.html";  // FIXME: better way?
+    QString currPath = QDir::currentPath();
+    QString appDirPath = QCoreApplication::applicationDirPath();
+    //fprintf( stderr, "currPath: %s\nappDirPath: %s\n", qPrintable(currPath),qPrintable(appDirPath));
+    QString helpfilepath = appDirPath;  
+    if( mac() ) helpfilepath += "/../Resources/help/help/index.html";  // FIXME: better way?
+    else        helpfilepath += "/help/help/index.html";
     QFile f(helpfilepath);
+    qDebug() << "opening help file: " << f.fileName();
+    //fprintf( stderr, "opening help file: %s\n", qPrintable(f.fileName()) );
     f.open(QFile::ReadOnly | QFile::Text);
     QTextStream in(&f);
     QString helpTextStr = in.readAll();
     f.close();
-    //qDebug() << "helpTextStr: "<< helpTextStr;
     viewer.rootContext()->setContextProperty("helpTextString", helpTextStr);
 
     qmlRegisterType<QsltCursorShapeArea>("CursorTools", 1, 0, "CursorShapeArea");
