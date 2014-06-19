@@ -35,8 +35,8 @@ fi
 cp ../commandline/libBlink1.dylib ${EXE_PATH}/Contents/Frameworks
 
 # zip up
-rm -f ../${APP_NAME}-mac.zip
 pushd ${BUILD_DIR}
+rm -f ../${APP_NAME}-mac.zip
 zip -r ../${APP_NAME}-mac.zip ${APP_NAME}.app
 
 echo "created ${APP_NAME}-mac.zip"

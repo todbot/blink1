@@ -91,6 +91,7 @@ fi
 
 # Build a zip bundle
 cd ..
+rm -f ${APP_DIR}-win.zip
 zip -r ${APP_DIR}-win.zip ${APP_DIR}
 
 echo "created ${APP_DIR}-win.zip"
