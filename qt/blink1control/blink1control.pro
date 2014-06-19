@@ -7,14 +7,21 @@ QT       += core gui widgets network quick qml
 #QT       += core gui widgets network
 
 #CONFIG += debug
-#CONFIG += CONSOLE
 #CONFIG += release
+#CONFIG += console
+#CONFIG -= app_bundle
 
-folder_01.source = qml/qml
-folder_01.target = qml
-folder_02.source = help
-folder_02.target = help
-DEPLOYMENTFOLDERS = folder_01 folder_02
+TARGET = Blink1Control
+TEMPLATE = app
+VERSION = v1.82
+#VERSION = $$system(git describe)  # should return tag like "v1.8"
+# but git isn't in PATH in Windows, so can't do it.
+
+qmlfolder.source = qml/qml
+qmlfolder.target = qml
+helpfolder.source = help
+helpfolder.target = help
+DEPLOYMENTFOLDERS = qmlfolder helpfolder
 
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
@@ -30,12 +37,6 @@ QML_IMPORT_PATH =
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
-
-TARGET = Blink1Control
-TEMPLATE = app
-VERSION = v1.81
-#VERSION = $$system(git describe)  # should return tag like "v1.8"
-# but git isn't in PATH in Windows, so can't do it.
 
 
 SOURCES += main.cpp\
@@ -95,10 +96,14 @@ macx {
 win32 {
     CONFIG(release, debug|release):  MYAPPDIR=$$OUT_PWD/release
     CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
-    #message( "MYAPPDIR = $$MYAPPDIR" )
+	#message( "MYAPPDIR = $$MYAPPDIR , DESTDIR = $(DESTDIR), helpfolder = $$helpfolder" )
     BLINK1LIBPATH = $$BLINK1_LIB_DIR/blink1-lib.dll
     BLINK1LIBPATH ~= s,/,\\,g   # Windows-ify the path
-    QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $(DESTDIR)
+    MYAPPDIR ~= s,/,\\,g   # Windows-ify the path
+    QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
+	# the below doesn't work
+	#QMAKE_POST_LINK += & $(MKDIR) help\help
+    #QMAKE_POST_LINK += & $(COPY_DIR) help\help $$MYAPPDIR
 }
 
 
