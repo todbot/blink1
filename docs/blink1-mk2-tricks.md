@@ -46,7 +46,7 @@ Note the "-l" option works with most, but not all, commands in blink1-tool.
 
 	    goto :while
     )
-endlocal
+    endlocal
 
 
 Turn all plugged-in blink(1)s to the same color
