@@ -20,7 +20,7 @@ Note the "-l" option works with most, but not all, commands in blink1-tool.
       done
 
 
-Turn on one LED, then the other  |  Using BATCH FILE in Windows  
+Turn on one LED, then the other  |  Using Batch File in Windows  
 ------------------------------------------------------
 This examples uses the new "-l" option to specify which LED to light.
 The default is "-l 0", which means all LEDs on a single blink(1) mk2.
