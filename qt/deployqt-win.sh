@@ -65,7 +65,9 @@ cp -r ${HELP_DIR} help
 cp ${QT_BIN_PATH}/lib*dll .
 
 #WINDEPLOYQT_OPTS=" --qmldir ${QML_DIR}"
-WINDEPLOYQT_OPTS+=" --no-webkit2 --no-translations"
+WINDEPLOYQT_OPTS+=" --no-translations"
+WINDEPLOYQT_OPTS+=" --no-webkit2"
+WINDEPLOYQT_OPTS+=" --no-webkit"
 #WINDEPLOYQT_OPTS+=" --libdir ../../../commandline/blink1-lib.dll"
 #WINDEPLOYQT_OPTS+=" --libdir ${QT_BIN_PATH}"
 #WINDEPLOYQT_OPTS+=" --no-sql --no-system-d3d-compiler"
@@ -84,6 +86,8 @@ cp ${QT_BIN_PATH}/Qt5OpenGL.dll .
 cp ${QT_BIN_PATH}/Qt5PrintSupport.dll  .
 cp ${QT_BIN_PATH}/Qt5MultimediaWidgets.dll  .
 fi
+
+#exit 0   # uncomment for faster testing 
 
 # Build a zip bundle
 cd ..

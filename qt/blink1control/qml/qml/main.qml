@@ -2,7 +2,7 @@ import QtQuick 2.0
 import "content"
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
-import QtWebKit 3.0
+//import QtWebKit 3.0
 //import QtWebKit.experimental 1.0
 Image{
     id: mainWindow

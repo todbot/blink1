@@ -134,22 +134,10 @@ MainWindow::MainWindow(QWidget *parent) :
     qmlRegisterType<QsltCursorShapeArea>("CursorTools", 1, 0, "CursorShapeArea");
     viewer.rootContext()->setContextProperty("mw", this);
     viewer.setMainQmlFile(QStringLiteral("qml/qml/main.qml"));
-    // using OS titlebar now so don't need this?
-    //viewer.setFlags(Qt::WindowMaximizeButtonHint | Qt::MSWindowsFixedSizeDialogHint |Qt::WindowMinimizeButtonHint |Qt::FramelessWindowHint);
-    //viewer.setFlags(Qt::Tool   | Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
-    //viewer.setFlags(Qt::Dialog  | Qt::WindowTitleHint | Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
-    //viewer.setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
-    //viewer.setWindowFlags( Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint );
-    viewer.setFlags( Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint );
-    //viewer.rootContext()->setContextProperty("viewerWidget", &viewer);  // FIXME: is this used anymore?
+    viewer.setFlags( Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
 
-    #if 0
-    viewer.setMinimumHeight(760); // for original bg.jpg
-    viewer.setMaximumHeight(760);
-    #else
     viewer.setMinimumHeight(717); // for bg-new.jpg
     viewer.setMaximumHeight(717);
-    #endif
     viewer.setMinimumWidth(1185);
     viewer.setMaximumWidth(1185);
     viewer.setTitle("Blink(1) Control");
@@ -195,7 +183,6 @@ MainWindow::MainWindow(QWidget *parent) :
     
     qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
 }
-
 
 // for testing the above connect()s
 
