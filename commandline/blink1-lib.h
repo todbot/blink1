@@ -50,7 +50,10 @@ typedef struct usbDevice   blink1_device; /**< opaque blink1 structure */
 typedef struct hid_device_ blink1_device; /**< opaque blink1 structure */
 #endif
 
-//static const char blink1lib_version[] = BLINK1_VERSION;
+
+//
+// -------- BEGIN PUBLIC API ----------
+//
 
 /**
  * Scan USB for blink(1) devices.
@@ -209,7 +212,7 @@ int blink1_serialnumwrite(blink1_device *dev, uint8_t* serialnumstr);
 
 /** 
  * Tickle blink1 serverdown functionality.
- * @note 'st' param  for mk2 firmware only
+ * @note 'st' param for mk2 firmware only
  * @param on  enable or disable: enable=1, disable=0
  * @param millis milliseconds to wait until triggering 
  * @param stay lit (st=1) or set off() (st=0)
