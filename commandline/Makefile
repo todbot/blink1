@@ -40,6 +40,8 @@
 #   - No -ldl on FreeBSD necessary.
 #   - For FreeBSD versions < 10, iconv is a package that needs to be installed;
 #     in this case it lives in /usr/local/lib/
+#   - On FreeBSD 8.3, this command builds blink1-tool: 
+#   - "cd blink1/commandline && USBLIB_TYPE=HIDDATA gmake"
 #
 # Linux Ubuntu 32-bit cross-compile on 64-bit
 #   To build 32-bit on 64-bit Ubuntu, try a chrooted build:
