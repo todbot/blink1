@@ -53,7 +53,7 @@ typedef struct hid_device_ blink1_device; /**< opaque blink1 structure */
 //static const char blink1lib_version[] = BLINK1_VERSION;
 
 /**
- * Scan USB for blink(1) devices
+ * Scan USB for blink(1) devices.
  * @return number of devices found
  */
 int          blink1_enumerate();
@@ -182,10 +182,29 @@ int blink1_readRGB(blink1_device *dev, uint16_t* fadeMillis,
 int blink1_readRGB_mk1(blink1_device *dev, uint16_t* fadeMillis,
                        uint8_t* r, uint8_t* g, uint8_t* b);
 
+/** 
+ * Read eeprom on mk1 devices
+ * @note For mk1 devices only
+ */
 int blink1_eeread(blink1_device *dev, uint16_t addr, uint8_t* val);
+/** 
+ * Write eeprom on mk1 devices
+ * @note For mk1 devices only
+ */
 int blink1_eewrite(blink1_device *dev, uint16_t addr, uint8_t val);
 
+/**
+ * Read serial number from mk1 device. Does not work.
+ * @note Use USB descriptor serial number instead.
+ * @note for mk1 devices only.  
+ * @note does not work.
+ */
 int blink1_serialnumread(blink1_device *dev, uint8_t** serialnumstr);
+/**
+ * Write serial number to mk1 device. Does not work.
+ * @note for mk1 devices only.  
+ * @note does not work.
+ */
 int blink1_serialnumwrite(blink1_device *dev, uint8_t* serialnumstr);
 
 /** 
@@ -271,39 +290,98 @@ int blink1_testtest(blink1_device *dev);
 
 char *blink1_error_msg(int errCode);
 
+/*
+ * Enable blink1-lib gamma curve.
+ */
 void blink1_enableDegamma();
+
+/*
+ * Disable blink1-lib gamma curve.
+ * @note should probably always have it disabled
+ */
 void blink1_disableDegamma();
 int blink1_degamma(int n);
 
 /**
- * Simple wrapper for cross-platform millisecond delay
+ * Simple wrapper for cross-platform millisecond delay.
  * @param delayMillis number of milliseconds to wait
  */
 void blink1_sleep(uint16_t delayMillis);
 
 /**
- * Vendor ID for blink1 devices
+ * Vendor ID for blink1 devices.
  * @return blink1 VID
  */
 int blink1_vid(void);  // return VID for blink(1)
 /**
- * Product ID for blink1 devices
+ * Product ID for blink1 devices.
  * @return blink1 PID
  */
 int blink1_pid(void);  // return PID for blink(1)
 
 
+/**
+ * Return platform-specific USB path for given cache index.
+ * @param i cache index
+ * @return path string
+ */
 const char*  blink1_getCachedPath(int i);
+/**
+ * Return bilnk1 serial number for given cache index.
+ * @param i cache index
+ * @return 8-hexdigit serial number as string
+ */
 const char*  blink1_getCachedSerial(int i);
+/**
+ * Return cache index for a given platform-specific USB path.
+ * @param path platform-specific path string
+ * @return cache index or -1 if not found
+ */
 int          blink1_getCacheIndexByPath( const char* path );
+/**
+ * Return cache index for a given blink1 serial number.
+ * @param path platform-specific path string
+ * @return cache index or -1 if not found
+ */
 int          blink1_getCacheIndexBySerial( const char* serial );
+/**
+ * Return cache index for a given blink1_device object.
+ * @param dev blink1 device to lookup
+ * @return cache index or -1 if not found
+ */
 int          blink1_getCacheIndexByDev( blink1_device* dev );
+/**
+ * Clear the blink1 device cache for a given device.
+ * @param dev blink1 device 
+ * @return cache index that was cleared, or -1 if not found
+ */
 int          blink1_clearCacheDev( blink1_device* dev );
 
+/**
+ * Return serial number string for give blink1 device.
+ * @param dev blink device to lookup
+ * @return 8-hexdigit serial number string
+ */
 const char*  blink1_getSerialForDev(blink1_device* dev);
+/**
+ * Return number of entries in blink1 device cache.
+ * @note This is the number of devices found with blink1_enumerate()
+ * @return number of cache entries
+ */
 int          blink1_getCachedCount(void);
 
+/**
+ * Returns if device at cache index i is a mk2
+ *
+ * @return mk2=1, mk1=0
+ */
 int          blink1_isMk2ById(int i);
+
+/**
+ * Returns if given blink1_device is a mk2 or not
+ * @param dev blink1 device to check
+ * @return mk2=1, mk1=0
+ */
 int          blink1_isMk2(blink1_device* dev);
 
 
