@@ -136,7 +136,7 @@ is done within blink1-tool, not in the blink(1) device.
       done
 
 
-Infinite Rainbow Using BATCH FILE in Windows   
+Infinite Rainbow Using Batch file in Windows   
 ------------------------------------------------------
 Use the new "--hsb" command to specify colors by HSB (hue, saturation, brightness)
 instead of the standard "--rgb" command.  Note that the HSB-to-RGB conversion
