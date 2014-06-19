@@ -96,13 +96,13 @@ macx {
 win32 {
     CONFIG(release, debug|release):  MYAPPDIR=$$OUT_PWD/release
     CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
-	#message( "MYAPPDIR = $$MYAPPDIR , DESTDIR = $(DESTDIR), helpfolder = $$helpfolder" )
+    #message( "MYAPPDIR = $$MYAPPDIR , DESTDIR = $(DESTDIR), helpfolder = $$helpfolder" )
     BLINK1LIBPATH = $$BLINK1_LIB_DIR/blink1-lib.dll
     BLINK1LIBPATH ~= s,/,\\,g   # Windows-ify the path
     MYAPPDIR ~= s,/,\\,g   # Windows-ify the path
     QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
-	# the below doesn't work
-	#QMAKE_POST_LINK += & $(MKDIR) help\help
+    # the below doesn't work
+    #QMAKE_POST_LINK += & $(MKDIR) help\help
     #QMAKE_POST_LINK += & $(COPY_DIR) help\help $$MYAPPDIR
 }
 

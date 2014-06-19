@@ -33,7 +33,6 @@ enum {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    //closing=true;
     fromPattern=false;
     mk2=false;
     blinkStatus="";
@@ -124,7 +123,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if( mac() ) helpfilepath += "/../Resources/help/help/index.html";  // FIXME: better way?
     else        helpfilepath += "/help/help/index.html";
     QFile f(helpfilepath);
-    qDebug() << "opening help file: " << f.fileName();
+    //qDebug() << "opening help file: " << f.fileName();
     //fprintf( stderr, "opening help file: %s\n", qPrintable(f.fileName()) );
     f.open(QFile::ReadOnly | QFile::Text);
     QTextStream in(&f);
@@ -178,22 +177,34 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setColorToBlink(cc,400);  // give a default non-black color to let people know it works
 
+    //
+    // testing what visiblitity we have into window handling
+    //
     //connect(&viewer,SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosingSlot(QQuickCloseEvent*)));
     //if(mac()) connect(&viewer,SIGNAL(visibleChanged(bool)),this,SLOT(viewerVisibleChangedSlot(bool)));
     // instead of above, just watch for when app is quitting, 
     // and use static bool to make sure we don't quit twice
     //connect( qApp, SIGNAL(aboutToQuit()), this, SLOT(quit()) );
-    /*
-    connect( &viewer, SIGNAL(changeEvent(QEvent *)), this, SLOT(viewerChangeEvent(QEvent*)) );
-    connect( &viewer, SIGNAL(statusChanged(QQuickView::Status)), this, SLOT(viewerStatusChanged(QQuickView::Status)) );
-    connect( &viewer, SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosing(QQuickCloseEvent*)));
-    connect( &viewer, SIGNAL(windowStateChanged(Qt::WindowState)),this,SLOT(viewerWindowStateChanged(Qt::WindowState)));
+    
     connect( &viewer, SIGNAL(activeChanged()),this,SLOT(viewerActiveChanged()));
-    connect( &viewer, SIGNAL(visibilityChanged(QWindow::Visibility)), this, SLOT(viewerVisibilityChanged(QWindow::Visibility)) );
-    */
+    //connect( &viewer, SIGNAL(changeEvent(QEvent *)), this, SLOT(viewerChangeEvent(QEvent*)) );
+    //connect( &viewer, SIGNAL(statusChanged(QQuickView::Status)), this, SLOT(viewerStatusChanged(QQuickView::Status)) );
+    //connect( &viewer, SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosing(QQuickCloseEvent*)));
+    //connect( &viewer, SIGNAL(windowStateChanged(Qt::WindowState)),this,SLOT(viewerWindowStateChanged(Qt::WindowState)));
+    //connect( &viewer, SIGNAL(visibilityChanged(QWindow::Visibility)), this, SLOT(viewerVisibilityChanged(QWindow::Visibility)) );
+    
     qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
-    //this->setAttribute(Qt::WA_DeleteOnClose);  // what's this?
 }
+
+
+// for testing the above connect()s
+
+// called when window has focus
+void MainWindow::viewerActiveChanged() {
+    qDebug() << "viewerActiveChanged: " << viewer.isActive();
+    saveSettings();
+}
+
 /*
 void MainWindow::changeEvent(QEvent* e)
 {
@@ -204,10 +215,6 @@ void MainWindow::changeEvent(QEvent* e)
 void MainWindow::viewerVisibilityChanged(QWindow::Visibility visibility) {
     qDebug() << "viewerVisibilityChanged: " << visibility;
     
-}
-// called when window has focus
-void MainWindow::viewerActiveChanged() {
-    qDebug() << "viewerActiveChanged: " << viewer.isActive();
 }
 // called when minimize is finished
 void MainWindow::viewerWindowStateChanged(Qt::WindowState state) {
@@ -226,21 +233,16 @@ void MainWindow::viewerChangeEvent(QEvent* event) {
 void MainWindow::viewerClosing(QQuickCloseEvent*event){
     qDebug() << "viewerClosing: "<< event ;
 }
-*/
-/*
+
 // these three not needed now we're just watching QApp::aboutToQuit() and using quit() for everything
-void MainWindow::viewerClosingSlot(QQuickCloseEvent*){
-    qDebug() << "viewerClosingSlot()";
-    quit();
+void MainWindow::viewerClosingSlot(QQuickCloseEvent* event){
+    qDebug() << "viewerClosingSlot: "<< event;
 }
 void MainWindow::viewerVisibleChangedSlot(bool v){
-    qDebug() << "viewerVisibleChangedSlot(): "<< v;
-    //if(!v && closing){
-    //quit();
-    //}
+    qDebug() << "viewerVisibleChangedSlot: "<< v;
 }
 void MainWindow::markViewerAsClosing(){
-    //closing=false;
+    qDebug() << "markViewerAsClosing: ";
 }
 */
 
@@ -385,7 +387,7 @@ void MainWindow::updateInputs()
     {
         emailsIterator->next();
         QString mailname=emailsIterator->key();
-        qDebug()<<mailname;
+        qDebug() << "updateInputs: "<< mailname;
         addToLog(mailname);
         if(emails.value(mailname)->getFreqCounter()==0){
             emails.value(mailname)->checkMail();
@@ -400,7 +402,7 @@ void MainWindow::updateInputs()
     {
         hardwaresIterator->next();
         QString name=hardwaresIterator->key();
-        qDebug()<<name;
+        qDebug() << "updateInputs: " << name;
         addToLog(name);
         if(hardwareMonitors.value(name)->getFreqCounter()==0){
             hardwareMonitors.value(name)->checkMonitor();
@@ -486,7 +488,6 @@ MainWindow::~MainWindow()
     qDebug() << "destructor";
     quit();
 
-    //closing = false; // for viewerVisibleChangedSlot()
     delete minimizeAction;
     delete restoreAction;
     delete quitAction;
@@ -547,6 +548,7 @@ void MainWindow::quit()
 
 void MainWindow::saveSettings()
 {
+    qDebug() << "saveSettings()";
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");
 
     settings.setValue("iftttKey", iftttKey);//sText);
@@ -609,9 +611,9 @@ void MainWindow::loadSettings()
 
     QString sIftttKey = settings.value("iftttKey", "").toString();
     QRegExp re("^[a-f0-9]+$");
-    qDebug()<<sIftttKey;
+    qDebug() << "loadSettings: " << sIftttKey << re.exactMatch(sIftttKey.toLower());
     addToLog(sIftttKey);
-    qDebug()<<re.exactMatch(sIftttKey.toLower());
+
     if(sIftttKey=="" || sIftttKey=="none" || !re.exactMatch(sIftttKey.toLower())){
         sIftttKey="";
         srand(time(NULL));
@@ -708,7 +710,7 @@ void MainWindow::loadSettings()
     }
 }
 
-
+// single point of entry for updating the blink1 device
 void MainWindow::updateBlink1()
 {
     bool setBlink1 = false;
@@ -730,7 +732,7 @@ void MainWindow::updateBlink1()
             rgbCycle=(rgbCycle+1)%3;
             rgbCounter=0;
         }
-        rgbCounter+=15;
+        rgbCounter += 15;
         fadeSpeed = 300;
         setBlink1 = true;
         QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
@@ -868,12 +870,6 @@ void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
     if( reason == QSystemTrayIcon::Trigger && !mac() ) { 
         showNormal();
     }
-    //switch(reason) {
-    //case QSystemTrayIcon::Trigger:
-        //trayIconMenu->popup(QCursor::pos());  // no, causes dupes on Mac, menu that doesn't go away on Win
-        //Break;
-    // }
-
 }
 
 void MainWindow::on_buttonRGBcycle_clicked()
@@ -979,10 +975,8 @@ void MainWindow::changeMinimizeOption(){
     startmin=!startmin;
 }
 void MainWindow::showMinimize(){
-    //closing=false;
     viewer.showMinimized();
     viewer.hide();
-    //closing=true;
 }
 void MainWindow::showNormal(){
     qDebug() << "showNormal";

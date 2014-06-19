@@ -177,18 +177,20 @@ public slots:
 
     void addRecentEvent(int date, QString name, QString from);
 
+
+    void viewerActiveChanged();
     /*
     void changeEvent(QEvent * event);
     void viewerVisibilityChanged(QWindow::Visibility visibility);
-    void viewerActiveChanged();
     void viewerWindowStateChanged(Qt::WindowState state);
     void viewerClosing(QQuickCloseEvent*event);
     void viewerChangeEvent(QEvent* event);
     void viewerStatusChanged(QQuickView::Status status);
+
+    void viewerClosingSlot(QQuickCloseEvent*);
+    void viewerVisibleChangedSlot(bool);
+    void markViewerAsClosing();
     */
-    //void viewerClosingSlot(QQuickCloseEvent*);
-    //void viewerVisibleChangedSlot(bool);
-    //void markViewerAsClosing();
 
     void add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
     void edit_mail(QString oldname, QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser);
