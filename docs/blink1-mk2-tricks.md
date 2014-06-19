@@ -1,5 +1,5 @@
 
-blink(1) mk2 blink1-tool tricks
+blink(1) mk2 blink1-tool tricks 
 ===============================
 
 Examples of things you can do with blink(1) mk2
@@ -18,6 +18,35 @@ Note the "-l" option works with most, but not all, commands in blink1-tool.
         blink1-tool -l 1 --blue && blink1-tool -l 2 --red
         sleep 1
       done
+
+
+Turn on one LED, then the other  |  Using BATCH FILE in Windows  
+------------------------------------------------------
+This examples uses the new "-l" option to specify which LED to light.
+The default is "-l 0", which means all LEDs on a single blink(1) mk2.
+Note the "-l" option works with most, but not all, commands in blink1-tool.
+
+    @echo off
+    REM Select your path to blink1-tool.exe 
+
+    SET PATH=%PATH%;c:\portable
+
+    set /a "x = 0"
+    :while
+    if %x% leq 7 (
+        echo " %x%
+        set /a "x = x + 1"
+	    blink1-tool.exe -l 1 --red  
+	    blink1-tool.exe -l 2 --blue
+	    timeout /T 1 > NUL
+
+	    blink1-tool.exe -l 1 --blue
+	    blink1-tool.exe -l 2 --red
+	    timeout /T 1 > NUL
+
+	    goto :while
+    )
+endlocal
 
 
 Turn all plugged-in blink(1)s to the same color
@@ -105,6 +134,26 @@ is done within blink1-tool, not in the blink(1) device.
           sleep 0.3
         done
       done
+
+
+Infinite Rainbow Using BATCH FILE in Windows   
+------------------------------------------------------
+Use the new "--hsb" command to specify colors by HSB (hue, saturation, brightness)
+instead of the standard "--rgb" command.  Note that the HSB-to-RGB conversion
+is done within blink1-tool, not in the blink(1) device.
+
+
+    @echo off
+    REM Select your path to blink1-tool.exe 
+    REM Use millisleep.exe  from http://www.elifulkerson.com/projects/millisleep.php to slow down to 0.3 seconds
+        SET PATH=%PATH%;c:\portable
+        set /a "x = 0"
+        :while       
+            set /a "x = x + 16"
+	        blink1-tool --hsb %x%,255,255
+	        millisleep 300 > NUL
+	    goto :while    
+    endlocal
 
 
 Write a rainbow color pattern
