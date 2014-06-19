@@ -15,6 +15,7 @@
 #
 # 2014 Tod E. Kurt, http://thingm.com/
 #
+#set -x # echo on
 
 # name of resulting directory you want, containing the application
 APP_DIR=Blink1Control
@@ -25,6 +26,8 @@ EXE_PATH=../../build-blink1control-Desktop_Qt_5_2_1_MinGW_32bit-Release/release/
 
 # where QML files live
 QML_DIR=../../blink1control/qml
+# where Help files live
+HELP_DIR=../../blink1control/help
 
 # Where "windeployqt.exe" lives (and the mingw libs)
 QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
@@ -51,14 +54,23 @@ cp ${EXE_PATH} .
 # copy blink1-lib
 cp ${BLINK1_LIB_PATH} .
 
-# copy qml files  (seems like windeployqt should do this, but it doesn't)
+# copy qml files  (seems like windeployqt should do this, but it doesn't do it, correctly)
 cp -r ${QML_DIR} .
+
+# copy help files (this is a dep in blink1control.pro, why isn't it taken care of?)
+mkdir help
+cp -r ${HELP_DIR} help 
 
 # copy mingw libs (seems like windeployqt should do this too)
 cp ${QT_BIN_PATH}/lib*dll .
 
+#WINDEPLOYQT_OPTS=" --qmldir ${QML_DIR}"
+WINDEPLOYQT_OPTS+=" --no-webkit2 --no-translations"
+#WINDEPLOYQT_OPTS+=" --libdir ../../../commandline/blink1-lib.dll"
+#WINDEPLOYQT_OPTS+=" --libdir ${QT_BIN_PATH}"
+#WINDEPLOYQT_OPTS+=" --no-sql --no-system-d3d-compiler"
 # windeploy to get rest of Qt dependencies
-${QT_BIN_PATH}/windeployqt Blink1Control.exe
+${QT_BIN_PATH}/windeployqt ${WINDEPLOYQT_OPTS}  Blink1Control.exe
 
 
 DO_WEBKIT=0
