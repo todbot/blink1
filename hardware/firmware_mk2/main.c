@@ -38,6 +38,9 @@
  * pin 16 - VDD            - +5V on USB, 10uF & 100nF cap to Gnd
  *
  *
+ * Part of the open source hardware blink(1) project. 
+ * See https://github.com/todbot/blink1/ for details and licensing
+ *
  * 2013, Tod E. Kurt, http://thingm.com/
  *
  ********************************************************************/
