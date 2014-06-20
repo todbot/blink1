@@ -303,6 +303,7 @@ private:
     bool dockIcon;
     bool startmin;
     bool enableServer;
+    int blink1Index;
     QString getTimeFromInt(int t);
     bool mk2;
     bool logging;

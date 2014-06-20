@@ -86,12 +86,14 @@ MainWindow::MainWindow(QWidget *parent) :
     blink1_disableDegamma();  // for mk2 only
 
     int n = blink1_enumerate();
-    blink1dev =  blink1_open();
+    //blink1dev =  blink1_open();
+    blink1dev = blink1_openById( blink1Index );
 
-    if( n ) {
+    if( blink1dev ) {
         char ser[10];
         char iftttkey2[20];
-        sprintf(ser,"%s",blink1_getCachedSerial(0));
+        sprintf(ser,"%s",blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev)));
+        //sprintf(ser,"%s",blink1_getCachedSerial(0));
         sprintf(iftttkey2, "%s",ser);
         blinkStatus="blink(1) connected";
         blinkKey=ser;
@@ -267,17 +269,21 @@ void MainWindow::setColorFromDataInput(QColor color)
 
 void MainWindow::updateInputs()
 {
-    if(blink1dev!=NULL){
-        blink1_close(blink1dev);
-        blink1dev=NULL;
-    }
-    blink1_disableDegamma();
+    qDebug() << "updateInputs()";
+    //if(blink1dev!=NULL){
+    blink1_close(blink1dev);  // blink1_close checks for null
+    blink1dev=NULL;
+    //}
+    blink1_disableDegamma();  // FIXME: why is this being done here in updateInputs()?
+    // FIXME: the below is copy-n-pasted from what's in the constructor
     int n=blink1_enumerate();
-    blink1dev =  blink1_open();
-    if( n ) {
+    //blink1dev =  blink1_open();
+    blink1dev =  blink1_openById( blink1Index );
+    if( blink1dev ) {
         char ser[10];
         char iftttkey2[20];
-        sprintf(ser,"%s",blink1_getCachedSerial(0));
+        //sprintf(ser,"%s",blink1_getCachedSerial(0)); 
+        sprintf(ser,"%s",blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev)));
         sprintf(iftttkey2, "%s",ser);
         blinkStatus="blink(1) connected";
         blinkKey=ser;
@@ -304,11 +310,13 @@ void MainWindow::updateInputs()
         inputsIterator->next();
         key = inputsIterator->key();
         type = inputs[key]->type();
-
+        
         if(type.toUpper() == "URL")
         {
             if(inputs[key]->freqCounter()==0)//inputTimerCounter == 0)
             {
+                qDebug() << "type: URL, freqcounter==0";
+
                 DataInput *dI = new DataInput(this);
                 connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
                 connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
@@ -544,6 +552,8 @@ void MainWindow::saveSettings()
     settings.setValue("startmin",startmin);
     settings.setValue("server",serverAction->isChecked());
     settings.setValue("logging",logging);
+    settings.setValue("blink1Index", QString::number(blink1Index,16) );
+
     // save patterns
     QJsonArray qarrp;
     foreach (QString nm, patterns.keys() ) {  // crashed here once?
@@ -612,11 +622,21 @@ void MainWindow::loadSettings()
             }
     }
     iftttKey=sIftttKey;
-    autorun=settings.value("autorun","").toBool();
-    dockIcon=settings.value("dockIcon",true).toBool();
-    startmin=settings.value("startmin","").toBool();
-    enableServer=settings.value("server","").toBool();
-    logging=settings.value("logging","").toBool();
+    autorun      = settings.value("autorun","").toBool();
+    dockIcon     = settings.value("dockIcon",true).toBool();
+    startmin     = settings.value("startmin","").toBool();
+    enableServer = settings.value("server","").toBool();
+    logging      = settings.value("logging","").toBool();
+
+    QString blink1IndexStr = settings.value("blink1Index","").toString();
+    qDebug() << "blink1IndexStr: "<< blink1IndexStr;
+    bool ok;
+    blink1Index  = blink1IndexStr.toLong(&ok,16);
+    if( !ok ) {
+        blink1Index = blink1IndexStr.toLong(&ok,10);
+        if( !ok ) blink1Index = 0;
+    }
+    qDebug() << "blink1Index: " << QString::number(blink1Index,16);
 
     // read only patterns
     QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
