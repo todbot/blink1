@@ -135,7 +135,8 @@ int blink1_write( blink1_device* dev, void* buf, int len)
     int rc = hid_send_feature_report( dev, buf, len );
     // FIXME: put this in an ifdef?
     if( rc==-1 ) {
-        fprintf(stderr, "blink1_write error: %ls\n", hid_error(dev));
+        //fprintf(stderr, "blink1_write error: %ls\n", hid_error(dev));
+        LOG("blink1_write error: %ls\n", hid_error(dev));
     }
     return rc;
 }
