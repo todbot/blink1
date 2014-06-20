@@ -22,6 +22,8 @@ Supported platforms:
 
 In general, the `blink1-tool` builds as a static binary where possible,
 eliminating the need for shared library dependencies on the target.
+However, static builds can be problematic for some systems with "different" 
+libusb implementations, so doing "make EXEFLAGS=" will generally build a non-static version.
 
 
 
