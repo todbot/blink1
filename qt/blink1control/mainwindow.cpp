@@ -85,8 +85,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     blink1_disableDegamma();  // for mk2 only
 
-    int n = blink1_enumerate();
+    //int n = blink1_enumerate();
     //blink1dev =  blink1_open();
+    blink1_enumerate();
     blink1dev = blink1_openById( blink1Index );
 
     if( blink1dev ) {
@@ -276,8 +277,9 @@ void MainWindow::updateInputs()
     //}
     blink1_disableDegamma();  // FIXME: why is this being done here in updateInputs()?
     // FIXME: the below is copy-n-pasted from what's in the constructor
-    int n=blink1_enumerate();
+    //int n=blink1_enumerate();
     //blink1dev =  blink1_open();
+    blink1_enumerate();
     blink1dev =  blink1_openById( blink1Index );
     if( blink1dev ) {
         char ser[10];
