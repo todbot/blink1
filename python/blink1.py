@@ -6,7 +6,7 @@ import re
 import sys
 import uuid
 
-debugimport=True
+debugimport=False
 use_pyusb=False
 try:
     from blink1_pyusb import Blink1 as Blink1_pyusb
