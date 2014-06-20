@@ -432,7 +432,9 @@ int blink1_savePattern( blink1_device *dev )
     buf[6] = 0x00;
     buf[7] = 0x00;
     int rc = blink1_write(dev, buf, sizeof(buf) );
-    return rc;
+    // note rc will always return -1 
+    // because of issue with flash programming timing out USB 
+    return 0; // assume success
 }
 
 //
@@ -556,40 +558,3 @@ void blink1_sleep(uint16_t millis)
 }
 
 
-
-/*
-
-//
-int blink1_nightlight(blink1_device *dev, uint8_t on)
-{
-    char buf[8] = { blink1_report_id, 'N', on };
-
-    int rc = blink1_write(dev, buf, sizeof(buf) );
-    
-    return rc;
-}
-
-
-//
-int blink1_command(blink1_device* dev, int num_send, int num_recv,
-                       uint8_t* buf_send, uint8_t* buf_recv )
-{
-    if( dev==NULL ) {
-        return -1; // BLINK1_ERR_NOTOPEN;
-    }
-    int err = 0;
-    if( (err = usbhidSetReport(dev, (char*)buf_send, num_send)) != 0) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
-        return err;
-    }
-     
-    if( num_recv > 0 ) { 
-        int len = num_recv;
-        if((err = usbhidGetReport(dev, 0, (char*)buf_recv, &len)) != 0) {
-            fprintf(stderr,"error reading data: %s\n",blink1_error_msg(err));
-        } else {  // it was good
-        }
-    }
-    return err;
-}
-*/
