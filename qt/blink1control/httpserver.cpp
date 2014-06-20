@@ -1,6 +1,8 @@
 #include "httpserver.h"
 #include "mainwindow.h"
 
+#include <QSettings>
+
 HttpServer::HttpServer(QWidget *parent) :
     QObject(parent)
 {
@@ -59,10 +61,12 @@ void HttpServer::startRead(){
 
         // command parsing
         if( cmd == "/id" ) {
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");  // FIXME:
             resp.insert("blink_id",mw->getIftttKey());
             QJsonArray ja=mw->getCatchedBlinkId();
             resp.insert("blink1_serialnums",ja);
             resp.insert("blink1control_version", QString(BLINK1CONTROL_VERSION) );
+            resp.insert("blink1control_config", settings.fileName() );
             resp.insert("status",QString("blink1 id"));
         }
         else if( cmd == "/regenerateblink1id" ) {
