@@ -13,7 +13,7 @@ QT       += core gui widgets network quick qml
 
 TARGET = Blink1Control
 TEMPLATE = app
-VERSION = v1.82
+VERSION = v1.83
 #VERSION = $$system(git describe)  # should return tag like "v1.8"
 # but git isn't in PATH in Windows, so can't do it.
 
