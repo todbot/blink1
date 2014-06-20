@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>help</title>
+<style type="text/css">
+body, p, li {
+  font-family: arial,helvetica,sans-serif;
+}
+</style></head><body>
+
+<h1>Blink1Control Help</h1><br>
+Blink1Control is the primary user-level application for controlling blink(1). <br>
+It is an event-based system, where events on your computer or on <br>
+the Net (via IFTTT!) can trigger color patterns on the blink(1).<br>
+<br>
+<span style="font-weight: bold;">Help Topics:</span><br>
+<ul>
+  <li>QuickStart: Connecting IFTTT to your blink(1)</li>
+  <li>Application Layout</li>
+  <li>Tray / Menu Icon functions</li>
+</ul>
+
+
+<h2>QuickStart: Connecting IFTTT to your blink(1)</h2>
+IFTTT is an Internet-based service that connects other Net-based systems together.<br>
+IFTTT communicates with Blink1Control via "Rule names": IFTTT sends an event with<br>
+a given rule name and Blink1Control looks for events with matching rule names.&nbsp; <br>
+If the rule names match, Blink1Control will play the color pattern you've chosen.<br>
+<br>
+On the IFTTT site, the rule name is specified in the blink(1) action of your recipe.<br>
+<br>
+The general steps to hook IFTTT to Blink1Control are:<br>
+
+<ol>
+  <li>Get IFTTT Key from Blink1Control</li>
+  <li>Activate the blink(1) channel on IFTTT</li>
+  <li>Create an IFTTT recipe </li>
+  <li>Configure Blink1Control to watch for recipe</li>
+</ol>
+
+
+<h3>1. Get IFTTT Key from Blink1Control</h3>
+On the left side of Blink1Control is the "Device" area with the "IFTTT key".&nbsp; <br>
+The IFTTT key is 16 hexadecimal characters.<br>
+Double-click the IFTTT key and press Ctrl-C / Cmd-C to copy it to your clipboard.<br>
+This number is what IFTTT uses to uniquely identify your blink(1).<br>
+<br>
+<img src="blink1control-iftttkeya.png" alt="">
+<h3>2. Activate blink(1) Channel on IFTTT</h3>
+Visit IFTTT.com and create an account for free.<br>
+Click on "Channels" then the "blink(1)" channel.<br>
+Click the Activate button and type in the IFTTT key from Blink1Control.<br>
+Click Activate once more and your blink(1) channel is now set up.<br>
+<br>
+<img src="ifttt1a.png" alt=""><img src="ifttt2a.png" alt=""><br>
+<img src="ifttt3a.png" alt=""><img src="ifttt4a.png" alt=""><br>
+<h3>3. Create an IFTTT Recipe</h3>
+To test everything out, let's create a really simple recipe where IFTTT listens for email from you <br>
+and then sends an event to your blink(1).<br>
+<br>
+Go to "My Recipes" on IFTTT and click "Create a Recipe".&nbsp; <br>
+Pick the "Email" trigger (the "this") and then "blink(1)" action (the "that").<br>
+<br>
+<img src="ifttt-recipe1a.png" alt=""><img src="ifttt-recipe2a.png" alt=""><br>
+<br>
+<img src="ifttt-recipe3a.png" alt=""><img src="ifttt-recipe4a.png" alt=""><br>
+For the blink(1) action, there's a single field called "Rule name".&nbsp; This is the important bit.<br>
+Make up a rule name that's short and indicates what this recipe is about.&nbsp; In this example, it's "<span style="font-weight: bold;">my_first_rule</span>".<br>
+This is what you will also type in Blink1Control later.<br>
+<img src="ifttt-recipe5a.png" alt=""><br>
+Click on "Create Action" and then "Create Recipe" and you are done on the IFTTT site.<br>
+<br>
+<br>
+<h3>4. Configure Blink1Control to watch for recipe<br>
+</h3>
+Back in Blink1Control, click on the "IFTTT" tab and then the "+" button to add a new blank IFTTT rule.<br>
+
+Once you add a rule, the Recent Events area on the left will show any newly received IFTTT events.&nbsp; <br>
+
+(You might see a "Channel Activated" event from IFTTT. This indicates that Blink1Control has succesfully talked with IFTTT)<br>
+<br>
+Double-click on the rule name, type in the rule name you used on IFTTT ("my_rule_name" in this case) and press Enter . <br>
+And pick a color pattern you like to play on the blink(1) when the recipe fires.<br>
+<br>
+<img src="ifttt-blink1control1a.png" alt=""><br>
+<br>
+Now send a mail to "trigger@ifttt.com" from the email address IFTTT is expecting and your blink(1) will blink!<br>
+You will also see the event in the Recent Events list.<br>
+<br>
+
+<img src="ifttt-blink1control2a.png" alt=""><br>
+
+<br>
+You can create more recipes using IFTTT.&nbsp; But be aware, as IFTTT says on their About page:<br>
+<br>
+<strong><cite>"Most Personal Recipes check for new Trigger data every 15 minutes, some are even faster." </cite></strong><br>
+
+<br>
+<br>
+<h2>Application Layout</h2>
+
+
+The Blink1Control application has two status areas on the left, a color picker and color pattern chooser on the bottom, <br>
+and a set of control pages under tabs on the right.<br>
+<br>
+<img src="blink1control-intro-noted.png" style="width: 700px; height: 455px;" alt=""><br>
+<br>
+The parts of the main Blink1Control page:<br>
+A. Virtual blink(1) -- Reflects what's going on the real blink(1) device<br>
+B. Serial number and IFTTT key -- Useful when setting up IFTTT<br>
+C. Recent events list -- Any of the event monitors log their activity here<br>
+D. Fixed BigButtons -- Common tasks and fun toys for immediate playing with blink(1)<br>
+E. Customizable BigButtons -- Assign these to your own colors or patterns, right-click to configure them.<br>
+F. Color Picker -- Pick the colors, fade times, and which LED you want to control.<br>
+G. Color pattern list -- Blink1Control comes with some stock patterns, but you can make your own. <br>
+<br>
+<br>
+<h2>System Tray / Menubar Icon</h2>Blink1Control is designed to be minimized, so it presents a System Tray (Windows) / Menu bar (Mac) icon.<br>
+Clicking on the icon (right-clicking on Windows) gives a menu of startup options and info.<br>
+<br>
+
+<img src="blink1control-taskbar-win1.png" alt=""><img src="blink1control-taskbar-mac1.png" alt=""><br>
+<br>
+<br>
+
+These options are:<br>
+<ul>
+  <li>"Start minimized" -- on next startup, don't show the main window</li>
+  <li>"Start at login" -- auto-run Blink1Control next time this user logs in</li>
+  <li>"Enable API Server" -- enable the HTTP REST API server to control blink(1)</li>
+  <li>"Open Settings" -- opens the main window</li>
+  <li>"Reset Alerts" -- cancels any currently playing color patterns and makes the blink(1) go dark</li>
+</ul>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+20140715<br>
+<br>
+</body></html>

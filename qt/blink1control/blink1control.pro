@@ -2,11 +2,26 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets network
+QT       += core gui widgets network quick qml 
+#QT       += core gui widgets network quick qml webkit webkitwidgets
+#QT       += core gui widgets network
 
-folder_01.source = qml/qml
-folder_01.target = qml
-DEPLOYMENTFOLDERS = folder_01
+#CONFIG += debug
+#CONFIG += release
+#CONFIG += console
+#CONFIG -= app_bundle
+
+TARGET = Blink1Control
+TEMPLATE = app
+VERSION = v1.82
+#VERSION = $$system(git describe)  # should return tag like "v1.8"
+# but git isn't in PATH in Windows, so can't do it.
+
+qmlfolder.source = qml/qml
+qmlfolder.target = qml
+helpfolder.source = help
+helpfolder.target = help
+DEPLOYMENTFOLDERS = qmlfolder helpfolder
 
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
@@ -23,10 +38,6 @@ QML_IMPORT_PATH =
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
-TARGET = Blink1Control
-VERSION = 0.9.8
-TEMPLATE = app
-
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -37,7 +48,8 @@ SOURCES += main.cpp\
     email.cpp \
     simplecrypt.cpp \
     hardwaremonitor.cpp \
-    Cursorshapearea.cpp
+    Cursorshapearea.cpp \
+    httpserver.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
@@ -48,7 +60,8 @@ HEADERS  += mainwindow.h \
     simplecrypt.h \
     hardwaremonitor.h \
     Cursorshapearea.h \
-    patternsReadOnly.h
+    patternsReadOnly.h \
+    httpserver.h
 
 #FORMS    += mainwindow.ui
 
@@ -57,70 +70,42 @@ RESOURCES += \
 
 
 # for blink1-lib
-# note: need to type "make lib" in blink1/commandline beforehand
+# note: need to "cd blink1/commandline && make lib" beforehand
 BLINK1_LIB_DIR=$$PWD/../../commandline
-message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
+#message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
-macx: LIBS += -L$$BLINK1_LIB_DIR -lBlink1
+macx:  LIBS += -L$$BLINK1_LIB_DIR -lBlink1
 win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 
-QMAKE_CXXFLAGS += -DUSE_HIDAPI
+DEFINES += BLINK1CONTROL_VERSION=\\\"$$VERSION\\\"
+#message("DEFINES = $$DEFINES")
+
+QMAKE_CXXFLAGS += -DUSE_HIDAPI 
 #QMAKE_CFLAGS += -DUSE_HIDAPI
 INCLUDEPATH += $$BLINK1_LIB_DIR
-#$$BLINK1_LIB_DIR/hidapi/hidapi $$BLINK1_LIB_DIR/../hardware/firmware
-DEPENDPATH += $$BLINK1_LIB_DIR
-
-# for tasteful-server
-##INCLUDEPATH += ../third-party/tasteful-server/include
-##macx: LIBS += -L../third-party/tasteful-server -lTastefulServer
+DEPENDPATH  += $$BLINK1_LIB_DIR
 
 
 macx {
     MYAPPDIR=$$OUT_PWD/$${TARGET}.app/Contents/MacOS
-    message( "MYAPPDIR = $$MYAPPDIR" )
-    # FIXME: How to make this cross-platform?
-    # FIXME: libBlink1 should be in .app/Contents/Frameworks now
-    QMAKE_POST_LINK = cp -f $$BLINK1_LIB_DIR/libBlink1.dylib $$MYAPPDIR
+    #message( "MYAPPDIR = $$MYAPPDIR" )
+    BLINK1LIBPATH = $$BLINK1_LIB_DIR/libBlink1.dylib
+    QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
 }
 
 win32 {
-    # confusingly, these both get run, why?
-    # surely there's a better way to do this
     CONFIG(release, debug|release):  MYAPPDIR=$$OUT_PWD/release
     CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
-
-    message( "MYAPPDIR = $$MYAPPDIR" )
-    # but this line doesn't work, because of forward slashes presumably
-    QMAKE_POST_LINK += COPY /Y "$$BLINK1_LIB_DIR\blink1-lib.dll" "$$MYAPPDIR"
+    #message( "MYAPPDIR = $$MYAPPDIR , DESTDIR = $(DESTDIR), helpfolder = $$helpfolder" )
+    BLINK1LIBPATH = $$BLINK1_LIB_DIR/blink1-lib.dll
+    BLINK1LIBPATH ~= s,/,\\,g   # Windows-ify the path
+    MYAPPDIR ~= s,/,\\,g   # Windows-ify the path
+    QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
+    # the below doesn't work
+    #QMAKE_POST_LINK += & $(MKDIR) help\help
+    #QMAKE_POST_LINK += & $(COPY_DIR) help\help $$MYAPPDIR
 }
 
-# win32:
-# minimum DLLs appear to be: (in "release" kit)
-# Qt5Core.dll Qt5Gui.dll Qt5Widgets.dll
-# icudt49.dll icuin49.dll icuuc49.dll
-# D3DCompiler_43.dll libGLESv2.dll libEGL.dll
-# libgcc_s_sjlj-1.dll libstdc++-6.dll  libwinpthread-1.dll
-# blink1-lib.dll
-
-# some hints from a hidapi app
-#macx: LIBS += -L./HIDAPI/mac -lHIDAPI
-#win32: LIBS += -L./HIDAPI/windows -lHIDAPI
-#unix: !macx: LIBS += -L./HIDAPI/linux -lHIDAPI
-#macx: LIBS += -framework CoreFoundation -framework IOkit
-#win32: LIBS += -lSetupAPI
-#unix: !macx: LIBS += -lusb-1.0
-
-
-#include(../third-party/Qt-Color-Picker/color_widgets.pri)
-
-# Fervor autoupdater
-#!include("../third-party/fervor/Fervor.pri") {
-#    error("Unable to include Fervor autoupdater.")
-#}
-
-#!include(../third-party/tasteful-server/tasteful-server.pri) {
-#    error("Unable to include tasteful-server.")
-#}
 
 OTHER_FILES += \
     qml/qml/main.qml \
@@ -128,9 +113,10 @@ OTHER_FILES += \
     HostIdPopup.qml \
     ComboBox1.qml \
     DropDownMenu.qml \
-    MyInfo.plist
+    MyInfo.plist \
+    MyGroupBox.qml \
+    help/index.html
 
-#CONFIG += CONSOLE
 win32{
     RC_FILE =blink1.rc
 }
@@ -141,3 +127,26 @@ mac{
     QMAKE_INFO_PLIST = MyInfo.plist
 }
 
+
+
+# win32:
+# minimum DLLs appear to be: (in "release" kit)
+# Qt5Core.dll Qt5Gui.dll Qt5Widgets.dll
+# icudt49.dll icuin49.dll icuuc49.dll
+# D3DCompiler_43.dll libGLESv2.dll libEGL.dll
+# libgcc_s_sjlj-1.dll libstdc++-6.dll  libwinpthread-1.dll
+# blink1-lib.dll
+
+
+# for tasteful-server
+##INCLUDEPATH += ../third-party/tasteful-server/include
+##macx: LIBS += -L../third-party/tasteful-server -lTastefulServer
+
+# Fervor autoupdater
+#!include("../third-party/fervor/Fervor.pri") {
+#    error("Unable to include Fervor autoupdater.")
+#}
+
+#!include(../third-party/tasteful-server/tasteful-server.pri) {
+#    error("Unable to include tasteful-server.")
+#}

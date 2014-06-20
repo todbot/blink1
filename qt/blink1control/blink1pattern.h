@@ -13,23 +13,22 @@ class Blink1Pattern : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY colorChange)
-    Q_PROPERTY(int repeats READ repeats WRITE setRepeats NOTIFY colorChange)
-    Q_PROPERTY(int playcount READ playcount WRITE setPlaycount NOTIFY colorChange)
-    Q_PROPERTY(QVariantList colors READ getColors NOTIFY colorChange)
-    Q_PROPERTY(QVariantList times READ getTimes NOTIFY colorChange)
-    Q_PROPERTY(QVariantList leds READ getLeds NOTIFY colorChange)
-    Q_PROPERTY(int playing READ isPlaying NOTIFY playChange)
-    Q_PROPERTY(bool isReadOnly READ isReadOnly WRITE setReadOnly NOTIFY colorChange)
-    Q_PROPERTY(bool isSystem READ isSystem WRITE setSystem NOTIFY colorChange)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY updateValues)
+    Q_PROPERTY(int repeats READ repeats WRITE setRepeats NOTIFY updateValues)
+    Q_PROPERTY(int playcount READ playcount WRITE setPlaycount NOTIFY updateValues)
+    Q_PROPERTY(QVariantList colors READ getColors NOTIFY updateValues)
+    Q_PROPERTY(QVariantList times READ getTimes NOTIFY updateValues)
+    Q_PROPERTY(QVariantList leds READ getLeds NOTIFY updateValues)
+    Q_PROPERTY(int playing READ isPlaying NOTIFY updatePlayIconOnUi)
+    Q_PROPERTY(bool isReadOnly READ isReadOnly WRITE setReadOnly NOTIFY updateValues)
+    Q_PROPERTY(bool isSystem READ isSystem WRITE setSystem NOTIFY updateValues)
 
 public:
     Blink1Pattern(QObject *parent=0);
     Blink1Pattern(const char* name, QObject *parent=0);
-    QJsonObject toJson();
-    QJsonObject toJson2();
-    void fromPatternStr(QString);
-    void fromPatternStrWithLeds(QString);
+    QJsonObject toFullJsonReadyToSave();
+    QJsonObject toJsonWithNameAndPatternStr();
+    bool fromPatternStr(QString);
     void fromJson( QJsonObject obj);
 
     QString name() const;
@@ -82,7 +81,7 @@ private:
     int mdate;
     bool mreadonly;
     bool msystem;
-    //Int isSingleShot;
+
     QList<QColor> colors;
     QList<float> times;
     QList<int> leds;
@@ -94,10 +93,10 @@ private:
 public slots:
     void update();
 signals:
-    void colorChange();
+    void updateValues();
     void setColor(QColor,QString,int);
-    void playChange();
-    void changeColorOnVirtualBlink(QColor);
+    void updatePlayIconOnUi();
+    void changeColorOnVirtualBlink(QColor,double);
 
 };
 

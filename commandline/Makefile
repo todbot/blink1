@@ -40,6 +40,8 @@
 #   - No -ldl on FreeBSD necessary.
 #   - For FreeBSD versions < 10, iconv is a package that needs to be installed;
 #     in this case it lives in /usr/local/lib/
+#   - On FreeBSD 8.3, this command builds blink1-tool: 
+#   - "cd blink1/commandline && USBLIB_TYPE=HIDDATA gmake"
 #
 # Linux Ubuntu 32-bit cross-compile on 64-bit
 #   To build 32-bit on 64-bit Ubuntu, try a chrooted build:
@@ -142,6 +144,10 @@ EXEFLAGS =
 LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 EXE=
 
+INSTALL = install -D
+EXELOCATION ?= /usr/local/bin
+LIBLOCATION ?= /usr/local/lib
+
 endif
 
 #################  Windows  ##################################################
@@ -167,6 +173,10 @@ EXEFLAGS =
 LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
 EXE= .exe
 
+INSTALL = cp
+EXELOCATION ?= $(SystemRoot)/system32
+LIBLOCATION ?= $(SystemRoot)/system32
+
 endif
 
 #################  Linux  ####################################################
@@ -191,6 +201,10 @@ endif
 EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
+
+INSTALL = install -D
+EXELOCATION ?= /usr/local/bin
+LIBLOCATION ?= /usr/local/lib
 
 endif
 
@@ -222,6 +236,10 @@ EXEFLAGS = -static
 endif
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
+
+INSTALL = install -D
+EXELOCATION ?= /usr/local/bin
+LIBLOCATION ?= /usr/local/lib
 
 endif
 
@@ -337,6 +355,12 @@ package: lib blink1-tool
 	zip blink1-tool-$(PKGOS).zip blink1-tool$(EXE)
 	zip blink1-lib-$(PKGOS).zip $(LIBTARGET) blink1-lib.h
 	@#mkdir -f builds && cp blink1-tool-$(PKGOKS).zip builds
+
+install: all
+	$(INSTALL) blink1-tool$(EXE) $(DESTDIR)$(EXELOCATION)/blink1-tool$(EXE)
+	$(INSTALL) $(LIBTARGET) $(DESTDIR)$(LIBLOCATION)/$(LIBTARGET)
+
+.PHONY: install
 
 clean: 
 	rm -f $(OBJS)

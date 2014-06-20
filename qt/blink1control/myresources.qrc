@@ -44,6 +44,7 @@
         <file>qml/qml/TabWidget.qml</file>
         <file>qml/qml/content/ColorWheel.qml</file>
         <file>images/layout/bg.jpg</file>
+        <file>images/layout/bg-new.jpg</file>
         <file>images/layout/btn-colorcycle.png</file>
         <file>images/layout/btn-colorpicker.png</file>
         <file>images/layout/btn-moodlight.png</file>
@@ -159,7 +160,6 @@
         <file>images/layout/popup-input.png</file>
         <file>images/layout/ico-error.png</file>
         <file>images/layout/bar-unlocked.png</file>
-        <file>images/layout/dropdown-bg.png</file>
         <file>images/layout/lock.png</file>
         <file>images/layout/unlock.png</file>
         <file>images/layout/lock_small.png</file>
@@ -169,5 +169,7 @@
         <file>images/layout/copy.png</file>
         <file>images/layout/colorpicker/select-180-bg.png</file>
         <file>images/layout/colorpicker/select-180-bg-disabled.png</file>
+        <file>images/layout/dropdown-bg.png</file>
+        <file>images/layout/select-bg-right.png</file>
     </qresource>
 </RCC>

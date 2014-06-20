@@ -14,17 +14,17 @@
 class HardwareMonitor : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY update)
-    Q_PROPERTY(int type READ getType WRITE setType NOTIFY update)
-    Q_PROPERTY(int lvl READ getLvl WRITE setLvl NOTIFY update)
-    Q_PROPERTY(int action READ getAction WRITE setAction NOTIFY update)
-    Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY update)
-    Q_PROPERTY(QString status READ getStatus WRITE setStatus NOTIFY update2)
-    Q_PROPERTY(int freq READ getFreq WRITE setFreq NOTIFY update)
-    Q_PROPERTY(int value READ getValue WRITE setValue NOTIFY update2)
-    Q_PROPERTY(int extraValue READ getExtraValue WRITE setExtraValue NOTIFY update)
-    Q_PROPERTY(bool done READ getDone WRITE setDone NOTIFY update2)
-    Q_PROPERTY(int role READ getRole WRITE setRole NOTIFY update)
+    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY updateValues)
+    Q_PROPERTY(int type READ getType WRITE setType NOTIFY updateValues)
+    Q_PROPERTY(int lvl READ getLvl WRITE setLvl NOTIFY updateValues)
+    Q_PROPERTY(int action READ getAction WRITE setAction NOTIFY updateValues)
+    Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY updateValues)
+    Q_PROPERTY(QString status READ getStatus WRITE setStatus NOTIFY updateOnlyStatusAndCurrentValue)
+    Q_PROPERTY(int freq READ getFreq WRITE setFreq NOTIFY updateValues)
+    Q_PROPERTY(int value READ getValue WRITE setValue NOTIFY updateOnlyStatusAndCurrentValue)
+    Q_PROPERTY(int extraValue READ getExtraValue WRITE setExtraValue NOTIFY updateValues)
+    Q_PROPERTY(bool done READ getDone WRITE setDone NOTIFY updateOnlyStatusAndCurrentValue)
+    Q_PROPERTY(int role READ getRole WRITE setRole NOTIFY updateValues)
 public:
     explicit HardwareMonitor(QString name,QObject *parent = 0);
     ~HardwareMonitor();
@@ -57,8 +57,8 @@ public:
     void setStatus(QString status);
     void setDone(bool done);
 signals:
-    void update();
-    void update2();
+    void updateValues();
+    void updateOnlyStatusAndCurrentValue();
     void runPattern(QString,bool);
     void addReceiveEvent(int,QString,QString);
     void addToLog(QString txt);

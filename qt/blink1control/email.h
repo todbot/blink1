@@ -16,20 +16,20 @@
 class Email : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY update)
-    Q_PROPERTY(int type READ getType WRITE setType NOTIFY update)
-    Q_PROPERTY(QString server READ getServer WRITE setServer NOTIFY update)
-    Q_PROPERTY(QString login READ getLogin WRITE setLogin NOTIFY update)
-    Q_PROPERTY(QString passwd READ getPasswd WRITE setPasswd NOTIFY update)
-    Q_PROPERTY(int port READ getPort WRITE setPort NOTIFY update)
-    Q_PROPERTY(bool ssl READ getSsl WRITE setSsl NOTIFY update)
-    Q_PROPERTY(int result READ getResult WRITE setResult NOTIFY update)
-    Q_PROPERTY(QString parser READ getParser WRITE setParser NOTIFY update)
-    Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY update)
-    Q_PROPERTY(int freq READ getFreq WRITE setFreq NOTIFY update)
-    Q_PROPERTY(QString value READ getValue WRITE setValue NOTIFY update2)
-    Q_PROPERTY(QString email READ getEmail WRITE setEmail NOTIFY update)
-    Q_PROPERTY(int unreadCount READ getUnreadCount WRITE setUnreadCount NOTIFY update)
+    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY updateValues)
+    Q_PROPERTY(int type READ getType WRITE setType NOTIFY updateValues)
+    Q_PROPERTY(QString server READ getServer WRITE setServer NOTIFY updateValues)
+    Q_PROPERTY(QString login READ getLogin WRITE setLogin NOTIFY updateValues)
+    Q_PROPERTY(QString passwd READ getPasswd WRITE setPasswd NOTIFY updateValues)
+    Q_PROPERTY(int port READ getPort WRITE setPort NOTIFY updateValues)
+    Q_PROPERTY(bool ssl READ getSsl WRITE setSsl NOTIFY updateValues)
+    Q_PROPERTY(int result READ getResult WRITE setResult NOTIFY updateValues)
+    Q_PROPERTY(QString parser READ getParser WRITE setParser NOTIFY updateValues)
+    Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY updateValues)
+    Q_PROPERTY(int freq READ getFreq WRITE setFreq NOTIFY updateValues)
+    Q_PROPERTY(QString value READ getValue WRITE setValue NOTIFY updateOnlyTextStatus)
+    Q_PROPERTY(QString email READ getEmail WRITE setEmail NOTIFY updateValues)
+    Q_PROPERTY(int unreadCount READ getUnreadCount WRITE setUnreadCount NOTIFY updateValues)
     Q_PROPERTY(QVariantList getErrorsList READ getErrorsList NOTIFY errorsUpdate)
 public:
     explicit Email(QString name, QObject *parent = 0);
@@ -72,8 +72,8 @@ public:
     void setEdit(bool edit);
 
 signals:
-    void update();
-    void update2();
+    void updateValues();
+    void updateOnlyTextStatus();
     void runPattern(QString,bool);
     void addReceiveEvent(int,QString,QString);
     void errorsUpdate();
@@ -82,7 +82,7 @@ public slots:
     void readyIMAP();
     void readyPOP3();
     QStringList parseMail(QString);
-    void err(QAbstractSocket::SocketError);
+    void sockerErrorSlot(QAbstractSocket::SocketError);
     void checkMail();
     void checkState();
     void sslErrors(QList<QSslError>);
@@ -106,24 +106,23 @@ private:
     QString email;
     int unreadCount;
 
-    SimpleCrypt *sc;    //ilee
+    SimpleCrypt *simpleCrypt;
     QTcpSocket *socket;
-    QList<int> ll;
-    QList<int> ll2;
-    int licznik;
-    bool odznacz;
+    QList<int> unreadEmailsIdList;
+    QList<int> listOfUnreadEmailsIdToCheckLastId;
+    bool markAsUnread;
 
-    int ile;    //action
+    int action_number;
     bool edit;
-    int mm; //matching messeges
-    int lastId;
+    int matchingMessagesCount;
+    int tmpLastId;
 
-    bool info_send;
+    bool recentEventAdded;
     bool editing;
 
     QTimer *time;
     QStringList errorsList;
-    QString pobrano;
+    QString downloadedMessage;
 };
 
 #endif // EMAIL_H

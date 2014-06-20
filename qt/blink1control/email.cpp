@@ -4,7 +4,7 @@ Email::Email(QString name,QObject *parent) :
     QObject(parent)
 {
     this->name=name;
-    sc =  new SimpleCrypt(Q_UINT64_C(0xbf2fd4a2fcb9f00f));
+    simpleCrypt =  new SimpleCrypt(Q_UINT64_C(0xbf2fd4a2fcb9f00f));
     this->type=0;
     this->server="";
     this->login="";
@@ -20,17 +20,16 @@ Email::Email(QString name,QObject *parent) :
     this->value="NO VALUE";
     this->email="";
     this->unreadCount=0;
-    licznik=0;
-    odznacz=false;
+    markAsUnread=false;
     socket=NULL;
-    ile=0;
+    action_number=0;
     edit=false;
     socket=NULL;
-    mm=0;
-    lastId=-1;
-    info_send=false;
+    matchingMessagesCount=0;
+    tmpLastId=-1;
+    recentEventAdded=false;
     time=new QTimer();
-
+    connect(time,SIGNAL(timeout()),SLOT(checkState()));
     this->editing=false;
 }
 Email::~Email(){
@@ -43,8 +42,8 @@ Email::~Email(){
         time->stop();
         delete time;
     }
-    if(sc!=NULL)
-        delete sc;
+    if(simpleCrypt!=NULL)
+        delete simpleCrypt;
 }
 
 void Email::checkMail(){
@@ -72,7 +71,7 @@ void Email::checkMail(){
         else
             socket=new QSslSocket(this);
 
-        connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(err(QAbstractSocket::SocketError)));
+        connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(sockerErrorSlot(QAbstractSocket::SocketError)));
 
         if(type==0 || type==2)
             connect(socket,SIGNAL(readyRead()),this,SLOT(readyIMAP()));
@@ -86,18 +85,20 @@ void Email::checkMail(){
     if(!socket->isOpen()){
         errorsList.clear();
         emit errorsUpdate();
-        mm=0;
-        lastId=-1;
-        info_send=false;
+        matchingMessagesCount=0;
+        tmpLastId=-1;
+        recentEventAdded=false;
         setValue("Checking...");
-        pobrano="";
+        downloadedMessage="";
         if(ssl)
             ((QSslSocket*)socket)->connectToHostEncrypted(server,port);
         else
             socket->connectToHost(server,port);
-        ile=0;
-        odznacz=false;
-        time->singleShot(5000,this,SLOT(checkState()));
+        action_number=0;
+        markAsUnread=false;
+        //time->singleShot(5000,this,SLOT(checkState()));
+        time->setSingleShot(true);
+        time->start(5000);
     }
 }
 void Email::checkState(){
@@ -108,234 +109,222 @@ void Email::checkState(){
         value="CONNECTION ERROR";
         errorsList.append("Connection timeout");
         emit errorsUpdate();
-        emit update2();
+        emit updateOnlyTextStatus();
     }
 }
 
 void Email::readyIMAP(){
     QString tmp=socket->readAll().data();
-    pobrano+=tmp;
+    downloadedMessage+=tmp;
     qDebug()<<"DOWNLOADED************************************";
-    qDebug()<<pobrano;
-    //qDebug()<<"************************************";
-    addToLog("DOWNLOADED "+pobrano);
-    if(pobrano.indexOf("a00"+QString::number(ile)+" OK")==-1 && pobrano.indexOf("a00"+QString::number(ile)+" NO")==-1 && pobrano.indexOf("a00"+QString::number(ile)+" BAD")==-1 && ile!=0)
+    qDebug()<<downloadedMessage;
+    addToLog("DOWNLOADED "+downloadedMessage);
+    if(downloadedMessage.indexOf("a00"+QString::number(action_number)+" OK")==-1 && downloadedMessage.indexOf("a00"+QString::number(action_number)+" NO")==-1 && downloadedMessage.indexOf("a00"+QString::number(action_number)+" BAD")==-1 && action_number!=0)
         return;
     qDebug()<<"DOWNLOADED WHOLE MESSAGE!";
     addToLog("DOWNLOADED WHOLE MESSAGE!");
-    if(ile==1){
-        if(pobrano.indexOf("NO [AUTHENTICATIONFAILED]")!=-1){
+    if(action_number==1){
+        if(downloadedMessage.indexOf("NO [AUTHENTICATIONFAILED]")!=-1){
             value="WRONG LOGIN OR PASSWORD";
-            emit update2();
+            emit updateOnlyTextStatus();
             socket->close();
             return;
         }
-        if(pobrano.indexOf("a001 NO Invalid")!=-1){
+        if(downloadedMessage.indexOf("a001 NO Invalid")!=-1){
             value="WRONG LOGIN OR PASSWORD";
-            emit update2();
+            emit updateOnlyTextStatus();
             socket->close();
             return;
         }
-        if(pobrano.indexOf("a001 NO Login")!=-1){
+        if(downloadedMessage.indexOf("a001 NO Login")!=-1){
             value="WRONG LOGIN OR PASSWORD";
-            emit update2();
+            emit updateOnlyTextStatus();
             socket->close();
             return;
         }
     }
-    if(pobrano.indexOf("a00"+QString::number(ile)+" NO")!=-1){
+    if(downloadedMessage.indexOf("a00"+QString::number(action_number)+" NO")!=-1){
         value="CONNECTION ERROR";
         errorsList.append("Unknown error");
         emit errorsUpdate();
-        emit update2();
+        emit updateOnlyTextStatus();
         socket->close();
         return;
     }
-    if(pobrano.indexOf("a00"+QString::number(ile)+" BAD")!=-1){
+    if(downloadedMessage.indexOf("a00"+QString::number(action_number)+" BAD")!=-1){
         value="CONNECTION ERROR";
         errorsList.append("Internal imap error");
         emit errorsUpdate();
-        emit update2();
+        emit updateOnlyTextStatus();
         socket->close();
         return;
     }
-    if(ile==3 && !odznacz){
-        if(pobrano.indexOf("* SEARCH")!=-1){
+    if(action_number==3 && !markAsUnread){
+        if(downloadedMessage.indexOf("* SEARCH")!=-1){
             unreadCount=0;
-            QStringList list=pobrano.split(QRegExp("(\\ |\\\n)"));
+            QStringList list=downloadedMessage.split(QRegExp("(\\ |\\\n)"));
             qDebug()<<list;
             bool ok=false;
             int pom;
-            ll2.clear();
+            listOfUnreadEmailsIdToCheckLastId.clear();
             for(int i=2;i<list.count();i++){
                 pom=list.at(i).toInt(&ok);
                 qDebug()<<pom;
                 addToLog(QString::number(pom));
-                if(ok && pom!=0) { unreadCount++; ll.append(pom); ll2.append(pom);}else break;
+                if(ok && pom!=0) { unreadCount++; unreadEmailsIdList.append(pom); listOfUnreadEmailsIdToCheckLastId.append(pom);}else break;
                 ok=false;
             }
             qDebug()<<"LAST ID: "<<lastid;
             addToLog("LAST ID: "+QString::number(lastid));
         }
     }
-    if(ile==4 && !odznacz){
-        //if(licznik==2){
-        //qDebug()<<parseMail(tmp);
-        QStringList t=parseMail(pobrano);
+    if(action_number==4 && !markAsUnread){
+        QStringList t=parseMail(downloadedMessage);
         qDebug()<<t;
-        //}
-        //licznik++;
-        //}
-        //if(tmp.startsWith("a004 OK")) ile--;
-        //if(parsuj.indexOf("a004 OK")!=-1){
-        odznacz=true;
-        ile--;
-        QByteArray ba=QString("a003 STORE "+QString::number(lastId)+" -FLAGS (\\Seen)\r\n").toUtf8();
+        markAsUnread=true;
+        action_number--;
+        QByteArray ba=QString("a003 STORE "+QString::number(tmpLastId)+" -FLAGS (\\Seen)\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"uncheck!";
         addToLog("uncheck");
-        //        qDebug()<<"******************************";
-        //        out<<"******************************"<<endl;
-        pobrano="";
+        downloadedMessage="";
         return;
     }
-    if(ile==3 && odznacz){
+    if(action_number==3 && markAsUnread){
         qDebug()<<"unchecked!";
         addToLog("unchecked!");
-        odznacz=false;
-        //qDebug()<<"******************************";
-        //return;
+        markAsUnread=false;
     }
 
 
-    if(ile==0){
+    if(action_number==0){
         QByteArray ba=QString("a001 LOGIN "+email+" "+passwd+"\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==1){
+    }else if(action_number==1){
         QByteArray ba=QString("a002 select inbox\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==2){
+    }else if(action_number==2){
         QByteArray ba=QString("a003 search unseen\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==3){
-        if(unreadCount!=0 && ll.count()>0){
-            //licznik=0;
-            QByteArray ba=QString("a004 fetch "+QString::number(ll.at(0))+" BODY.PEEK[HEADER.FIELDS (From Subject)]\r\n").toUtf8();
+    }else if(action_number==3){
+        if(unreadCount!=0 && unreadEmailsIdList.count()>0){
+            QByteArray ba=QString("a004 fetch "+QString::number(unreadEmailsIdList.at(0))+" BODY.PEEK[HEADER.FIELDS (From Subject)]\r\n").toUtf8();
             socket->write(ba);
             qDebug()<<"sending "<<ba.toLower();
             addToLog("sending "+ba.toLower());
-            lastId=ll.at(0);
-            ll.removeAt(0);
+            tmpLastId=unreadEmailsIdList.at(0);
+            unreadEmailsIdList.removeAt(0);
         }else{
             QByteArray ba=QString("a005 logout\r\n").toUtf8();
             socket->write(ba);
-            ile++;
+            action_number++;
         }
-    }else if(ile==4){
+    }else if(action_number==4){
         QByteArray ba=QString("a005 logout\r\n").toUtf8();
         socket->write(ba);
-    }else if(ile==5){
+    }else if(action_number==5){
         if(unreadCount>0){
-            if(lastid<ll2.at(ll2.count()-1)){
+            if(lastid<listOfUnreadEmailsIdToCheckLastId.at(listOfUnreadEmailsIdToCheckLastId.count()-1)){
                 if(result==0){
                     if(unreadCount>=parser.toInt()){
-                        value="NEW MEESSAGES("+QString::number(unreadCount)+")";
-                        emit update2();
-                        if(!info_send){
-                            emit addReceiveEvent(0,"NEW MESSAGES("+QString::number(unreadCount)+")",name);
+                        value="New Messages("+QString::number(unreadCount)+")";
+                        emit updateOnlyTextStatus();
+                        if(!recentEventAdded){
+                            emit addReceiveEvent(0,"New Message("+QString::number(unreadCount)+")","Mail:"+name);
                             emit runPattern(patternName,false);
-                            info_send=true;
+                            recentEventAdded=true;
                         }
                     }else{
-                        value="MEESSAGES("+QString::number(unreadCount)+")";
-                        emit update2();
+                        value="Messages("+QString::number(unreadCount)+")";
+                        emit updateOnlyTextStatus();
                     }
                 }else if(result==1 || result==2){
-                    if(mm>0){
-                        value="NEW MATCHING MEESSAGES("+QString::number(mm)+")";
-                        emit update2();
-                        if(!info_send){
-                            emit addReceiveEvent(0,"NEW MEESSAGES("+QString::number(mm)+")",name);
+                    if(matchingMessagesCount>0){
+                        value="New Matching Messages("+QString::number(matchingMessagesCount)+")";
+                        emit updateOnlyTextStatus();
+                        if(!recentEventAdded){
+                            emit addReceiveEvent(0,"New messages("+QString::number(matchingMessagesCount)+")",
+                                                 "Mail:"+name);
                             emit runPattern(patternName,false);
-                            info_send=true;
+                            recentEventAdded=true;
                         }
                     }else{
-                        value="NO MATCHING MEESSAGES";
-                        emit update2();
+                        value="No Matching Messages";
+                        emit updateOnlyTextStatus();
                     }
                 }
-                lastid=ll2.at(ll2.count()-1);
+                lastid=listOfUnreadEmailsIdToCheckLastId.at(listOfUnreadEmailsIdToCheckLastId.count()-1);
             }else{
                 if(result==0){
-                    value="MEESSAGES("+QString::number(unreadCount)+")";
-                    emit update2();
+                    value="Messages("+QString::number(unreadCount)+")";
+                    emit updateOnlyTextStatus();
                 }else if(result==1 || result==2){
-                    if(mm>0){
-                        value="MATCHING MESSAGES("+QString::number(mm)+")";
-                        emit update2();
+                    if(matchingMessagesCount>0){
+                        value="Matching Messages("+QString::number(matchingMessagesCount)+")";
+                        emit updateOnlyTextStatus();
                     }else{
-                        value="NO MATCHING MEESSAGES";
-                        emit update2();
+                        value="No Matching Messages";
+                        emit updateOnlyTextStatus();
                     }
                 }
-                lastid=ll2.at(ll2.count()-1);
+                lastid=listOfUnreadEmailsIdToCheckLastId.at(listOfUnreadEmailsIdToCheckLastId.count()-1);
             }
         }else{
             lastid=-1;
             if(result==0){
-                value="NO NEW MESSAGES";
-                emit update2();
+                value="No New Messages";
+                emit updateOnlyTextStatus();
             }else if(result==1 || result==2){
                 value="NO MATCHING MESSAGES";
-                emit update2();
+                emit updateOnlyTextStatus();
             }
         }
         socket->close();
-        ile=-100;
+        action_number=-100;
     }
 
-    ile++;
-    pobrano="";
+    action_number++;
+    downloadedMessage="";
 }
 void Email::readyPOP3(){
     QString tmp=socket->readAll().data();
     qDebug()<<tmp;
     addToLog(tmp);
     if(tmp.startsWith("-ERR Invalid")){
-        value="WRONG LOGIN OR PASSWORD";
-        emit update2();
+        value="Wrong Login or Password";
+        emit updateOnlyTextStatus();
         socket->close();
         return;
     }else if(tmp.startsWith("-ERR Authentication")){
         value="Authentication Error";
-        emit update2();
+        emit updateOnlyTextStatus();
         socket->close();
         return;
     }
-    if(ile==0){
+    if(action_number==0){
         QByteArray ba=QString("USER "+login+"\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==1){
+    }else if(action_number==1){
         QByteArray ba=QString("PASS "+passwd+"\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==2){
+    }else if(action_number==2){
         QByteArray ba=QString("STAT\r\n").toUtf8();
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==3){
+    }else if(action_number==3){
         QStringList list=tmp.split(QRegExp("(\\ |\\\n)"));
-        if(lastId==-1) lastId=lastid;
+        if(tmpLastId==-1) tmpLastId=lastid;
         if(list.at(1).toDouble()>lastid && lastid!=-1){
             lastid=list.at(1).toDouble();
             QByteArray ba=QString("RETR "+QString::number(lastid)+"\r\n").toUtf8();
@@ -348,33 +337,33 @@ void Email::readyPOP3(){
             socket->write(ba);
             qDebug()<<"sending "<<ba.toLower();
             addToLog("sending "+ba.toLower());
-            ile+=2;
-            value="NO NEW MESSAGES";
-            emit update2();
+            action_number+=2;
+            value="No New Messages";
+            emit updateOnlyTextStatus();
         }
-    }else if(ile==5){
+    }else if(action_number==5){
         qDebug()<<parseMail(tmp);
         QStringList t=parseMail(tmp);
         if(result==0){
-            value="NEW MESSAGE";
-            emit update2();
-            if(!info_send){
-                emit addReceiveEvent(0,"NEW MEESSAGE",name);
+            value="New Message";
+            emit updateOnlyTextStatus();
+            if(!recentEventAdded){
+                emit addReceiveEvent(0,"New Message","Mail:"+name);
                 emit runPattern(patternName,false);
-                info_send=true;
+                recentEventAdded=true;
             }
         }else if(result==1 || result==2){
-            if(mm>0){
-                value="NEW MESSAGE";
-                emit update2();
-                if(!info_send){
-                    emit addReceiveEvent(0,"NEW MEESSAGE",name);
+            if(matchingMessagesCount>0){
+                value="New Message";
+                emit updateOnlyTextStatus();
+                if(!recentEventAdded){
+                    emit addReceiveEvent(0,"New Message","Mail:"+name);
                     emit runPattern(patternName,false);
-                    info_send=true;
+                    recentEventAdded=true;
                 }
             }else{
-                value="NO MATCHING MESSAGE";
-                emit update2();
+                value="No Matching Message";
+                emit updateOnlyTextStatus();
             }
         }
 
@@ -382,14 +371,14 @@ void Email::readyPOP3(){
         socket->write(ba);
         qDebug()<<"sending "<<ba.toLower();
         addToLog("sending "+ba.toLower());
-    }else if(ile==6){
+    }else if(action_number==6){
         socket->close();
     }
-    ile++;
+    action_number++;
 }
-void Email::err(QAbstractSocket::SocketError e){
-    value="CONNECTION ERROR";
-    emit update2();
+void Email::sockerErrorSlot(QAbstractSocket::SocketError e){
+    value="Connection Error";
+    emit updateOnlyTextStatus();
     socket->close();
     qDebug()<<"ERROR"<<e;
     switch (e) {
@@ -469,11 +458,11 @@ QStringList Email::parseMail(QString mail){
 
     if(result==1){
         if(parser!="" && lista.at(1).indexOf(parser)!=-1){
-            mm++;
+            matchingMessagesCount++;
         }
     }else if(result==2){
         if(parser!="" && lista.at(3).indexOf(parser)!=-1){
-            mm++;
+            matchingMessagesCount++;
         }
     }
 
@@ -495,7 +484,7 @@ QJsonObject Email::toJson()
     obj.insert("type",type);
     obj.insert("server",server);
     obj.insert("login",login);
-    obj.insert("passwd",sc->encryptToString(passwd));
+    obj.insert("passwd",simpleCrypt->encryptToString(passwd));
     obj.insert("port",port);
     obj.insert("ssl",ssl);
     obj.insert("result",result);
@@ -515,7 +504,7 @@ void Email::fromJson( QJsonObject obj)
     setType(obj.value("type").toDouble());
     setServer(obj.value("server").toString());
     setLogin(obj.value("login").toString());
-    setPasswd(sc->decryptToString(obj.value("passwd").toString()));
+    setPasswd(simpleCrypt->decryptToString(obj.value("passwd").toString()));
     setPort(obj.value("port").toDouble());
     setSsl(obj.value("ssl").toBool());
     setResult(obj.value("result").toDouble());
@@ -533,7 +522,7 @@ QString Email::getName(){
 }
 void Email::setName(QString name){
     this->name=name;
-    emit update();
+    emit updateValues();
 }
 int Email::getType(){
     return type;
@@ -548,14 +537,14 @@ QString Email::getServer(){
 }
 void Email::setServer(QString server){
     this->server=server;
-    emit update();
+    emit updateValues();
 }
 QString Email::getLogin(){
     return login;
 }
 void Email::setLogin(QString login){
     this->login=login;
-    emit update();
+    emit updateValues();
 }
 QString Email::getPasswd(){
     return passwd;
@@ -592,7 +581,7 @@ QString Email::getPatternName(){
 }
 void Email::setPatternName(QString patternName){
     this->patternName=patternName;
-    emit update();
+    emit updateValues();
 }
 int Email::getLastid(){
     return lastid;
@@ -605,35 +594,35 @@ int Email::getFreq(){
 }
 void Email::setFreq(int freq){
     this->freq=freq;
-    emit update();
+    emit updateValues();
 }
 int Email::getFreqCounter(){
     return freqCounter;
 }
 void Email::setFreqCounter(int freqCounter){
     this->freqCounter=freqCounter;
-    emit update();
+    emit updateValues();
 }
 QString Email::getValue(){
     return value;
 }
 void Email::setValue(QString value){
     this->value=value;
-    emit update2();
+    emit updateOnlyTextStatus();
 }
 QString Email::getEmail(){
     return email;
 }
 void Email::setEmail(QString email){
     this->email=email;
-    emit update();
+    emit updateValues();
 }
 int Email::getUnreadCount(){
     return unreadCount;
 }
 void Email::setUnreadCount(int unreadCount){
     this->unreadCount=unreadCount;
-    emit update();
+    emit updateValues();
 }
 void Email::changeFreqCounter(){
     if(freq==0) freq=3;
@@ -654,5 +643,5 @@ void Email::setEditing(bool e){
     this->value="In edit mode";
     if(this->socket!=NULL)
         this->socket->close();
-    emit update2();
+    emit updateOnlyTextStatus();
 }

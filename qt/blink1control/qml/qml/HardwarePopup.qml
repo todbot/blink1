@@ -9,26 +9,20 @@ Image {
     source: "qrc:/images/layout/popup-hardware.png"
 
     property alias name: name
-    property alias type: comboPattern.lv
+    property alias type: hType
     property alias activity: activity
     property alias alert: alert
-    property alias action: comboAction.lv
+    property alias action: hAction
     property alias spinbox: alertinput
 
     property string oldname: ""
 
-    signal openPopup()
-    signal closePopup()
-    property alias combo: comboPattern
-
     function clearData(){
         name.text=""
         type.currentIndex=0
-        htype.text=type.currentItem.text
         activity.checked=true
         alert.checked=false
         action.currentIndex=0
-        haction.text=action.currentItem.text
         spinbox.text="0"
         spinbox.readOnly=true
 
@@ -38,7 +32,6 @@ Image {
 
         name.text=arg1
         type.currentIndex=arg2
-        htype.text=type.currentItem.text
         if(arg3===0){
             activity.checked=true
             alert.checked=false
@@ -53,13 +46,12 @@ Image {
         }
 
         action.currentIndex=arg4
-        haction.text=action.currentItem.text
         spinbox.text=arg5
     }
 
-MouseArea{
-    anchors.fill: parent
-}
+    MouseArea{
+        anchors.fill: parent
+    }
     MouseArea{
         z:0
         width: parent.width
@@ -67,27 +59,27 @@ MouseArea{
         anchors.top: parent.top
         anchors.left: parent.left
         property variant previousPosition
-            onPressed: {
-                previousPosition = Qt.point(mouseX, mouseY)
+        onPressed: {
+            previousPosition = Qt.point(mouseX, mouseY)
+        }
+        onPositionChanged: {
+            if (pressedButtons == Qt.LeftButton) {
+                var dx = mouseX - previousPosition.x
+                var dy = mouseY - previousPosition.y
+                popup.x=popup.x+dx;
+                popup.y=popup.y+dy;
             }
-            onPositionChanged: {
-                if (pressedButtons == Qt.LeftButton) {
-                    var dx = mouseX - previousPosition.x
-                    var dy = mouseY - previousPosition.y
-                    popup.x=popup.x+dx;
-                    popup.y=popup.y+dy;
-                }
-            }
+        }
     }
-Text{
-    color: "white"
-    font.pointSize: (!mw.mac())?10:13
-    text: "Hardware - Properties"
-    anchors.left: parent.left
-    anchors.top: parent.top
-    anchors.leftMargin: 40
-    anchors.topMargin: 12
-}
+    Text{
+        color: "white"
+        font.pointSize: (!mw.mac())?10:13
+        text: "Hardware - Properties"
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.leftMargin: 40
+        anchors.topMargin: 12
+    }
     PushButton{
         anchors.right: parent.right
         anchors.rightMargin: 17
@@ -98,6 +90,8 @@ Text{
         downSrc: "qrc:/images/layout/close-single-hover.png"
         onClicked: {
             mw.markHardwareEditing(popup.oldname,false)
+            if(popup.oldname!="")
+                mw.checkHardwareMonitor(popup.oldname)
             popup.oldname=""
             parent.visible=false
         }
@@ -138,7 +132,6 @@ Text{
                 width: 290
                 height: 30
                 font.pointSize: (!mw.mac())?10:12
-                //clip: true
                 selectByMouse: true
                 maximumLength: 24
             }
@@ -152,7 +145,7 @@ Text{
         anchors.topMargin: 7
         height: 30
         width: 300
-z: popup.z+1
+        z: popup.z+1
 
         Text{
             anchors.left: parent.left
@@ -161,52 +154,26 @@ z: popup.z+1
             color: "black"
             font.pointSize: (!mw.mac())?8:11
         }
-
-        Text{
-            id: htype
-            wrapMode: TextInput.WrapAnywhere
-            height: 30
-            width: 300
-            text: "Battery"
-            color: "black"
-            font.pointSize: (!mw.mac())?9:12
+        MyComboBox{
+            id: hType
             anchors.left: parent.left
-            anchors.leftMargin: 82
+            anchors.leftMargin: 75
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: 8
-            MouseArea {
-                cursorShape: Qt.PointingHandCursor
-                id: ma2
-                anchors.fill: parent
-                onClicked: {                    
-                    comboPattern.visible=true
-                    comboPattern.z=popup.z+9999
-                    comboPattern.x=types.x+htype.x-8
-                    comboPattern.y=types.y
-                    for(var i=0;i<comboPattern.items.count;i++)
-                        if(comboPattern.items.get(i).name===htype.text){
-                            comboPattern.curIn=i;
-                            break;
-                        }
+            width: 300
+            model: htypes
+            ListModel{
+                id: htypes
+                ListElement{
+                    text: "Battery"
                 }
+                ListElement{
+                    text: "CPU"
+                }
+                ListElement{
+                    text: "RAM"
+                }
+            }
 
-            }
-            Image{
-                height: 29
-                width: 300
-                source: "qrc:images/layout/colorpicker/select-300-bg.png"
-                anchors.left: parent.left
-                anchors.leftMargin: -7
-                anchors.top: parent.top
-                anchors.topMargin: -7
-                z: parent.z-1
-                Image{
-                    source: "qrc:images/layout/colorpicker/arrow-2-up.png"
-                    anchors.right: parent.right
-                    anchors.rightMargin: 5
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
         }
     }
 
@@ -294,68 +261,65 @@ z: popup.z+1
             anchors.verticalCenter: alert.verticalCenter
             font.pointSize: (!mw.mac())?8:11
         }
-
-        Text{
-            id: haction
-            wrapMode: TextInput.WrapAnywhere
-            height: 30
-            width: 180
-            text: "< (lower than)"
-            color: "black"
-            font.pointSize: (!mw.mac())?9:12
+        MyComboBox{
+            id: hAction
             anchors.left: alerttitle.right
-            anchors.leftMargin: 30
+            anchors.leftMargin: 25
             anchors.verticalCenter: alert.verticalCenter
-            anchors.verticalCenterOffset: 10
-            MouseArea {
-                cursorShape: (alert.checked)?Qt.PointingHandCursor:Qt.ArrowCursor
-                id: ma3
-                anchors.fill: parent
-                onClicked: {
-                    if(!alert.checked) return;
-                    comboAction.visible=true
-                    comboAction.z=popup.z+9999
-                    comboAction.x=al.x+haction.x-6
-                    comboAction.y=al.y+haction.y-26
-                    for(var i=0;i<comboAction.items.count;i++)
-                        if(comboAction.items.get(i).name===haction.text){
-                            comboAction.curIn=i;
-                            break;
-                        }
+            width: 180
+            model: actions
+            disabled: !alert.checked
+            ListModel{
+                id: actions
+                ListElement{
+                    text: "< (lower than)"
                 }
-
-            }
-            Image{
-                height: 29
-                width: 180
-                source: alert.checked?"qrc:images/layout/colorpicker/select-180-bg.png":"qrc:images/layout/colorpicker/select-180-bg-disabled.png"
-                anchors.left: parent.left
-                anchors.leftMargin: -7
-                anchors.top: parent.top
-                anchors.topMargin: -7
-                z: parent.z-1
-                Image{
-                    source: "qrc:images/layout/colorpicker/arrow-2-up.png"
-                    anchors.right: parent.right
-                    anchors.rightMargin: 5
-                    anchors.verticalCenter: parent.verticalCenter
+                ListElement{
+                    text: "<= (lower than or equal)"
+                }
+                ListElement{
+                    text: "= (equal)"
+                }
+                ListElement{
+                    text: "> (higher than)"
+                }
+                ListElement{
+                    text: ">= (higher than or equal)"
                 }
             }
         }
-
         Item{
-            anchors.left: haction.right
-            anchors.leftMargin: -4
+            anchors.left: hAction.right
+            anchors.leftMargin: 4
             anchors.verticalCenter: alert.verticalCenter
-            anchors.verticalCenterOffset: 4
             height: 30
             width: 114
             Image{
                 id: ale
+                Rectangle{
+                    visible: !alert.checked
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    width: parent.width-2
+                    height: parent.height-2
+                    color: "#E6E6E6"
+                    radius: 3
+                    border.width: 1
+                    border.color: "#CDCFD2"
+                    opacity: 0.5
+                    z: 9999
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked: {
+
+                        }
+                    }
+                }
+
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: 0
-                source: alert.checked?"qrc:images/layout/spinbox-bg.png":"qrc:images/layout/spinbox-bg-disable.png"
+                source: "qrc:images/layout/spinbox-bg.png"
                 width: parent.width
                 height: parent.height
                 TextInput{
@@ -369,7 +333,6 @@ z: popup.z+1
                     width: 54
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
-                    //clip: true
                     selectByMouse: true
                     validator: IntValidator{}
                     onTextChanged: {
@@ -447,7 +410,7 @@ z: popup.z+1
                     tmp=1;
                     if(activity.checked) tmp+=1;
                 }
-                mw.add_new_hardwaremonitor(name.text,combo.curIn,parseInt(alertinput.text),comboAction.curIn,tmp)
+                mw.add_new_hardwaremonitor(name.text,hType.currentIndex,parseInt(alertinput.text),hAction.currentIndex,tmp)
             }else{
                 console.log("EDIT")
                 var tmp=0;
@@ -455,7 +418,7 @@ z: popup.z+1
                     tmp=1;
                     if(activity.checked) tmp+=1;
                 }
-                mw.edit_hardwaremonitor(popup.oldname,name.text,combo.curIn,parseInt(alertinput.text),comboAction.curIn,tmp)
+                mw.edit_hardwaremonitor(popup.oldname,name.text,hType.currentIndex,parseInt(alertinput.text),hAction.currentIndex,tmp)
             }
             mw.hardwareUpdate();
 
@@ -476,11 +439,10 @@ z: popup.z+1
         onClicked: {
             console.log("CANCEL CLICKED")
             popup.visible=false
-            //mw.markEditing(popup.oldname,false)
             mw.markHardwareEditing(popup.oldname,false)
             if(popup.oldname!="")
                 mw.checkHardwareMonitor(popup.oldname)
-            popup.oldname="";            
+            popup.oldname="";
         }
         anchors.right: okButton.left
         anchors.rightMargin: 5
@@ -490,95 +452,4 @@ z: popup.z+1
         label.font.pointSize: (!mw.mac())?9:12
     }
 
-    ComboBox1{
-        id: comboPattern
-        width: 300
-        items: htypes
-        ListModel{
-            id: htypes
-            ListElement{
-                name: "Battery"
-            }
-            ListElement{
-                name: "CPU"
-            }
-            ListElement{
-                name: "RAM"
-            }
-        }
-        height: htypes.count*(mw.mac()?15:14)
-        z: 99999999
-        visible: false
-
-        onVisibleChanged: {
-            if(visible){
-                openPopup()
-                background.visible=true
-            }
-        }
-
-        onClick2: {
-            htype.text=htypes.get(idx).name
-        }
-        onHiden: {
-            closePopup()
-            background.visible=false
-        }
-    }
-    ComboBox1{
-        id: comboAction
-        width: 180
-        items: actions
-        ListModel{
-            id: actions
-            ListElement{
-                name: "< (lower than)"
-            }
-            ListElement{
-                name: "<= (lower than or equal)"
-            }
-            ListElement{
-                name: "= (equal)"
-            }
-            ListElement{
-                name: "> (higher than)"
-            }
-            ListElement{
-                name: ">= (higher than or equal)"
-            }
-        }
-        height: actions.count*(mw.mac()?15:14)
-        z: 99999999
-        visible: false
-
-        onVisibleChanged: {
-            if(visible){
-                openPopup()
-                background.visible=true
-            }
-        }
-
-        onClick2: {
-            haction.text=actions.get(idx).name
-        }
-        onHiden: {
-            closePopup()
-            background.visible=false
-        }
-    }
-    Rectangle{
-        id: background
-        color: "lightgrey"
-        anchors.fill: parent
-        z: popup.z+999
-        visible: false
-        opacity: 0.1
-        MouseArea{
-            anchors.fill: parent
-            onClicked: {
-                comboPattern.hide()
-                comboAction.hide()
-            }
-        }
-    }
 }
