@@ -20,6 +20,8 @@ Blink1Pattern::Blink1Pattern(const char* name, QObject *parent) : QObject(parent
     t=NULL;
 }
 
+// FIXME: this should return something indicating parsing success or failure
+// (e.g. this should be class method that returns good object or null)
 void Blink1Pattern::fromJson( QJsonObject obj)
 {
     setName( obj.value("name").toString() );
@@ -31,7 +33,7 @@ void Blink1Pattern::fromJson( QJsonObject obj)
     setSystem(obj.value("system").toBool());
 }
 
-QJsonObject Blink1Pattern::toFullJsonReadyToSave()
+QJsonObject Blink1Pattern::toJson()  // wtf marcin toFullJsonReadyToSave()
 {
     QJsonObject obj;
     obj.insert("name", name());
@@ -42,13 +44,7 @@ QJsonObject Blink1Pattern::toFullJsonReadyToSave()
     obj.insert("system",isSystem());
     return obj;
 }
-QJsonObject Blink1Pattern::toJsonWithNameAndPatternStr()
-{
-    QJsonObject obj;
-    obj.insert("name", name());
-    obj.insert("pattern", patternStr());
-    return obj;
-}
+
 void Blink1Pattern::resetObj()
 {
     mname = "";

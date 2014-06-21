@@ -26,10 +26,9 @@ class Blink1Pattern : public QObject
 public:
     Blink1Pattern(QObject *parent=0);
     Blink1Pattern(const char* name, QObject *parent=0);
-    QJsonObject toFullJsonReadyToSave();
-    QJsonObject toJsonWithNameAndPatternStr();
-    bool fromPatternStr(QString);
     void fromJson( QJsonObject obj);
+    QJsonObject toJson();
+    bool fromPatternStr(QString);
 
     QString name() const;
     void setName(const QString& name);

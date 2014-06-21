@@ -558,49 +558,53 @@ void MainWindow::saveSettings()
 
     // save patterns
     QJsonArray qarrp;
-    foreach (QString nm, patterns.keys() ) {  // crashed here once?
-        if(!patterns.value(nm)) continue;
+    foreach (QString nm, patterns.keys() ) {  
+        if(!patterns.value(nm)) continue; // if no pattern by that name, skip (should never happen)
         Blink1Pattern* p = patterns.value(nm);
         if(p->isSystem()) continue;  // don't save system patterns
         if(p->getColors().count() == 0 ) continue; // disregard zero-length patterns
-        QJsonObject obj = patterns.value(nm)->toFullJsonReadyToSave();
+        QJsonObject obj = patterns.value(nm)->toJson(); 
         qarrp.append(obj);
     }
-    QString patternsstr = QJsonDocument(qarrp).toJson();
+    QString patternsstr = QJsonDocument(qarrp).toJson(QJsonDocument::Compact);
     settings.setValue("patterns", patternsstr);
+
     // save inputs
     QJsonArray qarri;
     foreach (QString nm, inputs.keys() ) {
         QJsonObject obj = inputs.value(nm)->toFullJsonReadyToSave();
         qarri.append(obj);
     }
-    QString inputsstr = QJsonDocument(qarri).toJson();
+    QString inputsstr = QJsonDocument(qarri).toJson(QJsonDocument::Compact);
     settings.setValue("inputs", inputsstr);
 
+    // save buttons
     QJsonArray qbutt;
     for(int i=0;i<bigButtons2.count();i++){
         QJsonObject but=bigButtons2.at(i)->toJson();
         qbutt.append(but);
     }
-    QString buttsstr = QJsonDocument(qbutt).toJson();
+    QString buttsstr = QJsonDocument(qbutt).toJson(QJsonDocument::Compact);
     settings.setValue("bigbuttons2",buttsstr);
 
+    // save emails  (why aren't these inputs?)
     QJsonArray qarrpm;
     foreach (QString nm, emails.keys() ) {
         if(!emails.value(nm)) continue;
         QJsonObject obj = emails.value(nm)->toJson();
         qarrpm.append(obj);
     }
-    QString emsstr = QJsonDocument(qarrpm).toJson();
+    QString emsstr = QJsonDocument(qarrpm).toJson(QJsonDocument::Compact);
     settings.setValue("emails", emsstr);
 
+    // save hardware monitors (why aren't these inputs?)
     QJsonArray qarrpm2;
     foreach (QString nm, hardwareMonitors.keys() ) {
         if(!hardwareMonitors.value(nm)) continue;
         QJsonObject obj = hardwareMonitors.value(nm)->toJson();
         qarrpm2.append(obj);
     }
-    QString harstr = QJsonDocument(qarrpm2).toJson();
+    QString harstr = QJsonDocument(qarrpm2).toJson(QJsonDocument::Compact);
     settings.setValue("hardwareMonitors", harstr);
 }
 
