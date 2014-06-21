@@ -175,7 +175,7 @@ void HttpServer::startRead(){
             QJsonArray qarrp;
             QMap<QString,Blink1Pattern *>patterns=mw->getFullPatternList();
             foreach (QString nm, patterns.keys() ) {
-                QJsonObject obj = patterns.value(nm)->toJsonWithNameAndPatternStr();
+                QJsonObject obj = patterns.value(nm)->toJson(); //WithNameAndPatternStr();
                 qarrp.append(obj);
             }
             resp.insert("patterns",qarrp);
