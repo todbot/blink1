@@ -25,11 +25,14 @@ func main() {
 
 	b := blink.NewBlink()
 
-	b.Blink(10, 250*time.Millisecond)
+	// b.Blink(10, 250*time.Millisecond)
+	// time.Sleep(1 * time.Second)
+
+	b.SetRGBN(10, 45, 233, 1)
 	time.Sleep(1 * time.Second)
 
-	b.SetRGB(10, 45, 233)
+	b.SetRGBN(10, 45, 233, 2)
 	time.Sleep(1 * time.Second)
 
-	b.Random(10, 250*time.Millisecond)
+	// b.Random(10, 250*time.Millisecond)
 }
