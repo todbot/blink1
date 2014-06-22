@@ -41,12 +41,8 @@ const fadeMs = 100
 func init() {
 	IDENT_VENDOR_NUM = C.int(0x27B8)
 	IDENT_PRODUCT_NUM = C.int(0x01ED)
-	IDENT_VENDOR_STRING = C.CString("ThingM") // C strings need to be freed
-	IDENT_PRODUCT_STRING = C.CString("blink(1)")
-
-	// Those C strings could be freed using
-	// C.free(unsafe.Pointer(IDENT_VENDOR_STRING))
-	// C.free(unsafe.Pointer(IDENT_PRODUCT_STRING))
+	IDENT_VENDOR_STRING = nil 
+	IDENT_PRODUCT_STRING = nil
 }
 
 type Blink struct {
@@ -66,6 +62,10 @@ func (b *Blink) Blink(num int, blinkMs time.Duration) {
 
 func (bl *Blink) SetRGB(r, g, b int) {
 	setRGB(bl.dev, r, g, b)
+}
+
+func (bl *Blink) SetRGBN(r, g, b, n int) {
+	setRGBN(bl.dev, r, g, b, n)
 }
 
 // show num random colors, each for blinkMs milliseconds
@@ -88,7 +88,7 @@ func (b *Blink) close() {
 func blink(dev *C.struct_usbDevice_t, num int, blinkMs time.Duration) {
 	v := [2]int{0, 255}
 	for i := 0; i < num*2; i++ {
-		rc := fadeToRgbBlink1(dev, fadeMs, v[i%2], v[i%2], v[i%2])
+		rc := fadeToRgbBlink1(dev, fadeMs, v[i%2], v[i%2], v[i%2], 0)
 		if rc != 0 { // on error, do something, anything. come on.
 			log.Print("error in blink: couldn't open blink1. Error: ", errorMsgBlink1(rc))
 		}
@@ -156,10 +156,14 @@ func errorMsgBlink1(errCode C.int) string {
 }
 
 func setRGB(dev *C.usbDevice_t, r, g, b int) C.int {
-	return fadeToRgbBlink1(dev, fadeMs, r, g, b)
+	return fadeToRgbBlink1(dev, fadeMs, r, g, b, 0)
 }
 
-func fadeToRgbBlink1(dev *C.usbDevice_t, fadeMillis, r, g, b int) C.int {
+func setRGBN(dev *C.usbDevice_t, r, g, b, n int) C.int {
+	return fadeToRgbBlink1(dev, fadeMs, r, g, b, n)
+}
+
+func fadeToRgbBlink1(dev *C.usbDevice_t, fadeMillis, r, g, b, n int) C.int {
 	var buf [9]C.char
 
 	if dev == nil {
@@ -175,7 +179,7 @@ func fadeToRgbBlink1(dev *C.usbDevice_t, fadeMillis, r, g, b int) C.int {
 	buf[4] = C.char(b)
 	buf[5] = C.char((dms >> 8))
 	buf[6] = C.char(dms % 127)
-	buf[7] = 0
+	buf[7] = C.char(n)
 
 	err := C.usbhidSetReport(dev, &buf[0], C.int(8))
 	if err != 0 {
