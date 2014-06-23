@@ -185,6 +185,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect( &viewer, SIGNAL(visibilityChanged(QWindow::Visibility)), this, SLOT(viewerVisibilityChanged(QWindow::Visibility)) );
     
     qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
+
 }
 
 // for testing the above connect()s
@@ -335,7 +336,7 @@ void MainWindow::updateInputs()
         }
         else
         {
-                if(type.toUpper() == "IFTTT.COM")
+                if(type.toUpper() == "IFTTT")
                 {                    
                     if(inputTimerCounter == 0){
                         inputs[key]->updateTime();
@@ -413,11 +414,16 @@ void MainWindow::updateInputs()
 
 }
 
-// checkIFttt() parses the /eventsall JSON response from api.thingm.com
-// param txt is full json response from ifttt api server
-// Scans through received IFTTT events, find matches to input's rule names.
-// On match and if date is newer than last saved date, 
-// execute the pattern bound to that rule and update event list
+/**
+ * Parses the /eventsall JSON response from api.thingm.com.
+ * Scans through received IFTTT events, find matches to input's rule names.
+ * On match and if date is newer than last saved date, 
+ * execute the pattern bound to that rule and update event list.
+ *
+ * @note FIXME: not sure why this isn't in DataInput or Blink1Input
+ *
+ * @param txt Full JSON response from ifttt api server
+ */
 void MainWindow::checkIfttt(QString txt)
 {
     //qDebug() << "todtest: checkIfttt(txt) " << txt;
@@ -447,7 +453,7 @@ void MainWindow::checkIfttt(QString txt)
             // is this an IFTTT input and does the event name match?
             // FIXME: type should be just "ifttt" or enum 
             // FIXME: name should be same as rule name (aka arg1)
-            if( input->type() == "IFTTT.COM" ) { 
+            if( input->type() == "IFTTT" ) { 
                 // is the event newer than our last event, then trigger!
                 if( evdate > input->date() ) {
                     input->setDate(evdate); // save for next go around
@@ -847,6 +853,14 @@ void MainWindow::createActions()
     serverAction->setChecked(enableServer);
     connect(serverAction,SIGNAL(triggered()),this,SLOT(startStopServer()));
 
+    // shortcuts don't work apparently in traymenus
+    //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
+    // this doesn't appear to work either
+    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), This, SLOT(resetAlertsOption()));
+    // neither does this work
+    //resetAlertsShortcut = new QShortcut( QKeySequence(Qt::CTRL+Qt::Key_R), QApplication::activeWindow());
+    //resetAlertsShortcut->setContext(Qt::ApplicationShortcut);
+    //connect( resetAlertsShortcut, SIGNAL(activated()), this, SLOT(resetAlertsOption()));
 }
 
 void MainWindow::createTrayIcon()
@@ -1115,7 +1129,7 @@ QList<QObject*> MainWindow::getInputsList(){
     QList<Blink1Input*> in=inputs.values();
     qSort(in.begin(),in.end(),MainWindow::compareInputsFunction);
     for(int i=0;i<in.count();i++)
-        if(in.at(i)->type()!="IFTTT.COM")
+        if(in.at(i)->type()!="IFTTT")
             inputsList.append(in.at(i));
     return inputsList;
 }
@@ -1126,7 +1140,7 @@ QList<QObject*> MainWindow::getIFTTTList(){
     QList<Blink1Input*> in=inputs.values();
     qSort(in.begin(),in.end(),MainWindow::compareInputsFunction);
     for(int i=0;i<in.count();i++)
-        if(in.at(i)->type()=="IFTTT.COM")
+        if(in.at(i)->type()=="IFTTT")
             inputsList.append(in.at(i));
     return inputsList;
 }
@@ -1311,7 +1325,7 @@ void MainWindow::createNewIFTTTInput(){
     while(inputs.contains("Name"+QString::number(duplicateCounter)))
         duplicateCounter++;
     bp->setName("Name"+QString::number(duplicateCounter));
-    bp->setType("IFTTT.COM");
+    bp->setType("IFTTT");
     bp->setArg1("My Rule Name");
     bp->setArg2("no value");
     bp->setPatternName("");
@@ -1737,6 +1751,7 @@ void MainWindow::addToLog(QString txt){
     }
 }
 void MainWindow::resetAlertsOption(){
+    qDebug() << "resetAlertsOption";
     if(patterns.contains(activePatternName)){
         patterns.value(activePatternName)->stop();
     }
