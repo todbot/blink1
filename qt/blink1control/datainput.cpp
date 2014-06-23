@@ -60,7 +60,7 @@ QString DataInput::readColorPattern(QString str)
 QColor DataInput::readColorCode(QString str)
 {
     QColor c;
-    QRegExp rx("(#\\d{6})"); // look for "#cccccc"
+    QRegExp rx("(#[A-Fa-f0-9]{6})"); // look for "#cccccc" style hex colorcode
     if( rx.indexIn(str) != -1 ) { 
         qDebug() << "color match! " << rx.cap(1);
         c.setNamedColor( rx.cap(1) );
@@ -79,7 +79,7 @@ void DataInput::parsePatternOrColor(QString str, QString type, int lastModTime)
 {
     // look for pattern
     QString patternName = readColorPattern( str );
-    qDebug() << "type:"<<type<< " patternName:"<<patternName;
+    qDebug() << "type:"<<type<< " patternName:"<<patternName << "str: "<<str;
     if( !patternName.isEmpty() ) { // pattern found
         emit runPattern(patternName, false);
         emit addReceiveEvent( lastModTime, patternName, type);
@@ -125,8 +125,8 @@ void DataInput::start()
             connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(onError()));
         }
         else {
-            emit setValueRet("bad URL");
-            input->setArg2("bad URL");
+            emit setValueRet("Bad URL");
+            input->setArg2("Bad URL");
             input->setDate(-1);  // FIXME: don't like -1 here
             emit toDelete(this);
         }
@@ -134,54 +134,60 @@ void DataInput::start()
     else if( type == "FILE" ) { 
         QFileInfo fileInfo;
         fileInfo.setFile(input->arg1());
-        if(!fileInfo.exists()){
+        if( !fileInfo.exists() ) {
+            qDebug() << "no file";
             input->setArg2("Not Found");
             input->setDate(-1);
         }
-        int lastModTime = fileInfo.lastModified().toTime_t();
-        if( lastModTime != (uint)input->date()) {
-            QFile f(input->arg1());
-            if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                emit setValueRet("Old File"); // FIXME: is this signal ever used?
-                input->setArg2("OldFile");
-                input->setDate(-1);
-                emit toDelete(this);
-                return;
-            }
-            input->setDate( lastModTime); //fileInfo.lastModified().toTime_t());
-            QString txt = "";
-            QTextStream in(&f);
-            txt.append(in.readAll());
-
-            parsePatternOrColor( txt, "FILE", lastModTime );
-
-        } // last modified
-        
+        else { 
+            int lastModTime = fileInfo.lastModified().toTime_t();
+            //if( lastModTime != (uint)input->date()) {  // why cast to uint?
+            if( lastModTime != input->date()) {
+                qDebug() << "newer file";
+                QFile f(input->arg1());
+                if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                    emit setValueRet("Old File"); // FIXME: is this signal ever used?
+                    input->setArg2("OldFile");
+                    input->setDate(-1);
+                    emit toDelete(this);
+                    return;
+                }
+                input->setDate( lastModTime); //fileInfo.lastModified().toTime_t());
+                QString txt = "";
+                QTextStream in(&f);
+                txt.append(in.readAll());
+                
+                parsePatternOrColor( txt, "FILE", lastModTime );
+            } // last modified
+        }
         emit toDelete(this);
     }
     else if( type == "SCRIPT" ) { 
-        process = new QProcess;
-        connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(onProcessOutput()));
-        connect(process, SIGNAL(readyReadStandardError()), this, SLOT(onError()));
-        connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onError()));
-        connect(process, SIGNAL(finished(int)), this, SLOT(onProcessFinished()));
-        QString path = QStandardPaths::locate(QStandardPaths::DocumentsLocation, input->arg1());
-        QFile f(path);
+        //QString path = QStandardPaths::locate(QStandardPaths::DocumentsLocation, input->arg1());
+        //QFile f(path);
+        //fileInfo.setFile(path);
         QFileInfo fileInfo;
-        fileInfo.setFile(path);
-        if(f.exists()){
-            if(fileInfo.lastModified().toTime_t() != (uint)input->date()){
-                input->setDate(fileInfo.lastModified().toTime_t());
-                process->start(path);  // start process running
-            }else{
-                emit toDelete(this);
-            }
-        }else
-        {
-            emit setValueRet("Not Found");
+        fileInfo.setFile( input->arg1() );
+        if( !fileInfo.exists() ) {
+            emit setValueRet("Not Found"); // FIXME: why this?
             input->setArg2("Not Found");
             input->setDate(-1);
             emit toDelete(this);
+        } 
+        else { 
+            // FIXME: should check new value compare to lastVal
+            // (and FIXME: need to refactor to properly use lastVal for all monitor types)
+            //if(fileInfo.lastModified().toTime_t() != (uint)input->date()){
+            input->setDate(fileInfo.lastModified().toTime_t());
+            process = new QProcess;
+            connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(onProcessOutput()));
+            connect(process, SIGNAL(readyReadStandardError()), this, SLOT(onError()));
+            connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onError()));
+            connect(process, SIGNAL(finished(int)), this, SLOT(onProcessFinished()));
+            process->start( fileInfo.canonicalFilePath() );  // start process running
+            //} else {
+            //emit toDelete(this);
+            //}
         }
     }
     else { 
@@ -217,11 +223,14 @@ void DataInput::onFinished()
         }
         if( lastModTime <= input->date() ) {  // old page
             qDebug() << "onFinished: old url";
-            // FIXME: do something here
+            // FIXME: do something better here
+            input->setArg2( "Not Modified" );  // FIXME: arg2 should not be used for lastVal
         }
-        input->setDate(lastModTime); // FIXME: blinkinput vs datainput? which is which, omg marcin, really?
+        else { 
+            input->setDate(lastModTime); // FIXME: blinkinput vs datainput? which is which, omg marcin, really?
 
-        parsePatternOrColor( txt, "URL", lastModTime);
+            parsePatternOrColor( txt, "URL", lastModTime);
+        }
     }
     else { 
         qDebug() << "onFinished: unexpected type: "<<type;
@@ -258,7 +267,7 @@ void DataInput::onError()
     if( type == "IFTTT" ) { 
         
     }
-    if(type == "SCRIPT") {
+    else if(type == "SCRIPT") {
         //qDebug() << "Script error:";
         //qDebug() << process->errorString();
         process->deleteLater();

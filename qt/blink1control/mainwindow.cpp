@@ -473,6 +473,9 @@ void MainWindow::addRecentEvent(int date, QString name, QString from)
     addToLog(name+" "+from);
     QString text = getTimeFromInt(QDateTime::currentDateTime().toTime_t()/*date*/) + "-" + name + " via " + from;
     recentEvents.prepend(text);
+    if( recentEvents.count() > RECENT_EVENTS_MAX ) { 
+        recentEvents.removeLast();
+    }
     addToLog(QString::number(date));
     emit recentEventsUpdate();
 }
@@ -1416,8 +1419,9 @@ QString MainWindow::selectFile(QString name){
             return tmp;
         }else{
             QString tmp=QFileDialog::getOpenFileName(this,tr("Select Script"),QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), tr(""));
-            QFileInfo fi(tmp);
-            return fi.fileName();
+            //QFileInfo fi(tmp);
+            //return fi.fileName();
+            return tmp;
         }
     }
     return "";
