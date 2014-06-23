@@ -253,7 +253,7 @@ void HttpServer::startRead(){
 void HttpServer::discardClient(){
     QTcpSocket *s=(QTcpSocket*)sender();
     if(!s) return;
-    clientConnections.removeAll(s);
+    clientConnections.removeAll(s);  // crash here?
     s->deleteLater();
 }
 bool HttpServer::status(){

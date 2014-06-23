@@ -27,6 +27,9 @@ public:
     void setPattern(Blink1Pattern* pat) { pattern = pat; }
     void setPatternList(QStringList list) { patternList = list; }
     void setIftttKey(QString iKey) { iftttKey = iKey; }
+    QString readColorPattern( QString str);
+    QColor readColorCode(QString str);
+    void parsePatternOrColor(QString str, QString type, int lastModTime);
 
 private:
     QNetworkAccessManager *networkManager;
@@ -44,7 +47,7 @@ private:
     QString iftttKey;
     QString processOutput;
 
-    int typeToInt(QString);
+    //int typeToInt(QString);
     bool readingProcess;
 private slots:
     void onFinished();

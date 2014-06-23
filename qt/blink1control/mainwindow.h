@@ -38,6 +38,7 @@
 #include <QKeyEvent>
 #include <QEvent>
 #include <QAction>
+#include <QShortcut>
 
 #include <QMenu>
 #include <QUrlQuery>
@@ -266,6 +267,7 @@ private:
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
+    //QShortcut* resetAlertsShortcut;
 
     QTimer* blink1timer;
     blink1_device* blink1dev;
