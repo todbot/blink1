@@ -47,6 +47,8 @@
 #include <QFont>
 #include <QFontMetrics>
 
+// maximum number events in the Recent Events list
+#define RECENT_EVENTS_MAX 200
 
 class HttpServer;
 
