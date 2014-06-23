@@ -4,7 +4,7 @@
  * Part of the blink(1) open source hardware project
  * See https://github.com/todbot/blink1 for details
  *
- * 2012-14, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
+ * 2012-2014, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
  *
  */
 
