@@ -10,7 +10,7 @@ public class Blink1
    * pointer to native hid_device* 
    * do not use.
    */
-  long hidDevicePtr = 0;
+  long blink1DevicePtr = 0;
 
   /**
    * Error code of last operation 
@@ -95,7 +95,7 @@ public class Blink1
     }
 
     Random rand = new Random();
-    for( int i=0; i<5; i++ ) {
+    for( int i=0; i<10; i++ ) {
       int r = rand.nextInt() & 0xFF;
       int g = rand.nextInt() & 0xFF;
       int b = rand.nextInt() & 0xFF;
@@ -120,7 +120,7 @@ public class Blink1
       
       blink1.close();
       
-      Blink1.pause( 500 );
+      Blink1.pause( 300 );
     }
 
     System.out.println("Turn off all blink(1)s.");

@@ -17,9 +17,9 @@ int isEnumerated = 0;
 blink1_device* getDevicePtr(JNIEnv *env, jobject obj)
 {
     jclass class = (*env)->GetObjectClass(env, obj); 
-    jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
-    jlong jhidptr = (*env)->GetLongField(env, obj, fieldId);
-    blink1_device* dev = (blink1_device*) jhidptr;
+    jfieldID fieldId = (*env)->GetFieldID(env, class, "blink1DevicePtr", "J");
+    jlong jdevptr = (*env)->GetLongField(env, obj, fieldId);
+    blink1_device* dev = (blink1_device*) jdevptr;
     return dev;
 }
 
@@ -27,7 +27,7 @@ blink1_device* getDevicePtr(JNIEnv *env, jobject obj)
 void setDevicePtr(JNIEnv *env, jobject obj, blink1_device* devt)
 {
     jclass class = (*env)->GetObjectClass(env, obj); 
-    jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
+    jfieldID fieldId = (*env)->GetFieldID(env, class, "blink1DevicePtr", "J");
     (*env)->SetLongField(env, obj, fieldId, (jlong)devt );
 }
 
