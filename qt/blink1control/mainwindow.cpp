@@ -240,15 +240,7 @@ void MainWindow::markViewerAsClosing(){
 // FIXME: wth is this function for?
 void MainWindow::deleteDataInput(DataInput *dI)
 {
-    if(dI->responseTo){
-        QJsonObject ob;
-        ob.insert("input", dI->input->toJson()); //toJsonWithNameTypePNameArg1Arg2AndDate());
-        ob.insert("status",QString("input "+dI->input->type().toLower()));
-        QJsonDocument jd(ob);
-        QByteArray ba=jd.toJson();
-        dI->responseTo->write(ba);
-        dI->responseTo=NULL;
-    }
+    qDebug()<<"deleteDataInput";
     dI->input->isChecking=false;
     if(dI->input->toDelete)
         delete dI->input;
@@ -317,10 +309,9 @@ void MainWindow::updateInputs()
         key = inputsIterator->key();
         type = inputs[key]->type();
         
-        if(type.toUpper() == "URL")
-        {
-            if(inputs[key]->freqCounter()==0)//inputTimerCounter == 0)
-            {
+        // FIXME: why are these objects created and deleted for each iteration?
+        if( type == "url" ) {
+            if(inputs[key]->freqCounter()==0) { //inputTimerCounter == 0)
                 qDebug() << "type: URL, freqcounter==0";
 
                 DataInput *dI = new DataInput(this);
@@ -328,7 +319,7 @@ void MainWindow::updateInputs()
                 connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
                 connect(dI, SIGNAL(setColor(QColor)), this, SLOT(setColorFromDataInput(QColor)));
                 connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
-                dI->setType(type.toUpper());
+                dI->setType(type);
                 dI->setInput(inputs[key]);
                 dI->setPattern(patterns.value(key));
                 dI->setPatternList(patterns.keys());
@@ -337,48 +328,42 @@ void MainWindow::updateInputs()
             }
             inputs[key]->changeFreqCounter();
         }
-        else
-        {
-                if(type.toUpper() == "IFTTT")
-                {                    
-                    if(inputTimerCounter == 0){
-                        inputs[key]->updateTime();
-                        if(!isIftttChecked)
-                        {
-                            isIftttChecked = true;
-                            DataInput *dI = new DataInput(this);
-                            connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
-                            connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
-                            connect(dI, SIGNAL(setColor(QColor)), this, SLOT(setColorFromDataInput(QColor)));
-                            connect(dI, SIGNAL(iftttToCheck(QString)), this, SLOT(checkIfttt(QString)));
-                            connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
-                            dI->setType(type.toUpper());
-                            dI->setInput(inputs[key]);
-                            dI->setPattern(patterns.value(key));
-                            dI->setPatternList(patterns.keys());
-                            dI->setIftttKey(iftttKey);
-                            dI->start();
-                        }
-                    }
-                }
-                else
-                {
-                    if(inputs[key]->freqCounter()==0){
-                        DataInput *dI = new DataInput(this);
-                        connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
-                        connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
-                        connect(dI, SIGNAL(setColor(QColor)), this, SLOT(setColorFromDataInput(QColor)));
-                        connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
-                        dI->setType(type.toUpper());
-                        dI->setInput(inputs[key]);
-                        dI->setPattern(patterns.value(key));
-                        dI->setPatternList(patterns.keys());
-                        dI->setIftttKey(iftttKey);
-                        dI->start();
-                    }
-                    inputs[key]->changeFreqCounter();
+        else if( type == "ifttt" ) {                    
+            if(inputTimerCounter == 0){
+                inputs[key]->updateTime();
+                if(!isIftttChecked) {
+                    isIftttChecked = true;
+                    DataInput *dI = new DataInput(this);
+                    connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
+                    connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
+                    connect(dI, SIGNAL(setColor(QColor)), this, SLOT(setColorFromDataInput(QColor)));
+                    connect(dI, SIGNAL(iftttToCheck(QString)), this, SLOT(checkIfttt(QString)));
+                    connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
+                    dI->setType(type);
+                    dI->setInput(inputs[key]);
+                    dI->setPattern(patterns.value(key));
+                    dI->setPatternList(patterns.keys());
+                    dI->setIftttKey(iftttKey);
+                    dI->start();
                 }
             }
+        }
+        else {
+            if(inputs[key]->freqCounter()==0){
+                DataInput *dI = new DataInput(this);
+                connect(dI, SIGNAL(toDelete(DataInput*)), this, SLOT(deleteDataInput(DataInput*)));
+                connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
+                connect(dI, SIGNAL(setColor(QColor)), this, SLOT(setColorFromDataInput(QColor)));
+                connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
+                dI->setType(type);
+                dI->setInput(inputs[key]);
+                dI->setPattern(patterns.value(key));
+                dI->setPatternList(patterns.keys());
+                dI->setIftttKey(iftttKey);
+                dI->start();
+            }
+            inputs[key]->changeFreqCounter();
+        }
     }
 
     delete emailsIterator;
@@ -456,7 +441,7 @@ void MainWindow::checkIfttt(QString txt)
             // is this an IFTTT input and does the event name match?
             // FIXME: type should be just "ifttt" or enum 
             // FIXME: name should be same as rule name (aka arg1)
-            if( input->type() == "IFTTT" ) { 
+            if( input->type() == "ifttt" ) { 
                 // is the event newer than our last event, then trigger!
                 if( evdate > input->date() ) {
                     input->setDate(evdate); // save for next go around
@@ -1134,9 +1119,10 @@ QList<QObject*> MainWindow::getInputsList(){
 
     QList<Blink1Input*> in=inputs.values();
     qSort(in.begin(),in.end(),MainWindow::compareInputsFunction);
-    for(int i=0;i<in.count();i++)
-        if(in.at(i)->type()!="IFTTT")
+    for(int i=0;i<in.count();i++) {
+        if(in.at(i)->type()!="ifttt") // FIXME: wat?
             inputsList.append(in.at(i));
+    }
     return inputsList;
 }
 
@@ -1146,7 +1132,7 @@ QList<QObject*> MainWindow::getIFTTTList(){
     QList<Blink1Input*> in=inputs.values();
     qSort(in.begin(),in.end(),MainWindow::compareInputsFunction);
     for(int i=0;i<in.count();i++)
-        if(in.at(i)->type()=="IFTTT")
+        if(in.at(i)->type()=="ifttt")
             inputsList.append(in.at(i));
     return inputsList;
 }
@@ -1318,7 +1304,7 @@ void MainWindow::updateInputsArg1(QString name, QString arg1){
     checkInput(name);
 }
 void MainWindow::updateInputsType(QString name, QString type){
-    inputs.value(name)->setType(type);
+    inputs.value(name)->setType(type.toLower());
     emit inputsUpdate();
     checkInput(name);
 }
@@ -1331,7 +1317,7 @@ void MainWindow::createNewIFTTTInput(){
     while(inputs.contains("Name"+QString::number(duplicateCounter)))
         duplicateCounter++;
     bp->setName("Name"+QString::number(duplicateCounter));
-    bp->setType("IFTTT");
+    bp->setType("ifttt");
     bp->setArg1("My Rule Name");
     bp->setArg2("no value");
     bp->setPatternName("");
@@ -1344,7 +1330,7 @@ void MainWindow::createNewInput(){
     while(inputs.contains("Name"+QString::number(duplicateCounter)))
         duplicateCounter++;
     bp->setName("Name"+QString::number(duplicateCounter));
-    bp->setType("FILE");
+    bp->setType("file");
     bp->setArg1("Double click to change path");
     bp->setArg2("no value");
     bp->setFreqCounter(1);
@@ -1401,7 +1387,7 @@ void MainWindow::checkInput(QString key){
     connect(dI, SIGNAL(runPattern(QString, bool)), this, SLOT(runPattern(QString, bool)));
     connect(dI, SIGNAL(setColor(QColor)), this, SLOT(setColorFromDataInput(QColor)));
     connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
-    dI->setType(inputs[key]->type().toUpper());
+    dI->setType(inputs[key]->type());
     dI->setInput(inputs[key]);
     dI->setPatternList(patterns.keys());
     dI->setIftttKey(iftttKey);
@@ -1417,7 +1403,7 @@ bool MainWindow::isMk2(){
 }
 QString MainWindow::selectFile(QString name){
     if(inputs.contains(name)){
-        if(inputs.value(name)->type()=="FILE"){
+        if(inputs.value(name)->type()=="file"){
             QString tmp=QFileDialog::getOpenFileName(this,tr("Select File"),"", tr(""));
             return tmp;
         }else{

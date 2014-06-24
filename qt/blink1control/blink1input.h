@@ -22,11 +22,8 @@ class Blink1Input : public QObject
 public:
     explicit Blink1Input(QObject *parent = 0);
     
-    //QJsonObject toFullJsonReadyToSave();
-    //QJsonObject toJsonWithNameTypeAndArg1();
-    //QJsonObject toJsonWithNameTypePNameArg1Arg2AndDate();
     QJsonObject toJson();
-    void fromJson( QJsonObject obj);
+    void fromJson(QJsonObject obj);
 
     QString name() const;
     void setName(const QString& name);

@@ -103,7 +103,8 @@ public slots:
         return bi1->date()>bi2->date();
     }
     static bool compareInputsFunction(Blink1Input *bi1,Blink1Input *bi2){
-        return bi1->date()<bi2->date();
+        return bi1->name()<bi2->name();
+        //return bi1->date()<bi2->date();
     }
 
     QList<QObject*> getPatternsList();

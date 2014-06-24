@@ -21,6 +21,10 @@ public:
 
     void start();
 
+    /**
+     * Set type of input monitor
+     * @param t the type, can be "ifttt", "url", "file", "script"
+     */
     void setType(QString t) { type = t; }
     void setRule(QString r) { rule = r; }
     void setInput(Blink1Input* in) { input = in; }
@@ -40,14 +44,12 @@ private:
     QString rule;
 public:
     Blink1Input *input;
-    QTcpSocket *responseTo;
 private:
-    Blink1Pattern *pattern;
+    Blink1Pattern *pattern;  // FIXME: why is this ref to pattern and not just pattern name?
     QStringList patternList;
     QString iftttKey;
     QString processOutput;
 
-    //int typeToInt(QString);
     bool readingProcess;
 private slots:
     void onFinished();
@@ -61,7 +63,6 @@ signals:
     void setColor(QColor);
     void setValueRet(QString);
     void iftttToCheck(QString);
-    void iftttToCheck(QString,Blink1Input*);
     void addReceiveEvent(int date, QString name, QString from);
 
 };
