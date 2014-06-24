@@ -35,6 +35,7 @@ where:
         p = position in list, starts at 0, goes to patt_max-1 
        sp = start loop position (0 - patt_max-1)
        ep = end loop position (1 - patt_max)
+        c = count of times to repeat looping
        ad = address starting at 1
         v = arbitrary value
         1 = report id (must always be present)
