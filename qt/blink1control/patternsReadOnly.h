@@ -17,7 +17,7 @@ QString patternsReadOnly =
 
 "{ \"date\": 947, \"name\": \"white flashes\","
 "  \"readonly\": true, \"system\": true, " 
-"  \"pattern\": \"3,#ff0000,0.5,0,#000000,0.5,\" },"
+"  \"pattern\": \"3,#ffffff,0.5,0,#000000,0.5,\" },"
 
 "{ \"date\": 946, \"name\": \"yellow flashes\","
 "  \"readonly\": true, \"system\": true, " 
