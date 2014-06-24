@@ -325,7 +325,7 @@ void Blink1Pattern::removeColorAndTime(int idx){
 }
 void Blink1Pattern::changeRepeats(){
     mrepeats=mrepeats+1;
-    if(mrepeats==5) mrepeats=-1;
+    if(mrepeats==7) mrepeats=-1; // FIXME: why -1?
     emit updateValues();
 }
 

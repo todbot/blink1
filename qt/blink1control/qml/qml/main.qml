@@ -3033,6 +3033,18 @@ Image{
                 mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],4)
             }
         }
+        MenuItem {
+            text: "x5"
+            onTriggered: {
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],5)
+            }
+        }
+        MenuItem {
+            text: "x6"
+            onTriggered: {
+                mw.changePatternRepeatsTo(inputsList.pnm[lista.currentIndex+1],6)
+            }
+        }
     }
 
     Menu {
