@@ -1990,7 +1990,7 @@ Image{
                                             inputsList2.restoreName();
                                             inputsList2.restorePath();
                                             inputsList2.currentIndex=index
-                                            if(pName2.text=="FILE" || pName2.text=="SCRIPT"){
+                                            if(pName2.text=="file" || pName2.text=="script"){
                                                 lpath.oldPath=lpath.wholepath
                                                 lpath.text=mw.selectFile(ti2.inputname)
                                                 if(lpath.text.length>=1){
@@ -3427,13 +3427,16 @@ Image{
         ListModel{
             id: types
             ListElement{
-                name: "FILE"
+                name: "file"
             }
             ListElement{
-                name: "SCRIPT"
+                name: "script"
             }
             ListElement{
-                name: "URL"
+                name: "url"
+            }
+            ListElement{
+                name: "none"
             }
         }
         onVisibleChanged: {

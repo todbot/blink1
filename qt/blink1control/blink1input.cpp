@@ -15,7 +15,7 @@ Blink1Input::Blink1Input(QObject *parent) :
 void Blink1Input::fromJson( QJsonObject obj)
 {
     setName( obj.value("name").toString() );
-    setType(obj.value("type").toString());
+    setType(obj.value("type").toString().toLower());
     setArg1(obj.value("arg1").toString());
     setArg2(obj.value("arg2").toString());
     setDate(obj.value("date").toDouble());
