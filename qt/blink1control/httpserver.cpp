@@ -122,8 +122,8 @@ void HttpServer::startRead(){
             resp.insert("loglevel",mw->getLogging());
             resp.insert("status",QString("logging"));
         }
-        else if( cmd=="/inputs" ) {
-            int enable=-1;
+        else if( cmd=="/input" || cmd=="/inputs" ) {
+            int enable=-1; // -1 == enable wasn't specified
             QMap<QString,Blink1Input*> inputs=mw->getFullInputList();
             QString enablestr = qurlquery.queryItemValue("enable");
             if( enablestr == "on" || enablestr=="off" ) {  // FIXME: find better way to do this
@@ -131,24 +131,14 @@ void HttpServer::startRead(){
             }
             QJsonArray qarrp;
             foreach (QString nm, inputs.keys() ) {  /// FIXME: this prints wrong name
-                qDebug()<<nm;
-                if(enable==-1){
-                    //QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
-                    QJsonObject obj = inputs.value(nm)->toJsonWithNameTypePNameArg1Arg2AndDate(); //ithNameTypeAndArg1();
-                    qarrp.append(obj);
-                }else if(enable==0){
-                    if(!inputs.value(nm)->pause()){
-                        //QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
-                        QJsonObject obj = inputs.value(nm)->toJsonWithNameTypePNameArg1Arg2AndDate();//WithNameTypeAndArg1();
-                        qarrp.append(obj);
-                    }
-                }else if(enable==1){
-                    if(inputs.value(nm)->pause()){
-                        QJsonObject obj = inputs.value(nm)->toJsonWithNameTypeAndArg1();
-                        qarrp.append(obj);
-                    }
+                qDebug()<<"httpserver /input: "<<nm;
+                QJsonObject obj = inputs.value(nm)->toJson();
+                qarrp.append(obj);
+                if( enable == 1 || enable == 0 ) {
+                    inputs.value(nm)->setPause( (enable)==0 );  // enable or not input 
                 }
             }
+            resp.insert("enable", (enable!=0||enable!=-1));
             resp.insert("inputs",qarrp);
             resp.insert("status",QString("inputs"));
         }

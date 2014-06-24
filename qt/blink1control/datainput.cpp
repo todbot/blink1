@@ -178,16 +178,15 @@ void DataInput::start()
             // FIXME: should check new value compare to lastVal
             // (and FIXME: need to refactor to properly use lastVal for all monitor types)
             //if(fileInfo.lastModified().toTime_t() != (uint)input->date()){
+            // no, don't do lastModTime check on exec file, jeez
             input->setDate(fileInfo.lastModified().toTime_t());
             process = new QProcess;
             connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(onProcessOutput()));
             connect(process, SIGNAL(readyReadStandardError()), this, SLOT(onError()));
             connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(onError()));
             connect(process, SIGNAL(finished(int)), this, SLOT(onProcessFinished()));
-            process->start( fileInfo.canonicalFilePath() );  // start process running
-            //} else {
-            //emit toDelete(this);
-            //}
+            // start process running
+            process->start( fileInfo.canonicalFilePath() );
         }
     }
     else { 
@@ -265,14 +264,14 @@ void DataInput::onProcessFinished()
 void DataInput::onError()
 {
     if( type == "IFTTT" ) { 
-        
+        input->setArg2("connect error");
     }
     else if(type == "SCRIPT") {
         //qDebug() << "Script error:";
         //qDebug() << process->errorString();
-        process->deleteLater();
+        process->deleteLater();  // FIXME: what is deleteLater() for?
 //        while(process)
-            QThread::usleep(200);
+        QThread::usleep(200);  // FIXME: why is this here?
     }
     else if( type == "URL") {
         qDebug() << " error on URL " << reply;
@@ -281,95 +280,4 @@ void DataInput::onError()
     }
     emit toDelete(this);
 }
-
-// script
-    /*
-    int idx = processOutput.indexOf(QRegExp("#([0-9a-fA-F]{6})"));
-    QColor c=QColor("#000000");
-    if(idx!=-1)
-    {
-        c=QColor(processOutput.mid(idx,7));
-        emit setColor(c);
-        emit addReceiveEvent(QDateTime::currentDateTime().toTime_t(), c.name().toUpper(), "SCRIPT");
-        input->setArg2(c.name());
-    }
-    else
-    {
-        bool found = false;
-        int currentIndex = 0;
-        int idx2;
-        QString pName;
-        while(!found)
-        {
-            idx = processOutput.indexOf("\"", currentIndex);
-            if(idx == -1)
-                break;
-            currentIndex = idx+1;
-            idx2 = processOutput.indexOf("\"", currentIndex);
-            if(idx2 == -1)
-                break;
-            currentIndex = idx2+1;
-
-            pName = processOutput.mid(idx+1, idx2-idx-1);
-            for(int i=0; i<patternList.count(); i++)
-            {
-                if(patternList[i] == pName)
-                {
-                    emit runPattern(pName, false);
-                    emit addReceiveEvent(QDateTime::currentDateTime().toTime_t(), pName, "SCRIPT");
-                    input->setArg2(pName);
-                    found = true;
-                    break;
-                }
-            }
-
-        }
-        if(!found)
-            input->setArg2("NO VALUE");
-    }
-*/
-
-// file
-            /*
-            int idx=txt.indexOf(QRegExp("#([0-9a-fA-F]{6})"));
-            QColor c=QColor("#000000");
-            f.close();
-            if(idx!=-1)
-            {
-                c=QColor(txt.mid(idx,7));
-                emit setColor(c);
-                emit addReceiveEvent(fileInfo.lastModified().toTime_t(), c.name().toUpper(), "FILE");
-                input->setArg2(c.name());
-            }
-            else
-            {
-                QStringList list;
-                list.append("pattern:"); list.append("\"pattern\":");
-                QString patternName;
-                int index=-1;
-                for(int i=0; i<list.count(); i++) {
-                    index = txt.indexOf(list.at(i),0);
-                    if(index != -1)
-                        break;
-                }
-                if(index != -1) {
-                    index = txt.indexOf(":", index);
-                    int idx1, idx2;
-                    idx1 = txt.indexOf("\"", index);
-                    idx2 = txt.indexOf("\"", idx1+1);
-                    patternName = txt.mid(idx1+1, idx2-idx1-1);
-                    for(int i=0; i<patternList.count(); i++) {
-                        if(patternList[i] == patternName) {
-                            emit runPattern(patternName, false);
-                            emit addReceiveEvent(fileInfo.lastModified().toTime_t(), patternName, "FILE");
-                            input->setArg2(patternName);
-                            break;
-                        }
-                    }
-
-                }else{
-                    input->setArg2("NO VALUE");
-                }
-            }
-        */
 

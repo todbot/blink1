@@ -237,11 +237,12 @@ void MainWindow::markViewerAsClosing(){
 }
 */
 
+// FIXME: wth is this function for?
 void MainWindow::deleteDataInput(DataInput *dI)
 {
     if(dI->responseTo){
         QJsonObject ob;
-        ob.insert("input",dI->input->toJsonWithNameTypePNameArg1Arg2AndDate());
+        ob.insert("input", dI->input->toJson()); //toJsonWithNameTypePNameArg1Arg2AndDate());
         ob.insert("status",QString("input "+dI->input->type().toLower()));
         QJsonDocument jd(ob);
         QByteArray ba=jd.toJson();
@@ -266,6 +267,8 @@ void MainWindow::runPattern(QString name, bool fromQml)
 
 void MainWindow::setColorFromDataInput(QColor color)
 {
+    // FIXME: there's got to be a better way of doing this?
+    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
     changeColorFromQml(color);
 }
 
@@ -581,7 +584,7 @@ void MainWindow::saveSettings()
     // save inputs
     QJsonArray qarri;
     foreach (QString nm, inputs.keys() ) {
-        QJsonObject obj = inputs.value(nm)->toFullJsonReadyToSave();
+        QJsonObject obj = inputs.value(nm)->toJson(); //FullJsonReadyToSave();
         qarri.append(obj);
     }
     QString inputsstr = QJsonDocument(qarri).toJson(QJsonDocument::Compact);

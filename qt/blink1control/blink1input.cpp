@@ -24,7 +24,7 @@ void Blink1Input::fromJson( QJsonObject obj)
     setPatternName(obj.value("patternName").toString());
 }
 
-QJsonObject Blink1Input::toFullJsonReadyToSave()
+QJsonObject Blink1Input::toJson() // omg, toFullJsonReadyToSave()
 {
     QJsonObject obj;
     obj.insert("name", name());
@@ -37,6 +37,7 @@ QJsonObject Blink1Input::toFullJsonReadyToSave()
     obj.insert("freqCounter",freqCounter());
     return obj;
 }
+/*
 QJsonObject Blink1Input::toJsonWithNameTypePNameArg1Arg2AndDate()
 {
     QJsonObject obj;
@@ -64,7 +65,7 @@ QJsonObject Blink1Input::toJsonWithNameTypeAndArg1()
     if(mtype!="IFTTT") obj.insert("arg1",arg1());
     return obj;
 }
-
+*/
 QString Blink1Input::name() const
 {
     return mname;
