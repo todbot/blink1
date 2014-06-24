@@ -22,19 +22,14 @@ DBUS_INTERFACE="im.pidgin.purple.PurpleInterface"
 DBUS_SERVICE="im.pidgin.purple.PurpleService"
 DBUS_PATH="/im/pidgin/purple/PurpleObject"
 
-# Pidgin's Status Type IDs
-PIDGIN_STATUS_TYPE_OFFLINE=1
-PIDGIN_STATUS_TYPE_AVAILABLE=2
-PIDGIN_STATUS_TYPE_UNAVAILABLE=3
-PIDGIN_STATUS_TYPE_INVISIBLE=4
-PIDGIN_STATUS_TYPE_AWAY=5
-
 # Set colours
-STATUS_AVAILABLE=0,255,0     # Green
-STATUS_AWAY=255,200,0        # Yellow
-STATUS_UNAVAILABLE=255,0,0   # Red
-STATUS_INVISIBLE=255,255,255 # White
-STATUS_OFFLINE=0,0,0         # Black (Off)
+STATUS_AVAILABLE=0,255,0    # Green
+STATUS_AWAY=255,200,0       # Yellow
+STATUS_BUSY=255,0,0         # Red
+STATUS_RECEIVE=8,0,243      # Blue
+
+# Set Blinks
+STATUS_RECEIVE_BLINK=5
 
 # On exit, shut off the blink1
 trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
@@ -43,7 +38,8 @@ trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
 dbus-monitor --profile \
     "type='signal',interface='$DBUS_INTERFACE',member='SavedstatusChanged'" \
     "type='signal',interface='$DBUS_INTERFACE',member='Quitting'" \
-    "type='signal',interface='$DBUS_INTERFACE',member='SignedOn'" | 
+    "type='signal',interface='$DBUS_INTERFACE',member='SignedOn'" \
+    "type='signal',interface='$DBUS_INTERFACE',member='ReceivedImMsg'" |
 while read -r line; do
     
     message=`echo "$line" | rev | cut -d$'\t' -f1 | rev`
@@ -54,22 +50,24 @@ while read -r line; do
         continue
     fi
 
+    # Blink when receiving a message
+    if [ "$message" == "ReceivedImMsg" ]; then
+        $BLINK1 --rgb $STATUS_RECEIVE --blink $STATUS_RECEIVE_BLINK &> /dev/null
+    fi
+
     # Get status text
-    STATUS=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetCurrent`
     STATUS_ID=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetCurrent | cut -d ' ' -f5`
-    STATUS_TYPE=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetType int32:$STATUS_ID | cut -d ' ' -f5`
+    STATUS=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetTitle int32:$STATUS_ID`
+
+    status=`echo "${STATUS}" | tr -d ' '`
 
     #Handle changing the colour
-    case "$STATUS_TYPE" in
-        "$PIDGIN_STATUS_TYPE_AVAILABLE")
+    case "$status" in 
+        "Available")
             $BLINK1 --rgb $STATUS_AVAILABLE &> /dev/null;;
-        "$PIDGIN_STATUS_TYPE_AWAY")
+        "Away") 
             $BLINK1 --rgb $STATUS_AWAY &> /dev/null;;
-        "$PIDGIN_STATUS_TYPE_UNAVAILABLE")
-            $BLINK1 --rgb $STATUS_UNAVAILABLE &> /dev/null;;
-        "$PIDGIN_STATUS_TYPE_INVISIBLE")
-            $BLINK1 --rgb $STATUS_INVISIBLE &> /dev/null;;
-        "$PIDGIN_STATUS_TYPE_OFFLINE")
-            $BLINK1 --rgb $STATUS_OFFLINE &> /dev/null;;
+        "Busy") 
+            $BLINK1 --rgb $STATUS_BUSY &> /dev/null;;
     esac
 done
