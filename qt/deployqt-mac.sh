@@ -11,12 +11,25 @@
 
 APP_NAME=Blink1Control
 
-BUILD_DIR=build-blink1control-Desktop_Qt_5_2_1_clang_64bit-Release
+BUILD_DIR=build-blink1control-Desktop_Qt_5_3_clang_64bit-Release
+
+# used passed in arg instead of default above
+if [ -n "$1" ] ; then
+    BUILD_DIR=$1
+fi
 
 EXE_PATH=${BUILD_DIR}/${APP_NAME}.app
 
+if [ ! -d "$EXE_PATH" ] ; then
+  echo "Path not found: ${EXE_PATH}"
+  exit
+else 
+  echo "Deploying '$EXE_PATH'"
+  echo
+fi
+
 # macdeployqt copies all the needed Qt libs
-macdeployqt ${EXE_PATH} -qmldir=${EXE_PATH}/Contents/Resources/qml
+macdeployqt ${EXE_PATH} -qmldir=${EXE_PATH}/Contents/Resources/qml -always-overwrite
 
 DO_WEBKIT=0
 if [ "$DO_WEBKIT" -eq 1 ] ; then
@@ -39,7 +52,8 @@ pushd ${BUILD_DIR}
 rm -f ../${APP_NAME}-mac.zip
 zip -r ../${APP_NAME}-mac.zip ${APP_NAME}.app
 
-echo "created ${APP_NAME}-mac.zip"
+echo
+echo "created '${APP_NAME}-mac.zip'"
 
 popd
 
