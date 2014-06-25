@@ -13,6 +13,10 @@ class TestBlink1ContextManager(unittest.TestCase):
             b1.close()
             b1.fade_to_color(0, "teal")
 
+    def test_cm_with_gamma(self):
+        with blink1(gamma=(.5, .5, .5)) as b1:
+            b1.fade_to_color(0, "teal")
+
 
 if __name__ == '__main__':
     unittest.main()
