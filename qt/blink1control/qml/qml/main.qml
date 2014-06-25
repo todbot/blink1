@@ -4,6 +4,8 @@ import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
 //import QtWebKit 3.0
 //import QtWebKit.experimental 1.0
+
+
 Image{
     id: mainWindow
     source: "qrc:images/layout/bg-new.jpg"
@@ -1156,7 +1158,7 @@ Image{
                             flickable: bigButtons2
                             hideScrollBarsWhenStopped: false
                             vertical: false
-                            visible: bigButtons2.model.length>5
+                            //visible: bigButtons2.model.length>5  // FIXME: commented out for Qt-5.3
                         }
                         model: mw.getBigButtons
                         spacing: 1

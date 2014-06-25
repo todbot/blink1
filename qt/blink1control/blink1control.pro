@@ -3,17 +3,13 @@
 #-------------------------------------------------
 
 QT       += core gui widgets network quick qml 
-#QT       += core gui widgets network quick qml webkit webkitwidgets
-#QT       += core gui widgets network
 
-#CONFIG += debug
-#CONFIG += release
-#CONFIG += console
+CONFIG += console
 #CONFIG -= app_bundle
 
 TARGET = Blink1Control
 TEMPLATE = app
-VERSION = v1.83
+VERSION = v1.83test
 #VERSION = $$system(git describe)  # should return tag like "v1.8"
 # but git isn't in PATH in Windows, so can't do it.
 
@@ -26,11 +22,6 @@ DEPLOYMENTFOLDERS = qmlfolder helpfolder
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
-# If your application uses the Qt Mobility libraries, uncomment the following
-# lines and add the respective components to the MOBILITY variable.
-# CONFIG += mobility
-# MOBILITY +=
-
 # Installation path
 # target.path =
 
@@ -40,7 +31,7 @@ qtcAddDeployment()
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
+    mainwindow.cpp \
     blink1pattern.cpp \
     blink1input.cpp \
     datainput.cpp \
@@ -49,7 +40,8 @@ SOURCES += main.cpp\
     simplecrypt.cpp \
     hardwaremonitor.cpp \
     Cursorshapearea.cpp \
-    httpserver.cpp
+    httpserver.cpp \
+    mainapp.cpp
 
 HEADERS  += mainwindow.h \
     blink1pattern.h \
@@ -61,7 +53,8 @@ HEADERS  += mainwindow.h \
     hardwaremonitor.h \
     Cursorshapearea.h \
     patternsReadOnly.h \
-    httpserver.h
+    httpserver.h \
+    mainapp.h
 
 #FORMS    += mainwindow.ui
 
@@ -108,14 +101,24 @@ win32 {
 
 
 OTHER_FILES += \
-    qml/qml/main.qml \
-    MailPopup.qml \
-    HostIdPopup.qml \
-    ComboBox1.qml \
-    DropDownMenu.qml \
     MyInfo.plist \
-    MyGroupBox.qml \
     help/index.html
+
+#    qml/qml/main.qml \
+#    qml/qml/ComboBox1.qml \
+#    qml/qml/DropDownMenu.qml \
+#    qml/qml/ErrorsPopup.qml \
+#    qml/qml/HardwarePopup.qml \
+#    qml/qml/HostIdPopup.qml \
+#    qml/qml/MailPopup.qml \
+#    qml/qml/MyComboBox.qml \
+#    qml/qml/MyComboBoxComponent.qml \
+#    qml/qml/MyGroupBox.qml \
+#    qml/qml/MyMenu.qml \
+#    qml/qml/MyScrollViewStyle.qml \
+#    qml/qml/PushButton.qml \
+#    qml/qml/ScrollBar.qml \
+#    qml/qml/TabWidget.qml \
 
 win32{
     RC_FILE =blink1.rc

@@ -28,8 +28,6 @@ public:
     void setType(QString t) { type = t; }
     void setRule(QString r) { rule = r; }
     void setInput(Blink1Input* in) { input = in; }
-    void setPattern(Blink1Pattern* pat) { pattern = pat; }
-    void setPatternList(QStringList list) { patternList = list; }
     void setIftttKey(QString iKey) { iftttKey = iKey; }
     QString readColorPattern( QString str);
     QColor readColorCode(QString str);
@@ -45,8 +43,6 @@ private:
 public:
     Blink1Input *input;
 private:
-    Blink1Pattern *pattern;  // FIXME: why is this ref to pattern and not just pattern name?
-    QStringList patternList;
     QString iftttKey;
     QString processOutput;
 
