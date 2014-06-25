@@ -21,10 +21,17 @@
 APP_DIR=Blink1Control
 EXE_NAME=Blink1Control.exe
 
+# Where "windeployqt.exe" lives (and the mingw libs)
+#QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
+QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
+
 # (paths are from the soon-to-be-created APP_DIR
 # path to built application executable
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_2_1_MinGW_32bit-Release/release
 BUILD_DIR=build-blink1control-Desktop_Qt_5_3_MinGW_32bit-Release/release
+
+# where the source code lives (and the qml, and the help, and the readme)
+SRC_DIR="../../blink1control"
 
 # used passed in arg instead of default above
 if [ -n "$1" ] ; then
@@ -42,13 +49,9 @@ echo "Deploying '$EXE_PATH'"
 echo
 
 # where QML files live
-QML_DIR=../../blink1control/qml
+QML_DIR=${SRC_DIR}/qml
 # where Help files live
-HELP_DIR=../../blink1control/help
-
-# Where "windeployqt.exe" lives (and the mingw libs)
-#QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
-QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
+HELP_DIR=${SRC_DIR}/help
 
 # Location of blnik1-lib.dll (do "make lib" in that dir first to get it)
 BLINK1_LIB_PATH=../../../commandline/blink1-lib.dll
@@ -62,6 +65,9 @@ pushd windeploy/${APP_DIR}
 
 # copy the built executable
 cp ../../${EXE_PATH} .
+
+# copy readme
+cp ${SRC_DIR}/README.txt .
 
 # copy blink1-lib
 cp ${BLINK1_LIB_PATH} .
