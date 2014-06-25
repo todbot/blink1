@@ -51,3 +51,17 @@ from blink1.blink1 import Blink1
 
 Unlike the context manager, this demo will leave the blink(1) at the end of execution.
 
+Gamma correction
+----------------
+
+The context manager supports a ''gamma'' argument which allows you to supply a per-channel gamma correction value.
+
+    from blink1.blink1 import blink1
+    
+    with blink1(gamma=(2, 2, 2)) as b1:
+        b1.fade_to_color(100, 'pink')
+        time.sleep(10)
+        
+This example provides a gamma correction of 2 to each of the three colour channels. 
+        
+Higher values of gamma make the blink(1) appear more colorful but decrease the brightness of colours. 
