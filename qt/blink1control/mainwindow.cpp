@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
         emit bigButtonsUpdate();
     }
 
+
     cc = QColor(100,100,100);
 
     QIcon ico = QIcon(":/images/blink1-icon0.png");
@@ -188,13 +189,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
-// for testing the above connect()s
-
 // called when window has focus
 void MainWindow::viewerActiveChanged() {
-    qDebug() << "viewerActiveChanged: " << viewer.isActive();
+    //qDebug() << "viewerActiveChanged: " << viewer.isActive();
     saveSettings();
 }
+
+// for testing the above connect()s
 
 /*
 void MainWindow::changeEvent(QEvent* e)
@@ -321,8 +322,6 @@ void MainWindow::updateInputs()
                 connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
                 dI->setType(type);
                 dI->setInput(inputs[key]);
-                dI->setPattern(patterns.value(key));
-                dI->setPatternList(patterns.keys());
                 dI->setIftttKey(iftttKey);
                 dI->start();
             }
@@ -341,8 +340,6 @@ void MainWindow::updateInputs()
                     connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
                     dI->setType(type);
                     dI->setInput(inputs[key]);
-                    dI->setPattern(patterns.value(key));
-                    dI->setPatternList(patterns.keys());
                     dI->setIftttKey(iftttKey);
                     dI->start();
                 }
@@ -357,8 +354,6 @@ void MainWindow::updateInputs()
                 connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
                 dI->setType(type);
                 dI->setInput(inputs[key]);
-                dI->setPattern(patterns.value(key));
-                dI->setPatternList(patterns.keys());
                 dI->setIftttKey(iftttKey);
                 dI->start();
             }
@@ -774,7 +769,7 @@ void MainWindow::updateBlink1()
     }
 
     if( setBlink1 ) {
-        qDebug() << "todtest:         updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc.name();
+        qDebug() << "         updateBlink1: fadeSpeed="<<fadeSpeed << ", "<< cc.name();
         if(blink1dev!=NULL) 
             blink1_fadeToRGBN( blink1dev, fadeSpeed , cc.red(), cc.green(), cc.blue(), led);
         if(!fromPattern)
@@ -962,7 +957,7 @@ void MainWindow::setColorToBlinkAndChangeActivePatternName(QColor c,QString s,in
         led=patterns.value(s)->getCurrentLed();
         emit ledsUpdate();
     }
-    qDebug()<<"todtest: setColorToBlink: fadespeed:"<<fadeSpeed << " color: " <<c.name() << " s: "<<s;
+    qDebug()<<"    setColorToBlink: fadespeed:"<<fadeSpeed << " color: " <<c.name() << " s: "<<s;
     updateBlink1();
     //if(s!="")// && !fromPattern)
         //QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
@@ -1389,7 +1384,6 @@ void MainWindow::checkInput(QString key){
     connect(dI, SIGNAL(addReceiveEvent(int,QString,QString)), this, SLOT(addRecentEvent(int,QString,QString)));
     dI->setType(inputs[key]->type());
     dI->setInput(inputs[key]);
-    dI->setPatternList(patterns.keys());
     dI->setIftttKey(iftttKey);
     dI->start();
     inputs[key]->isChecking=true;
@@ -1737,8 +1731,8 @@ void MainWindow::markHardwareEditing(QString s,bool e){
     }
 }
 void MainWindow::addToLog(QString txt){
+    //qDebug()<<txt;
     if(logging){
-        //qDebug()<<txt;
         (*out)<<txt<<"\n";
         out->flush();
     }
@@ -1750,22 +1744,6 @@ void MainWindow::resetAlertsOption(){
     }
     on_buttonOff_clicked();
 }
-/* 
-   not needed now we use real titlebars
-
-bool MainWindow::checkIfCorrectPositionX(int x){
-    QRect desk=QApplication::desktop()->availableGeometry();
-    if(x+100<desk.x()+desk.width() && x+viewer.width()-100>=desk.x())
-        return true;
-    return false;
-}
-bool MainWindow::checkIfCorrectPositionY(int y,int bar){
-    QRect desk=QApplication::desktop()->availableGeometry();
-    if(y>=desk.y() && y+bar-10<desk.y()+desk.height())
-        return true;
-    return false;
-}
-*/
 int MainWindow::checkWordWidth(QString s,int size){
     QFont f(QFont().defaultFamily(),size);
     return QFontMetrics(f).width(s);

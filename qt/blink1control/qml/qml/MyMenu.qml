@@ -145,7 +145,7 @@ MenuPrivate {
 
 
         sourceComponent: MenuContentItem {
-            menu: root
+            //menu: root  // FIXME: commented out for Qt-5.3
 
             CursorShapeArea {
                 id : shapeCursor
