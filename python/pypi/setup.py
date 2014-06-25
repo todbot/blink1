@@ -3,7 +3,7 @@ from setuptools import setup
 import os
 
 PROJECT_ROOT, _ = os.path.split(__file__)
-REVISION = '0.0.9'
+REVISION = '0.0.10'
 PROJECT_NAME = 'blink1'
 PROJECT_AUTHORS = "Salim Fadhley"
 PROJECT_EMAILS = 'salimfadhley@gmail.com'
@@ -11,7 +11,7 @@ PROJECT_URL = "https://github.com/salimfadhley/blink1"
 SHORT_DESCRIPTION = 'PyUSB-based Blink(1) control library'
 
 try:
-    DESCRIPTION = open(os.path.join(PROJECT_ROOT, "readme.md")).read()
+    DESCRIPTION = open(os.path.join(PROJECT_ROOT, "README.md")).read()
 except IOError:
     DESCRIPTION = SHORT_DESCRIPTION
 

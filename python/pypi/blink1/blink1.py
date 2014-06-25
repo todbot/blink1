@@ -30,12 +30,40 @@ class BlinkConnectionFailed(RuntimeError):
 
 log = logging.getLogger(__name__)
 
+DEFAULT_GAMMA = (2, 2, 2)
+
 REPORT_ID = 0x01
 VENDOR_ID = 0x27b8
 PRODUCT_ID = 0x01ed
 
+class Gamma(object):
+    """Apply a gamma correction to any selected RGB color, see:
+    http://en.wikipedia.org/wiki/Gamma_correction
+    """
+    def __init__(self, r, g, b):
+        """
+        :param r: Red gamma value
+        :param g: Green gamma value
+        :param b: Blue gamma value
+
+        All gamma values should be 0 > x >= 1
+        """
+        self.gammas = [r, g, b]
+
+    @staticmethod
+    def gamma_correct(gamma, luminance):
+        return round(255 * (luminance / 255) ** gamma)
+
+    def __call__(self, r, g, b):
+        color = [r,g,b]
+        return tuple(self.gamma_correct(g, l) for (g, l) in zip(self.gammas, color) )
+
 class Blink1:
-    def __init__(self):
+    def __init__(self, gamma=None):
+        """
+        :param gamma: Triple of gammas for each channel e.g. (2, 2, 2)
+        """
+        self.gamma = Gamma(*(gamma or DEFAULT_GAMMA))
         self.dev = self.find()
         if not self.dev:
             raise BlinkConnectionFailed("Could not find an attached Blink(1)")
@@ -93,21 +121,21 @@ class Blink1:
         log.debug("blink1read: " + ",".join('0x%02x' % v for v in buf))
         return buf
 
-    def fade_to_rgbn(self, fade_milliseconds, red, green, blue, ledn):
-        """Command blink(1) to fade to RGB color
+
+    def fade_to_rgb_uncorrected(self, fade_milliseconds, red, green, blue, led_number=0):
+        """
+        Command blink(1) to fade to RGB color, no color correction applied.
         """
         action = ord('c')
         fade_time = int(fade_milliseconds / 10)
         th = (fade_time & 0xff00) >> 8
         tl = fade_time & 0x00ff
-        buf = [REPORT_ID, action, red, green, blue, th, tl, ledn]
+        buf = [REPORT_ID, action, red, green, blue, th, tl, led_number]
         return self.write(buf)
 
-    def fade_to_rgb(self, fade_milliseconds, red, green, blue):
-        """
-        Command blink(1) to fade to RGB color
-        """
-        return self.fade_to_rgbn(fade_milliseconds, red, green, blue, 0)
+    def fade_to_rgb(self,fade_milliseconds, red, green, blue, led_number=0):
+        r, g, b = self.gamma(red, green, blue)
+        return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number=0)
 
     def fade_to_color(self, fade_milliseconds, color):
         """
@@ -142,11 +170,11 @@ class Blink1:
 
 
 @contextmanager
-def blink1(switch_off=True):
+def blink1(switch_off=True, gamma=None):
     """Context manager which automatically shuts down the Blink(1)
     after use.
     """
-    b1 = Blink1()
+    b1 = Blink1(gamma=gamma)
     yield b1
     if switch_off:
         b1.off()
