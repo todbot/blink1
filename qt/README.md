@@ -17,6 +17,19 @@ This verison of Blink1Control supercedes the Mac-specific and Windows-specific
 versions in the "mac" and "win" directories.
 
 
+Building and Deploying the Blink1Contol Qt application
+-----------------------------------------------
+
+Blink1Control is built using Qt-5.3 on Mac and Windows (MinGW
+version).
+
+Once a release version is build.  You can create deployable zip
+bundles with:
+- deploy-mac.sh
+- deploy-win.sh
+
+You may need to edit the variables at the top of those scripts to
+match your Qt install.
 
 
 Location of Blink1Control config file:
