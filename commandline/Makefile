@@ -170,8 +170,11 @@ endif
 
 EXEFLAGS =
 #LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols -Wl,--out-implib,$(LIBTARGET).a $(LIBS)
-LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols
+LIBFLAGS = -shared -o $(LIBTARGET) -Wl,--add-stdcall-alias -Wl,--export-all-symbols,--output-def,blink1-lib.def,--out-implib,blink1-lib.a
 EXE= .exe
+
+# this generates a blink1-lib.lib for use with MSVC
+LIB_EXTRA = lib /machine:i386 /def:blink1-lib.def
 
 INSTALL = cp
 EXELOCATION ?= $(SystemRoot)/system32
@@ -349,6 +352,8 @@ blink1-tiny-server: $(OBJS) server/blink1-tiny-server.c
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
 
+libextra:
+	$(LIB_EXTRA)
 
 package: lib blink1-tool
 	@echo "Packaging up blink1-tool and blink1-lib for '$(PKGOS)'"
