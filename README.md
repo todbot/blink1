@@ -8,23 +8,26 @@ any data source in the cloud or on your computer to a full-color RGB LED so
 you can know what's happening without checking any windows, going to any 
 websites or typing any commands."
 
+The official repository of blink(1) software and source code is:
+https://github.com/todbot/blink1/
+
 
 Ready-to-run Applications to play with
 ---------------------------------------
 
 ### Blink1Control ###
 
-GUI application for hooking events to blink(1)
+Blink1Control is a GUI application for hooking events to blink(1)
+and is the primary user-level application for controlling blink(1).
+It is an event-based system for triggering blink(1) color patterns.
+Those events can be on your computer or on the Net.
 
-Blink1Control is the primary user-level application for controlling blink(1).
-It is an event-based system, where events on your computer or on the Net
-trigger color patterns on the blink(1).
-
-It can receive events from:
+Blin1kControl can receive events from:
 - [IFTTT](http://ifttt.com/channels)'s many channels
-- various email services using IMAP/POP/Gmail
-- execute scripts or check files 
-- hardware monitors like CPU, battery, RAM
+- IMAP/POP/GMAIL email services
+- URLs containing text or JSON
+- Local files or executed scripts 
+- Hardware monitors like CPU, battery, RAM
 
 This verison of Blink1Control supercedes the Mac-specific and Windows-specific
 versions in the "mac" and "win" directories.
@@ -40,19 +43,23 @@ versions in the "mac" and "win" directories.
 ### Toy / Test Applications ###
 
 And then these are more "toy" or "test" applications to just play around with your blink(1):
-- *BlinkATweet* -- Watch real-time Twitter stream for keywords, flash blink(1) when found.  Download:
+- BlinkATweet -- Watch real-time Twitter stream for keywords, flash blink(1) when found.  
+Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/BlinkATweet-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/BlinkATweet-win.zip)
 
-- Blink1ColorOrgan -- Sound-reactive program, music-to-color, instant disco!  Download:
+- Blink1ColorOrgan -- Sound-reactive program, music-to-color, instant disco!
+Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/Blink1ColorOrgan-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/Blink1ColorOrgan-win.zip)
 
-- Blink1ColorPicker -- Play with blink(1) select colors. Download:
+- Blink1ColorPicker -- Play with blink(1) select colors.
+Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/Blink1ColorPicker-mac.zip),
 [(Windows)](http://thingm.com/blink1/downloads/Blink1ColorPicker-win.zip)
 
-- Blink1Test0 -- a very simple random-color app. Download:
+- Blink1Test0 -- a very simple random-color app. 
+Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/Blink1Test0-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/Blink1Test0-win.zip)
 
