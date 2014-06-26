@@ -388,10 +388,10 @@ void Email::sockerErrorSlot(QAbstractSocket::SocketError e){
     case QAbstractSocket::RemoteHostClosedError:
         errorsList.append("The remote host closed the connection. Note that the client socket (i.e., this socket) will be closed after the remote close notification has been sent.");
         break;
-    case QAbstractSocket::QAbstractSocket::HostNotFoundError:
+    case QAbstractSocket::HostNotFoundError:
         errorsList.append("The host address was not found.");
         break;
-    case QAbstractSocket::QAbstractSocket::SocketAccessError:
+    case QAbstractSocket::SocketAccessError:
         errorsList.append("The socket operation failed because the application lacked the required privileges.");
         break;
     case QAbstractSocket::SocketResourceError:
