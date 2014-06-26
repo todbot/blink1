@@ -4,18 +4,74 @@ Blink1Control File/Script/URL response format
 Blink1Control can fetch color or pattern triggers
 from several classes of sources.  Thoses sources are:
 
-  - text files
-  - executed scripts / programs
-  - URLs
+  - text files  (e.g. "somefile.txt")
+  - executed scripts / programs (e.g. "myscript.sh", "serverquery.py")
+  - URLs (e.g. "http://todbot.com/tst/pattern.txt")
   
+### Allowed values ###
+
+The contents of these text files can either be a hex color code 
+or the name of an existing color pattern configred in Blink1Control.
+
+
+### Format ###
+
 The format that Blink1Control understands can be one of the following:
 
- - Simple hex color code
+ - Hex color code - Grabs the first 6-digit hex colorcode (starts with '#' followed by 6 hexadecimal digits)
 
- - JSON hex color code
+Example 1:
+```
+set the color
+#008899
+```
 
- - Simple pattern line
+Example 2:
+```
+This is a text file with some text.
+And here's another line.
+Here is a color code #ff3399 inside a block of text.
+And here is another "#123999" in quotes.
+```
 
- - JSON pattern line
+ - JSON hex color code - should be valid JSON, try http://jsonlint.com/
+
+Example 1:
+```
+{
+  "color": "#FF00FF"
+}
+```
+
+ - Simple pattern line - just the string "pattern:" followed by a pattern name.  
+If pattern name contains spaces, use double-quotes.  Any other content is ignored.
+
+Example 1:
+```
+pattern: groovy
+```
+
+Example 2:
+```
+pattern: "red flashes"
+# ddd
+```
+
+Example 3:
+
+ - JSON pattern line - should be valid JSON, try http://jsonlint.com/
+
+Example 1:
+```
+{ "pattern": "red flashes" }
+```
+
+Example 2:
+```
+{
+  "pattern": "policecar"
+  "comment": "should trigger policecar pattern"
+}
+```
  
  
