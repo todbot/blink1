@@ -1,0 +1,8 @@
+
+This is a color test
+
+Here is the color: #FF2233
+but also here is another color: #223344
+
+Only the first one should be parsed.
+
