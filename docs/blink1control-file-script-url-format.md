@@ -18,7 +18,8 @@ or the name of an existing color pattern configred in Blink1Control.
 
 The format that Blink1Control understands can be one of the following:
 
- - Hex color code - Grabs the first 6-digit hex colorcode (starts with '#' followed by 6 hexadecimal digits)
+#### Hex color code ####
+Grabs the first 6-digit hex colorcode (starts with '#' followed by 6 hexadecimal digits)
 
 Example 1:
 ```
@@ -34,7 +35,8 @@ Here is a color code #ff3399 inside a block of text.
 And here is another "#123999" in quotes.
 ```
 
- - JSON hex color code - should be valid JSON, try http://jsonlint.com/
+#### JSON hex color code ####
+Should be valid JSON, try http://jsonlint.com/
 
 Example 1:
 ```
@@ -43,7 +45,8 @@ Example 1:
 }
 ```
 
- - Simple pattern line - just the string "pattern:" followed by a pattern name.  
+#### Simple pattern line ####
+Just the string "pattern:" followed by a pattern name.  
 If pattern name contains spaces, use double-quotes.  Any other content is ignored.
 
 Example 1:
@@ -57,9 +60,9 @@ pattern: "red flashes"
 # ddd
 ```
 
-Example 3:
 
- - JSON pattern line - should be valid JSON, try http://jsonlint.com/
+#### JSON pattern line ####
+Should be valid JSON, try http://jsonlint.com/
 
 Example 1:
 ```
