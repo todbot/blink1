@@ -6,10 +6,12 @@ QT       += core gui widgets network quick qml
 
 #CONFIG += console  # Win: uncomment to have console window open up for debugging
 #CONFIG -= app_bundle # Mac: uncommment to not build a .app bundle
+CONFIG += qtquickcompiler
 
 TARGET = Blink1Control
 TEMPLATE = app
-VERSION = v1.84
+VERSION = 1.84
+BLINK1CONTROL_VERSION = v1.84test2
 #VERSION = $$system(git describe)  # should return tag like "v1.8"
 # but git isn't in PATH in Windows, so can't do it.
 
@@ -65,13 +67,16 @@ RESOURCES += \
 
 # for blink1-lib
 # note: be sure to "cd blink1/commandline && make lib" beforehand
+# (and maybe "make libextra" for Win)
 BLINK1_LIB_DIR=$$PWD/../../commandline
 #message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
 macx:  LIBS += -L$$BLINK1_LIB_DIR -lBlink1
-win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
+#win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
+win32-g++: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
+win32-msvc*: LIBS += $$BLINK1_LIB_DIR/blink1-lib.lib
 
-DEFINES += BLINK1CONTROL_VERSION=\\\"$$VERSION\\\"
+DEFINES += BLINK1CONTROL_VERSION=\\\"$$BLINK1CONTROL_VERSION\\\"
 #message("DEFINES = $$DEFINES")
 
 QMAKE_CXXFLAGS += -DUSE_HIDAPI # not QMAKE_CFLAGS += -DUSE_HIDAPI
