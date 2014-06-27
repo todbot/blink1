@@ -1,10 +1,12 @@
 #include <QCoreApplication>
 
+#include <QRegularExpression>
 #include <QColor>
 #include <QFile>
 #include <QDebug>
 
-QString readColorPattern(QString str)
+
+QString readColorPatternOld(QString str)
 {
     QString patt;
     // try match json: '{"pattern":"my_pattern_name"}'
@@ -31,16 +33,39 @@ QString readColorPattern(QString str)
  * @param str string to parse
  * @return valid QColor or invalid QColor if parsing failed
  */
-QColor readColorCode(QString str)
+QColor readColorCodeOld(QString str)
 {
     QColor c;
     QRegExp rx("(#[A-Fa-f0-9]{6})"); // look for "#cccccc" style hex colorcode
     if( rx.indexIn(str) != -1 ) { 
-        qDebug() << "color match! " << rx.cap(1);
+        //qDebug() << "color match! " << rx.cap(1);
         c.setNamedColor( rx.cap(1) );
     }
     return c;
 }
+
+
+QString readColorPattern(QString str)
+{
+    QString patt;
+    QRegularExpression   re("\"?pattern\"?:\\s*((\"(.+)\")|((.+)\\s))");
+    QRegularExpressionMatch match = re.match(str);
+    if( match.hasMatch() ) {
+        patt = match.captured( match.lastCapturedIndex() );
+    }
+    return patt;
+}
+QColor readColorCode(QString str)
+{
+    QColor c;
+    QRegularExpression re("(#[A-Fa-f0-9]{6})"); // look for "#cccccc" style hex colorcode
+    QRegularExpressionMatch match = re.match(str);
+    if( match.hasMatch() ) {
+        c.setNamedColor( match.captured( match.lastCapturedIndex()) );
+    }
+    return c;
+}
+
 /**
  * Given a string, parse either a color pattern or color code
  * and trigger system based on that.
@@ -85,9 +110,11 @@ int main(int argc, char *argv[])
     qDebug() << "qregexptest!\n";
 
     QString fname = QString(argv[1]);
-
     QFile f(fname);
-    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if( fname=="-" ) {  
+        f.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
+    }
+    else if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         printf("bad file: %s\n", qPrintable(fname));
         return -1;
     }
