@@ -676,7 +676,8 @@ Image {
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
                     selectByMouse: true
-                    maximumLength: 12
+                    maximumLength: 40
+                    wrapMode: TextEdit.Wrap
                     KeyNavigation.tab: description
                 }
             }
@@ -752,7 +753,8 @@ Image {
                     height: 30
                     font.pointSize: (!mw.mac())?10:12
                     selectByMouse: true
-                    maximumLength: 12
+                    maximumLength: 40
+                    wrapMode: TextEdit.Wrap
                     KeyNavigation.tab: description
                 }
             }
@@ -773,7 +775,7 @@ Image {
                 var tmp2=unreadscount.text;
                 if(tmp===1) tmp2=subjectinput.text;
                 else if(tmp===2) tmp2=senderinput.text
-                console.log("PARSER : "+tmp2)
+                console.log("PARSER : new:"+tmp2)
                 mw.add_new_mail(name.text,type.currentIndex,mailserver.text,username.text,password.text,parseInt(port.text),ssl.checked,tmp,tmp2)
             }else{
                 console.log("EDIT")
@@ -783,7 +785,7 @@ Image {
                 var tmpp2=unreadscount.text;
                 if(tmpp===1) tmpp2=subjectinput.text;
                 else if(tmpp===2) tmpp2=senderinput.text
-                console.log("PARSER : "+tmpp2)
+                console.log("PARSER : edit: tmp="+tmpp+", tmp2:"+tmpp2)
                 mw.edit_mail(popup.oldname,name.text,type.currentIndex,mailserver.text,username.text,password.text,parseInt(port.text),ssl.checked,tmpp,tmpp2)
             }
             mw.emailsUpdate();
