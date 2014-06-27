@@ -9,6 +9,7 @@
 #include "datainput.h"
 #include <QDir>
 #include <QStandardPaths>
+#include <QRegularExpression>
 
 DataInput::DataInput(QObject *parent) : QObject(parent)
 {
@@ -36,19 +37,11 @@ DataInput::~DataInput()
 QString DataInput::readColorPattern(QString str)
 {
     QString patt;
-    // try match json: '{"pattern":"my_pattern_name"}'
-    QRegExp rx("\"?pattern\"?\\s*:\\s*\"(.+)\""); 
-    if( rx.indexIn(str) != -1 ) { // match
-        patt = rx.cap(1);
+    QRegularExpression   re("\"?pattern\"?:\\s*((\"(.+)\")|((.+)\\s))");
+    QRegularExpressionMatch match = re.match(str);
+    if( match.hasMatch() ) {
+        patt = match.captured( match.lastCapturedIndex() );
     }
-    else {  // not json so try format: 'pattern: "my pattern name"'
-        QRegExp rx2("pattern\\s*:\\s*(.+)");
-        if( rx2.indexIn(str) != -1 ) {  // match
-            patt = rx2.cap(1);
-        }
-    }
-    //patt.replace("\"",""); // shouldn't capture doublequotes but does
-    patt.remove(QRegExp("^\\s+\"*|\"*\\s+$")); // stupid qregexp doesn't allow non-greedy text capture
     return patt;
 }
 /**
@@ -59,44 +52,53 @@ QString DataInput::readColorPattern(QString str)
 QColor DataInput::readColorCode(QString str)
 {
     QColor c;
-    QRegExp rx("(#[A-Fa-f0-9]{6})"); // look for "#cccccc" style hex colorcode
-    if( rx.indexIn(str) != -1 ) { 
-        qDebug() << "color match! " << rx.cap(1);
-        c.setNamedColor( rx.cap(1) );
+    QRegularExpression re("(#[A-Fa-f0-9]{6})"); // look for "#cccccc" style hex colorcode
+    QRegularExpressionMatch match = re.match(str);
+    if( match.hasMatch() ) {
+        c.setNamedColor( match.captured( match.lastCapturedIndex()) );
     }
     return c;
 }
 /**
  * Given a string, parse either a color pattern or color code
  * and trigger system based on that.
+ * 
+ * FIXME: this knows too much about emitting signals
  *
  * @param str string to parse
  * @param type type of monitor running ("ifttt", "url", "file", "script")
  * @param lastModTime time parsing occurred
+ * @return bool true if match was found, false if not
  */
-void DataInput::parsePatternOrColor(QString str, QString type, int lastModTime)
+bool DataInput::parsePatternOrColor(QString str, QString type, int lastModTime)
 {
+    bool success = false;
     // look for pattern
     QString patternName = readColorPattern( str );
+    bool patternFound = !patternName.isEmpty();
     qDebug() << "type:"<<type<< " patternName:"<<patternName << "str: "<<str;
-    if( !patternName.isEmpty() ) { // pattern found
+    if( patternFound ) {
         emit runPattern(patternName, false);
         emit addReceiveEvent( lastModTime, patternName, type);
         input->setArg2(patternName);
+        success = true;
     } 
-    else {
-        // or look for hex color
+    // or look for hex color
+    else { 
         QColor c = readColorCode( str );
-        if( c.isValid() ) {  // color code found
+        bool colorFound = c.isValid();
+        if( colorFound ) { 
             QString colorstr = c.name().toUpper();
             emit setColor( c );
             emit addReceiveEvent( lastModTime, colorstr, type);
             input->setArg2( colorstr );  // FIXME: arg2 should not be used for lastVal
+            success = true;
         }
         else { 
             qDebug() << "parsePatternOrColor no color found";
         }
     }
+    return success;
 }
 
 void DataInput::start()
@@ -124,7 +126,6 @@ void DataInput::start()
             connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(onError()));
         }
         else {
-            emit setValueRet("Bad URL");
             input->setArg2("Bad URL");
             input->setDate(-1);  // FIXME: don't like -1 here
             emit toDelete(this);
@@ -144,9 +145,8 @@ void DataInput::start()
                 qDebug() << "datainput:start: file newer";
                 QFile f(input->arg1());
                 if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                    emit setValueRet("Old File"); // FIXME: is this signal ever used?
-                    input->setArg2("OldFile");
-                    input->setDate(-1);
+                    input->setArg2("Couldn't Open");
+                    input->setDate(-1);  // FIXME: why -1? what does it mean?
                     emit toDelete(this);
                     return;
                 }
@@ -154,9 +154,16 @@ void DataInput::start()
                 QString txt = "";
                 QTextStream in(&f);
                 txt.append(in.readAll());
-                
-                parsePatternOrColor( txt, type, lastModTime );
+
+                bool good = parsePatternOrColor( txt, type, lastModTime );
+                if( !good ) { 
+                    input->setArg2("Bad Parse");
+                }
             } // last modified
+            else { 
+                //input->setArg2("Old File");
+                //input->setDate(-1);
+            }
         }
         emit toDelete(this);
     }
@@ -165,13 +172,11 @@ void DataInput::start()
         QFileInfo fileInfo;
         fileInfo.setFile( input->arg1() );
         if( !fileInfo.exists() ) {
-            emit setValueRet("Not Found"); // FIXME: why this?
             input->setArg2("Not Found");
             input->setDate(-1);
             emit toDelete(this);
         } 
         else if( !fileInfo.isExecutable() ) { 
-            emit setValueRet("Not Executable"); // FIXME: why this?
             input->setArg2("Not Executable");
             input->setDate(-1);
             emit toDelete(this);
@@ -192,7 +197,7 @@ void DataInput::start()
         }
     }
     else if( type == "none" ) { 
-        qDebug() << "datainput:start: none type";
+        //qDebug() << "datainput:start: none type";
     }
     else { 
         qDebug() << "datainput:start: bad type! should never get called";
