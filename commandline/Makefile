@@ -351,8 +351,6 @@ blink1-tiny-server: $(OBJS) server/blink1-tiny-server.c
 
 lib: $(OBJS)
 	$(CC) $(LIBFLAGS) $(CFLAGS) $(OBJS) $(LIBS)
-
-libextra:
 	$(LIB_EXTRA)
 
 package: lib blink1-tool
