@@ -2,66 +2,14 @@ import QtQuick 2.0
 import "content"
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
-//import QtWebKit 3.0
-//import QtWebKit.experimental 1.0
+
 
 
 Image{
     id: mainWindow
     source: "qrc:images/layout/bg-new.jpg"
     property int editModeIndex: -1
-/*
-    MouseArea{
-        id: belka
-        z:0
-        width: parent.width
-        height: 55
-        anchors.top: parent.top
-        anchors.left: parent.left
-        property variant previousPosition
-        onPressed: {
-            previousPosition = Qt.point(mouseX, mouseY)
-        }
-        onPositionChanged: {
-            if (pressedButtons == Qt.LeftButton) {
-                var dx = mouseX - previousPosition.x
-                var dy = mouseY - previousPosition.y
-                if(mw.checkIfCorrectPositionX(viewerWidget.x+dx)){
-                    viewerWidget.setX(viewerWidget.x+dx);
-                }else{
-                    previousPosition.x=mouseX
-                }
 
-                if(mw.checkIfCorrectPositionY(viewerWidget.y+dy,belka.height)){
-                    viewerWidget.setY(viewerWidget.y+dy);
-                }else{
-                    previousPosition.y=mouseY
-                }
-            }
-        }
-    }
-*/
-/*
-    PushButton{
-        z: 1
-        id: minButton
-        upSrc: "qrc:images/layout/minimalize-up.png"
-        downSrc: "qrc:images/layout/minimalize-hover.png"
-        anchors.right: closeButton.left
-        anchors.top: parent.top
-        onClicked: mw.showMinimize()
-    }
-    PushButton{
-        z: 1
-        id: closeButton
-        upSrc: "qrc:images/layout/close-up.png"
-        downSrc: "qrc:images/layout/close-hover.png"
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.rightMargin: 30
-        onClicked: { mw.markViewerAsClosing(); mw.quit(); }
-    }
-*/
     function exitEditMode(){
         if(lista.currentIndex != -1 && lista.currentItem) {
             lista.currentItem.editMode=false;
@@ -2288,6 +2236,7 @@ Image{
                                     }
                                 }
                                 onDoubleClicked: {
+                                    //todpopup.visible=true;
                                     if(mailpopup.visible) return;
                                     mailpopup.oldname=model.modelData.name
                                     mw.markEmailEditing(model.modelData.name,true)
@@ -2868,8 +2817,6 @@ Image{
                     Text {
                         id: helpText
                         baseUrl: "../../help/help/"   // this works (on Mac at least)
-                        //text: "<b>Hello</b> <i>World!</i> <img src=\"ifttt1a.png\"><a href=\"index.html\">click me for help</a>"
-                        //text: "<b>Hello</b> <i>World!</i><p> <img src=\"ifttt1a.png\">"
                         text: helpTextString
                         textFormat: Text.RichText 
                     }
@@ -3230,6 +3177,12 @@ Image{
     }
 
     //popups
+    MailPopupTod{
+        x: 400 //parent.x+parent.width/2-400
+        y: 200 //parent.y+50
+        id: todpopup
+        visible: false
+    }
     MailPopup{
         x: parent.x+parent.width/2-200
         y: parent.y+50
