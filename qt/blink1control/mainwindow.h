@@ -116,6 +116,8 @@ public slots:
     QVariantList getPatternsNames();
     QList<QObject*> getBigButtons();
 
+    void refreshBlink1State();
+
     void setColorToBlinkAndChangeActivePatternName(QColor,QString,int f=100);
     void setColorToBlink(QColor,int f);
     void removeRecentEvent(int idx);
@@ -293,7 +295,7 @@ private:
     QString activePatternName;
 
     QString blinkStatus;
-    QString blinkKey;
+    QString blink1Id;
     QString iftttKey;
     int rgbCycle;
     int rgbCounter;
@@ -308,6 +310,8 @@ private:
     bool dockIcon;
     bool startmin;
     bool enableServer;
+    bool enableGamma;
+    bool firstRun;
     int blink1Index;
     QString getTimeFromInt(int t);
     bool mk2;
