@@ -1,0 +1,8 @@
+
+This is a pattern test
+
+Here is the pattern: groovy
+but also here is a color: #669966
+
+Only the pattern should be parsed.
+
