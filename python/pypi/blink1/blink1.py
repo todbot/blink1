@@ -17,11 +17,10 @@ import logging
 import time
 import sys
 from contextlib import contextmanager
-
 import usb
-
 import webcolors
 
+from .kelvin import kelvin_to_rgb, COLOR_TEMPERATURES
 
 class BlinkConnectionFailed(RuntimeError):
     """Raised when we cannot connect to a Blink(1)
@@ -31,39 +30,54 @@ class BlinkConnectionFailed(RuntimeError):
 log = logging.getLogger(__name__)
 
 DEFAULT_GAMMA = (2, 2, 2)
+DEFAULT_WHITE_POINT = (255, 255, 255)
 
 REPORT_ID = 0x01
 VENDOR_ID = 0x27b8
 PRODUCT_ID = 0x01ed
 
-class Gamma(object):
+class ColorCorrect(object):
     """Apply a gamma correction to any selected RGB color, see:
     http://en.wikipedia.org/wiki/Gamma_correction
     """
-    def __init__(self, r, g, b):
+    def __init__(self, gamma, white_point):
         """
-        :param r: Red gamma value
-        :param g: Green gamma value
-        :param b: Blue gamma value
+        :param gamma: Tuple of r,g,b gamma values
+        :param white_point: White point expressed as (r,g,b), integer color temperature (in Kelvin) or a string value.
 
         All gamma values should be 0 > x >= 1
         """
-        self.gammas = [r, g, b]
+        self.gamma = gamma
+
+        if isinstance(white_point, str):
+            kelvin = COLOR_TEMPERATURES[white_point]
+            self.white_point = kelvin_to_rgb(kelvin)
+        elif isinstance(white_point,(int,float)):
+            self.white_point = kelvin_to_rgb(white_point)
+        else:
+            self.white_point = white_point
 
     @staticmethod
-    def gamma_correct(gamma, luminance):
-        return round(255 * (luminance / 255) ** gamma)
+    def gamma_correct(gamma, white, luminance):
+        return round(white * (luminance / 255) ** gamma)
 
     def __call__(self, r, g, b):
         color = [r,g,b]
-        return tuple(self.gamma_correct(g, l) for (g, l) in zip(self.gammas, color) )
+        return tuple(self.gamma_correct(g, w, l) for (g, w, l) in zip(self.gamma, self.white_point, color) )
+
 
 class Blink1:
-    def __init__(self, gamma=None):
+    """Light controller class, sends messages to the blink(1) and blink(1) mk2 via USB HID.
+    """
+    def __init__(self, gamma=None, white_point=None):
         """
         :param gamma: Triple of gammas for each channel e.g. (2, 2, 2)
         """
-        self.gamma = Gamma(*(gamma or DEFAULT_GAMMA))
+        self.cc = ColorCorrect(
+            gamma=(gamma or DEFAULT_GAMMA),
+            white_point=(white_point or DEFAULT_WHITE_POINT)
+        )
+
         self.dev = self.find()
         if not self.dev:
             raise BlinkConnectionFailed("Could not find an attached Blink(1)")
@@ -134,7 +148,7 @@ class Blink1:
         return self.write(buf)
 
     def fade_to_rgb(self,fade_milliseconds, red, green, blue, led_number=0):
-        r, g, b = self.gamma(red, green, blue)
+        r, g, b = self.cc(red, green, blue)
         return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number=0)
 
     def fade_to_color(self, fade_milliseconds, color):
@@ -170,11 +184,11 @@ class Blink1:
 
 
 @contextmanager
-def blink1(switch_off=True, gamma=None):
+def blink1(switch_off=True, gamma=None, white_point=None):
     """Context manager which automatically shuts down the Blink(1)
     after use.
     """
-    b1 = Blink1(gamma=gamma)
+    b1 = Blink1(gamma=gamma, white_point=white_point)
     yield b1
     if switch_off:
         b1.off()
