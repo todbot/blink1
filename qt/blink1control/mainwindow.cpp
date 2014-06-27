@@ -230,9 +230,13 @@ void MainWindow::runPattern(QString name, bool fromQml)
 
 void MainWindow::setColorFromDataInput(QColor color)
 {
-    // FIXME: there's got to be a better way of doing this?
-    QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
-    changeColorFromQml(color);
+    //qDebug() << "setColorFromDataInput";
+    cc = color;
+    fadeSpeed = 300;
+    changeColorOnVirtualBlink(cc, fadeSpeed);
+    mode=RGBSET;
+    updateBlink1();
+    //changeColorFromQml(color);  // what marcin originally had
 }
 
 
