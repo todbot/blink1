@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.2
 import "content"
 import QtQuick.Controls 1.0
 import QtGraphicalEffects 1.0
@@ -2814,11 +2814,13 @@ Image{
                    // anchors.leftMargin: 10
                     //anchors.topMargin: 5
                     z: -1 
-                    Text {
+                    TextEdit {  // was Text
                         id: helpText
                         baseUrl: "../../help/help/"   // this works (on Mac at least)
                         text: helpTextString
-                        textFormat: Text.RichText 
+                        textFormat: Text.RichText
+                        readOnly: true
+                        selectByMouse: true
                     }
                 }
 /*
