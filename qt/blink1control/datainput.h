@@ -31,7 +31,7 @@ public:
     void setIftttKey(QString iKey) { iftttKey = iKey; }
     QString readColorPattern( QString str);
     QColor readColorCode(QString str);
-    void parsePatternOrColor(QString str, QString type, int lastModTime);
+    bool parsePatternOrColor(QString str, QString type, int lastModTime);
 
 private:
     QNetworkAccessManager *networkManager;
@@ -57,7 +57,6 @@ signals:
     void toDelete(DataInput*);
     void runPattern(QString, bool);
     void setColor(QColor);
-    void setValueRet(QString);
     void iftttToCheck(QString);
     void addReceiveEvent(int date, QString name, QString from);
 
