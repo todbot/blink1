@@ -1,12 +1,13 @@
 #!/bin/sh
 #
-# deployqt-win.sh --
+# deployqt-win.sh -- Take a release build of Blink1Control 
+#                    and create a runnable application
 #  
 # Before running this, be sure to:
 # 1. Select "Release" build in QtComposer 
 # 2. Build Blink1Control
 # 3. Do QC Tests
-# 4. Type "./deployqt-win.sh" (i.e. must be in this dir)
+# 4. Type "./deployqt-win.sh" (i.e. must be in this dir in a MinGW shell)
 # 5. Resulting zipped up app will be this directory as "Blink1Control-win.zip"
 #
 # Wow this is such a hack.  
@@ -23,12 +24,14 @@ EXE_NAME=Blink1Control.exe
 
 # Where "windeployqt.exe" lives (and the mingw libs)
 #QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
-QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
+#QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
+QT_BIN_PATH=/c/qt/Qt5.3.1/5.3/msvc2013/bin
 
 # (paths are from the soon-to-be-created APP_DIR
 # path to built application executable
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_2_1_MinGW_32bit-Release/release
-BUILD_DIR=build-blink1control-Desktop_Qt_5_3_MinGW_32bit-Release/release
+#BUILD_DIR=build-blink1control-Desktop_Qt_5_3_MinGW_32bit-Release/release
+BUILD_DIR=build-blink1control-Desktop_Qt_5_3_MSVC2013_32bit-Release/release
 
 # where the source code lives (and the qml, and the help, and the readme)
 SRC_DIR="../../blink1control"
@@ -79,8 +82,9 @@ cp -r ${QML_DIR} .
 mkdir help
 cp -r ${HELP_DIR} help 
 
+# don't need to do for MSVC
 # copy mingw libs (seems like windeployqt should do this too)
-cp ${QT_BIN_PATH}/lib*dll .
+#cp ${QT_BIN_PATH}/lib*dll .
 
 #WINDEPLOYQT_OPTS=" --qmldir ${QML_DIR}"
 WINDEPLOYQT_OPTS+=" --no-translations"

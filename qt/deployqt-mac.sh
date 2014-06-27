@@ -30,6 +30,7 @@ fi
 
 # macdeployqt copies all the needed Qt libs
 macdeployqt ${EXE_PATH} -qmldir=${EXE_PATH}/Contents/Resources/qml -always-overwrite
+#macdeployqt ${EXE_PATH} -always-overwrite
 
 DO_WEBKIT=0
 if [ "$DO_WEBKIT" -eq 1 ] ; then
