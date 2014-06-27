@@ -1,4 +1,0 @@
-{
-   "comment": "a json response with color",
-   "color": "#ffccdd"
-}

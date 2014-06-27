@@ -1,2 +1,0 @@
-# another pattern test
-pattern: "white flashes"

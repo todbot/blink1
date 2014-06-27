@@ -11,7 +11,7 @@ CONFIG += qtquickcompiler
 TARGET = Blink1Control
 TEMPLATE = app
 VERSION = 1.84
-BLINK1CONTROL_VERSION = v1.84test2
+BLINK1CONTROL_VERSION = v1.84
 #VERSION = $$system(git describe)  # should return tag like "v1.8"
 # but git isn't in PATH in Windows, so can't do it.
 

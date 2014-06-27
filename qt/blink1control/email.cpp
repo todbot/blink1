@@ -116,9 +116,8 @@ void Email::checkState(){
 void Email::readyIMAP(){
     QString tmp=socket->readAll().data();
     downloadedMessage+=tmp;
-    qDebug()<<"DOWNLOADED************************************";
-    qDebug()<<downloadedMessage;
-    addToLog("DOWNLOADED "+downloadedMessage);
+    qDebug()<<"readyIMAP: ******* downloadedMessage:\n"<< downloadedMessage;
+    addToLog("DOWNLOADED: "+downloadedMessage);
     if(downloadedMessage.indexOf("a00"+QString::number(action_number)+" OK")==-1 && downloadedMessage.indexOf("a00"+QString::number(action_number)+" NO")==-1 && downloadedMessage.indexOf("a00"+QString::number(action_number)+" BAD")==-1 && action_number!=0)
         return;
     qDebug()<<"DOWNLOADED WHOLE MESSAGE!";
@@ -163,7 +162,7 @@ void Email::readyIMAP(){
         if(downloadedMessage.indexOf("* SEARCH")!=-1){
             unreadCount=0;
             QStringList list=downloadedMessage.split(QRegExp("(\\ |\\\n)"));
-            qDebug()<<list;
+            qDebug()<<"readyIMAP: list:" << list;
             bool ok=false;
             int pom;
             listOfUnreadEmailsIdToCheckLastId.clear();
@@ -229,9 +228,10 @@ void Email::readyIMAP(){
         QByteArray ba=QString("a005 logout\r\n").toUtf8();
         socket->write(ba);
     }else if(action_number==5){
+        // apparently this is where parsing happen
         if(unreadCount>0){
             if(lastid<listOfUnreadEmailsIdToCheckLastId.at(listOfUnreadEmailsIdToCheckLastId.count()-1)){
-                if(result==0){
+                if(result==0){  // result==0 means "unread msg count"
                     if(unreadCount>=parser.toInt()){
                         value="New Messages("+QString::number(unreadCount)+")";
                         emit updateOnlyTextStatus();
@@ -244,7 +244,7 @@ void Email::readyIMAP(){
                         value="Messages("+QString::number(unreadCount)+")";
                         emit updateOnlyTextStatus();
                     }
-                }else if(result==1 || result==2){
+                }else if(result==1 || result==2){  // result==1 means "Subject contains", result==2 means "Sender contains"
                     if(matchingMessagesCount>0){
                         value="New Matching Messages("+QString::number(matchingMessagesCount)+")";
                         emit updateOnlyTextStatus();
@@ -446,6 +446,8 @@ void Email::sockerErrorSlot(QAbstractSocket::SocketError e){
     //errorsList.append(QString(e));
 }
 
+// what in the hell is this message supposed to do?
+// why does it do it like this?
 QStringList Email::parseMail(QString mail){
     int sub=mail.indexOf("Subject:");
     int from=mail.indexOf("From:");
@@ -465,7 +467,7 @@ QStringList Email::parseMail(QString mail){
             matchingMessagesCount++;
         }
     }
-
+    qDebug() << "parseMail: "<< lista << "mail: ---\n"<< mail <<"---";
     return lista;
 }
 
