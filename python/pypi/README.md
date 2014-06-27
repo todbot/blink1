@@ -65,3 +65,34 @@ The context manager supports a ''gamma'' argument which allows you to supply a p
 This example provides a gamma correction of 2 to each of the three colour channels. 
         
 Higher values of gamma make the blink(1) appear more colorful but decrease the brightness of colours. 
+
+White point correction
+----------------------
+
+The human eye's perception of color can be influenced by ambient lighting. In some circumstances it may be desirable
+to apply a small colour correction in order to make colors appear more accurate. For example, if we were operating
+the blink(1) in a room lit predimenantly by candle-light:
+
+    with blink1(white_point='candle', switch_off) as b1:
+        b1.fade_to_color(100, 'white')
+
+Viewed in daylight this would make the Blink(1) appear yellowish, hoever in a candle-lit room this would be perceived
+as a more natural white. If we did not apply this kind of color correction the Blink(1) would appear blueish.
+
+The following values are acceptable white-points:
+
+* Any triple of (r,g,b). Each 0 <= luminance <= 255
+* Any color_temperature expressed as an integer or float in Kelvin
+* A color temperature name.
+
+The library supports the following temperature names:
+
+* candle
+* sunrise
+* incandescent
+* tungsten
+* halogen
+* sunlight
+* overcast
+* shade
+* blue-sky
