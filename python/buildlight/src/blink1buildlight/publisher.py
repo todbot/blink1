@@ -1,8 +1,13 @@
 import time
 import random
-
+import socket
+import logging
 import zmq
-from flasher.flash import mk_flash_msg, COLOURS
+from .flash import mk_flash_msg, COLOURS
+from .config import UPSTREAM_URL
+
+
+log = logging.getLogger(__name__)
 
 
 context = zmq.Context()
@@ -15,9 +20,10 @@ def counter():
         i += 1
 
 
-def main():
+def run():
     socket = context.socket(zmq.PUB)
-    socket.bind("tcp://127.0.0.1:5000")
+    socket.connect(UPSTREAM_URL)
+    log.info("Publisher connected to %s" % UPSTREAM_URL)
 
     for i in counter():
         times = random.randint(1, 9)
@@ -28,6 +34,10 @@ def main():
         socket.send_string(msg)
         time.sleep(10)
 
+def main():
+    logging.basicConfig()
+    logging.getLogger("").setLevel(logging.INFO)
+    run()
 
 if __name__ == '__main__':
     main()

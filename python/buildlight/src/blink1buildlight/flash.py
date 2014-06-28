@@ -7,7 +7,7 @@ import webcolors
 
 log = logging.getLogger(__name__)
 
-COLOURS = webcolors.css3_names_to_hex.keys()
+COLOURS = list(webcolors.css3_names_to_hex.keys())
 
 def mk_flash_msg(times, duration=1, colour='white'):
     payload = {'times': times, 'duration': duration, 'colour': colour}
