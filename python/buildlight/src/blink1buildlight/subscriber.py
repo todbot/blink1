@@ -1,19 +1,23 @@
 import logging
-
 import zmq
 from zmq.eventloop import ioloop
-from flasher.flash import decode_msg, flash_led
+from .flash import decode_msg, flash_led
 from zmq.eventloop.zmqstream import ZMQStream
 from blink1.blink1 import blink1
+from .config import DOWNSTREAM_URL
+
+log = logging.getLogger(__name__)
 
 ioloop.install()
 context = zmq.Context()
 
-
-def main():
+def run():
     socket = context.socket(zmq.SUB)
-    socket.connect("tcp://127.0.0.1:5000")
+    socket.connect(DOWNSTREAM_URL)
+    log.info("Connecting to %s" % DOWNSTREAM_URL)
+
     socket.setsockopt_string(zmq.SUBSCRIBE, u"flash")
+
     stream = ZMQStream(socket)
 
     loop = ioloop.IOLoop.instance()
@@ -27,7 +31,10 @@ def main():
         stream.on_recv(recieve)
         loop.start()
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig()
     logging.getLogger("").setLevel(logging.INFO)
+    run()
+
+if __name__ == '__main__':
     main()

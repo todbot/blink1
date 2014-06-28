@@ -6,7 +6,7 @@ from setuptools import setup
 
 PROJECT_ROOT, _ = os.path.split(__file__)
 REVISION = '0.0.1'
-PROJECT_NAME = 'flasher'
+PROJECT_NAME = 'blink1buildlight'
 PROJECT_AUTHORS = "Salim Fadhley"
 PROJECT_EMAILS = 'salimfadhley@gmail.com'
 PROJECT_URL = "https://bitbucket.org/salimfadhley/flasher"
@@ -34,7 +34,9 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'flash = flasher.subscriber:main'
+            'bl_subscriber = blink1buildlight.subscriber:main',
+            'bl_proxy = blink1buildlight.proxy:main',
+            'bl_publisher = blink1buildlight.publisher:main',
         ]
     },
     classifiers=[
