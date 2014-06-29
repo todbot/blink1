@@ -161,7 +161,7 @@ void DataInput::start()
                 }
             } // last modified
             else { 
-                //input->setArg2("Old File");
+                //input->setArg2("Old File");  // FIXME: should do something to indicate older file
                 //input->setDate(-1);
             }
         }

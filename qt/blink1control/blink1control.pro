@@ -66,8 +66,9 @@ RESOURCES += \
 
 
 # for blink1-lib
-# note: be sure to "cd blink1/commandline && make lib" beforehand
-# (and maybe "make libextra" for Win)
+# note: be sure to compile blink1-lib beforhard with:
+# cd blink1/commandline && make lib"
+# for Windows, that will build both MinGW & MSVC compatible libs
 BLINK1_LIB_DIR=$$PWD/../../commandline
 #message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
