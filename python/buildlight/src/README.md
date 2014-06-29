@@ -25,7 +25,7 @@ Use
 ---
 
 Set up a build-light proxy
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 On a single computer run the **b1_proxy** script. This is the coordinator for the build-light network. It will randomly
 assign itself two TCP ports and begin advertising:
@@ -33,7 +33,7 @@ assign itself two TCP ports and begin advertising:
     bl_proxy
    
 Set up a build-light controller
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------
    
 Launch as many build-light controllers as you want. Build-light controllers must have at least one Blink(1) attached.
  
@@ -51,7 +51,7 @@ When the controller starts up it automatically enters 'throb' mode. This display
 that it's ready to receive instructions from the proxy.
 
 Set the throb state
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 "Throbbing" is the default state of the build-light. A throb will contunue until a flash event occurs. The throb will resume
 once the flash has completed.
@@ -63,7 +63,7 @@ The command-line tool **bl_set_throb** can be used to set the throb parameters f
 If the url argument is omitted the tool will attempt to detect a proxy on the network. 
 
 Set the flash state
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 "Flashing" can be used to signal an event, the precise meaning of a flash is to be determined by the users.
 
