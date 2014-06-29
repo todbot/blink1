@@ -20,15 +20,15 @@ def decode_msg(msg):
     return message_type, json.loads(encoded_payload)
 
 
-def flash_led(loop, b1, times=1, total_times=None, duration=1.0, colour='white', on=True):
+def flash_led(loop, b1, times=1, total_times=None, duration=1.0, colour='white', on=True, fade=0):
     log.info("Flashing {colour}/{state} for {duration}s {times}/{total_times}".format(
         state=on and 'on' or 'off',
         **locals()))
 
     if on:
-        b1.fade_to_color(50, colour)
+        b1.fade_to_color(fade, colour)
     else:
-        b1.fade_to_color(50, 'black')
+        b1.fade_to_color(fade, 'black')
 
     total_times = total_times or times
 
@@ -40,5 +40,5 @@ def flash_led(loop, b1, times=1, total_times=None, duration=1.0, colour='white',
                                                colour=colour,
                                                on=False)
 
-    if times > 0:
+    if times > 0 or on:
         loop.add_timeout(timedelta(seconds=duration), remaining_callback)
