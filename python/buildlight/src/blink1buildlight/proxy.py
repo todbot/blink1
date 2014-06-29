@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 DISCOVERY_PORT = 6969
 MAGIC_WORD = "Build Light Controller"
-PING_FREQUENCY = 60
+PING_FREQUENCY = 10
 
 ioloop.install()
 context = zmq.Context()
@@ -29,7 +29,7 @@ def run():
     upstream_url = "tcp://%s:%d" % (hostname, upstream_port)
     log.info("Upstream bound to %s" % upstream_url)
 
-    upstream.setsockopt_string(zmq.SUBSCRIBE, u"flash")
+    upstream.setsockopt_string(zmq.SUBSCRIBE, u"buildlight")
 
     # Configure the downstream socket
     downstream  = context.socket(zmq.PUB)

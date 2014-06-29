@@ -2,7 +2,7 @@ import logging
 import zmq
 import click
 from zmq.eventloop import ioloop
-from .flash import decode_msg, flash_led
+from .controller import Receiver, DEFAULT_CHANNEL
 from zmq.eventloop.zmqstream import ZMQStream
 from blink1.blink1 import blink1
 from .discover import discover
@@ -22,19 +22,17 @@ def run(white_point):
     socket.connect(config['downstream'])
     log.info("Connecting to %s" % downstream_url)
 
-    socket.setsockopt_string(zmq.SUBSCRIBE, u"flash")
-
+    socket.setsockopt_string(zmq.SUBSCRIBE, DEFAULT_CHANNEL)
     stream = ZMQStream(socket)
 
     loop = ioloop.IOLoop.instance()
 
     with blink1(white_point=white_point) as b1:
-        def recieve(msg):
-            for m in msg:
-                msg_type, msg_args = decode_msg(m)
-                flash_led(loop, b1, **msg_args)
+        reciever = Receiver(b1, loop)
+        stream.on_recv(reciever.recieve)
 
-        stream.on_recv(recieve)
+        loop.add_callback(reciever.throbber)
+
         loop.start()
 
 def main():
