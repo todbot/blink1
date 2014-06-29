@@ -1,14 +1,28 @@
 #include "mainapp.h"
 #include "mainwindow.h"
 #include <QApplication>
+#include <QSharedMemory>
+
+QSharedMemory sharedMemory;
 
 int main(int argc, char *argv[])
 {
     //QApplication a(argc, argv);
     MainApp a(argc,argv);
 
+    sharedMemory.setKey("Blink1ControlShMemKey");
+    if( !sharedMemory.create(1) ) {
+        qDebug() << "Blink1Control already running";
+        QMessageBox::about(0, QString("Blink1Control already running"), "Blink1Control is already running");
+#ifdef Q_OS_WIN
+        a.processEvents();
+        return -1;
+#else
+        return a.exec();
+#endif
+    }
+
     MainWindow w;  // this seems messed up, why even use mainwindow?
-    //w.show();
 
     return a.exec();
 }
