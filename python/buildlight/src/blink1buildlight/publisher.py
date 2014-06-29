@@ -2,10 +2,10 @@ import time
 import random
 import socket
 import logging
+import itertools
 import zmq
 from .flash import mk_flash_msg, COLOURS
-from .config import UPSTREAM_URL
-
+from .discover import discover
 
 log = logging.getLogger(__name__)
 
@@ -13,19 +13,15 @@ log = logging.getLogger(__name__)
 context = zmq.Context()
 
 
-def counter():
-    i = 0
-    while True:
-        yield i
-        i += 1
-
-
 def run():
-    socket = context.socket(zmq.PUB)
-    socket.connect(UPSTREAM_URL)
-    log.info("Publisher connected to %s" % UPSTREAM_URL)
+    config = discover()
+    upstream_url = config['upstream']
 
-    for i in counter():
+    socket = context.socket(zmq.PUB)
+    socket.connect(upstream_url)
+    log.info("Publisher connected to %s" % upstream_url)
+
+    for i in itertools.count():
         times = random.randint(1, 9)
         duration = random.uniform(0.2, 0.8)
         colour = random.choice(COLOURS)
