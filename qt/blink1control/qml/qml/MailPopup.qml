@@ -677,7 +677,7 @@ Image {
                     font.pointSize: (!mw.mac())?10:12
                     selectByMouse: true
                     maximumLength: 40
-                    wrapMode: TextEdit.Wrap
+                    clip: true
                     KeyNavigation.tab: description
                 }
             }
@@ -754,7 +754,7 @@ Image {
                     font.pointSize: (!mw.mac())?10:12
                     selectByMouse: true
                     maximumLength: 40
-                    wrapMode: TextEdit.Wrap
+                    clip: true
                     KeyNavigation.tab: description
                 }
             }
