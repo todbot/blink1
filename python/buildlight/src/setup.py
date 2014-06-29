@@ -34,9 +34,11 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'bl_subscriber = blink1buildlight.subscriber:main',
+            'bl_controller = blink1buildlight.subscriber:main',
             'bl_proxy = blink1buildlight.proxy:main',
-            'bl_publisher = blink1buildlight.publisher:main',
+            'bl_demo = blink1buildlight.demo:main',
+            'bl_set_throb = blink1buildlight.tools:set_throb',
+            'bl_set_flash = blink1buildlight.tools:set_flash'
         ]
     },
     classifiers=[
