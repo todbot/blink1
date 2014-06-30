@@ -1,7 +1,7 @@
 import unittest
 
 import mock
-from blink1.blink1 import Blink1, BlinkConnectionFailed
+from blink1.blink1 import Blink1, BlinkConnectionFailed, InvalidColor
 
 
 class TestSimpleLightControl(unittest.TestCase):
@@ -17,6 +17,23 @@ class TestSimpleLightControl(unittest.TestCase):
 
     def testOn(self):
         self.b1.fade_to_color(1000, 'white')
+
+    def testInvalidColor(self):
+        with self.assertRaises(InvalidColor):
+            self.b1.fade_to_color(1000, 'moomintrol')
+
+    def testAlsoWhite(self):
+        self.b1.fade_to_color(1000, (255,255,255))
+
+    def testAWhiteShadeOfPale(self):
+        self.b1.fade_to_color(1000, '#ffffff')
+
+    def testAGreyerShadeOfPale(self):
+        self.b1.fade_to_color(1000, '#eeeeee')
+
+    def testAnImplausibleShadeOfWhite(self):
+        with self.assertRaises(InvalidColor):
+            self.b1.fade_to_color(1000, '#xxxxxx')
 
     def testOff(self):
         self.b1.off()
