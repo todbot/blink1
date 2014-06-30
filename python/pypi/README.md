@@ -50,6 +50,17 @@ from blink1.blink1 import Blink1
     b1.fade_to_rgb(1000, 255, 255, 255)
 
 Unlike the context manager, this demo will leave the blink(1) at the end of execution.
+        
+Colors
+------
+
+There are a number of ways to specify colors in this library:
+
+    b1.fade_to_color(1000, '#ffffff') # Hexdecimal RGB as a string
+    b1.fade_to_color(1000, 'green') # Named color - any color name understood by css3
+    b1.fade_to_color(1000, (22,33,44) # RGB as a tuple. Luminance values are 0 <= lum <= 255
+
+Attempting to select a color outside the plausible range will generate an InvalidColor exception.
 
 Gamma correction
 ----------------
