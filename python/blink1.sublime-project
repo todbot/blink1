@@ -1,0 +1,20 @@
+{
+	"folders":
+    [
+        {
+            "path": "alternative_libraries",
+            "file_exclude_patterns": ["*.pyc"],
+            "name": "Alternative Libraries"
+        },
+        {
+            "path": "pypi",
+            "file_exclude_patterns": ["*.pyc"],
+            "name": "New Python Library"
+        },
+        {
+            "path": "buildlight/src",
+            "file_exclude_patterns": ["*.pyc"],
+            "name": "Build Light Controller"
+        }
+    ]
+}
