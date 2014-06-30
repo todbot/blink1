@@ -15,7 +15,10 @@ COLOR_TEMPERATURES={
     'sunlight':5000,
     'overcast':6000,
     'shade':7000,
-    'blue-sky':10000
+    'blue-sky':10000,
+    'warm-fluorescent':2700,
+    'fluorescent':37500,
+    'cool-fluorescent':5000,
 }
 
 def correct_output(luminosity):
