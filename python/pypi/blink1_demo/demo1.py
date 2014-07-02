@@ -18,7 +18,7 @@ if ( blink1.dev == None ):
 else:
     print("blink(1) found")
 
-print("serial number: " + blink1.get_serialnumber())
+print("serial number: " + blink1.get_serial_number())
 print("firmware version: " + blink1.get_version())
 
 print("fading to #ffffff")
@@ -28,5 +28,8 @@ time.sleep(0.5)
 
 print("fading to #000000")
 blink1.fade_to_rgb(1000, 0, 0, 0)
+
+print("closing connection to blink(1)")
+blink1.close()
 
 print("done")

@@ -26,6 +26,10 @@ class BlinkConnectionFailed(RuntimeError):
     """Raised when we cannot connect to a Blink(1)
     """
 
+class InvalidColor(ValueError):
+    """Raised when the user requests an implausible colour
+    """
+
 
 log = logging.getLogger(__name__)
 
@@ -151,6 +155,22 @@ class Blink1:
         r, g, b = self.cc(red, green, blue)
         return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number=0)
 
+    @staticmethod
+    def color_to_rgb(color):
+        if isinstance(color, tuple):
+            return color
+        if color.startswith('#'):
+            try:
+                return webcolors.hex_to_rgb(color)
+            except ValueError:
+                raise InvalidColor(color)
+
+        try:
+            return webcolors.name_to_rgb(color)
+        except ValueError:
+            raise InvalidColor(color)
+
+
     def fade_to_color(self, fade_milliseconds, color):
         """
         Fade the light to a known colour in a
@@ -158,7 +178,8 @@ class Blink1:
         :param color: Named color to fade to
         :return: None
         """
-        red, green, blue = webcolors.name_to_rgb(color)
+        red, green, blue = self.color_to_rgb(color)
+
         return self.fade_to_rgb(fade_milliseconds, red, green, blue)
 
     def off(self):
