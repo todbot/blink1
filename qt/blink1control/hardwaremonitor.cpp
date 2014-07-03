@@ -452,7 +452,7 @@ bool HardwareMonitor::checkValue(int value){
     return result;
 }
 void HardwareMonitor::setStatus(QString status){
-    this->status=status;o
+    this->status=status;
 }
 HardwareMonitor::~HardwareMonitor(){
     if(p!=NULL){
