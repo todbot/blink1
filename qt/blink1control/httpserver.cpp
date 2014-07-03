@@ -36,6 +36,7 @@ void HttpServer::startRead(){
         client->write("HTTP/1.0 200 OK\n");  // FIXME: not always 200 OK
         client->write("Connecton: close\n");
         client->write("Content-type: text/plain\n");
+        client->write("Access-Control-Allow-Origin: *\n");
         client->write("\n");
 
         QJsonObject resp;  // response object
