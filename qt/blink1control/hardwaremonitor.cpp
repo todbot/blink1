@@ -1,5 +1,7 @@
 #include "hardwaremonitor.h"
 
+#include <QRegularExpression>
+
 HardwareMonitor::HardwareMonitor(QString name,QObject *parent) :
     QObject(parent)
 {
@@ -34,6 +36,12 @@ void HardwareMonitor::checkMonitor(){
     }
 }
 void HardwareMonitor::checkBattery(){
+#ifdef Q_OS_MAC
+    if(p3!=NULL) return;
+    p3=new QProcess();
+    p3->start("pmset -g batt");
+    connect(p3,SIGNAL(finished(int)),this,SLOT(readyReadBattery(int)));
+#endif
 #ifdef Q_OS_WIN
     SYSTEM_POWER_STATUS stat;
     GetSystemPowerStatus(&stat);
@@ -78,87 +86,50 @@ void HardwareMonitor::checkBattery(){
     }
     emit updateOnlyStatusAndCurrentValue();
 #endif
-#ifdef Q_OS_MAC
-    if(p3!=NULL) return;
-    p3=new QProcess();
-    p3->start("pmset -g batt");
-    connect(p3,SIGNAL(finished(int)),this,SLOT(readyReadBattery(int)));
-#endif
 }
 
-void HardwareMonitor::readyReadBattery(int st){
-#ifdef Q_OS_MAC
-    bool battery=true;
-    bool correct=true;
-    int BTime;
-    if(st==0){
-        QString tmp2=p3->readAllStandardOutput();
-        qDebug()<<tmp2;
-        QStringList pom2=tmp2.split(QRegExp("(  +|\r\n|\n|;)"));
-        qDebug()<<pom2;
-        if(pom2.count()>1){
-            QString source=pom2.at(0).mid(pom2.at(0).indexOf("\'")+1);
-            source=source.remove(source.length()-1,1);
-            qDebug()<<"Source "<<source;
-            addToLog("Source "+source);
-            if(!pom2.at(1).contains("InternalBattery")){
-                qDebug()<<"no battery";
-                addToLog("no battery");
-                battery=false;
-            }
-            if(battery){
-                if(pom2.count()>3){
-                    qDebug()<<"Battery status "<<pom2.at(2);
-                    addToLog("Battery status "+pom2.at(2));
-                    qDebug()<<pom2.at(3);
-                    qDebug()<<"Time: "<<pom2.at(4);
-                    addToLog("Time: "+pom2.at(4));
-                    BTime=pom2.at(4).toInt();
-                    value=(pom2.at(2).left(pom2.at(2).length()-1)).toInt();
-                }else{
-                    correct=false;
-                }
-            }
-        }else{
-            correct=false;
-        }
-    }
-    if(st==0 && correct){
-        if(!battery){
-            value=-1;
-            status="NO BATTERY";
-            done=false;
-        }else{
-            if(role==0 || role==2){
-                extraValue=(BTime!=-1)?BTime:0;
-                status=QString::number(value)+"%";
-            }else{
-                status="Level not reached.";
-            }
-            if(checkValue(value)){
-                if(!done){
+
+void HardwareMonitor::readyReadBattery(int exitCode)
+{
+    if( exitCode == 0 ) {  // all is well
+        QString p3out = p3->readAllStandardOutput();
+        qDebug() << "p3out: "<<p3out;
+        if( p3out.contains("InternalBattery") ) { 
+            QRegularExpression   re("InternalBattery.+\\s(\\d+)%");
+            QRegularExpressionMatch match = re.match(p3out);
+            if( match.hasMatch() ) {
+                QString percentstr = match.captured( match.lastCapturedIndex() );
+                value = percentstr.toInt();
+                if(checkValue(value) && !done ) {
+                    qDebug() << "checkValue";
                     if(role>0){
+                        status = percentstr + "%!";
                         emit addReceiveEvent(0,QString::number(value)+"% Battery",name);
                         emit runPattern(patternName,false);
                     }
+                    done=true;
                 }
-                if(role==1)
-                    status="Level reached!";
-                done=true;
-            }else{
-                done=false;
+                else { 
+                    status = percentstr + "%";
+                }
+            }
+            else { 
+                status = "Bad Battery Read";
             }
         }
-    }else{
-        status="Internal error";
-        done=false;
-        freqCounter=0;
+        else { 
+            status = "No Battery";
+        }
+
+    } else { 
+        status = "Internal Error";
     }
+
+    qDebug() << "readyReadBattery: "<<status;
     emit updateOnlyStatusAndCurrentValue();
     p3->close();
     disconnect(p3);
     p3=NULL;
-#endif
 }
 
 void HardwareMonitor::checkCpu(){
@@ -460,6 +431,7 @@ void HardwareMonitor::setRole(int role){
     this->role=role;
 }
 bool HardwareMonitor::checkValue(int value){
+    qDebug() << "checkValue:"<<value;
     bool result=false;
     if(action==0){
         if(value<lvl)
@@ -480,7 +452,7 @@ bool HardwareMonitor::checkValue(int value){
     return result;
 }
 void HardwareMonitor::setStatus(QString status){
-    this->status=status;
+    this->status=status;o
 }
 HardwareMonitor::~HardwareMonitor(){
     if(p!=NULL){
