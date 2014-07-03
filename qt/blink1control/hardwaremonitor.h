@@ -74,11 +74,11 @@ public slots:
 private:
     QString name,patternName,status;
     int type;               //0-battery, 1-cpu, 2-ram,
-    int action;             //0-< 1-<= 2-= 3-> 4->=
+    int action;             //0-< 1-<= 2-= 3-> 4->=  // WTF!?
     int role;               //0-activity, 1-alert, 2-both
     int lvl,freq,value,extraValue,freqCounter;
     bool done,editing;
-    QProcess *p,*p2,*p3;
+    QProcess *p,*p2,*p3; // WTF, marcin
 };
 
 #endif // HARDWAREMONITOR_H
