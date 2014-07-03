@@ -105,6 +105,7 @@ void DataInput::start()
 {
     QNetworkRequest nr;
     QString url;
+    //qDebug() << "DataInput:start:"<<type<<":"<<input->arg1();
 
     if( type == "ifttt" ) {
         url = "http://api.thingm.com/blink1/eventsall/" + iftttKey;
@@ -271,7 +272,8 @@ void DataInput::onProcessFinished()
 void DataInput::onError()
 {
     if( type == "ifttt" ) { 
-        input->setArg2("connect error");
+        // FIXME: maybe don't report this because we do it periodically?
+        //input->setArg2("connect error");
     }
     else if( type == "url") {
         qDebug() << " error on URL " << reply;
