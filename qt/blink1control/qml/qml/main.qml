@@ -1,6 +1,6 @@
 import QtQuick 2.2
 import "content"
-import QtQuick.Controls 1.0
+import QtQuick.Controls 1.2
 import QtGraphicalEffects 1.0
 
 
@@ -190,14 +190,14 @@ Image{
                 hoverEnabled: true
                 onEntered: {
                     if(mw.activePattern==="") return;
-                    showFullName.fullName=mw.activePattern
-                    showFullName.x=devicePanel.x+activePatternName.x
-                    showFullName.y=devicePanel.y+activePatternName.y+activePatternName.height
-                    showFullName.width=130
-                    showFullName.visible=true
+                    //showFullName.fullName=mw.activePattern
+                    //showFullName.x=devicePanel.x+activePatternName.x
+                    //showFullName.y=devicePanel.y+activePatternName.y+activePatternName.height
+                    //showFullName.width=130
+                    //showFullName.visible=true
                 }
                 onExited: {
-                    showFullName.visible=false
+                    //showFullName.visible=false
                 }
             }
         }
@@ -560,7 +560,6 @@ Image{
                                 }
                             }
                         }
-
                         TextInput {
                             anchors.verticalCenter: parent.verticalCenter
                             id: pname
@@ -616,19 +615,20 @@ Image{
                                     colors.currentIndex=-1
                                     lista.currentIndex=index
                                 }
-                                hoverEnabled: true
+                                hoverEnabled: true  //FIXME: causes crash maybe deep in Qt?
                                 onEntered: {
                                     if(editModeIndex != -1) return;
                                     lista.currentIndex=index
                                     colors.currentIndex=-1
-                                    showFullName.fullName=model.modelData.name
-                                    showFullName.visible=true
-                                    showFullName.x=colorPatternsPanel.x+lista.x+lista.currentItem.x+30
-                                    showFullName.y=colorPatternsPanel.y+lista.y+lista.currentItem.y+lista.currentItem.height-lista.contentY+20
-                                    showFullName.width=100
+                                    //showFullName.fullName=model.modelData.name
+                                    //showFullName.visible=true
+                                    //showFullName.x=colorPatternsPanel.x+lista.x+lista.currentItem.x+30
+                                    //showFullName.y=colorPatternsPanel.y+lista.y+lista.currentItem.y+lista.currentItem.height-lista.contentY+20
+                                    //showFullName.width=100
                                 }
+
                                 onExited: {
-                                    showFullName.visible=false
+                                    //showFullName.visible=false
                                 }
                             }
                         }
@@ -3179,12 +3179,14 @@ Image{
     }
 
     //popups
+/*
     MailPopupTod{
         x: 400 //parent.x+parent.width/2-400
         y: 200 //parent.y+50
         id: todpopup
         visible: false
     }
+*/
     MailPopup{
         x: parent.x+parent.width/2-200
         y: parent.y+50
@@ -3459,6 +3461,7 @@ Image{
             editModeIndex = lista.currentIndex
         }
     }
+/*
     Rectangle{
         id: showFullName
         property string fullName: ""
@@ -3479,4 +3482,5 @@ Image{
             font.pointSize: (!mw.mac())?8:12
         }
     }
+*/
 }
