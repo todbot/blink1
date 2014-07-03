@@ -305,7 +305,8 @@ private:
 
     QTimer *inputsTimer;
     int inputTimerCounter;
-    bool isIftttChecked;
+    int lastIftttDate;    // timestamp of the last IFTTT event we received
+    bool isIftttChecked;  // FIXME: only check IFTTT once, even tho multiple DataInputs for it
     bool autorun;
     bool dockIcon;
     bool startmin;

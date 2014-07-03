@@ -366,6 +366,7 @@ void MainWindow::checkIfttt(QString txt)
         // we need some way to notify user (maybe set arg2 on all iftt items? yuk)
     } 
 
+    int recentIftttDate = 0;
     // march through each item of the events array, comparing to each input
     QJsonArray events = respobj.value( QString("events") ).toArray();
     foreach( const QJsonValue& val, events) {
@@ -375,26 +376,35 @@ void MainWindow::checkIfttt(QString txt)
         QString evname    = ev["name"].toString();
         QString evsource  = ev["source"].toString();
         int evdate = evdatestr.toInt();
-        //qDebug() << "ev: name:"<<evname<<", date:"<< evdate;
-        
+        qDebug() << "ev: name:"<<evname<<", date:"<< evdate << " lastIftttDate:"<<lastIftttDate;
+
+        if( evdate > lastIftttDate ) { 
+            recentIftttDate = evdate;
+            addRecentEvent(evdate, evname+" - "+evsource, "IFTTT");
+        }
         foreach ( Blink1Input* input, inputs ) {
-            //qDebug() << "blink1input: "<< input->name() << "arg1: "<<input->arg1();
-            // is this an IFTTT input and does the event name match?
-            // FIXME: type should be just "ifttt" or enum 
+            //qDebug() << "blink1input: "<<input->type() <<":"<<input->arg1() <<":"<< input->date();
+            // check if this is an IFTTT input and does the event name match?
             // FIXME: name should be same as rule name (aka arg1)
             if( input->type() == "ifttt" ) { 
                 // is the event newer than our last event, then trigger!
-                if( evdate > input->date() ) {
-                    input->setDate(evdate); // save for next go around
-                    input->setArg2(evsource); 
-                    if( input->arg1() == evname && 
-                        patterns.contains(input->patternName()))
-                        patterns.value( input->patternName() )->play(cc);  // FIXME: why is cc being passed?
-                    addRecentEvent(evdate, evname+" - "+evsource, "IFTTT");
+                if( evdate > input->date() ) { 
+                    qDebug() << "new ifttt event for "<< input->arg1();
+                    if( evname == input->arg1() ) {  
+                        qDebug() << "saving new ifttt event for "<< input->arg1();
+                        input->setDate(evdate); // save for next go around
+                        input->setArg2(evsource); 
+                        if( patterns.contains(input->patternName()) ) { 
+                            patterns.value( input->patternName() )->play(cc);  // FIXME: why is cc being passed?
+                        }
+                    }
                 }
             }
         } // foreach input
     } // foreach event
+    if( recentIftttDate > 0 ) {
+        lastIftttDate = recentIftttDate;
+    }
 }
 
 void MainWindow::addRecentEvent(int date, QString name, QString from)
@@ -577,7 +587,7 @@ void MainWindow::loadSettings()
     startmin     = settings.value("startmin","").toBool();
     enableServer = settings.value("server","").toBool();
     logging      = settings.value("logging","").toBool();
-    enableGamma  = settings.value("enableGamma","").toBool();
+    enableGamma  = settings.value("enableGamma",false).toBool();
     firstRun     = settings.value("firstRun",true).toBool();
 
     QString blink1IndexStr = settings.value("blink1Index","").toString();
@@ -626,6 +636,12 @@ void MainWindow::loadSettings()
             Blink1Input* bi = new Blink1Input();
             bi->fromJson( qarr.at(i).toObject() );
             inputs.insert( bi->name(), bi );
+            // find most recent ifttt time
+            if( bi->type() == "ifttt" ) { 
+                qDebug() << "iftttTime: "<<bi->date();
+                if( bi->date() > lastIftttDate )
+                    lastIftttDate = bi->date();
+            }
         }
     }
 
