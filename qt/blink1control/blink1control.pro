@@ -10,9 +10,12 @@ CONFIG += qtquickcompiler
 
 TARGET = Blink1Control
 TEMPLATE = app
-VERSION = 1.84
-BLINK1CONTROL_VERSION = v1.84
-#VERSION = $$system(git describe)  # should return tag like "v1.8"
+
+VERSION = 1.91
+BLINK1CONTROL_VERSION = "v$$VERSION"
+
+#VERSION = $$system(git describe)  
+# should return tag like "v1.8"
 # but git isn't in PATH in Windows, so can't do it.
 
 # DEPLOYMENT FOLDERS is used by qtquick2applicationviewer.pri, not qmake
@@ -107,6 +110,7 @@ OTHER_FILES += \
 
 win32{
     RC_FILE =blink1.rc
+    CONFIG += embed_manifest_exe
 }
 #ICON = images/blink1-icon01.ico
 

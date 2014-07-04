@@ -1354,7 +1354,7 @@ Image{
                         font.pointSize: (!mw.mac())?8:12
                     }
                     Text{
-                        text: "Last Checked"
+                        text: "Last Event"
                         width: 138
                         font.bold: true
                         color: "#999999"
