@@ -27,6 +27,9 @@ EXE_NAME=Blink1Control.exe
 #QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
 QT_BIN_PATH=/c/qt/Qt5.3.1/5.3/msvc2013/bin
 
+#export VCINSTALLDIR=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 12.0/VC
+export VCINSTALLDIR=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 12.0/VC/
+
 # (paths are from the soon-to-be-created APP_DIR
 # path to built application executable
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_2_1_MinGW_32bit-Release/release
@@ -82,14 +85,18 @@ cp -r ${QML_DIR} .
 mkdir help
 cp -r ${HELP_DIR} help 
 
-# don't need to do for MSVC
+# don't do for MSVC
 # copy mingw libs (seems like windeployqt should do this too)
 #cp ${QT_BIN_PATH}/lib*dll .
+
+# copy MSVCRT DLLS
+cp /c/windows/syswow64/{msvcp120,msvcr120}.dll .
 
 #WINDEPLOYQT_OPTS=" --qmldir ${QML_DIR}"
 WINDEPLOYQT_OPTS+=" --no-translations"
 WINDEPLOYQT_OPTS+=" --no-webkit2"
 WINDEPLOYQT_OPTS+=" --no-webkit"
+#WINDEPLOYQT_OPTS+=" --verbose 2"
 #WINDEPLOYQT_OPTS+=" --libdir ../../../commandline/blink1-lib.dll"
 #WINDEPLOYQT_OPTS+=" --libdir ${QT_BIN_PATH}"
 #WINDEPLOYQT_OPTS+=" --no-sql --no-system-d3d-compiler"
