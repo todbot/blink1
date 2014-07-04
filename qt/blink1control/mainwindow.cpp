@@ -410,7 +410,10 @@ void MainWindow::checkIfttt(QString txt)
 void MainWindow::addRecentEvent(int date, QString name, QString from)
 {
     addToLog(name+" "+from);
-    QString text = getTimeFromInt(QDateTime::currentDateTime().toTime_t()/*date*/) + "-" + name + " via " + from;
+    //QString text = getTimeFromInt(QDateTime::currentDateTime().toTime_t()/*date*/) + "-" + name + " via " + from;
+    if( date < 1 ) date = QDateTime::currentDateTime().toTime_t();
+    QString text = getTimeFromInt(date) + "-" + name + " via " + from;
+
     recentEvents.prepend(text);
     if( recentEvents.count() > RECENT_EVENTS_MAX ) { 
         recentEvents.removeLast();
@@ -929,9 +932,9 @@ void MainWindow::setColorToBlinkAndChangeActivePatternName(QColor c,QString s,in
         led=patterns.value(s)->getCurrentLed();
         emit ledsUpdate();
     }
-    qDebug()<<"    setColorToBlink: fadespeed:"<<fadeSpeed << " color: " <<c.name() << " s: "<<s;
+    //qDebug()<<"    setColorToBlink: fadespeed:"<<fadeSpeed << " color: " <<c.name() << " s: "<<s;
     updateBlink1();
-    //if(s!="")// && !fromPattern)
+    //if(s!="")// && !fromPattern) // FIXME: what was this for?
         //QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc));
     fromPattern=false;
 }
