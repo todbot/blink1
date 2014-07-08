@@ -226,7 +226,7 @@ void DataInput::onFinished()
         qDebug() << "onFinished: url finished: lastMod:"<< lastModTime << " txt: " << txt;
         
         if( lastModTime == -1 ) { // missing lastmodified
-            lastModTime = 0; // put as far back in time as possible
+            lastModTime = input->date() + 10 ; // so fake it
         }
         if( lastModTime <= input->date() ) {  // old page
             qDebug() << "onFinished: old url";
@@ -234,8 +234,7 @@ void DataInput::onFinished()
             input->setArg2( "Not Modified" );  // FIXME: arg2 should not be used for lastVal
         }
         else { 
-            input->setDate(lastModTime); // FIXME: blinkinput vs datainput? which is which, omg marcin, really?
-
+            input->setDate(lastModTime); // FIXME: blinkinput vs datainput? which is which,omg marcin,really?
             parsePatternOrColor( txt, type, lastModTime);
         }
     }
