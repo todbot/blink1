@@ -201,7 +201,7 @@ void DataInput::start()
         //qDebug() << "datainput:start: none type";
     }
     else { 
-        qDebug() << "datainput:start: bad type! should never get called";
+        qDebug() << "datainput:start: bad type! should never get called; type="<<type;
         emit toDelete(this);
     }
 }
