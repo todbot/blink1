@@ -6,7 +6,7 @@ QT       += core gui widgets network quick qml
 
 #CONFIG += console  # Win: uncomment to have console window open up for debugging
 #CONFIG -= app_bundle # Mac: uncommment to not build a .app bundle
-CONFIG += qtquickcompiler
+#CONFIG += qtquickcompiler
 
 TARGET = Blink1Control
 TEMPLATE = app
@@ -110,7 +110,7 @@ OTHER_FILES += \
 
 win32{
     RC_FILE =blink1.rc
-    CONFIG += embed_manifest_exe
+#    CONFIG += embed_manifest_exe
 }
 #ICON = images/blink1-icon01.ico
 
