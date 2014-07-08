@@ -85,7 +85,7 @@ QString patternsReadOnly =
 "  \"readonly\": true, \"system\": true, " 
 "  \"pattern\": \"3,#7a0000,0.1,0,#000000,0,0,#7e0000,0.1,0,#000000,0.1,0,#000000,3,0\" },"
 
-"{ \"date\": 879, \"name\": \"electrocardiogram\","
+"{ \"date\": 879, \"name\": \"EKG\","
 "  \"readonly\": true, \"system\": true, " 
 "  \"pattern\": \"5,#041a00,0,0,#29ff00,0,0,#000000,0.1,0,#29ff00,0.1,0,#041a00,2.1,0\" },"
 
