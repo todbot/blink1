@@ -154,26 +154,20 @@ Image {
             color: "black"
             font.pointSize: (!mw.mac())?8:11
         }
-        MyComboBox{
+        ComboBox {
             id: hType
             anchors.left: parent.left
             anchors.leftMargin: 75
             anchors.verticalCenter: parent.verticalCenter
             width: 300
-            model: htypes
-            ListModel{
-                id: htypes
-                ListElement{
-                    text: "Battery"
-                }
-                ListElement{
-                    text: "CPU"
-                }
-                ListElement{
-                    text: "RAM"
-                }
-            }
-
+            //currentIndex: 2
+            model: ListModel {
+                id: hTypes
+                ListElement { text: "Battery"; }
+                ListElement { text: "CPU"; }
+                ListElement { text: "RAM"; }
+            }  
+            //onCurrentIndexChanged: console.debug(hType.get(currentIndex).text);
         }
     }
 
@@ -261,32 +255,24 @@ Image {
             anchors.verticalCenter: alert.verticalCenter
             font.pointSize: (!mw.mac())?8:11
         }
-        MyComboBox{
+
+        ComboBox {
             id: hAction
-            anchors.left: alerttitle.right
-            anchors.leftMargin: 25
+            anchors.left: alerttitle.left
+            anchors.leftMargin: 45
             anchors.verticalCenter: alert.verticalCenter
             width: 180
-            model: actions
-            disabled: !alert.checked
-            ListModel{
+            //height: parent.height; // looks ugly
+            //disabled: !alert.checked  // not present in real combobox
+            model: ListModel {
                 id: actions
-                ListElement{
-                    text: "< (lower than)"
-                }
-                ListElement{
-                    text: "<= (lower than or equal)"
-                }
-                ListElement{
-                    text: "= (equal)"
-                }
-                ListElement{
-                    text: "> (higher than)"
-                }
-                ListElement{
-                    text: ">= (higher than or equal)"
-                }
-            }
+                ListElement { text: "< (lower than)"; }
+                ListElement { text: "<= (lower than or equal)"; }
+                ListElement { text: "= (equal)"; }
+                ListElement { text: "> (higher than)"; }
+                ListElement { text:  "> (higher than or equal)"; }
+            }  
+            //onCurrentIndexChanged: console.debug(hType.get(currentIndex).text);
         }
         Item{
             anchors.left: hAction.right

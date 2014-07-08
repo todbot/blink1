@@ -179,54 +179,31 @@ Image {
             color: "black"
             font.pointSize: (!mw.mac())?8:11
         }
-        MyComboBox{
+
+        ComboBox {
             id: accountType
-            width: 300
             anchors.left: parent.left
             anchors.leftMargin: 75
             anchors.verticalCenter: parent.verticalCenter
-            model: types
-            onClick2: {
-                if(idx==1){
-                    unreadinput.readOnly=true
-                    unreadinput.text="1"
-                    unreadinput.parent.source="qrc:images/layout/spinbox-bg-disable.png"
-                    if(ssl.checked){
-                        port.text="995"
-                    }else{
-                        port.text="110"
-                    }
-                }else if(idx==0){
-                    if(unreads.checked){
-                        unreadinput.readOnly=false
-                        unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
-                    }
-                    if(ssl.checked){
-                        port.text="993"
-                    }else{
-                        port.text="143"
-                    }
-                }else if(idx==2){
-                    if(unreads.checked){
-                        unreadinput.readOnly=false
-                        unreadinput.parent.source="qrc:images/layout/spinbox-bg.png"
-                    }
-                    ssl.checked=true
+            width: 300
+            model: ListModel {
+                id: types
+                ListElement { text: "IMAP"; }
+                ListElement { text: "POP3"; }
+                ListElement { text: "GMAIL"; }
+            }  
+            onCurrentIndexChanged: {
+                console.debug(types.get(currentIndex).text);
+                if( currentIndex==0 ) { // IMAP
+                    port.text = (ssl.checked) ? "993" : "143";
+                }
+                else if( currentIndex==1 ) { // POP3
+                    port.text = (ssl.checked) ? "995" : "110";
+                } 
+                else if( currentIndex==2 ) { // GMAIL
+                    ssl.checked=true;
                     port.text="993";
                     mailserver.text="imap.gmail.com"
-                }
-            }
-
-            ListModel{
-                id: types
-                ListElement{
-                    text: "IMAP"
-                }
-                ListElement{
-                    text: "POP3"
-                }
-                ListElement{
-                    text: "GMAIL"
                 }
             }
         }
