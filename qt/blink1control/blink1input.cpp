@@ -24,7 +24,7 @@ void Blink1Input::fromJson( QJsonObject obj)
     setPatternName(obj.value("patternName").toString());
 }
 
-QJsonObject Blink1Input::toJson() // omg, toFullJsonReadyToSave()
+QJsonObject Blink1Input::toJson() // omg, was "toFullJsonReadyToSave()"
 {
     QJsonObject obj;
     obj.insert("name", name());
@@ -37,35 +37,6 @@ QJsonObject Blink1Input::toJson() // omg, toFullJsonReadyToSave()
     obj.insert("freqCounter",freqCounter());
     return obj;
 }
-/*
-QJsonObject Blink1Input::toJsonWithNameTypePNameArg1Arg2AndDate()
-{
-    QJsonObject obj;
-    obj.insert("arg1",arg1());
-    obj.insert("iname", name());    
-    if(mtype!="IFTTT"){
-        obj.insert("lastTime",date());
-        obj.insert("lastVal",arg2());  // FIMXE: NO, omg marcin really?
-    }else{
-        QJsonArray ja;
-        ja.append(QJsonValue(arg2()));
-        obj.insert("possibleVals",ja);
-    }
-
-    obj.insert("pname",patternName());
-    obj.insert("type", QString(mtype).toLower()); // FIXME: 
-    return obj;
-}
-// FIXME: NO, why multiple toJson() methods!
-QJsonObject Blink1Input::toJsonWithNameTypeAndArg1()
-{
-    QJsonObject obj;
-    obj.insert("iname", name());
-    obj.insert("type", QString(mtype).toLower());
-    if(mtype!="IFTTT") obj.insert("arg1",arg1());
-    return obj;
-}
-*/
 QString Blink1Input::name() const
 {
     return mname;
