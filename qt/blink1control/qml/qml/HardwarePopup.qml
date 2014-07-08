@@ -394,7 +394,7 @@ Image {
                 var tmp=0;
                 if(alert.checked){
                     tmp=1;
-                    if(activity.checked) tmp+=1;
+                    if(activity.checked) tmp+=1;   // FIXME: wtf marcin
                 }
                 mw.add_new_hardwaremonitor(name.text,hType.currentIndex,parseInt(alertinput.text),hAction.currentIndex,tmp)
             }else{

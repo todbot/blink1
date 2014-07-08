@@ -21,8 +21,13 @@ class HardwareMonitor : public QObject
     Q_PROPERTY(QString patternName READ getPatternName WRITE setPatternName NOTIFY updateValues)
     Q_PROPERTY(QString status READ getStatus WRITE setStatus NOTIFY updateOnlyStatusAndCurrentValue)
     Q_PROPERTY(int freq READ getFreq WRITE setFreq NOTIFY updateValues)
+    // value == measured value (battery level, cpu percentage, disk space percentage)
     Q_PROPERTY(int value READ getValue WRITE setValue NOTIFY updateOnlyStatusAndCurrentValue)
+    // "extraValue" wtf, marcin
     Q_PROPERTY(int extraValue READ getExtraValue WRITE setExtraValue NOTIFY updateValues)
+    // "done" is used to make trigger happen only once & used only by QML to red-bold the value 
+    // but I've removed that first aspect so monitors keep triggering
+    // FIXME: now I think monitors should have a toggle for "keep triggering" or "trigger once"
     Q_PROPERTY(bool done READ getDone WRITE setDone NOTIFY updateOnlyStatusAndCurrentValue)
     Q_PROPERTY(int role READ getRole WRITE setRole NOTIFY updateValues)
 public:
@@ -78,7 +83,7 @@ private:
     int role;               //0-activity, 1-alert, 2-both
     int lvl,freq,value,extraValue,freqCounter;
     bool done,editing;
-    QProcess *p,*p2,*p3; // WTF, marcin
+    QProcess *p,*p2,*p3; // FIXME: WTF, marcin
 };
 
 #endif // HARDWAREMONITOR_H

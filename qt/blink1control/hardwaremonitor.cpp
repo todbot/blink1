@@ -2,6 +2,7 @@
 
 #include <QRegularExpression>
 
+
 HardwareMonitor::HardwareMonitor(QString name,QObject *parent) :
     QObject(parent)
 {
@@ -21,21 +22,21 @@ HardwareMonitor::HardwareMonitor(QString name,QObject *parent) :
     this->p3=NULL;
     this->editing=false;
 }
-void HardwareMonitor::checkMonitor(){
-    if(editing){
+
+void HardwareMonitor::checkMonitor()
+{
+    if(editing) {
         return;
     }
     status="checking...";
     emit updateOnlyStatusAndCurrentValue();
-    if(type==0){
-        checkBattery();
-    }else if(type==1){
-        checkCpu();
-    }else if(type==2){
-        checkRam();
-    }
+    if(      type==0 ) {  checkBattery(); }
+    else if( type==1 ) {  checkCpu(); } 
+    else if( type==2 ) {  checkRam(); }
 }
-void HardwareMonitor::checkBattery(){
+
+void HardwareMonitor::checkBattery()
+{
 #ifdef Q_OS_MAC
     if(p3!=NULL) return;
     p3=new QProcess();
@@ -70,12 +71,10 @@ void HardwareMonitor::checkBattery(){
         }else{
             status="Level not reached.";
         }
-        if(checkValue(value)){
-            if(!done){
-                if(role>0){
-                    emit addReceiveEvent(0,QString::number(value)+"% Battery",name);
-                    emit runPattern(patternName,false);
-                }
+        if(checkValue(value) ) { // && !done){
+            if(role>0){
+                emit addReceiveEvent(0,QString::number(value)+"% Battery",name);
+                emit runPattern(patternName,false);
             }
             if(role==1)
                 status="Level reached!";
@@ -88,29 +87,27 @@ void HardwareMonitor::checkBattery(){
 #endif
 }
 
-
 void HardwareMonitor::readyReadBattery(int exitCode)
 {
-    if( exitCode == 0 ) {  // all is well
+    if( exitCode != 0 ) {  // all is well
+        status = "Internal Error";
+    }
+    else {
         QString p3out = p3->readAllStandardOutput();
-        qDebug() << "p3out: "<<p3out;
         if( p3out.contains("InternalBattery") ) { 
             QRegularExpression   re("InternalBattery.+\\s(\\d+)%");
             QRegularExpressionMatch match = re.match(p3out);
             if( match.hasMatch() ) {
                 QString percentstr = match.captured( match.lastCapturedIndex() );
                 value = percentstr.toInt();
-                if(checkValue(value) && !done ) {
-                    qDebug() << "checkValue";
-                    if(role>0){
-                        status = percentstr + "%!";
+                status = percentstr +"%";
+                if(checkValue(value) ) { // && !done ) {
+                    if(role>0){  // FIXME: why role>0 ?
+                        status += "!";
                         emit addReceiveEvent(0,QString::number(value)+"% Battery",name);
                         emit runPattern(patternName,false);
                     }
                     done=true;
-                }
-                else { 
-                    status = percentstr + "%";
                 }
             }
             else { 
@@ -120,11 +117,7 @@ void HardwareMonitor::readyReadBattery(int exitCode)
         else { 
             status = "No Battery";
         }
-
-    } else { 
-        status = "Internal Error";
     }
-
     qDebug() << "readyReadBattery: "<<status;
     emit updateOnlyStatusAndCurrentValue();
     p3->close();
@@ -132,7 +125,8 @@ void HardwareMonitor::readyReadBattery(int exitCode)
     p3=NULL;
 }
 
-void HardwareMonitor::checkCpu(){
+void HardwareMonitor::checkCpu()
+{
 #ifdef Q_OS_WIN
     if(p!=NULL) return;
     p=new QProcess();
@@ -142,58 +136,56 @@ void HardwareMonitor::checkCpu(){
 #ifdef Q_OS_MAC
     if(p!=NULL) return;
     p=new QProcess();
-    p->start("sh -c \"top -l 1 | grep 'CPU usage:'\"");//"top -o cpu -l 1");
+    p->start("sh -c \"top -l 1 -s 0 | grep 'CPU usage:'\"");  //"top -o cpu -l 1");
     connect(p,SIGNAL(finished(int)),this,SLOT(readyReadCpu(int)));
 #endif
 }
-void HardwareMonitor::readyReadCpu(int st){
-    bool correct=true;
+
+void HardwareMonitor::readyReadCpu(int exitCode)
+{
+    bool correct=false;
 #ifdef Q_OS_WIN
-    if(st==0){
-        QString tmpp=p->readAllStandardOutput();
-        tmpp=tmpp.simplified();
-        QStringList pomm=tmpp.split(QRegExp("( +|\r\n)"));
-        if(pomm.count()>0){
-            qDebug()<<pomm.at(1).toInt();
-            qDebug()<<"Status: "<<st;
-            addToLog(pomm.at(1));
-            addToLog("Status: "+QString::number(st));
-            value=pomm.at(1).toInt();
-        }else{
-            correct=false;
+    if(exitCode!=0) {  // bad exit code
+        status = "Internal Proc Error";
+    }
+    else { 
+        QString pout = p->readAllStandardOutput();
+        QRegularExpression re("LoadPercentage\\s+(\\d+)\\s");
+        QRegularExpressionMatch match = re.match(pout);
+        if( match.hasMatch() ) {
+            QString percentstr = match.captured( match.lastCapturedIndex() );
+            value = percentstr.toInt();
+            correct = true;
         }
     }
 #endif
 #ifdef Q_OS_MAC
-    if(st==0){
-        QString tmp=p->readAllStandardOutput();
-        tmp=tmp.remove(",");
-        QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
-        qDebug()<<pom;
-        int cpuMonitor=pom.indexOf("user");
-        if(cpuMonitor!=-1){
-            QString cpuUsage=pom.at(cpuMonitor-1);
-            cpuUsage=cpuUsage.left(cpuUsage.indexOf("%"));
-            qDebug()<<"CPU usage "<<cpuUsage.toDouble()<<"%";
-            addToLog("CPU usage "+cpuUsage+"%");
-            value=cpuUsage.toDouble();
-        }else{
-            correct=false;
+    if(exitCode!=0) {
+        status = "Internal Proc Error";
+    } 
+    else { 
+        QString pout = p->readAllStandardOutput();
+        QRegularExpression re("CPU usage.*user,\\s+(\\d+).\\d+%\\s");
+        QRegularExpressionMatch match = re.match(pout);
+        if( match.hasMatch() ) {
+            QString percentstr = match.captured( match.lastCapturedIndex() );
+            value = percentstr.toDouble();
+            correct = true;
         }
     }
 #endif
-    if(st==0 && correct){
+
+    qDebug() << "readyReadCpu:"<<role<<": percent="<<value <<" done:"<<done << " correct:"<<correct;
+    if( correct ){
         if(role==0 || role==2){
             status=QString::number(value)+"%";
         }else{
             status="Level not reached!";
         }
-        if(checkValue(value)){
-            if(!done){
-                if(role>0){
-                    emit addReceiveEvent(0,QString::number(value)+"% CPU",name);
-                    emit runPattern(patternName,false);
-                }
+        if(checkValue(value) ) { // && !done){
+            if(role>0){
+                emit addReceiveEvent(0,QString::number(value)+"% CPU",name);
+                emit runPattern(patternName,false);
             }
             if(role==1)
                 status="Level reached!";
@@ -203,101 +195,97 @@ void HardwareMonitor::readyReadCpu(int st){
         }
     }else{
         status="Internal error";
-        done=false;
+        done=false; // FIXME: what is "done" for again?
         freqCounter=0;
     }
+ 
     emit updateOnlyStatusAndCurrentValue();
     p->close();
     disconnect(p);
 #ifdef Q_OS_WIN
-    delete p;
+    //delete p;  // FIXME: why was this here? causes crash on my box
 #endif
     p=NULL;
 }
 
-void HardwareMonitor::checkRam(){
+void HardwareMonitor::checkRam()
+{
 #ifdef Q_OS_WIN
     if(p2!=NULL) return;
     p2=new QProcess();
+    // FIXME: dont spawn processes for this
     p2->start("wmic OS get FreePhysicalMemory,TotalVisibleMemorySize");
     connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
 #endif
 #ifdef Q_OS_MAC
     if(p2!=NULL) return;
     p2=new QProcess();
-    p2->start("sh -c \"top -o cpu -l 1 | grep 'PhysMem:'\"");
+    // FIXME: dont spawn processes for this
+    p2->start("sh -c \"sysctl hw.memsize && top -o cpu -l 1 -s 0 | grep 'PhysMem:'\"");
     connect(p2,SIGNAL(finished(int)),this,SLOT(readyReadRam(int)));
 #endif
 }
-void HardwareMonitor::readyReadRam(int st){
-    bool correct=true;
+
+void HardwareMonitor::readyReadRam(int exitCode)
+{
+    bool correct=false;
 #ifdef Q_OS_WIN
-    if(st==0){
-        QString tmp=p2->readAllStandardOutput();
-        QStringList pom=tmp.split(QRegExp("(  +|\r\n)"));
-        qDebug()<<pom;
-        if(pom.count()>3){
-            double total=pom.at(4).toDouble()*1.0/(1024);
-            double used=pom.at(3).toDouble()*1.0/(1024);
-            qDebug()<<100.0-used*1.0/total*100<<"%";
-            qDebug()<<st;
-            value=100.0-used*1.0/total*100;
-            addToLog(QString::number(value)+"%");
-            addToLog(QString::number(st));
-        }else{
-            correct=false;
+    if(exitCode!=0) {
+        status = "Internal Proc Error";
+    } 
+    else { 
+        QString p2out = p2->readAllStandardOutput();
+        //qDebug() << "readyReadRam:"<<p2out;
+        QRegularExpression re("FreePhysicalMemory\\s+TotalVisibleMemorySize\\s+(\\d+)\\s+(\\d+)");
+        QRegularExpressionMatch match = re.match(p2out);
+        if( match.hasMatch() ) {
+            QString freestr  = match.captured( 1 );  // memsize in bytes
+            QString totalstr = match.captured( 2 );
+            long free = freestr.toLong();
+            long total =totalstr.toLong();
+            value = 100 * (total -free)/total;
+            correct = true;
         }
     }
 #endif
 #ifdef Q_OS_MAC
-    if(st==0){
-        QString tmp=p2->readAllStandardOutput();
-        tmp=tmp.remove(",");
-        tmp=tmp.remove(".");
-        QStringList pom=tmp.split(QRegExp("( +|\r\n|\n)"));
-        //qDebug()<<pom;
-        int ramMonitor=pom.indexOf("used");
-        int freeM=pom.indexOf("free");
-        if(freeM==-1){
-            freeM=pom.indexOf("unused");
+    if(exitCode!=0) {
+        status = "Internal Proc Error";
+    } 
+    else { 
+        QString p2out = p2->readAllStandardOutput();
+        //qDebug() << "readyReadRam:"<<p2out;
+        QRegularExpression re("hw.memsize: (\\d+)\\s+PhysMem:.+?(\\d+)([KMG]) used");
+        QRegularExpressionMatch match = re.match(p2out);
+        if( match.hasMatch() ) {
+            QString totalstr = match.captured( 1 );  // memsize in bytes
+            QString usedstr  = match.captured( 2 );
+            QString mult     = match.captured( 3 );
+            int total = totalstr.toLong() / 1024 / 1024;  // convert bytes to MBs
+            int used  = usedstr.toInt();
+            used = (mult=="G") ? used*1024 : (mult=="K") ? used/1024 : used;
+            qDebug() << "totalstr:"<< totalstr <<", usedstr:"<< usedstr <<",mult:"<< mult
+                     <<"total:"<<total<<", used:"<< used ;
+            value = 100 * used / total;
+            correct = true;
         }
-        if(ramMonitor!=-1 && freeM!=-1){
-            QString used=pom.at(ramMonitor-1);
-            int v=used.indexOf(QRegExp("[a-zA-Z]"));
-            long long int nused=used.left(v).toLongLong();            
-            QString vv=used.mid(v);
-            if(vv=="M") nused*=1024*1024;
-            else if(vv=="K") nused*=1024;
-            else if(vv=="G") nused*=1024*1024*1024;
-
-            QString free=pom.at(freeM-1);
-            v=free.indexOf(QRegExp("[a-zA-Z]"));
-            long long int nused2=free.left(v).toLongLong();
-            vv=free.mid(v);
-            if(vv=="M") nused2*=1024*1024;
-            else if(vv=="K") nused2*=1024;
-            else if(vv=="G") nused2*=1024*1024*1024;
-
-            qDebug()<<"RAM usage "<<nused*1.0/(nused+nused2)*100.0<<"%";
-            value=nused*1.0/(nused+nused2)*100.0;
-            addToLog("RAM usage "+QString::number(value)+"%");
-        }else{
-            correct=false;
+        else { 
+            qDebug() << "arggg";
         }
     }
 #endif
-    if(st==0 && correct){
+
+    qDebug() << "readyReadRam:"<<role<<": percent="<<value <<" done:"<<done << " correct:"<<correct;
+    if( correct ) {
         if(role==0 || role==2){
             status=QString::number(value)+"%";
         }else{
             status="Level not reached!";
         }
-        if(checkValue(value)){
-            if(!done){
-                if(role>0){
-                    emit addReceiveEvent(0,QString::number(value)+"% RAM",name);
-                    emit runPattern(patternName,false);
-                }
+        if(checkValue(value) ) { //  && !done){
+            if(role>0){
+                emit addReceiveEvent(0,QString::number(value)+"% RAM",name);
+                emit runPattern(patternName,false);
             }
             if(role==1)
                 status="Level reached!";
@@ -310,14 +298,14 @@ void HardwareMonitor::readyReadRam(int st){
         done=false;
         freqCounter=0;
     }
+
     emit updateOnlyStatusAndCurrentValue();
     p2->close();
     disconnect(p2);
-#ifdef Q_OS_WIN
-    delete p2;
-#endif
     p2=NULL;
 }
+
+
 QString HardwareMonitor::getName(){
     return name;
 }
