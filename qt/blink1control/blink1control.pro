@@ -13,6 +13,7 @@ TEMPLATE = app
 
 VERSION = 1.91
 BLINK1CONTROL_VERSION = "v$$VERSION"
+# note: need to update version in Blink1Control.iss too
 
 #VERSION = $$system(git describe)  
 # should return tag like "v1.8"
@@ -101,6 +102,17 @@ win32 {
     QMAKE_PRE_LINK  += $(COPY) $$shell_path($$BLINK1LIBPATH) $$shell_path($$MYAPPDIR)
     #message( "MYAPPDIR = $$MYAPPDIR , DESTDIR = $(DESTDIR), helpfolder = $$helpfolder" )
 }
+# for XP, see:
+# http://stackoverflow.com/questions/11305633/xxxxxx-exe-is-not-a-valid-win32-application#comment20977666_14746749
+# http://stackoverflow.com/questions/14657766/visual-studio-2012-platform-toolset-set-incorrectly
+# but still doesn't work fully, errors like:
+# "strnlen could not be located in msvcrt.dll"
+#win32 { 
+#	QMAKE_LFLAGS += /SUBSYSTEM:CONSOLE,5.01 
+#	QMAKE_CXX += /D_USING_V110_SDK71_ 
+#	LIBS *=      -L"%ProgramFiles(x86)%/Microsoft SDKs/Windows/7.1A/Lib" 
+#	INCLUDEPATH += "%ProgramFiles(x86)%/Microsoft SDKs/Windows/7.1A/Include" 
+#} 
 
 
 OTHER_FILES += \

@@ -389,7 +389,7 @@ void MainWindow::checkIfttt(QString txt)
             if( input->type() == "ifttt" ) { 
                 // is the event newer than our last event, then trigger!
                 if( evdate > input->date() ) { 
-                    qDebug() << "new ifttt event for "<< input->arg1();
+                    //qDebug() << "new ifttt event for "<< input->arg1();
                     if( evname == input->arg1() ) {  
                         qDebug() << "saving new ifttt event for "<< input->arg1();
                         input->setDate(evdate); // save for next go around
