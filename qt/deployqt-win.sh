@@ -92,6 +92,12 @@ cp -r ${HELP_DIR} help
 # copy MSVCRT DLLS
 cp /c/windows/syswow64/{msvcp120,msvcr120}.dll .
 
+# copy SSL DLLS  
+# get it from http://slproweb.com/products/Win32OpenSSL.html
+cp /c/OpenSSL-Win32/bin/libeay32.dll .
+cp /c/OpenSSL-Win32/bin/ssleay32.dll .
+
+
 #WINDEPLOYQT_OPTS=" --qmldir ${QML_DIR}"
 WINDEPLOYQT_OPTS+=" --no-translations"
 WINDEPLOYQT_OPTS+=" --no-webkit2"

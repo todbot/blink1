@@ -7,7 +7,7 @@
 AppPublisher=ThingM Corporation
 AppPublisherURL=http://thingm.com/
 AppName=Blink1Control
-AppVersion=1.9
+AppVersion=1.91
 DefaultDirName={pf}\Blink1Control
 DefaultGroupName=Blink1Control
 UninstallDisplayIcon={app}\Blink1Control.exe
@@ -15,7 +15,8 @@ Compression=lzma2
 SolidCompression=yes
 ;OutputDir=userdocs:Inno Setup Examples Output
 OutputDir=..\..
-SourceDir=Y:\blink1\qt\windeploy\Blink1Control
+;SourceDir=Y:\blink1\qt\windeploy\Blink1Control
+SourceDir=windeploy\Blink1Control
 OutputBaseFilename=Blink1Control-win-setup
 
 [Files]
