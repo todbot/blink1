@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include "Cursorshapearea.h"
+#include "cursorshapearea.h"
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMessageBox>
