@@ -80,6 +80,7 @@ macx:  LIBS += -L$$BLINK1_LIB_DIR -lBlink1
 #win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 win32-g++: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 win32-msvc*: LIBS += $$BLINK1_LIB_DIR/blink1-lib.lib
+unix:!macx: LIBS += $$BLINK1_LIB_DIR/blink1-lib.so
 
 DEFINES += BLINK1CONTROL_VERSION=\\\"$$BLINK1CONTROL_VERSION\\\"
 #message("DEFINES = $$DEFINES")
@@ -95,6 +96,11 @@ macx {
     #message( "MYAPPDIR = $$MYAPPDIR" )
 }
 
+unix:!macx {
+    BLINK1LIBPATH = $$BLINK1_LIB_DIR/blink1-lib.so
+    QMAKE_PRE_LINK += $(COPY) $$BLINK1LIBPATH $$OUT_PWD
+}
+
 win32 {
     CONFIG(release, debug|release):  MYAPPDIR=$$OUT_PWD/release
     CONFIG(debug,   debug|release):  MYAPPDIR=$$OUT_PWD/debug
@@ -102,6 +108,7 @@ win32 {
     QMAKE_PRE_LINK  += $(COPY) $$shell_path($$BLINK1LIBPATH) $$shell_path($$MYAPPDIR)
     #message( "MYAPPDIR = $$MYAPPDIR , DESTDIR = $(DESTDIR), helpfolder = $$helpfolder" )
 }
+
 # for XP, see:
 # http://stackoverflow.com/questions/11305633/xxxxxx-exe-is-not-a-valid-win32-application#comment20977666_14746749
 # http://stackoverflow.com/questions/14657766/visual-studio-2012-platform-toolset-set-incorrectly
