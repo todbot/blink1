@@ -78,12 +78,14 @@ MainWindow::MainWindow(QWidget *parent) :
         emit bigButtonsUpdate();
     }
 
+    // FIXME:   this causes Mac menubar to change but not icon?
     QIcon ico = QIcon(":/images/blink1-icon0.png");
-    setWindowIcon(ico);
+    QIcon icobw = QIcon(":/images/blink1-icon0-bw.png");
 
+    setWindowIcon( ico );
     createActions();
     createTrayIcon();
-    trayIcon->setIcon( ico);
+    trayIcon->setIcon( (mac()) ? icobw : ico );
     trayIcon->show();
 
     activePatternName=""; 
