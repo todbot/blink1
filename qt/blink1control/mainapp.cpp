@@ -2,6 +2,8 @@
 #include "mainapp.h"
 #include <typeinfo>
 
+#include <stdio.h>
+
 MainApp::MainApp(int &argc, char **argv) : QApplication ( argc, argv ) {};
 
 
