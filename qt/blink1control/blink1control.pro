@@ -58,10 +58,10 @@ HEADERS  += mainwindow.h \
     email.h \
     simplecrypt.h \
     hardwaremonitor.h \
-    Cursorshapearea.h \
     patternsReadOnly.h \
     httpserver.h \
-    mainapp.h
+    mainapp.h \
+    cursorshapearea.h
 
 #FORMS    += mainwindow.ui
 
