@@ -31,6 +31,11 @@ On Mac OS X you need to install:
 - QT-5.3 for Mac
 - Xcode
 
+On Ubuntu, you need to install:
+- QT-5.3 for Linux (64-bit)
+- sudo apt-get install build-essential
+- sudo apt-get install mesa-common-dev libgl-dev
+
 To build, open up QTCreator and press "build".
 
 Be sure to remove the `build-blink1control-Desktop_Qt_5_3...`
