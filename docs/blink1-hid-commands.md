@@ -10,7 +10,7 @@ This document shows the formats of the feature report data packet sent to blink(
 
     - Fade to RGB color       format: { 1, 'c', r,g,b,     th,tl, n } (*)
     - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, 0 } 
-    - Read current RGB color  format: { 1, 'r', n,0,0,       0,0, n } (2)
+    - Read current RGB color  format: { 1, 'r', 0,0,0,       0,0, n } (2)
     - Serverdown tickle/off   format: { 1, 'D', on,th,tl,  st,sp,ep } (*)
     - Play/Pause              format: { 1, 'p', on,sp,0,     0,0, 0 }
     - PlayLoop                format: { 1, 'p', on,sp,ep,c,    0, 0 } (2)
@@ -134,7 +134,7 @@ return values:
     hid_send_buf[7] = pos;
 
 
-### Read current color - `format:  {0x01, 'r', n,0,0,       0,0, n }` 
+### Read current color - `format:  {0x01, 'r', 0,0,0,       0,0, n }` 
 
 return values:
 
@@ -147,6 +147,7 @@ return values:
     hid_send_buf[6] = 0;
     hid_send_buf[7] = ledn;
 
+where ledn is 0 (one led) or 1 (the other led).
 
 ### Playstate readback - `format: {0x01, 'S', 0,0,0,       0,0, 0 }` 
 
