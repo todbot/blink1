@@ -174,6 +174,7 @@ void HttpServer::startRead(){
         }
         else if( cmd=="/pattern/play" ) {
             QString pname = qurlquery.queryItemValue("pname");
+            pname.replace('+', ' ');
             QString status = "pattern play";
             if( mw->getFullPatternList().contains(pname) ) {
                 mw->playPattern(pname);
@@ -185,6 +186,7 @@ void HttpServer::startRead(){
         }
         else if( cmd=="/pattern/stop" ) {
             QString pname = qurlquery.queryItemValue("pname");
+            pname.replace('+', ' ');
             QString status = "pattern stop";
             if( mw->getFullPatternList().contains(pname) ) {
                 mw->stopPattern(pname);
@@ -196,6 +198,7 @@ void HttpServer::startRead(){
         }
         else if( cmd=="/pattern/add" ) {
             QString pname   = qurlquery.queryItemValue("pname");
+            pname.replace('+', ' ');
             QString pattstr = qurlquery.queryItemValue("pattern");
             QString status = "pattern added";
             if( pname != "" && pattstr != "" ) {
@@ -213,6 +216,7 @@ void HttpServer::startRead(){
         }
         else if( cmd=="/pattern/del" ) {
             QString pname   = qurlquery.queryItemValue("pname");
+            pname.replace('+', ' ');
             QString status = "pattern deleted";
             if( mw->getFullPatternList().contains(pname) ) {
                 mw->stopPattern(pname);
