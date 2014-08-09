@@ -166,5 +166,6 @@ pip-log.txt
 *~
 # c build results
 *.o
+*.so
 # java build results
 *.class
