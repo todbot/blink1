@@ -17,7 +17,7 @@ This document shows the formats of the feature report data packet sent to blink(
     - Playstate readback      format: { 1, 'S', 0,0,0,       0,0, 0 } (2)
     - Set color pattern line  format: { 1, 'P', r,g,b,     th,tl, p }
     - read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
-    - Save color patterns     format: { 1, 'W', 0,0,0,       0,0, 0 } (2)
+    - Save color patterns     format: { 1, 'W', 0xBE,0xEF,0xCA,0xFE,0, 0 } (2)
     - Read EEPROM location    format: { 1, 'e', ad,0,0,      0,0, 0 } (1)
     - Write EEPROM location   format: { 1, 'E', ad,v,0,      0,0, 0 } (1)
     - Get version             format: { 1, 'v', 0,0,0,       0,0, 0 }
