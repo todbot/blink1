@@ -39,17 +39,24 @@
 
 # Frequency, in seconds, to poll for project status.
 # Probably best not to set this to too small an interval.
+#
+# If specifying two repositories then specify a number
+# that is half of what you want each one to poll at.
 POLL_FREQUENCY=60
 
 # Path to blink-tool(1)
 BLINK1_TOOL="`which blink1-tool`"
 
 # URL of travis-ci's API
-TRAVISCI_API_URL="https://api.travis-ci.org/"
+TRAVISCI_API_URL="https://api.travis-ci.org"
+
+# which LED to light up (e.g. "1")
+LED=""
 
 # Project to monitor (e.g. "todbot/blink1")
 # No default.
-PROJECT=""
+PROJECT1=""
+PROJECT2=""
 
 # Pass color
 COLOR_PASS="0,255,0" # Green
@@ -66,94 +73,46 @@ COLOR_ERROR="255,255,255" # White
 
 ### FUNCTIONS ###
 
+# Return the led parameter
+function led_number
+{
+    if [ -n "${1}" ]; then
+        echo "${1}"
+    elif [ -n "$LED" ]; then
+        echo "$LED"
+    else
+        echo "0"
+    fi
+}
+
+
 # Set the Blink(1) to a color in "R,G,B" format, which must be supplied
-# as an argument.
+# as an argument. arg2 is the led color
 function set_blink1_color
 {
-    $BLINK1_TOOL --rgb ${1} > /dev/null 2>&1
+    $BLINK1_TOOL  --led=$(led_number ${2}) --rgb ${1}> /dev/null 2>&1
 }
 
 # Blink the specified color for the specified number of seconds. Do so
 # without running blink1-tool the entire time, so we can still turn
 # off the Blink(1) on exit if necessary.
-# arg1 is color, arg2 is number of seconds
+# arg1 is color, arg2 is number of seconds, arg3 is the led number
 function blink_color_for_seconds
 {
     for i in {1..${2}}
     do
-        $BLINK1_TOOL --rgb ${1} > /dev/null 2>&1
+        $BLINK1_TOOL --led=$(led_number ${3}) --rgb ${1} > /dev/null 2>&1
         sleep 0.5
-        $BLINK1_TOOL --off > /dev/null 2>&1
+        $BLINK1_TOOL --led=$(led_number ${3}) --off > /dev/null 2>&1
         sleep 0.5
     done
 }
 
-# Used with trap to shut off the Blink(1) when we get a SIGINT or SIGTERM.
-function cleanup
+# Check the status of the url (arg1) and update the led (arg2)
+function update_status
 {
-    # Turn the Blink(1) off
-    $BLINK1_TOOL --off > /dev/null 2>&1
-    exit $?
-}
-
-# Show usage instructions
-function show_usage
-{
-    echo " Usage: `basename ${0}` [OPTIONS] <project>"
-    echo ""
-    echo " Options:"
-    echo "    -h              Displays this help"
-    echo "    -t <seconds>    Polling interval in seconds (default: ${POLL_FREQUENCY} s.)"
-    echo "    -b <path>       Path to blink1-tool, if it is not on the PATH"
-    echo ""
-    echo " <project> should be in the form ownername/projectname"
-    echo ""
-}
-
-
-### SETUP ###
-
-# Get command line options
-while getopts "ht:b:" OPTION
-do
-    case $OPTION in
-        h)
-            show_usage
-            exit 0
-            ;;
-        t)
-            POLL_FREQUENCY=$OPTARG
-            ;;
-        b)
-            BLINK1_TOOL="$OPTARG"
-            ;;
-        ?)
-            show_usage
-            exit 1
-            ;;
-    esac
-done
-
-# Get project, and show usage and exit if none exists
-shift $(($OPTIND - 1))
-PROJECT="$1"
-if [ -z ${PROJECT} ]; then
-    echo "${0}: no project specified."
-    show_usage
-    exit 1
-fi
-
-# Turn off the Blink(1) on SIGINT or SIGTERM
-trap cleanup SIGINT SIGTERM
-
-
-### MAIN ###
-
-# In an infinite loop, poll the project and update the Blink(1) color.
-echo "Monitoring ${PROJECT}. CTRL-C to exit."
-while true; do
     # Query the travis-ci API for the status of the project's repo
-    RESPONSE=$(curl -f -s "${TRAVISCI_API_URL}/repos/${PROJECT}")
+    RESPONSE=$(curl -f -s "${TRAVISCI_API_URL}/repos/${1}")
     
     # If the query succeeded, try to parse it; otherwise, blink the error
     # color.
@@ -167,20 +126,111 @@ while true; do
         # Set Blink(1) color according to status. On unparseable status,
         # blink the error color.
         if [ "${STATUS}" == "0" ]; then
-            set_blink1_color ${COLOR_PASS}
+            set_blink1_color ${COLOR_PASS} ${2}
             sleep ${POLL_FREQUENCY}
         elif [ "${STATUS}" == "1" ]; then
-            set_blink1_color ${COLOR_FAIL}
+            set_blink1_color ${COLOR_FAIL} ${2}
             sleep ${POLL_FREQUENCY}
         elif [ "${STATUS}" == "null" ]; then
-            set_blink1_color ${COLOR_BUILDING}
+            set_blink1_color ${COLOR_BUILDING} ${2}
             sleep ${POLL_FREQUENCY}
         else
-            blink_color_for_seconds ${COLOR_ERROR} ${POLL_FREQUENCY}
+            blink_color_for_seconds ${COLOR_ERROR} ${POLL_FREQUENCY} ${2}
         fi
     else
         # Curl returned an error, so blink the error color. We do this in
         # place of sleeping before the next poll.
-        blink_color_for_seconds ${COLOR_ERROR} ${POLL_FREQUENCY}
+        blink_color_for_seconds ${COLOR_ERROR} ${POLL_FREQUENCY} ${2}
+    fi
+}
+
+# Used with trap to shut off the Blink(1) when we get a SIGINT or SIGTERM.
+function cleanup
+{
+    # Turn the Blink(1) off
+    if [ -n ${PROJECT2} ]; then
+       $BLINK1_TOOL --off > /dev/null 2>&1
+    else
+       $BLINK1_TOOL --led=$(led_number) --off > /dev/null 2>&1
+    fi
+    exit $?
+}
+
+# Show usage instructions
+function show_usage
+{
+    echo " Usage: `basename ${0}` [OPTIONS] <project>"
+    echo ""
+    echo " Options:"
+    echo "    -h              Displays this help"
+    echo "    -t <seconds>    Polling interval in seconds (default: ${POLL_FREQUENCY} s.)"
+    echo "    -l <led>        Which LED to light (e.g. 1 or 2) (default: both)"
+    echo "    -b <path>       Path to blink1-tool, if it is not on the PATH"
+    echo ""
+    echo " <project> should be in the form ownername/projectname"
+    echo ""
+}
+
+
+### SETUP ###
+
+# Get command line options
+while getopts "ht:b:l:" OPTION
+do
+    case $OPTION in
+        h)
+            show_usage
+            exit 0
+            ;;
+        t)
+            POLL_FREQUENCY=$OPTARG
+            ;;
+        b)
+            BLINK1_TOOL="$OPTARG"
+            ;;
+        l)
+            LED="$OPTARG"
+            ;;
+        ?)
+            show_usage
+            exit 1
+            ;;
+    esac
+done
+
+# Get project, and show usage and exit if none exists
+shift $(($OPTIND - 1))
+PROJECT1="$1"
+if [ -z "${PROJECT1}" ]; then
+    echo "${0}: no project specified."
+    show_usage
+    exit 1
+fi
+PROJECT2="$2"
+# two projects specfied means not to use global led setting
+if [ -n "${PROJECT2}" ]; then
+    LED=""
+fi
+
+# Turn off the Blink(1) on SIGINT or SIGTERM
+trap cleanup SIGINT SIGTERM
+
+
+### MAIN ###
+
+# In an infinite loop, poll the project and update the Blink(1) color.
+if [ -z "${PROJECT2}" ]; then
+    echo "Monitoring ${PROJECT1}. CTRL-C to exit."
+else
+    echo "Monitoring ${PROJECT1} and ${PROJECT2}. CTRL-C to exit."
+fi
+
+while true; do
+    if [ -z "${PROJECT2}" ]; then
+        update_status "${PROJECT1}" 
+    else
+        update_status "${PROJECT1}" 1
+        update_status "${PROJECT2}" 2
+
     fi
 done
