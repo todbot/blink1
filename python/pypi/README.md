@@ -41,7 +41,7 @@ The simplest way to use this library is via a context manager.
 When the blink1() block exits the light is automatically switched off. It is also possible to access the exact same
 set of functions without the context manager:
 
-from blink1.blink1 import Blink1
+    from blink1.blink1 import Blink1
     import time
     
     b1 = Blink1()
@@ -58,9 +58,18 @@ There are a number of ways to specify colors in this library:
 
     b1.fade_to_color(1000, '#ffffff') # Hexdecimal RGB as a string
     b1.fade_to_color(1000, 'green') # Named color - any color name understood by css3
-    b1.fade_to_color(1000, (22,33,44) # RGB as a tuple. Luminance values are 0 <= lum <= 255
+    b1.fade_to_color(1000, (22,33,44)) # RGB as a tuple. Luminance values are 0 <= lum <= 255
 
 Attempting to select a color outside the plausible range will generate an InvalidColor exception.
+
+LED Number
+----------
+
+The blink(1) mk2 has two LEDs which may be set independently:
+
+    b1.fade_to_color(1000, 'white', 0) # Set both to white
+    b1.fade_to_color(1000, 'red', 1) # Set LED 1 to red
+    b1.fade_to_color(1000, 'green', 2) # Set LED 2 to green
 
 Gamma correction
 ----------------

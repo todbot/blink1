@@ -595,6 +595,17 @@ void MainWindow::loadSettings()
     enableGamma  = settings.value("enableGamma",false).toBool();
     firstRun     = settings.value("firstRun",true).toBool();
 
+    /*  to-do: finish implementing this, issue #138
+        // test with ssh -ND 9999 you@example.com
+    QNetworkProxy proxy;
+    proxy.setType( QNetworkProxy::Socks5Proxy );
+    proxy.setHostName("localhost");
+    proxy.setPort( 9999 );
+    //proxy.setUser("username");
+    //proxy.setPassword("password");
+    QNetworkProxy::setApplicationProxy(proxy);
+    */
+
     QString blink1IndexStr = settings.value("blink1Index","").toString();
     qDebug() << "blink1IndexStr: "<< blink1IndexStr;
     bool ok;
