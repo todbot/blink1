@@ -10,14 +10,14 @@ This document shows the formats of the feature report data packet sent to blink(
 
     - Fade to RGB color       format: { 1, 'c', r,g,b,     th,tl, n } (*)
     - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, 0 } 
-    - Read current RGB color  format: { 1, 'r', n,0,0,       0,0, n } (2)
+    - Read current RGB color  format: { 1, 'r', 0,0,0,       0,0, n } (2)
     - Serverdown tickle/off   format: { 1, 'D', on,th,tl,  st,sp,ep } (*)
     - Play/Pause              format: { 1, 'p', on,sp,0,     0,0, 0 }
     - PlayLoop                format: { 1, 'p', on,sp,ep,c,    0, 0 } (2)
     - Playstate readback      format: { 1, 'S', 0,0,0,       0,0, 0 } (2)
     - Set color pattern line  format: { 1, 'P', r,g,b,     th,tl, p }
     - read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
-    - Save color patterns     format: { 1, 'W', 0,0,0,       0,0, 0 } (2)
+    - Save color patterns     format: { 1, 'W', 0xBE,0xEF,0xCA,0xFE,0, 0 } (2)
     - Read EEPROM location    format: { 1, 'e', ad,0,0,      0,0, 0 } (1)
     - Write EEPROM location   format: { 1, 'E', ad,v,0,      0,0, 0 } (1)
     - Get version             format: { 1, 'v', 0,0,0,       0,0, 0 }
@@ -134,7 +134,7 @@ return values:
     hid_send_buf[7] = pos;
 
 
-### Read current color - `format:  {0x01, 'r', n,0,0,       0,0, n }` 
+### Read current color - `format:  {0x01, 'r', 0,0,0,       0,0, n }` 
 
 return values:
 
@@ -147,6 +147,7 @@ return values:
     hid_send_buf[6] = 0;
     hid_send_buf[7] = ledn;
 
+where ledn is 0 (one led) or 1 (the other led).
 
 ### Playstate readback - `format: {0x01, 'S', 0,0,0,       0,0, 0 }` 
 

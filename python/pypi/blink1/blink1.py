@@ -153,7 +153,7 @@ class Blink1:
 
     def fade_to_rgb(self,fade_milliseconds, red, green, blue, led_number=0):
         r, g, b = self.cc(red, green, blue)
-        return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number=0)
+        return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number=led_number)
 
     @staticmethod
     def color_to_rgb(color):
@@ -171,7 +171,7 @@ class Blink1:
             raise InvalidColor(color)
 
 
-    def fade_to_color(self, fade_milliseconds, color):
+    def fade_to_color(self, fade_milliseconds, color, led_number=0):
         """
         Fade the light to a known colour in a
         :param fade_milliseconds: Duration of the fade in milliseconds
@@ -180,7 +180,7 @@ class Blink1:
         """
         red, green, blue = self.color_to_rgb(color)
 
-        return self.fade_to_rgb(fade_milliseconds, red, green, blue)
+        return self.fade_to_rgb(fade_milliseconds, red, green, blue, led_number=led_number)
 
     def off(self):
         """Switch the blink(1) off instantly
