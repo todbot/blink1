@@ -62,6 +62,15 @@ There are a number of ways to specify colors in this library:
 
 Attempting to select a color outside the plausible range will generate an InvalidColor exception.
 
+LED Number
+----------
+
+The blink(1) mk2 has two LEDs which may be set independently:
+
+    b1.fade_to_color(1000, 'white', 0) # Set both to white
+    b1.fade_to_color(1000, 'red', 1) # Set LED 1 to red
+    b1.fade_to_color(1000, 'green', 2) # Set LED 2 to green
+
 Gamma correction
 ----------------
 
