@@ -26,12 +26,18 @@ public:
     void stop();
     bool status();
     void setController(MainWindow *mw);
+    // changing these two requires a stop()/start() to start to new host:port
+    void setHost( QString host );
+    void setPort( int port );
+
 public slots:
     void acceptConnection();
     void startRead();
     void discardClient();
 private:
     MainWindow *mw;
+    QString host;
+    int port;
     QTcpServer server;
     QList<QTcpSocket *> clientConnections;
 };
