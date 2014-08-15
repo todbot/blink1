@@ -31,7 +31,7 @@ and is the primary user-level application for controlling blink(1).
 It is an event-based system for triggering blink(1) color patterns.
 Those events can be on your computer or on the Net.
 
-Blin1kControl can receive events from:
+Blink1Control can receive events from:
 - [IFTTT](http://ifttt.com/channels)'s many channels
 - IMAP/POP/GMAIL email services
 - URLs containing text or JSON
