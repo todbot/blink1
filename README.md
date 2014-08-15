@@ -8,8 +8,17 @@ any data source in the cloud or on your computer to a full-color RGB LED so
 you can know what's happening without checking any windows, going to any 
 websites or typing any commands."
 
-The official repository of blink(1) software and source code is:
-https://github.com/todbot/blink1/
+The official repository of blink(1) software is:
+    https://github.com/thingm/blink1/
+
+That repo pulls from the active development repo:
+   https://github.com/todbot/blink1/
+
+Please submit any issues or pull-requests there.
+
+Official releases of pre-built software are available at:
+https://github.com/todbot/blink1/releases
+
 
 
 Ready-to-run Applications to play with
