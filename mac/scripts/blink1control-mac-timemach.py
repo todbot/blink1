@@ -7,8 +7,11 @@
 # 2014, Tod E. Kurt, http://todbot.com/blog/ 
 #
 
-colorRunning = '#FF0000'
-colorOff     = '#000000'
+colorRunning = 'pattern: red flashes'
+colorOff     = ''
+
+#colorRunning = '#FF0000'
+#colorOff     = '#000000'
 
 import subprocess
 import re
