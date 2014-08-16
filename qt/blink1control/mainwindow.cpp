@@ -1900,6 +1900,39 @@ void MainWindow::updateColorsOnBigButtons2List(){
     emit updateBigButtons();
 }
 
+void MainWindow::setStartupPattern( QString patternName )
+{
+    qDebug() << "setStartupPattern: "<<patternName;
+    if( patternName == "_OFF" ) { 
+        for( int i=0; i<16; i++ ) { 
+            blink1_writePatternLine( blink1dev, 1000, 0,0,0, i ); // off
+        }
+        blink1_savePattern( blink1dev );
+    }
+    else if( patternName == "_DEFAULT" ) {  // not quite the real default for mk2 or mk1
+        blink1_writePatternLine( blink1dev, 500, 0xff,0x00,0x00, 0 ); // red
+        blink1_writePatternLine( blink1dev, 500, 0xff,0x00,0x00, 1 ); // red
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 2 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x00,0xff,0x00, 3 ); // green
+        blink1_writePatternLine( blink1dev, 500, 0x00,0xff,0x00, 4 ); // green
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 5 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0xff, 6 ); // blue
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0xff, 7 ); // blue
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 8 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x80,0x80,0x80, 9 ); // half-bright
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 10 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0xF0,0xF0,0xF0, 11 ); // white
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 12 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0xF0,0xF0,0xF0, 13 ); // white
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 14 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 15 ); // off
+        blink1_savePattern( blink1dev );
+    }
+    else { 
+    }
+
+}
+
 
 // the below was in MainWindow::MainWindow
 
