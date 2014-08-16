@@ -245,6 +245,7 @@ public slots:
     bool getLogging();
     void updateColorsOnBigButtons2List();
 
+    void setStartupPattern( QString patternName );
 
 private:
     QtQuick2ApplicationViewer viewer;
