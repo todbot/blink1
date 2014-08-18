@@ -144,6 +144,13 @@ Image{
                 radius: width*0.5
                 anchors.centerIn: parent
             }
+            MouseArea{
+                anchors.fill: parent
+                acceptedButtons: Qt.RightButton
+                onClicked: {
+                   virtualBlink1Menu.popup()
+                }
+            }
 
         }
         //// KONIEC VIRTUAL BLINK
@@ -863,7 +870,8 @@ Image{
                         onClicked: {
                             background2.visible=true
                             dropDownMenu.visible=true
-                            dropDownMenu.checked=model.modelData.isReadOnly
+                            dropDownMenu.isReadOnly = model.modelData.isReadOnly
+                            dropDownMenu.isSystem = model.modelData.isSystem
                             dropDownMenu.pattern_name=model.modelData.name
                             dropDownMenu.x=colorPatternsPanel.x+lista.x+lista.currentItem.x+lista.currentItem.width-dropDownMenu.width
                             var tmp=colorPatternsPanel.y+lista.y+lista.currentItem.y+lista.currentItem.height-lista.contentY
@@ -1306,6 +1314,7 @@ Image{
                     }
                 }
             }
+            // IFTTT tab
             Rectangle {
                 id: pattlist
                 property string title: "IFTTT"
@@ -3014,6 +3023,23 @@ Image{
             }
         }
     }
+
+    Menu {
+        id: virtualBlink1Menu
+        MenuItem {
+            text: "Set startup script to off"
+            onTriggered: {
+                mw.setStartupPattern("_OFF");
+            }
+        }
+        MenuItem {
+            text: "Set startup script to default"
+            onTriggered: {
+                mw.setStartupPattern("_DEFAULT");
+            }
+        }
+    }
+
 
     //color picker
     Item{

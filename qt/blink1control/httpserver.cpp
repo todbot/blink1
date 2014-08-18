@@ -6,15 +6,33 @@
 HttpServer::HttpServer(QWidget *parent) :
     QObject(parent)
 {
+    host = "localhost";
+    port = 8934;
 }
 void HttpServer::setController(MainWindow *mw){
     this->mw=mw;
 }
 
-void HttpServer::start(){
-    connect(&server, SIGNAL(newConnection()),this, SLOT(acceptConnection()));
-    server.listen(QHostAddress::LocalHost, 8934);
+void HttpServer::setHost(QString h) {
+    this->host = h;
 }
+void HttpServer::setPort( int p ) {
+    this->port = p;
+}
+
+void HttpServer::start() {
+
+    QHostAddress haddr = QHostAddress::LocalHost;  // default
+    if( host == "localhost" ) { // do nothing this is the default
+    } else if( host == "any" ) {
+        haddr = QHostAddress::AnyIPv4;
+    } else if( host != "" ) { 
+        haddr = QHostAddress( host );
+    }
+    connect(&server, SIGNAL(newConnection()),this, SLOT(acceptConnection()));
+    server.listen( haddr, port );
+}
+
 void HttpServer::stop(){
     for(int i=0;i<clientConnections.count();i++)
         clientConnections.at(i)->abort();
@@ -33,11 +51,11 @@ void HttpServer::startRead(){
         QTcpSocket *client=(QTcpSocket*)sender();
         QString mssg=client->readLine();
 
-        client->write("HTTP/1.0 200 OK\n");  // FIXME: not always 200 OK
-        client->write("Connecton: close\n");
-        client->write("Content-type: text/plain\n");
-        client->write("Access-Control-Allow-Origin: *\n");
-        client->write("\n");
+        client->write("HTTP/1.0 200 OK\r\n");  // FIXME: not always 200 OK
+        client->write("Connecton: close\r\n");
+        client->write("Content-type: text/plain\r\n");
+        client->write("Access-Control-Allow-Origin: *\r\n");
+        client->write("\r\n");
 
         QJsonObject resp;  // response object
 
