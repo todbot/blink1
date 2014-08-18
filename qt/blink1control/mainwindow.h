@@ -245,6 +245,7 @@ public slots:
     bool getLogging();
     void updateColorsOnBigButtons2List();
 
+    void setStartupPattern( QString patternName );
 
 private:
     QtQuick2ApplicationViewer viewer;
@@ -313,6 +314,16 @@ private:
     bool enableServer;
     bool enableGamma;
     bool firstRun;
+
+    QString serverHost;
+    int     serverPort; 
+
+    QString proxyType;
+    QString proxyHost;
+    int     proxyPort;
+    QString proxyUser;
+    QString proxyPass;
+
     int blink1Index;
     QString getTimeFromInt(int t);
     bool mk2;

@@ -386,7 +386,22 @@ int main(int argc, char** argv)
                     deviceIds[i] = i;
                 }
             } 
-            else if( strlen(optarg) == 8 ) { //  
+            else { // if( strcmp(optarg,",") != -1 ) { // comma-separated list
+                char* pch;
+                int base = 0;
+                pch = strtok( optarg, " ,");
+                numDevicesToUse = 0;
+                while( pch != NULL ) { 
+                    int base = (strlen(pch)==8) ? 16:0;
+                    deviceIds[numDevicesToUse++] = strtol(pch,NULL,base);
+                    pch = strtok(NULL, " ,");
+                }
+                for( int i=0; i<numDevicesToUse; i++ ) { 
+                    printf("deviceId[%d]: %d\n", i, deviceIds[i]);
+                }
+            }
+            /*
+            else if( strlen(optarg) == 8 ) { //
                 deviceIds[0] = strtol( optarg, NULL, 16);
                 numDevicesToUse = 1;
                 //sprintf( serialnumstr, "%s", optarg);  // strcpy
@@ -394,6 +409,7 @@ int main(int argc, char** argv)
             else {
                 numDevicesToUse = hexread((uint8_t*)deviceIds,optarg,sizeof(deviceIds));
             }
+            */
             break;
         case 'h':
             usage( "blink1-tool" );

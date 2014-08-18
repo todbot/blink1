@@ -8,8 +8,17 @@ any data source in the cloud or on your computer to a full-color RGB LED so
 you can know what's happening without checking any windows, going to any 
 websites or typing any commands."
 
-The official repository of blink(1) software and source code is:
-https://github.com/todbot/blink1/
+The official repository of blink(1) software is:
+    https://github.com/thingm/blink1/
+
+That repo pulls from the active development repo:
+   https://github.com/todbot/blink1/
+
+Please submit any issues or pull-requests there.
+
+Official releases of pre-built software are available at:
+https://github.com/todbot/blink1/releases
+
 
 
 Ready-to-run Applications to play with
@@ -22,7 +31,7 @@ and is the primary user-level application for controlling blink(1).
 It is an event-based system for triggering blink(1) color patterns.
 Those events can be on your computer or on the Net.
 
-Blin1kControl can receive events from:
+Blink1Control can receive events from:
 - [IFTTT](http://ifttt.com/channels)'s many channels
 - IMAP/POP/GMAIL email services
 - URLs containing text or JSON

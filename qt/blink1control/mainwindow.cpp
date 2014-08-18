@@ -515,6 +515,15 @@ void MainWindow::saveSettings()
     settings.setValue("enableGamma", enableGamma);
     settings.setValue("firstRun", firstRun);
 
+    settings.setValue("serverHost", serverHost);
+    settings.setValue("serverPort", serverPort);
+
+    settings.setValue("proxyType", proxyType);
+    settings.setValue("proxyHost", proxyHost);
+    settings.setValue("proxyPort", proxyPort);
+    settings.setValue("proxyUser", proxyUser);
+    settings.setValue("proxyPass", proxyPass);
+
     // save patterns
     QJsonArray qarrp;
     foreach (QString nm, patterns.keys() ) {  
@@ -587,6 +596,7 @@ void MainWindow::loadSettings()
             }
     }
     iftttKey=sIftttKey;
+
     autorun      = settings.value("autorun","").toBool();
     dockIcon     = settings.value("dockIcon",true).toBool();
     startmin     = settings.value("startmin","").toBool();
@@ -595,16 +605,39 @@ void MainWindow::loadSettings()
     enableGamma  = settings.value("enableGamma",false).toBool();
     firstRun     = settings.value("firstRun",true).toBool();
 
-    /*  to-do: finish implementing this, issue #138
-        // test with ssh -ND 9999 you@example.com
-    QNetworkProxy proxy;
-    proxy.setType( QNetworkProxy::Socks5Proxy );
-    proxy.setHostName("localhost");
-    proxy.setPort( 9999 );
-    //proxy.setUser("username");
-    //proxy.setPassword("password");
-    QNetworkProxy::setApplicationProxy(proxy);
-    */
+    serverHost = settings.value("serverHost","localhost").toString(); // FIXME: hardcoded default
+    serverPort = settings.value("serverPort", 8934).toInt();     // FIXME: hardcoded default
+    httpserver->setHost( serverHost );
+    httpserver->setPort( serverPort );
+
+    // to-do: finish implementing & documenting proxy support, issue #138
+    // test SOCKS proxy with ssh -ND 9999 you@example.com
+    proxyType = settings.value("proxyType","").toString().toLower(); // "none" or "socks5" or "http"
+    proxyHost = settings.value("proxyHost","").toString(); 
+    proxyPort = settings.value("proxyPort",0).toInt(); 
+    proxyUser = settings.value("proxyUser","").toString();
+    proxyPass = settings.value("proxyPass","").toString();
+
+    if( (proxyType == "socks5" || proxyType == "socks") && proxyHost !="" && proxyPort != 0 ) { 
+        qDebug() << "Setting SOCKS5 proxy";
+        QNetworkProxy proxy;
+        proxy.setType( QNetworkProxy::Socks5Proxy );
+        proxy.setHostName( proxyHost );
+        proxy.setPort( proxyPort );
+        if( proxyUser!="" ) proxy.setUser( proxyUser );
+        if( proxyPass!="" ) proxy.setPassword( proxyPass );
+        QNetworkProxy::setApplicationProxy(proxy);
+    }
+    else if( proxyType == "http" && proxyHost !="" && proxyPort != 0 ) { 
+        qDebug() << "Setting HTTP proxy";
+        QNetworkProxy proxy;
+        proxy.setType( QNetworkProxy::HttpProxy );
+        proxy.setHostName( proxyHost );
+        proxy.setPort( proxyPort );
+        if( proxyUser!="" ) proxy.setUser( proxyUser );
+        if( proxyPass!="" ) proxy.setPassword( proxyPass );
+        QNetworkProxy::setApplicationProxy(proxy);
+    }
 
     QString blink1IndexStr = settings.value("blink1Index","").toString();
     qDebug() << "blink1IndexStr: "<< blink1IndexStr;
@@ -1865,6 +1898,39 @@ void MainWindow::updateColorsOnBigButtons2List(){
     emit updateBigButtons();
     bigButtons2=tmp;
     emit updateBigButtons();
+}
+
+void MainWindow::setStartupPattern( QString patternName )
+{
+    qDebug() << "setStartupPattern: "<<patternName;
+    if( patternName == "_OFF" ) { 
+        for( int i=0; i<16; i++ ) { 
+            blink1_writePatternLine( blink1dev, 1000, 0,0,0, i ); // off
+        }
+        blink1_savePattern( blink1dev );
+    }
+    else if( patternName == "_DEFAULT" ) {  // not quite the real default for mk2 or mk1
+        blink1_writePatternLine( blink1dev, 500, 0xff,0x00,0x00, 0 ); // red
+        blink1_writePatternLine( blink1dev, 500, 0xff,0x00,0x00, 1 ); // red
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 2 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x00,0xff,0x00, 3 ); // green
+        blink1_writePatternLine( blink1dev, 500, 0x00,0xff,0x00, 4 ); // green
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 5 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0xff, 6 ); // blue
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0xff, 7 ); // blue
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 8 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x80,0x80,0x80, 9 ); // half-bright
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 10 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0xF0,0xF0,0xF0, 11 ); // white
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 12 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0xF0,0xF0,0xF0, 13 ); // white
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 14 ); // off
+        blink1_writePatternLine( blink1dev, 500, 0x00,0x00,0x00, 15 ); // off
+        blink1_savePattern( blink1dev );
+    }
+    else { 
+    }
+
 }
 
 
