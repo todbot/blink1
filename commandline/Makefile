@@ -147,6 +147,7 @@ EXE=
 INSTALL = install -D
 EXELOCATION ?= /usr/local/bin
 LIBLOCATION ?= /usr/local/lib
+INCLOCATION ?= /usr/local/include
 
 endif
 
@@ -179,6 +180,8 @@ LIB_EXTRA = lib /machine:i386 /def:blink1-lib.def
 INSTALL = cp
 EXELOCATION ?= $(SystemRoot)/system32
 LIBLOCATION ?= $(SystemRoot)/system32
+# not sure where this really should point
+INCLOCATION ?= $(SystemRoot)/system32
 
 endif
 
@@ -208,6 +211,7 @@ EXE=
 INSTALL = install -D
 EXELOCATION ?= /usr/local/bin
 LIBLOCATION ?= /usr/local/lib
+INCLOCATION ?= /usr/local/include
 
 endif
 
@@ -243,6 +247,7 @@ EXE=
 INSTALL = install -D
 EXELOCATION ?= /usr/local/bin
 LIBLOCATION ?= /usr/local/lib
+INCLOCATION ?= /usr/local/include
 
 endif
 
@@ -362,6 +367,7 @@ package: lib blink1-tool
 install: all
 	$(INSTALL) blink1-tool$(EXE) $(DESTDIR)$(EXELOCATION)/blink1-tool$(EXE)
 	$(INSTALL) $(LIBTARGET) $(DESTDIR)$(LIBLOCATION)/$(LIBTARGET)
+	$(INSTALL) blink1-lib.h $(DESTDIR)$(INCLOCATION)/blink1-lib.h
 
 .PHONY: install
 
