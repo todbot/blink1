@@ -74,6 +74,12 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(QList<QObject*> getBigButtons READ getBigButtons NOTIFY bigButtonsUpdate)
     Q_PROPERTY(QVariantList getPatternsNames READ getPatternsNames NOTIFY updatePatternsNamesOnUi)
 
+    // preference properties
+    Q_PROPERTY(bool enableAPIServer MEMBER enableServer NOTIFY prefsUpdate)
+    Q_PROPERTY(bool autorun MEMBER autorun NOTIFY prefsUpdate) 
+    Q_PROPERTY(bool startmin MEMBER startmin NOTIFY prefsUpdate) 
+    Q_PROPERTY(bool dockIcon MEMBER dockIcon NOTIFY prefsUpdate)
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -247,6 +253,7 @@ public slots:
 
     void setStartupPattern( QString patternName );
 
+
 private:
     QtQuick2ApplicationViewer viewer;
 
@@ -308,6 +315,17 @@ private:
     int inputTimerCounter;
     int lastIftttDate;    // timestamp of the last IFTTT event we received
     bool isIftttChecked;  // FIXME: only check IFTTT once, even tho multiple DataInputs for it
+
+    HttpServer *httpserver;
+
+    int blink1Index;
+    QString getTimeFromInt(int t);
+    bool mk2;
+    bool logging;
+    QFile *logFile;
+    QTextStream *out;
+    bool fromPattern;
+
     bool autorun;
     bool dockIcon;
     bool startmin;
@@ -324,15 +342,7 @@ private:
     QString proxyUser;
     QString proxyPass;
 
-    int blink1Index;
-    QString getTimeFromInt(int t);
-    bool mk2;
-    bool logging;
-    QFile *logFile;
-    QTextStream *out;
-    bool fromPattern;
 
-    HttpServer *httpserver;
 
 signals:
     void patternsUpdate();
@@ -347,6 +357,7 @@ signals:
     void iftttUpdate();
     void ledsUpdate();
     void deviceUpdate();
+    void prefsUpdate();
 private slots:
     void updateInputs();
     void deleteDataInput(DataInput *dI);
