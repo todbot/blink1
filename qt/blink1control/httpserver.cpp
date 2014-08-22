@@ -95,6 +95,7 @@ void HttpServer::startRead(){
             resp.insert("blink_id",mw->getIftttKey());
             resp.insert("status",QString("regenerate id"));
         }
+        /*
         else if( cmd == "/on" ) {
             mw->stopPattern(mw->getActivePatternName());
             QString cstr = "#FFFFFF";
@@ -113,11 +114,22 @@ void HttpServer::startRead(){
             resp.insert("time",QString::number(time));
             mw->setColorToBlink(QColor(cstr),time*1000);
         }
-        else if( cmd == "/fadeToRGB" ) {
-            mw->stopPattern(mw->getActivePatternName());
+        */
+        else if( cmd == "/fadeToRGB" || cmd == "/on" || cmd == "/off" ) {
             bool ok;
             QString cstr = qurlquery.queryItemValue("rgb");
             double time  = qurlquery.queryItemValue("time").toDouble(&ok);
+            QString idstr= qurlquery.queryItemValue("id");
+
+            if( cmd == "/off" )     cstr = "#000000";
+            else if( cmd == "/on" ) cstr = "#FFFFFF";
+
+            if( idstr != "" ) { 
+                QStringList ids = idstr.split(",", QString::SkipEmptyParts);
+            }
+
+            mw->stopPattern(mw->getActivePatternName());
+
             QColor c = QColor(cstr);
             QString status = "fadeToRGB: invalid color";
             if( !ok ) time = 0.1;

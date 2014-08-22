@@ -165,6 +165,8 @@ MainWindow::MainWindow(QWidget *parent) :
     
     qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
 
+    //connect(&viewer, SIGNAL(prefsUpdate()), this, SLOT(preferencesUpdated()));
+                
 }
 
 // called when window has focus
@@ -506,10 +508,10 @@ void MainWindow::saveSettings()
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");
 
     settings.setValue("iftttKey", iftttKey);//sText);
-    settings.setValue("autorun",autorunAction->isChecked());
-    settings.setValue("dockIcon",dockIconAction->isChecked());
+    settings.setValue("autorun", autorunAction->isChecked());
+    settings.setValue("dockIcon", dockIconAction->isChecked());
     settings.setValue("startmin",startmin);
-    settings.setValue("server",serverAction->isChecked());
+    settings.setValue("server", enableServer);
     settings.setValue("logging",logging);
     settings.setValue("blink1Index", QString::number(blink1Index,16) );
     settings.setValue("enableGamma", enableGamma);
@@ -605,6 +607,8 @@ void MainWindow::loadSettings()
     enableGamma  = settings.value("enableGamma",false).toBool();
     firstRun     = settings.value("firstRun",true).toBool();
 
+    // allow selection of "host" and port for API server
+    // serverHost can be "localhost" or "any"
     serverHost = settings.value("serverHost","localhost").toString(); // FIXME: hardcoded default
     serverPort = settings.value("serverPort", 8934).toInt();     // FIXME: hardcoded default
     httpserver->setHost( serverHost );
@@ -612,6 +616,8 @@ void MainWindow::loadSettings()
 
     // to-do: finish implementing & documenting proxy support, issue #138
     // test SOCKS proxy with ssh -ND 9999 you@example.com
+    // proxy settings
+    // proxyType can be "none", "socks5" or "http"
     proxyType = settings.value("proxyType","").toString().toLower(); // "none" or "socks5" or "http"
     proxyHost = settings.value("proxyHost","").toString(); 
     proxyPort = settings.value("proxyPort",0).toInt(); 
@@ -639,6 +645,7 @@ void MainWindow::loadSettings()
         QNetworkProxy::setApplicationProxy(proxy);
     }
 
+    // select blink(1) device to use
     QString blink1IndexStr = settings.value("blink1Index","").toString();
     qDebug() << "blink1IndexStr: "<< blink1IndexStr;
     bool ok;
@@ -985,6 +992,7 @@ void MainWindow::setColorToBlinkAndChangeActivePatternName(QColor c,QString s,in
     fromPattern=false;
 }
 
+// called by httpserver, patterns and many other things
 void MainWindow::setColorToBlink(QColor c,int fademillis){
     cc=c;
     mode=RGBSET;
@@ -1005,8 +1013,9 @@ void MainWindow::showAboutDialog(){
     QMessageBox::about(this, QString("About Blink1Control"), message);
 }
 
-void MainWindow::changeMinimizeOption(){
+void MainWindow::changeMinimizeOption() {
     startmin=!startmin;
+    emit prefsUpdate();    
 }
 void MainWindow::showMinimize(){
     viewer.showMinimized();
@@ -1038,7 +1047,9 @@ void MainWindow::playBigButton(int idx){
     }
 }
 void MainWindow::setAutorun(){
-    if(autorunAction->isChecked()){
+    autorun = autorunAction->isChecked();
+    emit prefsUpdate();
+    if( autorun ){
 #ifdef Q_OS_MAC
         QStringList arg;
         arg.append("unload");
@@ -1080,9 +1091,11 @@ void MainWindow::setAutorun(){
     }
 }
 void MainWindow::showhideDockIcon(){
+    dockIcon = dockIconAction->isChecked();
+    emit prefsUpdate();
     #ifdef Q_OS_MAC
     QSettings settings(QCoreApplication::applicationDirPath()+"/../Info.plist",QSettings::NativeFormat);
-    settings.setValue("LSUIElement",(dockIconAction->isChecked())?0:1);
+    settings.setValue("LSUIElement",dockIcon?0:1);
     #endif
     // for window do something like:
     // setWindowFlags(windowFlags() | Qt::Tool);
@@ -1092,12 +1105,14 @@ void MainWindow::showhideDockIcon(){
 // HTTP Server begin
 //
 void MainWindow::startStopServer(){
-    if(!serverAction->isChecked()){
+    enableServer = serverAction->isChecked();
+    emit prefsUpdate();
+    if(!enableServer){
         httpserver->stop();
     }else{
         httpserver->start();
     }
-    qDebug()<<"SERVER IS "<<httpserver->status();
+    qDebug()<<"SERVER IS "<<httpserver->status() << " enableServer: "<<enableServer;
     addToLog("SERVER IS "+QString::number(httpserver->status()));
 }
 
@@ -1268,6 +1283,7 @@ QString MainWindow::getIftttKey(){
 QString MainWindow::getBlinkKey(){  // FIXME: rename this
     return blink1Id;
 }
+
 void MainWindow::playOrStopPattern(QString name){
     if(!patterns.contains(name)) return;
     if(!patterns.value(name)->playing()) patterns.value(name)->play(cc);

@@ -1,6 +1,7 @@
 import QtQuick 2.2
 import "content"
 import QtQuick.Controls 1.2
+import QtQuick.Controls.Styles 1.2
 import QtGraphicalEffects 1.0
 
 
@@ -84,6 +85,9 @@ Image{
         colorwheel1.setQColorAndTime(x,t)//1.0)
         colorwheel1.appAction=false
     }
+
+    PreferencesWindow { id: prefsWindow }
+
     /// VIRTUAL BLINK
     Image{
         id: devicePanel
@@ -144,6 +148,22 @@ Image{
                 radius: width*0.5
                 anchors.centerIn: parent
             }
+            Button {
+                tooltip: "Show Preferences window"
+                iconSource: "qrc:images/layout/select-bg-right.png"
+                anchors.right: parent.right 
+                anchors.top: parent.top 
+                anchors.rightMargin:-15
+                anchors.topMargin:15
+                //width: 20
+                style: ButtonStyle { 
+                    background: Rectangle {
+                        implicitWidth: 15
+                    }
+                }
+                onClicked:  prefsWindow.visible = !prefsWindow.visible
+            }
+/*
             MouseArea{
                 anchors.fill: parent
                 acceptedButtons: Qt.RightButton
@@ -151,7 +171,7 @@ Image{
                    virtualBlink1Menu.popup()
                 }
             }
-
+*/
         }
         //// KONIEC VIRTUAL BLINK
         Text{
