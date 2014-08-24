@@ -14,8 +14,8 @@ Window {
 
     title: "Blink1Control Preferences"
     flags: Qt.Dialog
-    
-    onClosing: { 
+
+    onClosing: {
         console.log("** Closing Prefs Window");
     }
 
@@ -23,12 +23,12 @@ Window {
         id: flickable
         anchors.fill: parent
         anchors.margins: 10
-        
+
         ColumnLayout {
             id: mainLayout
             spacing: 10
-        RowLayout { 
-        ColumnLayout { 
+        RowLayout {
+        ColumnLayout {
             id: leftcolumn
             Layout.alignment: Qt.AlignTop
             Layout.minimumWidth: 280
@@ -79,17 +79,12 @@ Window {
             }
         } // api server groupbox
 
-        GroupBox { 
+        GroupBox {
             id: groupProxy
             title: "Proxy Configuration"
-            //Layout.fillWidth: true
-            
-            GridLayout {
-                id: proxygridLayout
-                anchors.fill: parent
-                columns: 2
-                //flow: GridLayout.TopToBottom
-                RowLayout { 
+            ColumnLayout { 
+                spacing: 10
+                RowLayout {
                     Layout.columnSpan: 2
                     ExclusiveGroup { id: proxyTypeGroup }
                     RadioButton {
@@ -97,57 +92,61 @@ Window {
                         text: "none"
                         checked: true
                         exclusiveGroup: proxyTypeGroup
-                        //Layout.minimumWidth: 100
                     }
                     RadioButton {
                         id: proxyType1
                         text: "SOCKS5"
                         exclusiveGroup: proxyTypeGroup
                     }
-                    RadioButton { 
+                    RadioButton {
                         id: proxyType2
                         text: "HTTP"
                         exclusiveGroup: proxyTypeGroup
                     }
                 } // rowlayout
 
-                Label { text: "proxyHost:" }
-                TextField { id: proxyHostText;  text: mw.proxyHost }
-                Label { text: "proxyPort:" }
-                TextField { id: proxyPortText;  text: mw.proxyPort }
-                Label { text: "proxyUser:" }
-                TextField { id: proxyUserText;  text: mw.proxyUser }
-                Label { text: "proxyPass:" }
-                TextField { id: proxyPassText;  text: mw.proxyPass }
+                GridLayout {
+                    id: proxygridLayout
+                    columns: 2
+                    enabled: proxyTypeGroup.current != proxyType0
+                    Label { text: "proxyHost:" }
+                    TextField { id: proxyHostText;  text: mw.proxyHost }
+                    Label { text: "proxyPort:" }
+                    TextField { id: proxyPortText;  text: mw.proxyPort }
+                    Label { text: "proxyUser:" }
+                    TextField { id: proxyUserText;  text: mw.proxyUser }
+                    Label { text: "proxyPass:" }
+                    TextField { id: proxyPassText;  text: mw.proxyPass }
+                }
             }
         } // proxy groupbox
 
         } // left column
-        ColumnLayout { 
+        ColumnLayout {
             id: rightcolumn
             Layout.alignment: Qt.AlignTop
             Layout.minimumWidth: 280
             //Layout.fillWidth: true
 
-        GroupBox { 
+        GroupBox {
             id: groupBlink1ToUse
             title: "blink(1) device to use"
-            ColumnLayout { 
+            ColumnLayout {
                 ExclusiveGroup { id: blink1touseGroup }
                 RadioButton {  exclusiveGroup: blink1touseGroup
                     text: "First Avaialble"
                     checked: true
                 }
-                RowLayout { 
+                RowLayout {
                     RadioButton {  exclusiveGroup: blink1touseGroup
                         id: blink1tousedeviceButton
-                        text: "Use device:"
+                        text: "Use device id:"
                     }
                     ComboBox {
                         id: blink1touseComboBox
                         model: mw.getBlink1Serials
-                        onCurrentIndexChanged: { 
-                        //onActivated: { 
+                        onCurrentIndexChanged: {
+                        //onActivated: {
                             console.log("blink1 serial: " + currentIndex + " , "+ currentText);
                             mw.blink1Blink( currentText, "#333333", 500);
                         }
@@ -156,33 +155,54 @@ Window {
             }
         } // groupBlink1ToUse
 
-        GroupBox { 
+        GroupBox {
             id: groupBlink1Startup
             title: "blink(1) device no-computer behavior"
             Layout.alignment: Qt.AlignTop
-            ColumnLayout { 
-                ExclusiveGroup { id: blink1startup }
-                RadioButton {  exclusiveGroup: blink1startup
+            ColumnLayout {
+                ExclusiveGroup { id: blink1startupGroup }
+                RadioButton {  exclusiveGroup: blink1startupGroup
+                    id: blink1startupNone
                     text: "No Change"
                     checked: true
                 }
-                RadioButton {  exclusiveGroup: blink1startup
+                RadioButton {  exclusiveGroup: blink1startupGroup
+                    id: blink1startupOff
                     text: "Off"
                 }
-                RadioButton { exclusiveGroup: blink1startup
+                RadioButton { exclusiveGroup: blink1startupGroup
+                    id: blink1startupDefault
                     text: "Default"
                 }
-                RowLayout { 
-                    RadioButton { exclusiveGroup: blink1startup
+                RowLayout {
+                    RadioButton { exclusiveGroup: blink1startupGroup
+                        id: blink1startupPattern
                         text: "Pattern:"
                     }
                     ComboBox {
+                        id: blink1startupPatternComboBox
                         model: mw.getPatternsNames
                     }
                 }
-                Button { 
-                    Layout.alignment: Qt.AlignRight;
-                    text: "Set"
+                RowLayout {
+                    spacing: 10
+                    Button {
+                        Layout.alignment: Qt.AlignRight;
+                        text: "Set"
+                        enabled: blink1startupGroup.current != blink1startupNone
+                        onClicked: {
+                            if( blink1startupGroup.current == blink1startupOff ) {
+                              blink1startupStatus.text = "Set to Off";
+                              mw.setStartupPattern("_OFF");
+                            } else if( blink1startupGroup.current == blink1startupDefault ) {
+                              blink1startupStatus.text = "Set to Default";
+                              mw.setStartupPattern("_DEFAULT");
+                            } else {
+                              blink1startupStatus.text = "Not implemented";
+                            }
+                        }
+                    }
+                    Label { id: blink1startupStatus }
                 }
 
             } // radiobutton column ayout
@@ -190,16 +210,16 @@ Window {
 
         } // right column
         } // main rowlayout
- 
+
         RowLayout {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-            Button { 
+            Button {
                 text: "Cancel"
                 onClicked: prefsWindow.visible = false;
             }
-            Button { 
+            Button {
                 text: "Ok"
-                onClicked: { 
+                onClicked: {
                     console.log("saving preferences...");
                     mw.enableServer = enableServerCheckbox.checked;
                     mw.startmin = minimizedCheckbox.checked;
@@ -212,10 +232,11 @@ Window {
                     mw.proxyPort = proxyPortText.text;
                     mw.proxyUser = proxyUserText.text;
                     mw.proxyPass = proxyPassText.text;
-                    
-                    if( blink1touseGroup.current == blink1tousedeviceButton ) { 
-                      console.log(" changing blink1 to use: "+ blink1touseComboBox.currentText );
+
+                    if( blink1touseGroup.current == blink1tousedeviceButton ) {
                       mw.setBlink1Index( blink1touseComboBox.currentText );
+                    } else {
+                      mw.setBlink1Index( 0 );
                     }
 
                     prefsWindow.visible = false
@@ -224,30 +245,29 @@ Window {
         } // rowlayout buttons
 
         } // main columnlayout
-        
+
     }// item
 
-    onVisibilityChanged: { 
+    onVisibilityChanged: {
         console.log("** Visbility changes");
-        if( visible ) { 
-            console.log("help i'm visible!") 
-            // load up values because bindings break?
+        if( visible ) {
+            // load up values because bindings break? FIXME: don't understand this fully
             enableServerCheckbox.checked = mw.enableServer;
             minimizedCheckbox.checked = mw.startmin;
             loginCheckbox.checked = mw.autorun;
-            
-            if( mw.proxyType == "" || mw.proxyType == "none" ) { 
+
+            // FIXME: make proxyType an enumeration
+            if( mw.proxyType == "" || mw.proxyType == "none" ) {
               proxyType0.checked = true
             }
             else if( mw.proxyType == "socks5" ) {
               proxyType1.checked = true
             }
-            else if( mw.proxyType == "http" ) { 
+            else if( mw.proxyType == "http" ) {
               proxyType2.checked = true
             }
-            
+
         }
     }
 
 } // window
-

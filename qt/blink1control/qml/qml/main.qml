@@ -3043,7 +3043,7 @@ Image{
             }
         }
     }
-
+/*
     Menu {
         id: virtualBlink1Menu
         MenuItem {
@@ -3059,7 +3059,7 @@ Image{
             }
         }
     }
-
+*/
 
     //color picker
     Item{

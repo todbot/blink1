@@ -1127,9 +1127,6 @@ void MainWindow::showhideDockIcon(){
     // setWindowFlags(windowFlags() | Qt::Tool);
 }
 
-//
-// HTTP Server begin
-//
 void MainWindow::startStopServer(){
     enableServer = serverAction->isChecked();
     //emit prefsUpdate();
@@ -1142,10 +1139,6 @@ void MainWindow::startStopServer(){
     addToLog("SERVER IS "+QString::number(httpserver->status()));
 }
 
-
-//
-// HTTP Server end
-//
 
 QList<QObject*> MainWindow::getPatternsList(){
     QList<QObject*> patternsList;
@@ -1987,6 +1980,7 @@ void MainWindow::setStartupPattern( QString patternName )
         blink1_savePattern( blink1dev );
     }
     else { 
+        
     }
 
 }
