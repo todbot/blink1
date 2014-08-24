@@ -327,7 +327,7 @@ private:
 
     QTimer *inputsTimer;
     int inputTimerCounter;
-    int lastIftttDate;    // timestamp of the last IFTTT event we received
+    qint64 lastIftttDate;    // timestamp of the last IFTTT event we received
     bool isIftttChecked;  // FIXME: only check IFTTT once, even tho multiple DataInputs for it
 
     HttpServer *httpserver;

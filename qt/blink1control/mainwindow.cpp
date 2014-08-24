@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QIcon ico = QIcon(":/images/blink1-icon0.png");
     QIcon icobw = QIcon(":/images/blink1-icon0-bw.png");
     // This causes Mac menubar to change but not app icon.
-    // ( Mac app icon is specified in qmake .pro with ICON var)
+    // (Mac app icon is specified in qmake .pro with ICON var)
 
     setWindowIcon( ico );
     createActions();
@@ -119,12 +119,12 @@ MainWindow::MainWindow(QWidget *parent) :
     if( mac() ) helpfilepath += "/../Resources/help/help/index.html";  // FIXME: better way?
     else        helpfilepath += "/help/help/index.html";
     QFile f(helpfilepath);
-    //qDebug() << "opening help file: " << f.fileName();
-    //fprintf( stderr, "opening help file: %s\n", qPrintable(f.fileName()) );
-    f.open(QFile::ReadOnly | QFile::Text);
-    QTextStream in(&f);
-    QString helpTextStr = in.readAll();
-    f.close();
+    QString helpTextStr = "<b> Help file not file </b>";
+    if( f.open(QFile::ReadOnly | QFile::Text) ) { 
+        QTextStream in(&f);
+        helpTextStr = in.readAll();
+        f.close();
+    }
     viewer.rootContext()->setContextProperty("helpTextString", helpTextStr);
 
     // set up QML viewer
@@ -382,9 +382,12 @@ void MainWindow::updateInputs()
 
 /**
  * Parses the /eventsall JSON response from api.thingm.com.
- * Scans through received IFTTT events, find matches to input's rule names.
- * On match and if date is newer than last saved date,
- * execute the pattern bound to that rule and update event list.
+ * 1. Scans through received IFTTT events
+ * 2. Look for events newer than lastIftttDate
+ * 2. Find events that match configured input rule names.
+ * 3. If match and if date is newer than last saved date for that event,
+ *      execute the pattern bound to that rule and update event list.
+ * 4. Update last
  *
  * @note FIXME: not sure why this isn't in DataInput or Blink1Input
  *
@@ -403,7 +406,7 @@ void MainWindow::checkIfttt(QString txt)
         // we need some way to notify user (maybe set arg2 on all iftt items? yuk)
     }
 
-    int recentIftttDate = 0;
+    qint64 recentIftttDate = -1;
     // march through each item of the events array, comparing to each input
     QJsonArray events = respobj.value( QString("events") ).toArray();
     foreach( const QJsonValue& val, events) {
@@ -412,13 +415,15 @@ void MainWindow::checkIfttt(QString txt)
         QString evdatestr = ev["date"].toString();
         QString evname    = ev["name"].toString();
         QString evsource  = ev["source"].toString();
-        int evdate = evdatestr.toInt();
-        qDebug() << "ev: name:"<<evname<<", date:"<< evdate << " lastIftttDate:"<<lastIftttDate;
+        qint64 evdate = evdatestr.toLongLong();
+        qDebug() << "evname:"<<evname<<" evdate:"<< evdate << " lastIftttDate:"<<lastIftttDate;
 
+        // is this event newer since last time we checked?
         if( evdate > lastIftttDate ) {
             recentIftttDate = evdate;
             addRecentEvent(evdate, evname+" - "+evsource, "IFTTT");
         }
+
         foreach ( Blink1Input* input, inputs ) {
             //qDebug() << "blink1input: "<<input->type() <<":"<<input->arg1() <<":"<< input->date();
             // check if this is an IFTTT input and does the event name match?
@@ -439,6 +444,7 @@ void MainWindow::checkIfttt(QString txt)
             }
         } // foreach input
     } // foreach event
+
     if( recentIftttDate > 0 ) {
         lastIftttDate = recentIftttDate;
     }
@@ -690,6 +696,8 @@ void MainWindow::loadSettings()
     //qDebug() << doc.toJson( QJsonDocument::Indented );
     QJsonArray qarr = doc.array();
 
+    qint64 nowSecs = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000;
+
     for( int i=0; i< qarr.size(); i++ ) {
         Blink1Pattern* bp = new Blink1Pattern();
         bp->fromJson( qarr.at(i).toObject() );
@@ -720,11 +728,18 @@ void MainWindow::loadSettings()
             inputs.insert( bi->name(), bi );
             // find most recent ifttt time
             if( bi->type() == "ifttt" ) {
-                qDebug() << "iftttTime: "<<bi->date();
+                //qDebug() << "iftttTime: "<<bi->date();
+                if( bi->date() > nowSecs || bi->date() == 0 ) {  // if bad stored date, fix it
+                    bi->setDate( nowSecs );
+                }
                 if( bi->date() > lastIftttDate )
                     lastIftttDate = bi->date();
             }
         }
+    }
+    if( lastIftttDate > nowSecs ) { 
+        qDebug() << "lastIftttDate: bad date in input";
+        lastIftttDate = nowSecs;
     }
 
     QString sButtStr = settings.value("bigbuttons2","").toString();
@@ -932,7 +947,7 @@ void MainWindow::createTrayIcon()
 // see: http://stackoverflow.com/questions/16431270/qt-context-menu-on-trigger
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    qDebug() << "tray icon clicked! " << reason;
+    //qDebug() << "tray icon clicked! " << reason;
     //if( reason == QSystemTrayIcon::DoubleClick ) {
     if( reason == QSystemTrayIcon::Trigger && !mac() ) {
         showNormal();
@@ -1025,7 +1040,7 @@ void MainWindow::setColorToBlink(QColor c,int fademillis){
     activePatternName="";
     fadeSpeed=fademillis;
     emit updateActivePatternName();
-    qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed << " color: " << c.name();
+    //qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed << " color: " << c.name();
     updateBlink1();
     QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
 }
@@ -1384,7 +1399,7 @@ void MainWindow::createNewIFTTTInput(){
         duplicateCounter++;
     bp->setName("Name"+QString::number(duplicateCounter));
     bp->setType("ifttt");
-    bp->setArg1("My Rule Name");
+    bp->setArg1("My Rule Name "+QString::number(duplicateCounter));  // FIXME: arg1 & name convolved
     bp->setArg2("no value");
     bp->setPatternName("");
     inputs.insert(bp->name(),bp);
@@ -1805,7 +1820,7 @@ void MainWindow::markHardwareEditing(QString s,bool e){
     }
 }
 void MainWindow::addToLog(QString txt){
-    //qDebug()<<txt;
+    qDebug()<<"log:"<<txt;
     if(logging){
         (*out)<<txt<<"\n";
         out->flush();
