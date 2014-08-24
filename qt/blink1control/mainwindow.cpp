@@ -54,6 +54,9 @@ MainWindow::MainWindow(QWidget *parent) :
     httpserver=new HttpServer();
     httpserver->setController(this);
 
+    blink1_enumerate();
+    blink1dev = blink1_open(); // do initial enumerate and open so refreshBlink1State works  FIXME
+
     loadSettings();
 
     qDebug()<<"LOGGING: "<<logging;    
@@ -78,14 +81,15 @@ MainWindow::MainWindow(QWidget *parent) :
         emit bigButtonsUpdate();
     }
 
-    // FIXME:   this causes Mac menubar to change but not icon?
     QIcon ico = QIcon(":/images/blink1-icon0.png");
     QIcon icobw = QIcon(":/images/blink1-icon0-bw.png");
+    // This causes Mac menubar to change but not app icon.
+    // ( Mac app icon is specified in qmake .pro with ICON var)
 
     setWindowIcon( ico );
     createActions();
     createTrayIcon();
-    trayIcon->setIcon( (mac()) ? icobw : ico );
+    trayIcon->setIcon( mac() ? icobw : ico );
     trayIcon->show();
 
     activePatternName=""; 
@@ -103,9 +107,6 @@ MainWindow::MainWindow(QWidget *parent) :
     blink1timer = new QTimer(this);
     blink1timer->stop();  // errant timer causing extra updateBlink1() calls?
     connect(blink1timer, SIGNAL(timeout()), this, SLOT(updateBlink1()));
-
-    blink1_enumerate();
-    blink1dev = blink1_open(); // do initial enumerate and open so refreshBlink1State works
 
     refreshBlink1State();
     updateBlink1();
@@ -175,39 +176,71 @@ void MainWindow::viewerActiveChanged() {
     saveSettings();
 }
 
-
+//
 void MainWindow::refreshBlink1State()
 {
-    blink1_close(blink1dev);  // blink1_close checks for null
-    blink1dev=NULL;
-
     if( !enableGamma ) { 
         blink1_enableDegamma();  // FIXME: bad names for these funcs
     } else { 
         blink1_disableDegamma();
     }
 
-    //int n=blink1_enumerate();
-    //blink1dev =  blink1_open();
+    blink1_close(blink1dev);  // blink1_close checks for null
+    blink1dev=NULL;
+
     blink1_enumerate();
     blink1dev = blink1_openById( blink1Index );
+
     if( blink1dev ) {
-        QString serialstr = blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev)); //blink1_getCachedSerial(0)); 
         blinkStatus="blink(1) connected";
+        QString serialstr = blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev));
         blink1Id = serialstr;
-        iftttKey = iftttKey.left(8) + serialstr; //iftttkey2;
+        iftttKey = iftttKey.left(8) + blink1Id;
         mk2 = blink1_isMk2(blink1dev);
-        emit deviceUpdate();
+        //emit deviceUpdate();
     } else {
         blinkStatus = "no blink(1) found";
         iftttKey = iftttKey.left(8) + "00000000";
         blink1Id = "none";
     }
+
     blinkStatusAction->setText(blinkStatus);
     blinkIdAction->setText("blink(1) id: " + blink1Id);
     iftttKeyAction->setText("IFTTT Key: " + iftttKey);
-
+    
+    emit deviceUpdate();
     emit iftttUpdate();
+    emit updateBlink1Serials();
+}
+//
+void MainWindow::setBlink1Index( QString blink1IndexStr ) 
+{
+    qDebug() << "blink1IndexStr: "<< blink1IndexStr;
+    bool ok;
+    blink1Index  = blink1IndexStr.toLong(&ok,16);  // is blink1indexstr a hex serial number?
+    if( !ok ) {
+        blink1Index = blink1IndexStr.toLong(&ok,10); // is it an 0-n index?
+        if( !ok ) blink1Index = 0;
+    }
+    qDebug() << "blink1Index: " << QString::number(blink1Index,16);
+}
+
+//
+void MainWindow::blink1Blink( QString blink1serialstr, QString colorstr, int millis )
+{
+    if( blink1serialstr=="" ) return;
+    qDebug() << "blink1Blink1: "<< blink1serialstr;
+    bool ok;
+    int blink1ser  = blink1serialstr.toLong(&ok,16);
+    blink1_device* tmpdev = (blink1serialstr != blink1Id) ? blink1_openById( blink1ser ) : blink1dev;
+    if( tmpdev ) {
+        QColor c = QColor(colorstr);
+        blink1_fadeToRGBN(tmpdev, millis/2, c.red(),c.green(),c.blue(),0);
+        blink1_sleep(millis/2);
+        blink1_fadeToRGBN(tmpdev, millis/2, 0,0,0, 0);
+    }
+    if( blink1serialstr != blink1Id ) 
+        blink1_close(tmpdev);
 }
 
 
@@ -504,7 +537,7 @@ void MainWindow::quit()
 
 void MainWindow::saveSettings()
 {
-    //qDebug() << "saveSettings()";
+    qDebug() << "saveSettings()";
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");
 
     settings.setValue("iftttKey", iftttKey);//sText);
@@ -644,17 +677,10 @@ void MainWindow::loadSettings()
         if( proxyPass!="" ) proxy.setPassword( proxyPass );
         QNetworkProxy::setApplicationProxy(proxy);
     }
-
+    
     // select blink(1) device to use
     QString blink1IndexStr = settings.value("blink1Index","").toString();
-    qDebug() << "blink1IndexStr: "<< blink1IndexStr;
-    bool ok;
-    blink1Index  = blink1IndexStr.toLong(&ok,16);
-    if( !ok ) {
-        blink1Index = blink1IndexStr.toLong(&ok,10);
-        if( !ok ) blink1Index = 0;
-    }
-    qDebug() << "blink1Index: " << QString::number(blink1Index,16);
+    setBlink1Index( blink1IndexStr );
 
     // read only patterns
     QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
@@ -1015,7 +1041,7 @@ void MainWindow::showAboutDialog(){
 
 void MainWindow::changeMinimizeOption() {
     startmin=!startmin;
-    emit prefsUpdate();    
+    //emit prefsUpdate();    
 }
 void MainWindow::showMinimize(){
     viewer.showMinimized();
@@ -1048,7 +1074,7 @@ void MainWindow::playBigButton(int idx){
 }
 void MainWindow::setAutorun(){
     autorun = autorunAction->isChecked();
-    emit prefsUpdate();
+    //emit prefsUpdate();
     if( autorun ){
 #ifdef Q_OS_MAC
         QStringList arg;
@@ -1092,7 +1118,7 @@ void MainWindow::setAutorun(){
 }
 void MainWindow::showhideDockIcon(){
     dockIcon = dockIconAction->isChecked();
-    emit prefsUpdate();
+    //emit prefsUpdate();
     #ifdef Q_OS_MAC
     QSettings settings(QCoreApplication::applicationDirPath()+"/../Info.plist",QSettings::NativeFormat);
     settings.setValue("LSUIElement",dockIcon?0:1);
@@ -1106,7 +1132,7 @@ void MainWindow::showhideDockIcon(){
 //
 void MainWindow::startStopServer(){
     enableServer = serverAction->isChecked();
-    emit prefsUpdate();
+    //emit prefsUpdate();
     if(!enableServer){
         httpserver->stop();
     }else{
@@ -1185,6 +1211,21 @@ QVariantList MainWindow::getPatternsNames(){
         patternsNamesList.append(in.at(i)->name());
     return patternsNamesList;
 }
+// similar to getCatchedBlinkId (omg marcin), FIXME: refactor?
+QVariantList MainWindow::getBlink1Serials() {
+    QVariantList blink1SerialsList;
+
+    int n = blink1_getCachedCount();
+    if( n==0 ) { 
+        blink1SerialsList.append(QVariant("no blink(1)s found"));
+    } else { 
+        for(int i=0;i<n;i++) {
+            blink1SerialsList.append( QVariant(QString(blink1_getCachedSerial(i))) );
+        }
+    }
+    return blink1SerialsList;
+}
+
 QList<QObject*> MainWindow::getBigButtons(){
     QList<QObject*> bigButtonsList;
     for(int i=0;i<bigButtons2.count();i++)
@@ -1818,6 +1859,7 @@ void MainWindow::regenerateBlink1Id(){
     emit deviceUpdate();
     emit iftttUpdate();
 }
+// FIXME: omg marcin, the names they kill me
 QJsonArray MainWindow::getCatchedBlinkId(){
     QJsonArray ja;
     int n=blink1_getCachedCount();
