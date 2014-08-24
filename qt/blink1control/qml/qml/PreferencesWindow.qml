@@ -21,10 +21,6 @@ Window {
     title: "Blink1Control Preferences"
     flags: Qt.Dialog
 
-    onClosing: {
-        console.log("** Closing Prefs Window");
-    }
-
     Item {
         id: flickable
         anchors.fill: parent
@@ -45,7 +41,7 @@ Window {
             ColumnLayout {
                 CheckBox {
                     id: minimizedCheckbox
-                    text: "Start Minimized"
+                    text: "Start minimized"
                     checked: mw.startmin
                 }
                 CheckBox {
@@ -63,9 +59,8 @@ Window {
 
         GroupBox {
             id: groupAPIServer
-            title: "API Server Configuration"
+            title: "API server configuration"
             GridLayout {
-                id: proxyApiServerLayout
                 anchors.fill: parent
                 columns: 2
                 CheckBox {
@@ -83,8 +78,8 @@ Window {
         } // api server groupbox
 
         GroupBox {
-            id: groupProxy
-            title: "Proxy Configuration"
+            id: groupProxyConfig
+            title: "Proxy configuration"
             ColumnLayout { 
                 spacing: 10
                 RowLayout {
