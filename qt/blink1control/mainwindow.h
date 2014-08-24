@@ -73,12 +73,22 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(QVariantList getRecentEvents READ getRecentEvents NOTIFY recentEventsUpdate)
     Q_PROPERTY(QList<QObject*> getBigButtons READ getBigButtons NOTIFY bigButtonsUpdate)
     Q_PROPERTY(QVariantList getPatternsNames READ getPatternsNames NOTIFY updatePatternsNamesOnUi)
+    Q_PROPERTY(QVariantList getBlink1Serials READ getBlink1Serials NOTIFY updateBlink1Serials)
 
     // preference properties
-    Q_PROPERTY(bool enableAPIServer MEMBER enableServer NOTIFY prefsUpdate)
+    Q_PROPERTY(bool enableServer MEMBER enableServer NOTIFY prefsUpdate)
     Q_PROPERTY(bool autorun MEMBER autorun NOTIFY prefsUpdate) 
     Q_PROPERTY(bool startmin MEMBER startmin NOTIFY prefsUpdate) 
     Q_PROPERTY(bool dockIcon MEMBER dockIcon NOTIFY prefsUpdate)
+
+    Q_PROPERTY(QString serverHost MEMBER serverHost NOTIFY prefsUpdate)
+    Q_PROPERTY(int     serverPort MEMBER serverPort NOTIFY prefsUpdate)
+    Q_PROPERTY(QString  proxyType MEMBER proxyType NOTIFY prefsUpdate)
+    Q_PROPERTY(QString  proxyHost MEMBER proxyHost NOTIFY prefsUpdate)
+    Q_PROPERTY(int      proxyPort MEMBER proxyPort NOTIFY prefsUpdate)
+    Q_PROPERTY(QString  proxyUser MEMBER proxyUser NOTIFY prefsUpdate)
+    Q_PROPERTY(QString  proxyPass MEMBER proxyPass NOTIFY prefsUpdate)
+
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -91,6 +101,7 @@ public slots:
     void showNormal();
     void showMinimize();
     void updateBlink1();
+    void blink1Blink( QString blink1serial, QString color, int millis );
     void showAboutDialog();
     void copyToClipboard( QString txt );
 
@@ -118,8 +129,9 @@ public slots:
     QList<QObject*> getHardwareList();
     QList<QObject*> getInputsList();
     QList<QObject*> getIFTTTList();
-    QVariantList getRecentEvents();
-    QVariantList getPatternsNames();
+    QVariantList getRecentEvents();  // qml
+    QVariantList getPatternsNames(); // qml
+    QVariantList getBlink1Serials(); // qml
     QList<QObject*> getBigButtons();
 
     void refreshBlink1State();
@@ -142,6 +154,7 @@ public slots:
     QString getBlinkStatus();
     QString getIftttKey();
     QString getBlinkKey();
+    void setBlink1Index( QString blink1indexstr );
 
     void playOrStopPattern(QString name);
     void playPattern(QString name);
@@ -347,6 +360,7 @@ private:
 signals:
     void patternsUpdate();
     void updatePatternsNamesOnUi();
+    void updateBlink1Serials();
 
     void inputsUpdate();
     void updateActivePatternName();
