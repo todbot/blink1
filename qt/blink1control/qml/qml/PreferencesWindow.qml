@@ -8,8 +8,14 @@ import QtQuick.Window 2.1
 Window {
     id: prefsWindow
 
-    width: 570
-    height: 420
+    width: mw.mac() ? 580 : 550 // Win version experimentally determined
+    height: mw.mac() ? 440 : 390
+    // FIXME: surely there's a shorter way of saying "no resize"?
+    maximumWidth: width
+    maximumHeight: height
+    minimumWidth: width
+    minimumHeight: height
+
     color: "#f9f9f9"
 
     title: "Blink1Control Preferences"
@@ -36,21 +42,21 @@ Window {
         GroupBox {
             id: groupGeneral
             title: "General"
-            //Layout.fillWidth: true
-            //Layout.alignment: Qt.AlignTop
             ColumnLayout {
-                //Layout.fillWidth: true
                 CheckBox {
                     id: minimizedCheckbox
                     text: "Start Minimized"
                     checked: mw.startmin
-                    //Layout.minimumWidth: 100
                 }
                 CheckBox {
                     id: loginCheckbox
                     text: "Start at login"
                     checked: mw.autorun
-                    //Layout.minimumWidth: 100
+                }
+                CheckBox {
+                    id: gammaCheckbox
+                    text: "Enable gamma correction"
+                    checked: mw.enableGamma
                 }
             }
         } // general groupbox
@@ -58,8 +64,6 @@ Window {
         GroupBox {
             id: groupAPIServer
             title: "API Server Configuration"
-            //Layout.fillWidth: true
-            //Layout.alignment: Qt.AlignTop
             GridLayout {
                 id: proxyApiServerLayout
                 anchors.fill: parent
@@ -69,7 +73,6 @@ Window {
                     text: "Start API Server"
                     checked: mw.enableServer
                     Layout.columnSpan: 2
-                    //Layout.minimumWidth: 100
                 }
 
                 Label { text: "serverHost:" }
@@ -126,7 +129,6 @@ Window {
             id: rightcolumn
             Layout.alignment: Qt.AlignTop
             Layout.minimumWidth: 280
-            //Layout.fillWidth: true
 
         GroupBox {
             id: groupBlink1ToUse
@@ -224,6 +226,7 @@ Window {
                     mw.enableServer = enableServerCheckbox.checked;
                     mw.startmin = minimizedCheckbox.checked;
                     mw.autorun = loginCheckbox.checked;
+                    mw.enableGamma = gammaCheckbox.checked;
 
                     mw.serverHost = serverHostText.text;
                     mw.serverPort = serverPortText.text;

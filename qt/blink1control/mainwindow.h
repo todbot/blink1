@@ -80,6 +80,7 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(bool autorun MEMBER autorun NOTIFY prefsUpdate) 
     Q_PROPERTY(bool startmin MEMBER startmin NOTIFY prefsUpdate) 
     Q_PROPERTY(bool dockIcon MEMBER dockIcon NOTIFY prefsUpdate)
+    Q_PROPERTY(bool enableGamma MEMBER enableGamma NOTIFY prefsUpdate)
 
     Q_PROPERTY(QString serverHost MEMBER serverHost NOTIFY prefsUpdate)
     Q_PROPERTY(int     serverPort MEMBER serverPort NOTIFY prefsUpdate)

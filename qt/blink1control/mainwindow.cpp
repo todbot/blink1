@@ -179,7 +179,7 @@ void MainWindow::viewerActiveChanged() {
 //
 void MainWindow::refreshBlink1State()
 {
-    if( !enableGamma ) {
+    if( enableGamma ) {
         blink1_enableDegamma();  // FIXME: bad names for these funcs
     } else {
         blink1_disableDegamma();
