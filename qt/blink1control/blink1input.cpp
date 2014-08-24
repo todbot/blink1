@@ -11,14 +11,13 @@ Blink1Input::Blink1Input(QObject *parent) :
     isChecking=false;
 }
 
-
 void Blink1Input::fromJson( QJsonObject obj)
 {
     setName( obj.value("name").toString() );
     setType(obj.value("type").toString().toLower());
     setArg1(obj.value("arg1").toString());
     setArg2(obj.value("arg2").toString());
-    setDate(obj.value("date").toDouble());
+    setDate(obj.value("date").toString().toLongLong());
     setFreq(obj.value("freq").toDouble());
     setFreqCounter(obj.value("freqCounter").toDouble());
     setPatternName(obj.value("patternName").toString());
@@ -26,12 +25,13 @@ void Blink1Input::fromJson( QJsonObject obj)
 
 QJsonObject Blink1Input::toJson() // omg, was "toFullJsonReadyToSave()"
 {
+    //qDebug() << "blink1input::toJson: date:"<< date() << " datestr:"<< QString::number( date() );
     QJsonObject obj;
     obj.insert("name", name());
     obj.insert("type",type());
     obj.insert("arg1",arg1());
     obj.insert("arg2",arg2());
-    obj.insert("date",date());
+    obj.insert("date", QString::number( date() ) );
     obj.insert("patternName",patternName());
     obj.insert("freq",freq());
     obj.insert("freqCounter",freqCounter());
@@ -89,10 +89,10 @@ bool Blink1Input::pause(){
 void Blink1Input::setPause(bool v){
     mpause=v;
 }
-int Blink1Input::date(){
+qint64 Blink1Input::date(){
     return mdate;
 }
-void Blink1Input::setDate(int date){
+void Blink1Input::setDate(qint64 date){
     mdate=date;
     emit updateTimeValue();
 }

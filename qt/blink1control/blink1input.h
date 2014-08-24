@@ -37,8 +37,8 @@ public:
     void setPatternName(const QString &patternName);
     void setPause(bool v);
     bool pause();
-    int date();
-    void setDate(int date);
+    qint64 date();
+    void setDate(qint64 date);
     QString getTime();
     void setFreq(int freq);
     int freq();
@@ -58,7 +58,7 @@ private:
     QString marg2;
     QString mpatternName;
     bool mpause;
-    int mdate;
+    qint64 mdate;
     int mfreq;
     int mfreqCounter;
 public:
