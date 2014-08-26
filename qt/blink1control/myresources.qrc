@@ -172,5 +172,6 @@
         <file>images/layout/dropdown-bg.png</file>
         <file>images/layout/select-bg-right.png</file>
         <file>images/blink1-icon0-bw.png</file>
+        <file>images/gear.png</file>
     </qresource>
 </RCC>

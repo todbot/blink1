@@ -4,12 +4,13 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.1
 import QtQuick.Window 2.1
 
+//import "ToolTipTod2Creator.js" as ToolTipCreator
 
 Window {
     id: prefsWindow
 
-    width: mw.mac() ? 580 : 550 // Win version experimentally determined
-    height: mw.mac() ? 440 : 390
+    width: mw.mac() ? 575 : 560 // Win version experimentally determined
+    height: mw.mac() ? 465 : 410
     // FIXME: surely there's a shorter way of saying "no resize"?
     maximumWidth: width
     maximumHeight: height
@@ -28,21 +29,26 @@ Window {
 
         ColumnLayout {
             id: mainLayout
-            spacing: 10
+            spacing: 15
         RowLayout {
+            id: mainbox
+            spacing: 20
         ColumnLayout {
             id: leftcolumn
             Layout.alignment: Qt.AlignTop
-            Layout.minimumWidth: 280
-
+            Layout.minimumWidth: 260
+            spacing: 15
+            
         GroupBox {
             id: groupGeneral
             title: "General"
+            Layout.fillWidth: true
             ColumnLayout {
                 CheckBox {
                     id: minimizedCheckbox
                     text: "Start minimized"
                     checked: mw.startmin
+                    //onHoveredChanged: { console.log("hello "+hovered); }//ToolTipCreator.create("text on the tooltip, yo", parentItem).show() }
                 }
                 CheckBox {
                     id: loginCheckbox
@@ -60,6 +66,7 @@ Window {
         GroupBox {
             id: groupAPIServer
             title: "API server configuration"
+            Layout.fillWidth: true
             GridLayout {
                 anchors.fill: parent
                 columns: 2
@@ -80,6 +87,7 @@ Window {
         GroupBox {
             id: groupProxyConfig
             title: "Proxy configuration"
+            Layout.fillWidth: true
             ColumnLayout { 
                 spacing: 10
                 RowLayout {
@@ -123,11 +131,13 @@ Window {
         ColumnLayout {
             id: rightcolumn
             Layout.alignment: Qt.AlignTop
-            Layout.minimumWidth: 280
+            Layout.minimumWidth: 260
+            spacing: 15
 
         GroupBox {
             id: groupBlink1ToUse
             title: "blink(1) device to use"
+            Layout.fillWidth: true
             ColumnLayout {
                 ExclusiveGroup { id: blink1touseGroup }
                 RadioButton {  exclusiveGroup: blink1touseGroup
@@ -142,8 +152,8 @@ Window {
                     ComboBox {
                         id: blink1touseComboBox
                         model: mw.getBlink1Serials
-                        onCurrentIndexChanged: {
                         //onActivated: {
+                        onCurrentIndexChanged: {
                             console.log("blink1 serial: " + currentIndex + " , "+ currentText);
                             mw.blink1Blink( currentText, "#333333", 500);
                         }
@@ -155,7 +165,7 @@ Window {
         GroupBox {
             id: groupBlink1Startup
             title: "blink(1) device no-computer behavior"
-            Layout.alignment: Qt.AlignTop
+            Layout.fillWidth: true
             ColumnLayout {
                 ExclusiveGroup { id: blink1startupGroup }
                 RadioButton {  exclusiveGroup: blink1startupGroup
@@ -236,6 +246,8 @@ Window {
                     } else {
                       mw.setBlink1Index( 0 );
                     }
+
+                    mw.updatePreferences();
 
                     prefsWindow.visible = false
                 }

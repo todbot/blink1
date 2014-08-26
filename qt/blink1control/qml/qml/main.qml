@@ -148,21 +148,6 @@ Image{
                 radius: width*0.5
                 anchors.centerIn: parent
             }
-            Button {
-                tooltip: "Show Preferences window"
-                iconSource: "qrc:images/layout/select-bg-right.png"
-                anchors.right: parent.right 
-                anchors.top: parent.top 
-                anchors.rightMargin:-15
-                anchors.topMargin:15
-                //width: 20
-                style: ButtonStyle { 
-                    background: Rectangle {
-                        implicitWidth: 15
-                    }
-                }
-                onClicked:  prefsWindow.visible = !prefsWindow.visible
-            }
 /*
             MouseArea{
                 anchors.fill: parent
@@ -173,6 +158,25 @@ Image{
             }
 */
         }
+        Button {
+            tooltip: "Show Preferences window"
+            //iconSource: "qrc:images/layout/select-bg-right.png"
+            iconSource: "qrc:images/gear.png"
+            anchors.right: parent.right 
+            anchors.top: parent.top 
+            anchors.rightMargin:13 //-25
+            anchors.topMargin:50 //15
+            style: ButtonStyle { 
+                background: Rectangle {
+                    //implicitWidth: 15
+                    radius: 4
+                    border.color: control.hovered ? "#d2d2d2"  : "transparent"
+                    color: control.pressed ? "#f4f4f4" : "transparent"
+                }
+            }
+            onClicked:  prefsWindow.visible = !prefsWindow.visible
+        }
+
         //// KONIEC VIRTUAL BLINK
         Text{
             text: "Status:"
