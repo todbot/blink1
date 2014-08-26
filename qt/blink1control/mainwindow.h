@@ -188,6 +188,7 @@ public slots:
     void updatePatternsList();
     void changeInputName(QString oldName,QString newName);
 
+    void updatePreferences();
     void setAutorun();
     void showhideDockIcon();    
     void checkInput(QString key);

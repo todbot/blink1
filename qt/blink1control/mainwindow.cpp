@@ -16,6 +16,7 @@
 
 #include <QClipboard>
 
+
 #include "patternsReadOnly.h"
 
 enum {
@@ -34,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
     fromPattern=false;
-    mk2=false;
+    mk2=true;
     blinkStatus="";
     iftttKey="";
     blink1Id="none";
@@ -697,6 +698,7 @@ void MainWindow::loadSettings()
     QJsonArray qarr = doc.array();
 
     qint64 nowSecs = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000;
+    lastIftttDate = nowSecs;
 
     for( int i=0; i< qarr.size(); i++ ) {
         Blink1Pattern* bp = new Blink1Pattern();
@@ -728,19 +730,19 @@ void MainWindow::loadSettings()
             inputs.insert( bi->name(), bi );
             // find most recent ifttt time
             if( bi->type() == "ifttt" ) {
-                //qDebug() << "iftttTime: "<<bi->date();
-                if( bi->date() > nowSecs || bi->date() == 0 ) {  // if bad stored date, fix it
+                qDebug() << "input name:"<<bi->name() <<" iftttTime: "<<bi->date() << " nowSecs: "<<nowSecs;
+                if( bi->date() > nowSecs || bi->date() < 1 ) {  // if bad stored date, fix it
                     bi->setDate( nowSecs );
                 }
-                if( bi->date() > lastIftttDate )
-                    lastIftttDate = bi->date();
+                //if( bi->date() > lastIftttDate )
+                //    lastIftttDate = bi->date();
             }
         }
     }
-    if( lastIftttDate > nowSecs ) { 
-        qDebug() << "lastIftttDate: bad date in input";
-        lastIftttDate = nowSecs;
-    }
+    //if( lastIftttDate > nowSecs ) { 
+    //    qDebug() << "lastIftttDate: bad date in input: "<< lastIftttDate;
+    //    lastIftttDate = nowSecs;
+    //}
 
     QString sButtStr = settings.value("bigbuttons2","").toString();
     if( sButtStr.length() ) {
@@ -882,6 +884,7 @@ void MainWindow::createActions()
     #endif
     minimizeAction = new QAction(tr("Start minimized"), this);
     connect(minimizeAction,SIGNAL(triggered()),this,SLOT(changeMinimizeOption()));
+    //connect(minimizeAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
     minimizeAction->setCheckable(true);
     minimizeAction->setChecked(startmin);
     restoreAction = new QAction(tr("&Restore"), this);
@@ -893,10 +896,12 @@ void MainWindow::createActions()
     autorunAction->setCheckable(true);
     autorunAction->setChecked(autorun);
     connect(autorunAction,SIGNAL(triggered()),this,SLOT(setAutorun()));
+    //connect(autorunAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
     dockIconAction=new QAction("Show Dock Icon",this);
     dockIconAction->setCheckable(true);
     dockIconAction->setChecked(dockIcon);
     connect(dockIconAction,SIGNAL(triggered()),this,SLOT(showhideDockIcon()));
+    //connect(dockIconAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
     settingAction=new QAction("Open Settings",this);
     connect(settingAction,SIGNAL(triggered()),this,SLOT(showNormal()));
     alertsAction=new QAction("Reset Alerts",this);
@@ -905,6 +910,7 @@ void MainWindow::createActions()
     serverAction->setCheckable(true);
     serverAction->setChecked(enableServer);
     connect(serverAction,SIGNAL(triggered()),this,SLOT(startStopServer()));
+    //connect(serverAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
 
     // shortcuts don't work apparently in traymenus
     //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
@@ -1071,7 +1077,7 @@ void MainWindow::showNormal(){
     //viewer.setWindowState( (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
     viewer.requestActivate();
     //viewer.activateWindow(); // for Windows
- }
+}
 void MainWindow::playBigButton(int idx){
     blink1timer->stop();
     QString tmp=bigButtons2.at(idx)->getPatternName();
@@ -1154,6 +1160,16 @@ void MainWindow::startStopServer(){
     addToLog("SERVER IS "+QString::number(httpserver->status()));
 }
 
+void MainWindow::updatePreferences() { 
+    qDebug() << "updatePreferences";
+
+    serverAction->setChecked( enableServer );
+    dockIconAction->setChecked( dockIcon );
+
+    showhideDockIcon();
+    startStopServer();
+
+}
 
 QList<QObject*> MainWindow::getPatternsList(){
     QList<QObject*> patternsList;
