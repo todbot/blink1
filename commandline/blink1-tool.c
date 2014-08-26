@@ -287,7 +287,6 @@ int main(int argc, char** argv)
         {"blink",      required_argument, &cmd,   CMD_BLINK},
         {"glimmer",    optional_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
-        {"play",       required_argument, &cmd,   CMD_PLAY},
         {"stop",       no_argument,       &cmd,   CMD_STOP},
         {"playstate",  no_argument,       &cmd,   CMD_GETPLAYSTATE},
         {"random",     optional_argument, &cmd,   CMD_RANDOM },
