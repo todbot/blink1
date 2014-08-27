@@ -1,14 +1,16 @@
 
-blink1control-tool -- `blink1-tool`-like program for use with Blink1Control
-============
+blink1control-tool 
+==================
+
+## `blink1-tool`-like program for use with Blink1Control
 
 
-Prerequisites:
-###
+### Prerequisites:
+
 - libcurl
 
-Compiling:
-###
+### Compiling:
+
 On Mac OS X:
 ```
 % wget http://curl.haxx.se/download/curl-7.37.1.tar.gz
