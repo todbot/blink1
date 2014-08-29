@@ -295,7 +295,7 @@ private:
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
-    //QShortcut* resetAlertsShortcut;
+    QShortcut* resetAlertsShortcut;
 
     QTimer* blink1timer;
     blink1_device* blink1dev;

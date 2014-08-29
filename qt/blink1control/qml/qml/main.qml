@@ -136,7 +136,7 @@ Image{
                 anchors.fill: pods2
                 opacity: 0.5
             }
-
+            
             Rectangle {
                 id: virtualBlink1Color
                 visible: false
@@ -148,27 +148,41 @@ Image{
                 radius: width*0.5
                 anchors.centerIn: parent
             }
-/*
-            MouseArea{
-                anchors.fill: parent
-                acceptedButtons: Qt.RightButton
-                onClicked: {
-                   virtualBlink1Menu.popup()
+        }
+        Button { 
+            tooltip: "Reset alerts"
+            iconSource: "qrc:images/stop.png"
+            anchors.left: parent.left
+            anchors.top: parent.top 
+            anchors.leftMargin:13
+            anchors.topMargin:50 
+            style: ButtonStyle { 
+                background: Rectangle { 
+                    radius: 4
+                    border.color: control.hovered ? "#d2d2d2"  : "transparent"
+                    color: control.pressed ? "#f4f4f4" : "transparent"
                 }
             }
-*/
+            onClicked:  mw.resetAlertsOption()  // why do I have to do both onClicked and Action?
+            Action {
+                id: openAction
+                text: "&Reset alerts"
+                shortcut: "Ctrl+R"
+                onTriggered: mw.resetAlertsOption()
+                tooltip: "Open an Image"
+            }
         }
+            
         Button {
             tooltip: "Show Preferences window"
             //iconSource: "qrc:images/layout/select-bg-right.png"
             iconSource: "qrc:images/gear.png"
             anchors.right: parent.right 
             anchors.top: parent.top 
-            anchors.rightMargin:13 //-25
-            anchors.topMargin:50 //15
+            anchors.rightMargin:13
+            anchors.topMargin:50
             style: ButtonStyle { 
                 background: Rectangle {
-                    //implicitWidth: 15
                     radius: 4
                     border.color: control.hovered ? "#d2d2d2"  : "transparent"
                     color: control.pressed ? "#f4f4f4" : "transparent"

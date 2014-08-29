@@ -16,6 +16,10 @@
 
 #include <QClipboard>
 
+// see: http://qt-project.org/doc/qt-5/exportedfunctions.html
+//#ifdef Q_
+void qt_set_sequence_auto_mnemonic(bool);
+//#endif 
 
 #include "patternsReadOnly.h"
 
@@ -34,6 +38,7 @@ enum {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    qt_set_sequence_auto_mnemonic( true );
     fromPattern=false;
     mk2=true;
     blinkStatus="";
@@ -167,7 +172,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
 
-    //connect(&viewer, SIGNAL(prefsUpdate()), this, SLOT(preferencesUpdated()));
+    // some experiments that all seem to not work
+    //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
+    //alertsAction->setShortcutContext( Qt::ApplicationShortcut ); 
+    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
+    //resetAlertsShortcut = new QShortcut( QKeySequence(Qt::CTRL+Qt::Key_R), viewer.rootObject() );
+    //resetAlertsShortcut->setContext(Qt::ApplicationShortcut);
+    //connect( resetAlertsShortcut, SIGNAL(activated()), this, SLOT(resetAlertsOption()));
 
 }
 
@@ -884,7 +895,6 @@ void MainWindow::createActions()
     #endif
     minimizeAction = new QAction(tr("Start minimized"), this);
     connect(minimizeAction,SIGNAL(triggered()),this,SLOT(changeMinimizeOption()));
-    //connect(minimizeAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
     minimizeAction->setCheckable(true);
     minimizeAction->setChecked(startmin);
     restoreAction = new QAction(tr("&Restore"), this);
@@ -896,30 +906,29 @@ void MainWindow::createActions()
     autorunAction->setCheckable(true);
     autorunAction->setChecked(autorun);
     connect(autorunAction,SIGNAL(triggered()),this,SLOT(setAutorun()));
-    //connect(autorunAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
     dockIconAction=new QAction("Show Dock Icon",this);
     dockIconAction->setCheckable(true);
     dockIconAction->setChecked(dockIcon);
     connect(dockIconAction,SIGNAL(triggered()),this,SLOT(showhideDockIcon()));
-    //connect(dockIconAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
     settingAction=new QAction("Open Settings",this);
     connect(settingAction,SIGNAL(triggered()),this,SLOT(showNormal()));
-    alertsAction=new QAction("Reset Alerts",this);
-    connect(alertsAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
+
     serverAction=new QAction("Enable API server",this);
     serverAction->setCheckable(true);
     serverAction->setChecked(enableServer);
     connect(serverAction,SIGNAL(triggered()),this,SLOT(startStopServer()));
-    //connect(serverAction,SIGNAL(triggered()),this,SLOT(updatePreferences()));
+    
+    alertsAction=new QAction("Reset Alerts",this);
+    connect(alertsAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
+    
+    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
+    //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
 
     // shortcuts don't work apparently in traymenus
     //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
     // this doesn't appear to work either
-    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), This, SLOT(resetAlertsOption()));
+    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SLOT(resetAlertsOption()));
     // neither does this work
-    //resetAlertsShortcut = new QShortcut( QKeySequence(Qt::CTRL+Qt::Key_R), QApplication::activeWindow());
-    //resetAlertsShortcut->setContext(Qt::ApplicationShortcut);
-    //connect( resetAlertsShortcut, SIGNAL(activated()), this, SLOT(resetAlertsOption()));
 }
 
 void MainWindow::createTrayIcon()

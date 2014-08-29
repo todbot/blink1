@@ -9,8 +9,8 @@ import QtQuick.Window 2.1
 Window {
     id: prefsWindow
 
-    width: mw.mac() ? 575 : 560 // Win version experimentally determined
-    height: mw.mac() ? 465 : 410
+    width: mw.mac() ? 580 : 560 // Win version experimentally determined
+    height: mw.mac() ? 490 : 430
     // FIXME: surely there's a shorter way of saying "no resize"?
     maximumWidth: width
     maximumHeight: height
@@ -60,6 +60,14 @@ Window {
                     text: "Enable gamma correction"
                     checked: mw.enableGamma
                 }
+                CheckBox { 
+                    id: dockIconCheckbox
+                    //visible: false; //mw.mac();
+                    //opacity: 0.1
+                    enabled: mw.mac()
+                    text: "Show Dock icon (requires restart)"
+                    checked: mw.dockIcon
+                }    
             }
         } // general groupbox
 
@@ -232,6 +240,7 @@ Window {
                     mw.startmin = minimizedCheckbox.checked;
                     mw.autorun = loginCheckbox.checked;
                     mw.enableGamma = gammaCheckbox.checked;
+                    mw.dockIcon = dockIconCheckbox.checked;
 
                     mw.serverHost = serverHostText.text;
                     mw.serverPort = serverPortText.text;
@@ -265,7 +274,8 @@ Window {
             enableServerCheckbox.checked = mw.enableServer;
             minimizedCheckbox.checked = mw.startmin;
             loginCheckbox.checked = mw.autorun;
-
+            dockIconCheckbox.checked = mw.dockIcon;
+    
             // FIXME: make proxyType an enumeration
             if( mw.proxyType == "" || mw.proxyType == "none" ) {
               proxyType0.checked = true

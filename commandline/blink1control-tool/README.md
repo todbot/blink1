@@ -5,6 +5,16 @@ blink1control-tool
 ## `blink1-tool`-like program for use with Blink1Control
 
 
+### Use
+
+Usage is just like `blink1-tool`.
+
+Except that currently only the setting of colors is supported.
+
+The url it uses defaults to `http://localhost:8934/`.  If you are
+controlling a Blink1Control on another system or urn the Blink1Server
+on another port, change it with `--baseurl <url>`.
+
 ### Prerequisites:
 
 - libcurl

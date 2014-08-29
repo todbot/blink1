@@ -11,7 +11,7 @@ QT       += core gui widgets network quick qml
 TARGET = Blink1Control
 TEMPLATE = app
 
-VERSION = 1.91
+VERSION = 1.92
 BLINK1CONTROL_VERSION = "v$$VERSION"
 # note: need to update version in Blink1Control.iss too
 

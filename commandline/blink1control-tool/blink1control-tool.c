@@ -7,21 +7,19 @@
  *
  *
  */
-/* Example source code to show how the callback function can be used to
- * download data into a chunk of memory instead of storing it in a file.
- */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdarg.h>    // vararg stuff
 #include <getopt.h>    // for getopt_long()
 #include <time.h>
 
 #include <curl/curl.h>
 
 
-char baseUrl[] = "http://127.0.0.1:8934";
+char baseUrl[100] = "http://127.0.0.1:8934/"; // kinda hacky in many ways
 
 char progname[] = "blink1control-tool";
 
@@ -57,6 +55,17 @@ struct curlMemoryStruct {
 };
 
 
+// printf that can be shut up
+void msg(char* fmt, ...)
+{
+    va_list args;
+    va_start(args,fmt);
+    if( !quiet ) {
+        vprintf(fmt,args);
+    }
+    va_end(args);
+}
+
 //
 static size_t 
 curlWriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -65,8 +74,7 @@ curlWriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   struct curlMemoryStruct *mem = (struct curlMemoryStruct *)userp;
 
   mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-  if(mem->memory == NULL) {
-    /* out of memory! */
+  if(mem->memory == NULL) {     /* out of memory! */
     printf("not enough memory (realloc returned NULL)\n");
     return 0;
   }
@@ -90,21 +98,15 @@ int curlDoHttpTransaction(const char* urlstr)
   chunk.size = 0;    /* no data at this point */
 
   curl_handle = curl_easy_init();  /* init the curl session */
-
   curl_easy_setopt(curl_handle, CURLOPT_URL, urlstr);  /* specify URL to get */
-
   /* send all data to this function  */
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, curlWriteMemoryCallback);
-
   /* we pass our 'chunk' struct to the callback function */
   curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
-
   /* some servers don't like requests that are made without a user-agent
      field, so we provide one */
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
   res = curl_easy_perform(curl_handle);    /* get it! */
-
   if(res != CURLE_OK) {   /* check for errors */
     fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(res));
@@ -114,22 +116,40 @@ int curlDoHttpTransaction(const char* urlstr)
      * Now, our chunk.memory points to a memory block that is chunk.size
      * bytes big and contains the remote file.
      *
-     * Do something nice with it!
+     * FIXME: Do something nice with it!
      */
-    printf("%lu bytes retrieved\n", (long)chunk.size);
+    msg("%lu bytes retrieved\n", (long)chunk.size);
     for( int i=0; i<chunk.size; i++ ){ 
-        printf("%c",chunk.memory[i]);
+        msg("%c",chunk.memory[i]); 
     }
   }
 
   curl_easy_cleanup(curl_handle);   /* cleanup curl stuff */
-
   if(chunk.memory)
       free(chunk.memory);
-
   return 0;
 }
 
+//
+int blink1control_fadeToRGB( int r, int g, int b, int tmillis, char* idstr)
+{
+    char urlbuf[200];
+    sprintf(urlbuf,
+            "%s/blink1/fadeToRGB?rgb=%%23%2.2x%2.2x%2.2x&time=%2.2f%s",
+            baseUrl, r,g,b, (tmillis/1000.0), idstr);
+    printf("urlbuf: %s\n",urlbuf);
+    return curlDoHttpTransaction( urlbuf );
+}
+
+// simple cross-platform millis sleep func
+void blink1_sleep(uint16_t millis)
+{
+#ifdef WIN32
+            Sleep(millis);
+#else 
+            usleep( millis * 1000);
+#endif
+}
 
 // parse a comma-delimited string containing numbers (dec,hex) into a byte arr
 static int  hexread(uint8_t *buffer, char *string, int buflen)
@@ -216,6 +236,7 @@ static void usage(char *myName)
 "  --fwversion                 Display blink(1) firmware version \n"
 "  --version                   Display blink1control-tool version info \n"
 "and [options] are: \n"
+"  -U <url> --baseUrl <url>    Use url instead of 'http://localhost:8934/'\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
 "  -g -nogamma                 Disable autogamma correction\n"
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
@@ -282,8 +303,9 @@ int main(int argc, char** argv)
 
     // parse options
     int option_index = 0, opt;
-    char* opt_str = "aqvhm:t:d:U:u:gl:";
+    char* opt_str = "aqvhm:t:d:U:gl:";
     static struct option loptions[] = {
+        {"baseurl",    required_argument, 0,      'U'},
         {"all",        no_argument,       0,      'a'},
         {"verbose",    optional_argument, 0,      'v'},
         {"quiet",      optional_argument, 0,      'q'},
@@ -403,9 +425,6 @@ int main(int argc, char** argv)
         case 'd':
             if( strcmp(optarg,"all") == 0 ) {
                 numDevicesToUse = 0; //blink1_max_devices;
-                //for( int i=0; i< blink1_max_devices; i++) {
-                //    deviceIds[i] = i;
-                //}
             } 
             else { // if( strcmp(optarg,",") != -1 ) { // comma-separated list
                 char* pch;
@@ -422,16 +441,9 @@ int main(int argc, char** argv)
                     printf("deviceId[%d]: %d\n", i, deviceIds[i]);
                 }
             }
-            /*
-            else if( strlen(optarg) == 8 ) { //
-                deviceIds[0] = strtol( optarg, NULL, 16);
-                numDevicesToUse = 1;
-                //sprintf( serialnumstr, "%s", optarg);  // strcpy
-            } 
-            else {
-                numDevicesToUse = hexread((uint8_t*)deviceIds,optarg,sizeof(deviceIds));
-            }
-            */
+            break;
+        case 'u':
+            strncpy(baseUrl, optarg, 100);
             break;
         case 'h':
             usage( progname );
@@ -445,13 +457,16 @@ int main(int argc, char** argv)
         //exit(1);
     }
 
-    curl_global_init(CURL_GLOBAL_ALL);
-    
-    //curlDoHttpTransaction("http://todbot.com/tst/pattern.txt");
+    char idstr[100];
+        
+    for( int i=0; i< numDevicesToUse; i++ ) {
+        sprintf(idstr, "%d,", deviceIds[i]);
+    }
 
-    char urlbuf[200];
+    curl_global_init(CURL_GLOBAL_ALL);
 
     if( cmd == CMD_VERSION ) { 
+        // FIXME: do something here
     } 
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
@@ -460,18 +475,24 @@ int main(int argc, char** argv)
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
-
-        char idstr[100];
-        
-        for( int i=0; i< numDevicesToUse; i++ ) {
-            sprintf(idstr, "%d,", deviceIds[i]);
+               
+        blink1control_fadeToRGB( r,g,b, millis, idstr );
+    }
+    else if( cmd == CMD_BLINK ) { 
+        uint8_t n = cmdbuf[0]; 
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
+        if( r == 0 && b == 0 && g == 0 ) {
+            r = g = b = 255;
         }
-                
-        sprintf(urlbuf,
-                "%s/blink1/fadeToRGB?rgb=%%23%2.2x%2.2x%2.2x&time=%2.2f%s",
-                baseUrl, r,g,b, (millis/1000.0), idstr);
-        printf("urlbuf: %s\n",urlbuf);
-        curlDoHttpTransaction( urlbuf );
+        msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
+        for( int i=0; i<n; i++ ) { 
+            blink1control_fadeToRGB( r,g,b, millis, idstr );
+            blink1_sleep(delayMillis);
+            blink1control_fadeToRGB( 0,0,0, millis, idstr );
+            blink1_sleep(delayMillis);
+        }
     }
 
     curl_global_cleanup();   // we're done with libcurl, so clean it up 
