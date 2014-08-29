@@ -254,7 +254,7 @@ int main(int argc, char** argv)
 
     // parse options
     int option_index = 0, opt;
-    char* opt_str = "aqvhm:t:d:U:u:gl:";
+    char* opt_str = "aqvhm:t:d:gl:";
     static struct option loptions[] = {
         {"all",        no_argument,       0,      'a'},
         {"verbose",    optional_argument, 0,      'v'},

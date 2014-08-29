@@ -34,7 +34,6 @@
         <file>images/virtual_blink1.png</file>
         <file>images/bad.png</file>
         <file>images/heart.png</file>
-        <file>images/trash.png</file>
         <file>images/blink1-icon0.png</file>
         <file>images/virtual_blink1-tod.png</file>
         <file>images/ifttt-icon.png</file>
@@ -173,5 +172,6 @@
         <file>images/layout/select-bg-right.png</file>
         <file>images/blink1-icon0-bw.png</file>
         <file>images/gear.png</file>
+        <file>images/stop.png</file>
     </qresource>
 </RCC>
