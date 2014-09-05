@@ -271,14 +271,27 @@ int blink1_writePatternLine(blink1_device *dev, uint16_t fadeMillis,
                             uint8_t r, uint8_t g, uint8_t b, 
                             uint8_t pos);
 /**
- * Write a color pattern line to blink1.
+ * Read a color pattern line to blink1.
  * @param dev blink1 device to command
  * @param fadeMillis pointer to milliseconds to fade to RGB color
+ * @param r pointer to store red color component
+ * @param g pointer to store green color component
+ * @param b pointer to store blue color component
  * @return -1 on error, 0 on success
  */
 int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis, 
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos);
+/**
+ * Read a color pattern line to blink1.
+ * @note ledn param only works on unreleased mk2a devices
+ * @param dev blink1 device to command
+ * @param fadeMillis pointer to milliseconds to fade to RGB color
+ * @return -1 on error, 0 on success
+ */
+int blink1_readPatternLineN(blink1_device *dev, uint16_t* fadeMillis, 
+                            uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* ledn,
+                            uint8_t pos);
 /**
  * Save color pattern in RAM to nonvolatile storage.
  * @note For mk2 devices only.
@@ -288,6 +301,12 @@ int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis,
  * @return -1 on error, 0 on success
  */
 int blink1_savePattern(blink1_device *dev);
+
+/**
+ * Sets 'ledn' parameter for blink1_savePatternLine()
+ * @note only for unreleased mk2a devices
+ */
+int blink1_setLEDN( blink1_device* dev, uint8_t ledn);
 
 int blink1_testtest(blink1_device *dev);
 
