@@ -611,6 +611,9 @@ int main(int argc, char** argv)
         uint8_t b = rgbbuf[2];
         uint8_t p = cmdbuf[0];
         msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
+        if( ledn>0 ) { // NOTE: only works for unreleased mk2a
+            blink1_setLEDN(dev, ledn);  // FIXME: doesn't check return code
+        }
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
         if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
@@ -618,14 +621,14 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_GETPATTLINE ) { 
         uint8_t p = cmdbuf[0];
-        uint8_t r,g,b;
+        uint8_t r,g,b,n;
         uint16_t msecs;
         msg("reading rgb at pos %2d: ", p );
-        rc = blink1_readPatternLine(dev, &msecs, &r,&g,&b, p );
+        rc = blink1_readPatternLineN(dev, &msecs, &r,&g,&b, &n, p );
         if( rc==-1 && !quiet ) {
             printf("error on writePatternLine\n");
         }
-        printf("r,g,b = 0x%2.2x,0x%2.2x,0x%2.2x ms:%d\n", r,g,b, msecs);
+        printf("r,g,b = 0x%2.2x,0x%2.2x,0x%2.2x (%d) ms:%d\n", r,g,b, n, msecs);
     }
     else if( cmd == CMD_RANDOM ) { 
         int cnt = blink1_getCachedCount();

@@ -405,6 +405,14 @@ int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis,
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos)
 {
+    uint8_t ledn;
+    return blink1_readPatternLineN( dev, fadeMillis, r,g,b, &ledn, pos);
+}
+
+int blink1_readPatternLineN(blink1_device *dev, uint16_t* fadeMillis, 
+                            uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* ledn,
+                            uint8_t pos)
+{
     uint8_t buf[blink1_buf_size] = { blink1_report_id, 'R', 0,0,0, 0,0, pos };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
@@ -416,6 +424,7 @@ int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis,
         *g = buf[3];
         *b = buf[4];
         *fadeMillis = ((buf[5]<<8) + (buf[6] &0xff)) * 10;
+        *ledn = buf[7];
     }
     return rc;
 }
@@ -437,6 +446,18 @@ int blink1_savePattern( blink1_device *dev )
     // note rc will always return -1 
     // because of issue with flash programming timing out USB 
     return 0; // assume success
+}
+
+// only for unreleased mk2a devices
+int blink1_setLEDN( blink1_device* dev, uint8_t ledn)
+{
+    uint8_t buf[blink1_buf_size];
+
+    buf[0] = blink1_report_id;     // report id
+    buf[1] = 'l';   // command code for "set ledn"
+    buf[2] = ledn;
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    return rc;
 }
 
 //
