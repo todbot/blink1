@@ -24,12 +24,12 @@
 #   - make
 #
 # Linux (Ubuntu) 
-#   - apt-get install build-essential pkg-config libusb-1.0-0-dev 
+#   - apt-get install build-essential pkg-config libusb-1.0-0-dev
 #   - make
 #
 # Linux (Fedora 18+)
 #   - yum install make gcc 
-#   - make EXEFLAGS=     (yes, leave it blank)
+#   - make 
 #
 # Linux (Fedora 17)
 #   - yum install make gcc libusb1-static glibc-static
@@ -188,7 +188,8 @@ endif
 
 #################  Linux  ####################################################
 ifeq "$(OS)" "linux"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
+# was blink1-lib.so
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
@@ -205,7 +206,8 @@ CFLAGS += `pkg-config libusb --cflags` -fPIC
 LIBS   += `pkg-config libusb --libs` 
 endif
 
-EXEFLAGS = -static
+# static doesn't work on Ubuntu 13+
+#EXEFLAGS = -static
 LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
@@ -218,7 +220,8 @@ endif
 
 ################  FreeBSD  ###################################################
 ifeq "$(OS)" "freebsd"
-LIBTARGET = blink1-lib.so
+LIBTARGET = libblink1.so
+# was blink1-lib.so
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
