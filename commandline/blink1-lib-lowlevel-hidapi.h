@@ -35,9 +35,13 @@ int blink1_enumerateByVidPid(int vid, int pid)
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(devs);
-    
-    blink1_cached_count = p;
 
+    LOG("blink1_enumerateByVidPid: done, %d devices found\n",p);
+    for( int i=0; i<p; i++ ) { 
+        LOG("blink1_enumerateByVidPid: blink1_infos[%d].serial=%s\n",
+            i, blink1_infos[i].serial);
+    }
+    blink1_cached_count = p;
     blink1_sortCache();
 
     return p;
@@ -48,7 +52,7 @@ blink1_device* blink1_openByPath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
 
-    LOG("blink1_openByPath %s\n", path);
+    LOG("blink1_openByPath: %s\n", path);
 
     blink1_device* handle = hid_open_path( path ); 
 
@@ -69,7 +73,7 @@ blink1_device* blink1_openBySerial(const char* serial)
     int vid = blink1_vid();
     int pid = blink1_pid();
     
-    LOG("blink1_openBySerial %s at vid/pid %x/%x\n", serial, vid,pid);
+    LOG("blink1_openBySerial: %s at vid/pid %x/%x\n", serial, vid,pid);
 
     wchar_t wserialstr[serialstrmax] = {L'\0'};
 #ifdef _WIN32   // omg windows you suck
@@ -77,17 +81,18 @@ blink1_device* blink1_openBySerial(const char* serial)
 #else
     swprintf( wserialstr, serialstrmax, L"%s", serial); // convert to wchar_t*
 #endif
-    LOG("serialstr: '%ls' \n", wserialstr );
+    LOG("blink1_openBySerial: serialstr: '%ls' %d\n", wserialstr, 
+        blink1_getCacheIndexBySerial( serial ) );
     blink1_device* handle = hid_open(vid,pid, wserialstr ); 
-    if( handle ) LOG("got a blink1_device handle\n"); 
+    if( handle ) LOG("blink1_openBySerial: got a blink1_device handle\n"); 
 
     int i = blink1_getCacheIndexBySerial( serial );
     if( i >= 0 ) {
-        LOG("good, serial was in cache\n");
+        LOG("blink1_openBySerial: good, serial id:%d was in cache\n",i);
         blink1_infos[i].dev = handle;
     }
     else { // uh oh, not in cache, now what?
-        LOG("uh oh, serial was not in cache\n");
+        LOG("blink1_openBySerial: uh oh, serial id:%d was NOT IN CACHE\n",i);
     }
 
     return handle;
@@ -123,7 +128,7 @@ void blink1_close( blink1_device* dev )
         hid_close(dev);
     }
     dev = NULL;
-    hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
+    //hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
 }
 
 //

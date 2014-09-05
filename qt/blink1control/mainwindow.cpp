@@ -196,13 +196,18 @@ void MainWindow::refreshBlink1State()
     } else {
         blink1_disableDegamma();
     }
+    qDebug() << "refreshBlink1State: refreshing";
+    blink1mutex.lock();
 
     blink1_close(blink1dev);  // blink1_close checks for null
     blink1dev=NULL;
 
+    qDebug() << "refreshBlink1State: closed, opening: " << QString::number(blink1Index,16);
     blink1_enumerate();
+    qDebug() << "refreshBlink1State: enumerated";
     blink1dev = blink1_openById( blink1Index );
 
+    qDebug() << "refreshBlink1State: opened";
     if( blink1dev ) {
         blinkStatus="blink(1) connected";
         QString serialstr = blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev));
@@ -215,6 +220,9 @@ void MainWindow::refreshBlink1State()
         iftttKey = iftttKey.left(8) + "00000000";
         blink1Id = "none";
     }
+
+    blink1mutex.unlock();
+    qDebug() << "refreshBlink1State: done refreshing";
 
     blinkStatusAction->setText(blinkStatus);
     blinkIdAction->setText("blink(1) id: " + blink1Id);
@@ -244,15 +252,45 @@ void MainWindow::blink1Blink( QString blink1serialstr, QString colorstr, int mil
     qDebug() << "blink1Blink1: "<< blink1serialstr;
     bool ok;
     int blink1ser  = blink1serialstr.toLong(&ok,16);
-    blink1_device* tmpdev = (blink1serialstr != blink1Id) ? blink1_openById( blink1ser ) : blink1dev;
-    if( tmpdev ) {
+    blink1_device* bdev = (blink1serialstr != blink1Id) ? blink1_openById( blink1ser ) : blink1dev;
+    if( bdev ) {
         QColor c = QColor(colorstr);
-        blink1_fadeToRGBN(tmpdev, millis/2, c.red(),c.green(),c.blue(),0);
+        blink1_fadeToRGBN(bdev, millis/2, c.red(),c.green(),c.blue(),0);
         blink1_sleep(millis/2);
-        blink1_fadeToRGBN(tmpdev, millis/2, 0,0,0, 0);
+        blink1_fadeToRGBN(bdev, millis/2, 0,0,0,0);
+        blink1_sleep(millis/2);
     }
-    if( blink1serialstr != blink1Id )
-        blink1_close(tmpdev);
+    if( blink1serialstr != blink1Id ) {
+        blink1_close(bdev);
+    }
+}
+
+//
+void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1serialstr, int ledn )
+{
+    //if( blink1serialstr=="" ) return;
+    qDebug() << "blink1SetColorById:"<< blink1serialstr<< "color:"<<color << "blink1Id:"<<blink1Id;
+    //while( blink1Refreshing ) { 
+    //    qDebug() << "waiting on blink1Refreshing...";
+    //    QThread::msleep(100);
+       //blink1_sleep( 100 );
+    //}
+    bool ok;
+    int blink1ser  = blink1serialstr.toLong(&ok,16);
+    qDebug() << "blink1SetColorById: blink1ser:"<<blink1ser;
+    //blink1mutex.lock();
+    //blink1_device* bdev = (blink1serialstr != blink1Id) ? blink1_openById( blink1ser ) : blink1dev;
+    blink1_device* bdev =  blink1_openById( blink1ser );
+    if( bdev ) {
+        qDebug() << "blink1SetColorById: fading";
+        blink1_fadeToRGBN(bdev, millis/2, color.red(),color.green(),color.blue(), ledn);
+    }
+    qDebug() << "blink1SetColorById: closing";
+    //if( blink1serialstr != blink1Id ) {
+        blink1_close(bdev);
+        //}
+    //blink1mutex.unlock();
+    //QThread::sleep(10);
 }
 
 
@@ -830,7 +868,7 @@ void MainWindow::updateBlink1()
     }
     else if( mode == ON ) {
         mode = NONE;
-        cc = QColor(255,255,255);
+        cc = QColor("#cccccc");
         fadeSpeed = 10;
         setBlink1 = true;
         QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
@@ -918,11 +956,11 @@ void MainWindow::createActions()
     serverAction->setChecked(enableServer);
     connect(serverAction,SIGNAL(triggered()),this,SLOT(startStopServer()));
     
-    alertsAction=new QAction("Reset Alerts",this);
+    alertsAction=new QAction("Off / Reset Alerts",this);
     connect(alertsAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
     
-    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
-    //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
+    resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
+    alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
 
     // shortcuts don't work apparently in traymenus
     //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
@@ -962,7 +1000,7 @@ void MainWindow::createTrayIcon()
 // see: http://stackoverflow.com/questions/16431270/qt-context-menu-on-trigger
 void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    //qDebug() << "tray icon clicked! " << reason;
+    qDebug() << "tray icon clicked! " << reason;
     //if( reason == QSystemTrayIcon::DoubleClick ) {
     if( reason == QSystemTrayIcon::Trigger && !mac() ) {
         showNormal();
@@ -1002,9 +1040,10 @@ void MainWindow::on_buttonStrobe_clicked()
 
 void MainWindow::on_buttonWhite_clicked()
 {
-    mode = RGBSET;
     led=0;
     emit ledsUpdate();
+    blink1timer->stop();
+    mode = RGBSET;
     cc = QColor("#cccccc");
     updateBlink1();
     // what is this for?
@@ -1048,6 +1087,7 @@ void MainWindow::setColorToBlinkAndChangeActivePatternName(QColor c,QString s,in
     fromPattern=false;
 }
 
+// FIXME: fix this naming
 // called by httpserver, patterns and many other things
 void MainWindow::setColorToBlink(QColor c,int fademillis){
     cc=c;
@@ -1058,6 +1098,12 @@ void MainWindow::setColorToBlink(QColor c,int fademillis){
     //qDebug()<<"todtest: setColorToBlink2: fadespeed:"<<fadeSpeed << " color: " << c.name();
     updateBlink1();
     QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,fadeSpeed/1000.0));
+}
+
+void MainWindow::setColorToBlinkN(QColor c, int fademillis, int ledn) {
+    led=ledn;
+    emit ledsUpdate();
+    setColorToBlink(c,fademillis);
 }
 
 void MainWindow::showAboutDialog(){
@@ -1499,7 +1545,7 @@ void MainWindow::checkInput(QString key){
     dI->start();
     inputs[key]->isChecking=true;
 }
-
+// FIXME: why changeLed() and setLed()
 void MainWindow::changeLed(int l){
     this->led=l;
 }
@@ -1520,6 +1566,7 @@ QString MainWindow::selectFile(QString name){
     }
     return "";
 }
+// FIXME: why changeLed() and setLed()
 void MainWindow::setLed(int l){
     qDebug()<<"LED "<<l;
     led=l;
