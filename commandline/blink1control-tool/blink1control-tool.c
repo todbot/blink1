@@ -39,10 +39,10 @@ char progname[] = "blink1control-tool";
 
 int millis = 300;
 int delayMillis = 500;
-int numDevicesToUse = 1;
+int numDevicesToUse = 0;
 int ledn = 0;
 
-uint32_t  deviceIds[blink1_max_devices];
+char  deviceIds[blink1_max_devices][10];
 
 uint8_t cmdbuf[blink1_buf_size]; 
 uint8_t rgbbuf[3];
@@ -131,12 +131,16 @@ int curlDoHttpTransaction(const char* urlstr)
 }
 
 //
-int blink1control_fadeToRGB( int r, int g, int b, int tmillis, char* idstr)
+int blink1control_fadeToRGBN( int r, int g, int b, int tmillis, char* idstr, int ledn)
 {
     char urlbuf[200];
+    char idarg[100] = "";
+    if( idstr != NULL ) { 
+        sprintf(idarg, "id=%s",idstr);
+    }
     sprintf(urlbuf,
-            "%s/blink1/fadeToRGB?rgb=%%23%2.2x%2.2x%2.2x&time=%2.2f%s",
-            baseUrl, r,g,b, (tmillis/1000.0), idstr);
+            "%s/blink1/fadeToRGB?rgb=%%23%2.2x%2.2x%2.2x&time=%2.2f&ledn=%d&%s",
+            baseUrl, r,g,b, (tmillis/1000.0), ledn, idarg);
     printf("urlbuf: %s\n",urlbuf);
     return curlDoHttpTransaction( urlbuf );
 }
@@ -424,7 +428,7 @@ int main(int argc, char** argv)
             break;
         case 'd':
             if( strcmp(optarg,"all") == 0 ) {
-                numDevicesToUse = 0; //blink1_max_devices;
+                numDevicesToUse = 0; //blink1_max_devices;  //FIXME
             } 
             else { // if( strcmp(optarg,",") != -1 ) { // comma-separated list
                 char* pch;
@@ -462,6 +466,7 @@ int main(int argc, char** argv)
     for( int i=0; i< numDevicesToUse; i++ ) {
         sprintf(idstr, "%d,", deviceIds[i]);
     }
+    printf("idstr: %s\n",idstr);
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -476,7 +481,7 @@ int main(int argc, char** argv)
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
                
-        blink1control_fadeToRGB( r,g,b, millis, idstr );
+        blink1control_fadeToRGBN( r,g,b, millis, idstr, ledn );
     }
     else if( cmd == CMD_BLINK ) { 
         uint8_t n = cmdbuf[0]; 
@@ -488,9 +493,9 @@ int main(int argc, char** argv)
         }
         msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
-            blink1control_fadeToRGB( r,g,b, millis, idstr );
+            blink1control_fadeToRGBN( r,g,b, millis, idstr, ledn );
             blink1_sleep(delayMillis);
-            blink1control_fadeToRGB( 0,0,0, millis, idstr );
+            blink1control_fadeToRGBN( 0,0,0, millis, idstr, ledn );
             blink1_sleep(delayMillis);
         }
     }
