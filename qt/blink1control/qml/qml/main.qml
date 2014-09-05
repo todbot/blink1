@@ -3,6 +3,7 @@ import "content"
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtGraphicalEffects 1.0
+import QtQuick.Layouts 1.1
 
 
 
@@ -149,32 +150,31 @@ Image{
                 anchors.centerIn: parent
             }
         }
-        Button { 
+
+        Button {   // this is a holder for the action which gives us Cmd-R shortcut. FIXME: easier way?
             tooltip: "Reset alerts"
-            iconSource: "qrc:images/stop.png"
+            //iconSource: "qrc:images/stop.png"
             anchors.left: parent.left
             anchors.top: parent.top 
             anchors.leftMargin:13
             anchors.topMargin:50 
             style: ButtonStyle { 
                 background: Rectangle { 
-                    radius: 4
+                    //radius: 4
                     border.color: control.hovered ? "#d2d2d2"  : "transparent"
                     color: control.pressed ? "#f4f4f4" : "transparent"
-                }
+               }
             }
-            onClicked:  mw.resetAlertsOption()  // why do I have to do both onClicked and Action?
+            onClicked: mw.resetAlertsOption()  // why do I have to do both onClicked and Action?
             Action {
-                id: openAction
+                //id: openAction
                 text: "&Reset alerts"
                 shortcut: "Ctrl+R"
                 onTriggered: mw.resetAlertsOption()
-                tooltip: "Open an Image"
             }
         }
-            
         Button {
-            tooltip: "Show Preferences window"
+            tooltip: "Open Advanced Preferences"
             //iconSource: "qrc:images/layout/select-bg-right.png"
             iconSource: "qrc:images/gear.png"
             anchors.right: parent.right 
@@ -189,6 +189,11 @@ Image{
                 }
             }
             onClicked:  prefsWindow.visible = !prefsWindow.visible
+            Action {
+                text: "Open Advanced Preferences"
+                shortcut: "Ctrl+,"
+                onTriggered: prefsWindow.visible = !prefsWindow.visible
+            }
         }
 
         //// KONIEC VIRTUAL BLINK
@@ -1017,12 +1022,13 @@ Image{
                     id: blinkControlsPanel
                     width: 822
                     height: 232
-                    title: "Blink controls"
+                    title: "blink(1) controls"
 
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                     anchors.top: parent.top
                     anchors.topMargin: 20
+
                     ListView{
                         id: bigButtons1
                         anchors.left: parent.left
@@ -1128,6 +1134,7 @@ Image{
                             }
                         }
                     }
+
                     ListView{
                         function updateColors(){
                             var tmp=bigButtons2.contentX

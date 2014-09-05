@@ -436,13 +436,13 @@ int main(int argc, char** argv)
                 pch = strtok( optarg, " ,");
                 numDevicesToUse = 0;
                 while( pch != NULL ) { 
-                    int base = (strlen(pch)==8) ? 16:0;
-                    deviceIds[numDevicesToUse++] = strtol(pch,NULL,base);
+                    //int base = (strlen(pch)==8) ? 16:0;
+                    strcpy( deviceIds[numDevicesToUse++], pch );
                     pch = strtok(NULL, " ,");
                 }
                 // verbose
                 for( int i=0; i<numDevicesToUse; i++ ) { 
-                    printf("deviceId[%d]: %d\n", i, deviceIds[i]);
+                    printf("deviceId[%d]: %s\n", i, deviceIds[i]);
                 }
             }
             break;
@@ -464,7 +464,7 @@ int main(int argc, char** argv)
     char idstr[100];
         
     for( int i=0; i< numDevicesToUse; i++ ) {
-        sprintf(idstr, "%d,", deviceIds[i]);
+        sprintf(idstr, "%s,", deviceIds[i]);
     }
     printf("idstr: %s\n",idstr);
 
@@ -496,6 +496,25 @@ int main(int argc, char** argv)
             blink1control_fadeToRGBN( r,g,b, millis, idstr, ledn );
             blink1_sleep(delayMillis);
             blink1control_fadeToRGBN( 0,0,0, millis, idstr, ledn );
+            blink1_sleep(delayMillis);
+        }
+    }
+    else if( cmd == CMD_RANDOM ) { 
+        //int cnt = blink1_getCachedCount();
+        if( arg==0 ) arg = 1;
+        msg("random %d times: \n", arg);
+        for( int i=0; i<arg; i++ ) { 
+            uint8_t r = rand()%255;
+            uint8_t g = rand()%255;
+            uint8_t b = rand()%255 ;
+            //uint8_t id = rand() % blink1_getCachedCount();
+
+            msg("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
+                i, 0,  0, r,g,b);
+              //i, id, blink1_getCachedCount(), r,g,b);
+
+            uint8_t n = (ledn!=0) ? (1 + rand() %ledn) : 0;
+            blink1control_fadeToRGBN( r,g,b, millis, NULL, n );
             blink1_sleep(delayMillis);
         }
     }

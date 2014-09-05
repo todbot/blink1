@@ -19,7 +19,7 @@ Window {
 
     color: "#f9f9f9"
 
-    title: "Blink1Control Preferences"
+    title: "Blink1Control Advanced Preferences"
     flags: Qt.Dialog
 
     Item {
@@ -149,6 +149,7 @@ Window {
             ColumnLayout {
                 ExclusiveGroup { id: blink1touseGroup }
                 RadioButton {  exclusiveGroup: blink1touseGroup
+                    id: blink1tousefirstavailButton
                     text: "First Avaialble"
                     checked: true
                 }
@@ -189,6 +190,7 @@ Window {
                     id: blink1startupDefault
                     text: "Default"
                 }
+
                 RowLayout {
                     RadioButton { exclusiveGroup: blink1startupGroup
                         id: blink1startupPattern
@@ -199,6 +201,7 @@ Window {
                         model: mw.getPatternsNames
                     }
                 }
+
                 RowLayout {
                     spacing: 10
                     Button {
@@ -269,25 +272,35 @@ Window {
 
     onVisibilityChanged: {
         console.log("** Visbility changes");
-        if( visible ) {
-            // load up values because bindings break? FIXME: don't understand this fully
-            enableServerCheckbox.checked = mw.enableServer;
-            minimizedCheckbox.checked = mw.startmin;
-            loginCheckbox.checked = mw.autorun;
-            dockIconCheckbox.checked = mw.dockIcon;
-    
-            // FIXME: make proxyType an enumeration
-            if( mw.proxyType == "" || mw.proxyType == "none" ) {
-              proxyType0.checked = true
-            }
-            else if( mw.proxyType == "socks5" ) {
-              proxyType1.checked = true
-            }
-            else if( mw.proxyType == "http" ) {
-              proxyType2.checked = true
-            }
-
+        if( !visible ) return;
+        // load up values because bindings break? FIXME: don't understand this fully
+        enableServerCheckbox.checked = mw.enableServer
+        minimizedCheckbox.checked = mw.startmin
+        loginCheckbox.checked = mw.autorun
+        dockIconCheckbox.checked = mw.dockIcon
+ 
+        // FIXME: make proxyType an enumeration
+        if( mw.proxyType == "" || mw.proxyType == "none" ) {
+            proxyType0.checked = true
+        }
+        else if( mw.proxyType == "socks5" ) {
+            proxyType1.checked = true
+        }
+        else if( mw.proxyType == "http" ) {
+            proxyType2.checked = true
+        }
+          
+        if( mw.blink1Index == 0 ) { 
+            blink1tousefirstavailButton.checked = true
+        }
+        else { 
+            blink1tousedeviceButton.checked=true;
+            var idstr = mw.blink1Index.toString(16).toUpperCase() // FIXME
+            var i = blink1touseComboBox.find( idstr );  
+            blink1touseComboBox.currentIndex = i;
+            console.log("idx:+"+idstr +" i="+i)
         }
     }
+
 
 } // window

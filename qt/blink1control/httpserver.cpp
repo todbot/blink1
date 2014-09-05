@@ -120,23 +120,42 @@ void HttpServer::startRead(){
             QString cstr = qurlquery.queryItemValue("rgb");
             double time  = qurlquery.queryItemValue("time").toDouble(&ok);
             QString idstr= qurlquery.queryItemValue("id");
+            int ledn     = qurlquery.queryItemValue("ledn").toInt();
 
+            if( ledn < 0 || ledn > blink1_max_devices ) ledn = 0;
+            if( !ok ) time = 0.1;  // default time
+
+            QStringList ids;
+            if( idstr != "" ) { 
+                ids = idstr.split(",", QString::SkipEmptyParts);
+            }
+            if( ids.size() == 0 ) { // hack so we can iterate over ids list in all cases
+                ids.append( mw->getBlinkKey() );  // FIXME: omg marcin, the naming
+            }
+
+            QColor c;
+            QString status;
             if( cmd == "/off" )     cstr = "#000000";
             else if( cmd == "/on" ) cstr = "#FFFFFF";
 
-            if( idstr != "" ) { 
-                QStringList ids = idstr.split(",", QString::SkipEmptyParts);
-            }
-
-            mw->stopPattern(mw->getActivePatternName());
-
-            QColor c = QColor(cstr);
-            QString status = "fadeToRGB: invalid color";
-            if( !ok ) time = 0.1;
-            if( c.isValid() ) {
+            c = QColor(cstr);
+            if( c.isValid() ) {           // do main thing
+                resp.insert("ids", QJsonArray::fromStringList(ids));
                 status = "fadeToRGB: "+cstr+" t:"+QString::number(time);
-                mw->setColorToBlink( c,time*1000);
+                for( int i=0; i<ids.size(); i++ ) {
+                    QString id = ids.at(i);
+                    if( id == mw->getBlinkKey() ) {  // FIXME: ugh this is so hacky
+                        mw->stopPattern(mw->getActivePatternName());
+                        mw->setColorToBlinkN( c,time*1000,ledn);
+                    }
+                    else { 
+                        mw->blink1SetColorById( c, time, id, ledn );
+                    }
+                }
+            } else { 
+                status = "fadeToRGB: invalid color";
             }
+            resp.insert("ledn",ledn);
             resp.insert("rgb",cstr);
             resp.insert("time",QString::number(time));
             resp.insert("status", status);

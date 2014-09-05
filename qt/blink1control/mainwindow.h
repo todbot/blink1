@@ -74,6 +74,7 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(QList<QObject*> getBigButtons READ getBigButtons NOTIFY bigButtonsUpdate)
     Q_PROPERTY(QVariantList getPatternsNames READ getPatternsNames NOTIFY updatePatternsNamesOnUi)
     Q_PROPERTY(QVariantList getBlink1Serials READ getBlink1Serials NOTIFY updateBlink1Serials)
+    Q_PROPERTY(int blink1Index MEMBER blink1Index)
 
     // preference properties
     Q_PROPERTY(bool enableServer MEMBER enableServer NOTIFY prefsUpdate)
@@ -103,6 +104,7 @@ public slots:
     void showMinimize();
     void updateBlink1();
     void blink1Blink( QString blink1serial, QString color, int millis );
+    void blink1SetColorById( QColor color, int millis, QString blink1serial, int ledn );
     void showAboutDialog();
     void copyToClipboard( QString txt );
 
@@ -139,6 +141,7 @@ public slots:
 
     void setColorToBlinkAndChangeActivePatternName(QColor,QString,int f=100);
     void setColorToBlink(QColor,int f);
+    void setColorToBlinkN(QColor c, int fademillis, int ledn);
     void removeRecentEvent(int idx);
     void removeAllRecentEvents();
 
@@ -299,6 +302,8 @@ private:
 
     QTimer* blink1timer;
     blink1_device* blink1dev;
+    //bool blink1Refreshing;
+    QMutex blink1mutex;
 
     uint8_t mode;
     QColor cc;
