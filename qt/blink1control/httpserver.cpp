@@ -82,7 +82,7 @@ void HttpServer::startRead(){
         if( cmd == "/id" ) {
             QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");  // FIXME:
             resp.insert("blink_id",mw->getIftttKey());
-            QJsonArray ja=mw->getCatchedBlinkId();
+            QJsonArray ja=mw->getCachedBlinkId();
             resp.insert("blink1_serialnums",ja);
             resp.insert("blink1control_version", QString(BLINK1CONTROL_VERSION) );
             resp.insert("blink1control_config", settings.fileName() );
@@ -149,7 +149,7 @@ void HttpServer::startRead(){
                         mw->setColorToBlinkN( c,time*1000,ledn);
                     }
                     else { 
-                        mw->blink1SetColorById( c, time, id, ledn );
+                        mw->blink1SetColorById( c, time*1000, id, ledn );
                     }
                 }
             } else { 
