@@ -10,7 +10,7 @@ Window {
     id: prefsWindow
 
     width: mw.mac() ? 580 : 560 // Win version experimentally determined
-    height: mw.mac() ? 490 : 430
+    height: mw.mac() ? 510 : 450
     // FIXME: surely there's a shorter way of saying "no resize"?
     maximumWidth: width
     maximumHeight: height
@@ -84,11 +84,28 @@ Window {
                     checked: mw.enableServer
                     Layout.columnSpan: 2
                 }
-
+                
                 Label { text: "serverHost:" }
-                TextField { id: serverHostText; text: mw.serverHost }
+                //TextField { id: serverHostText; text: mw.serverHost }
+                RowLayout { 
+                    ExclusiveGroup { id: serverHostGroup }
+                    RadioButton {
+                        id: serverHostLocalhost
+                        text: "localhost"
+                        checked: true
+                        exclusiveGroup: serverHostGroup
+                    }
+                    RadioButton {
+                        id: serverHostAny
+                        text: "any"
+                        exclusiveGroup: serverHostGroup
+                    }
+                }
+                
                 Label { text: "serverPort:" }
                 TextField { id: serverPortText; text: mw.serverPort }
+
+                Label { Layout.columnSpan:2; text: "(changes require restart)" } 
             }
         } // api server groupbox
 
@@ -245,7 +262,7 @@ Window {
                     mw.enableGamma = gammaCheckbox.checked;
                     mw.dockIcon = dockIconCheckbox.checked;
 
-                    mw.serverHost = serverHostText.text;
+                    mw.serverHost = (serverHostGroup.current == serverHostAny) ? "any" : "localhost";
                     mw.serverPort = serverPortText.text;
 
                     mw.proxyHost = proxyHostText.text;
@@ -278,7 +295,12 @@ Window {
         minimizedCheckbox.checked = mw.startmin
         loginCheckbox.checked = mw.autorun
         dockIconCheckbox.checked = mw.dockIcon
- 
+
+        if( mw.serverHost=="any" ) { 
+            serverHostAny.checked = true;
+        } else { 
+            serverHostLocalhost.checked = true;
+        }
         // FIXME: make proxyType an enumeration
         if( mw.proxyType == "" || mw.proxyType == "none" ) {
             proxyType0.checked = true
