@@ -16,10 +16,17 @@
 
 #include <QClipboard>
 
+// FIXME: this must be set to 5000 because of hard-coded values in QML by marcin/milo
+#define updateInputsMillis 5000
+
 // see: http://qt-project.org/doc/qt-5/exportedfunctions.html
 //#ifdef Q_
 void qt_set_sequence_auto_mnemonic(bool);
 //#endif 
+
+#ifdef Q_OS_MAC
+extern void qt_mac_set_dock_menu(QMenu *);
+#endif
 
 #include "patternsReadOnly.h"
 
@@ -97,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) :
     createTrayIcon();
     trayIcon->setIcon( mac() ? icobw : ico );
     trayIcon->show();
-
+   
     activePatternName="";
 
     cc = QColor(0,0,0);
@@ -149,7 +156,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     inputTimerCounter = 0;
     inputsTimer = new QTimer(this);
-    inputsTimer->singleShot(5000, this, SLOT(updateInputs()));
+    inputsTimer->singleShot( updateInputsMillis, this, SLOT(updateInputs()));
     isIftttChecked = false;
 
     if(startmin){
@@ -196,18 +203,18 @@ void MainWindow::refreshBlink1State()
     } else {
         blink1_disableDegamma();
     }
-    qDebug() << "refreshBlink1State: refreshing";
-    blink1mutex.lock();
+    qDebug() << "--- refreshBlink1State: refreshing:" << refreshCounter++;
+    //blink1mutex.lock();
 
     blink1_close(blink1dev);  // blink1_close checks for null
     blink1dev=NULL;
 
-    qDebug() << "refreshBlink1State: closed, opening: " << QString::number(blink1Index,16);
+    qDebug() << "    refreshBlink1State: opening blink1Index:" << QString::number(blink1Index,16);
     blink1_enumerate();
-    qDebug() << "refreshBlink1State: enumerated";
+    //qDebug() << "refreshBlink1State: enumerated";
     blink1dev = blink1_openById( blink1Index );
 
-    qDebug() << "refreshBlink1State: opened";
+    qDebug() << "    refreshBlink1State: opened";
     if( blink1dev ) {
         blinkStatus="blink(1) connected";
         QString serialstr = blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev));
@@ -221,8 +228,8 @@ void MainWindow::refreshBlink1State()
         blink1Id = "none";
     }
 
-    blink1mutex.unlock();
-    qDebug() << "refreshBlink1State: done refreshing";
+    //blink1mutex.unlock();
+    qDebug() << "--- refreshBlink1State: done refreshing";
 
     blinkStatusAction->setText(blinkStatus);
     blinkIdAction->setText("blink(1) id: " + blink1Id);
@@ -269,28 +276,24 @@ void MainWindow::blink1Blink( QString blink1serialstr, QString colorstr, int mil
 void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1serialstr, int ledn )
 {
     //if( blink1serialstr=="" ) return;
-    qDebug() << "blink1SetColorById:"<< blink1serialstr<< "color:"<<color << "blink1Id:"<<blink1Id;
-    //while( blink1Refreshing ) { 
-    //    qDebug() << "waiting on blink1Refreshing...";
-    //    QThread::msleep(100);
-       //blink1_sleep( 100 );
-    //}
+    qDebug() << "\n*** blink1SetColorById:"<< blink1serialstr<< "color:"<<color << " ms:"<<millis << "blink1Id:"<<blink1Id;
     bool ok;
     int blink1ser  = blink1serialstr.toLong(&ok,16);
-    qDebug() << "blink1SetColorById: blink1ser:"<<blink1ser;
+    bool maindev = ( blink1serialstr == blink1Id || blink1ser==0 ) ;
+    qDebug() << "blink1SetColorById: blink1ser:"<<blink1ser<< " maindev:"<<maindev;
     //blink1mutex.lock();
-    //blink1_device* bdev = (blink1serialstr != blink1Id) ? blink1_openById( blink1ser ) : blink1dev;
-    blink1_device* bdev =  blink1_openById( blink1ser );
+    blink1_device* bdev = (!maindev) ? blink1_openById( blink1ser ) : blink1dev;
     if( bdev ) {
         qDebug() << "blink1SetColorById: fading";
-        blink1_fadeToRGBN(bdev, millis/2, color.red(),color.green(),color.blue(), ledn);
+        blink1_fadeToRGBN(bdev, millis, color.red(),color.green(),color.blue(), ledn);
     }
-    qDebug() << "blink1SetColorById: closing";
-    //if( blink1serialstr != blink1Id ) {
+    if( !maindev ) {
+        qDebug() << "blink1SetColorById: closing not main device";
         blink1_close(bdev);
-        //}
+    }
     //blink1mutex.unlock();
     //QThread::sleep(10);
+    qDebug() << "*** blink1SetColorById: done";
 }
 
 
@@ -426,7 +429,7 @@ void MainWindow::updateInputs()
 
     isIftttChecked = false;
     inputTimerCounter = (inputTimerCounter + 1) % 3;
-    inputsTimer->singleShot(5000, this, SLOT(updateInputs()));
+    inputsTimer->singleShot(updateInputsMillis, this, SLOT(updateInputs()));
 
 }
 
@@ -995,6 +998,10 @@ void MainWindow::createTrayIcon()
 
     connect( trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
              this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)) );
+
+    #ifdef Q_OS_MAC
+    qt_mac_set_dock_menu( trayIconMenu );
+    #endif
 }
 
 // see: http://stackoverflow.com/questions/16431270/qt-context-menu-on-trigger
@@ -1939,8 +1946,8 @@ void MainWindow::regenerateBlink1Id(){
     emit deviceUpdate();
     emit iftttUpdate();
 }
-// FIXME: omg marcin, the names they kill me
-QJsonArray MainWindow::getCatchedBlinkId(){
+//
+QJsonArray MainWindow::getCachedBlinkId(){
     QJsonArray ja;
     int n=blink1_getCachedCount();
     if(n>0){
