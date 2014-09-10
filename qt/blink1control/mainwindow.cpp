@@ -24,6 +24,7 @@
 void qt_set_sequence_auto_mnemonic(bool);
 //#endif 
 
+// see: http://stackoverflow.com/questions/9334339/qt-add-qaction-menu-items-to-dock-icon-mac
 #ifdef Q_OS_MAC
 extern void qt_mac_set_dock_menu(QMenu *);
 #endif
