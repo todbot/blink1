@@ -101,6 +101,7 @@ blink1_device* blink1_openBySerial(const char* serial)
 //
 blink1_device* blink1_openById( uint32_t i ) 
 { 
+    LOG("blink1_openById: %d \n", i );
     if( i > blink1_max_devices ) { // then i is a serial number not an array index
         char serialstr[serialstrmax];
         sprintf( serialstr, "%X", i);  // convert to wchar_t* 
@@ -140,7 +141,6 @@ int blink1_write( blink1_device* dev, void* buf, int len)
     int rc = hid_send_feature_report( dev, buf, len );
     // FIXME: put this in an ifdef?
     if( rc==-1 ) {
-        //fprintf(stderr, "blink1_write error: %ls\n", hid_error(dev));
         LOG("blink1_write error: %ls\n", hid_error(dev));
     }
     return rc;
