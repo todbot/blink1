@@ -6,6 +6,7 @@
  * blink1control-tool --version
  *
  *
+ *
  */
 
 #include <stdio.h>
@@ -17,6 +18,8 @@
 #include <time.h>
 
 #include <curl/curl.h>
+
+#include "json.h"  // https://github.com/udp/json-parser
 
 
 char baseUrl[100] = "http://127.0.0.1:8934/"; // kinda hacky in many ways
@@ -49,6 +52,8 @@ uint8_t rgbbuf[3];
 int verbose;
 int quiet=0;
 
+char urlbuf[200];
+
 struct curlMemoryStruct {
   char *memory;
   size_t size;
@@ -70,70 +75,149 @@ void msg(char* fmt, ...)
 static size_t 
 curlWriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  size_t realsize = size * nmemb;
-  struct curlMemoryStruct *mem = (struct curlMemoryStruct *)userp;
-
-  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-  if(mem->memory == NULL) {     /* out of memory! */
-    printf("not enough memory (realloc returned NULL)\n");
-    return 0;
-  }
-
-  memcpy(&(mem->memory[mem->size]), contents, realsize);
-  mem->size += realsize;
-  mem->memory[mem->size] = 0;
-
-  return realsize;
-}
-
-//
-int curlDoHttpTransaction(const char* urlstr)
-{
-  CURL *curl_handle;
-  CURLcode res;
-
-  struct curlMemoryStruct chunk;
-
-  chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
-  chunk.size = 0;    /* no data at this point */
-
-  curl_handle = curl_easy_init();  /* init the curl session */
-  curl_easy_setopt(curl_handle, CURLOPT_URL, urlstr);  /* specify URL to get */
-  /* send all data to this function  */
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, curlWriteMemoryCallback);
-  /* we pass our 'chunk' struct to the callback function */
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
-  /* some servers don't like requests that are made without a user-agent
-     field, so we provide one */
-  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-  res = curl_easy_perform(curl_handle);    /* get it! */
-  if(res != CURLE_OK) {   /* check for errors */
-    fprintf(stderr, "curl_easy_perform() failed: %s\n",
-            curl_easy_strerror(res));
-  }
-  else {
-    /*
-     * Now, our chunk.memory points to a memory block that is chunk.size
-     * bytes big and contains the remote file.
-     *
-     * FIXME: Do something nice with it!
-     */
-    msg("%lu bytes retrieved\n", (long)chunk.size);
-    for( int i=0; i<chunk.size; i++ ){ 
-        msg("%c",chunk.memory[i]); 
+    size_t realsize = size * nmemb;
+    struct curlMemoryStruct *mem = (struct curlMemoryStruct *)userp;
+    
+    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+    if(mem->memory == NULL) {     /* out of memory! */
+        printf("not enough memory (realloc returned NULL)\n");
+        return 0;
     }
-  }
+    
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+    
+    return realsize;
+}
 
-  curl_easy_cleanup(curl_handle);   /* cleanup curl stuff */
-  if(chunk.memory)
-      free(chunk.memory);
-  return 0;
+
+json_value* json_convert_value( json_value* jv)
+{
+    switch(jv->type) { 
+    case json_object:
+        printf("json_object: \n");
+        for( int i=0; i< jv->u.object.length; i++ ) {
+            char* name = jv->u.object.values[i].name;
+            json_value* jjv = jv->u.object.values[i].value;
+            printf("- '%s'\n", name);
+            json_convert_value( jjv );
+        }
+        break;
+    case json_array:
+        printf("json_array:\n");
+        for( int i=0; i< jv->u.array.length; i++ ) { 
+            return json_convert_value( jv->u.array.values[i] );
+        }
+        break;
+    case json_string:
+        printf("json_string: '%s'\n", jv->u.string.ptr);
+        break;
+    case json_integer:
+        printf("json_integer:%lld\n", jv->u.integer );
+        break;
+    case json_double:
+        printf("json_double:\n");
+        break;
+    case json_boolean:
+        printf("json_boolean:\n");
+        break;
+    default:
+        printf("default:\n");        
+        break;
+    }
+    printf("at end\n");
+    return NULL;
 }
 
 //
-int blink1control_fadeToRGBN( int r, int g, int b, int tmillis, char* idstr, int ledn)
+char* curl_fetch(const char* urlstr)
 {
-    char urlbuf[200];
+    CURL *curl_handle;
+    CURLcode res;
+
+    struct curlMemoryStruct chunk;
+
+    chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
+    chunk.size = 0;    /* no data at this point */
+
+    curl_handle = curl_easy_init();  /* init the curl session */
+    curl_easy_setopt(curl_handle, CURLOPT_URL, urlstr);  /* specify URL to get */
+    /* send all data to this function  */
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, curlWriteMemoryCallback);
+    /* we pass our 'chunk' struct to the callback function */
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    /* some servers don't like requests that are made without a user-agent
+       field, so we provide one */
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+    res = curl_easy_perform(curl_handle);    /* get it! */
+    if(res != CURLE_OK) {   /* check for errors */
+        fprintf(stderr, "curl_fetch() failed: %s\n",
+                curl_easy_strerror(res));
+    }
+    else {
+        // Now, our chunk.memory points to a memory block that is chunk.size
+        // bytes big and contains the remote file.
+        if( verbose > 1 ) { 
+            msg("%lu bytes retrieved\n", (long)chunk.size);
+            for( int i=0; i<chunk.size; i++ ){ 
+                msg("%c",chunk.memory[i]); 
+            }
+        }
+        
+        //printf("chunk.memory:%s\n", chunk.memory);
+        //json_value* jv = json_parse( chunk.memory, chunk.size );
+        //json_convert_value(jv);
+        //blink1control_getIds( jv );
+
+    }
+    
+    curl_easy_cleanup(curl_handle);   /* cleanup curl stuff */
+    //if(chunk.memory)
+    //    free(chunk.memory);
+    //return 0;
+    return chunk.memory;
+}
+
+//
+void blink1control_printIds()
+{
+    sprintf(urlbuf, "%s/blink1/id", baseUrl);
+    if( verbose > 1 ) msg("url: %s\n",urlbuf);
+
+    char* js = curl_fetch( urlbuf );
+    json_value* jv = json_parse( js, strlen(js));
+
+    if( jv->type != json_object ) {
+        printf("bad response from Blink1Control\n");
+        free(js);
+        return;
+    }
+    for( int i=0; i< jv->u.object.length; i++ ) {
+        char* name = jv->u.object.values[i].name;
+        json_value* jjv = jv->u.object.values[i].value;
+        
+        if( strcmp(name,"blink1_serialnums")==0 ) { 
+            if( jjv->u.array.length==0 ) {
+                printf("no blink(1) devices found\n");
+                free(js);
+                return;
+            }
+            for( int j=0; j < jjv->u.array.length; j++ ) { 
+                json_value* jjjv = jjv->u.array.values[j];
+                //printf("id: %s\n", (int) jjjv->u.integer);
+                char* serialnum = jjjv->u.string.ptr;
+                printf("id:%d - serialnum:%s %s\n", j, serialnum,  "");
+                       //(blink1_isMk2ById(i)) ? "(mk2)":"");
+            }
+        }
+    }
+    free(js);
+}
+
+//
+int blink1control_fadeToRGBN( int tmillis, int r, int g, int b, char* idstr, int ledn)
+{
     char idarg[100] = "";
     if( idstr != NULL ) { 
         sprintf(idarg, "id=%s",idstr);
@@ -141,8 +225,13 @@ int blink1control_fadeToRGBN( int r, int g, int b, int tmillis, char* idstr, int
     sprintf(urlbuf,
             "%s/blink1/fadeToRGB?rgb=%%23%2.2x%2.2x%2.2x&time=%2.2f&ledn=%d&%s",
             baseUrl, r,g,b, (tmillis/1000.0), ledn, idarg);
-    printf("urlbuf: %s\n",urlbuf);
-    return curlDoHttpTransaction( urlbuf );
+    if( verbose > 1 ) msg("url: %s\n",urlbuf);
+
+    char* js = curl_fetch( urlbuf );
+
+    free(js);
+    
+    return 0;  // FIXME:
 }
 
 // simple cross-platform millis sleep func
@@ -240,7 +329,7 @@ static void usage(char *myName)
 "  --fwversion                 Display blink(1) firmware version \n"
 "  --version                   Display blink1control-tool version info \n"
 "and [options] are: \n"
-"  -U <url> --baseUrl <url>    Use url instead of 'http://localhost:8934/'\n"
+"  -U <url> --baseurl <url>    Use url instead of 'http://localhost:8934/'\n"
 "  -d dNums --id all|deviceIds Use these blink(1) ids (from --list) \n"
 "  -g -nogamma                 Disable autogamma correction\n"
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
@@ -295,9 +384,9 @@ int main(int argc, char** argv)
     int nogamma = 0;
     int16_t arg=0;
 
-    int  rc;
+    //int  rc;
     uint8_t tmpbuf[100];
-    char serialnumstr[serialstrmax] = {'\0'}; 
+    //char serialnumstr[serialstrmax] = {'\0'}; 
 
     uint16_t seed = time(NULL);
     srand(seed);
@@ -432,7 +521,7 @@ int main(int argc, char** argv)
             } 
             else { // if( strcmp(optarg,",") != -1 ) { // comma-separated list
                 char* pch;
-                int base = 0;
+                //int base = 0;
                 pch = strtok( optarg, " ,");
                 numDevicesToUse = 0;
                 while( pch != NULL ) { 
@@ -446,7 +535,7 @@ int main(int argc, char** argv)
                 }
             }
             break;
-        case 'u':
+        case 'U':
             strncpy(baseUrl, optarg, 100);
             break;
         case 'h':
@@ -466,7 +555,7 @@ int main(int argc, char** argv)
     for( int i=0; i< numDevicesToUse; i++ ) {
         sprintf(idstr, "%s,", deviceIds[i]);
     }
-    printf("idstr: %s\n",idstr);
+    //printf("idstr: %s\n",idstr);
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -481,7 +570,7 @@ int main(int argc, char** argv)
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
                
-        blink1control_fadeToRGBN( r,g,b, millis, idstr, ledn );
+        blink1control_fadeToRGBN( millis, r,g,b, idstr, ledn );
     }
     else if( cmd == CMD_BLINK ) { 
         uint8_t n = cmdbuf[0]; 
@@ -493,9 +582,9 @@ int main(int argc, char** argv)
         }
         msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
-            blink1control_fadeToRGBN( r,g,b, millis, idstr, ledn );
+            blink1control_fadeToRGBN( millis, r,g,b, idstr, ledn );
             blink1_sleep(delayMillis);
-            blink1control_fadeToRGBN( 0,0,0, millis, idstr, ledn );
+            blink1control_fadeToRGBN( millis, 0,0,0, idstr, ledn );
             blink1_sleep(delayMillis);
         }
     }
@@ -514,11 +603,169 @@ int main(int argc, char** argv)
               //i, id, blink1_getCachedCount(), r,g,b);
 
             uint8_t n = (ledn!=0) ? (1 + rand() %ledn) : 0;
-            blink1control_fadeToRGBN( r,g,b, millis, NULL, n );
+            blink1control_fadeToRGBN( millis, r,g,b, idstr, n );
             blink1_sleep(delayMillis);
         }
+    }
+      else if( cmd == CMD_GLIMMER ) {
+        uint8_t n = arg;
+        uint8_t r = rgbbuf[0];
+        uint8_t g = rgbbuf[1];
+        uint8_t b = rgbbuf[2];
+        if( r == 0 && b == 0 && g == 0 ) {
+            r = g = b = 127;
+            if( n == 0 ) n = 3;
+        }
+        msg("glimmering %d times rgb:#%2.2x%2.2x%2.2x: \n", n,r,g,b);
+        for( int i=0; i<n; i++ ) {
+            blink1control_fadeToRGBN( millis,r,g,b,       idstr, 1);
+            blink1control_fadeToRGBN( millis,r/2,g/2,b/2, idstr, 2);
+            blink1_sleep(delayMillis/2);
+            blink1control_fadeToRGBN( millis,r/2,g/2,b/2, idstr, 1);
+            blink1control_fadeToRGBN( millis,r,g,b,       idstr, 2);
+            blink1_sleep(delayMillis/2);
+        }
+        // turn them both off
+        blink1control_fadeToRGBN( millis, 0,0,0, idstr, 1);
+        blink1control_fadeToRGBN( millis, 0,0,0, idstr, 2);
+    }
+    else if( cmd == CMD_LIST ) { 
+        //int count = 0;
+        printf("blink(1) list: \n");
+        //for( int i=0; i< count; i++ ) {
+            //printf("id:%d - serialnum:%s %s\n", i, blink1_getCachedSerial(i), 
+            //       (blink1_isMk2ById(i)) ? "(mk2)":"");
+        //}
+        
+        blink1control_printIds();
     }
 
     curl_global_cleanup();   // we're done with libcurl, so clean it up 
 
 }
+
+
+
+/*
+
+        // parse output. look for:
+        // - is valid json
+        // - presence of 'status'
+        // - presence of command name in status (doesn't work for on/off)
+
+        //char* theJson = chunk.memory;
+        //int resultCode;
+        //jsmn_parser jsparser;
+        //jsmntok_t jstokens[128]; // a number >= total number of tokens
+
+        //jsmn_parser parser;
+        //jsm_init(&parser);
+
+        //jsmntok_t tokens[10];
+
+        // js - pointer to JSON string
+        // tokens - an array of tokens available
+        // 10 - number of tokens available
+        //jsmn_init_parser(&parser, js, tokens, 10);
+        //jsmn_init(&parser);
+        //resultCode = jsmn_parse(&parser, theJson, 100, jstokens, 256);
+
+        char URL[] = "http://127.0.0.1:8934/blink1/id";
+        char *KEYS[] = { "blink1_serialnums", "blink1_id", "status", "blink1control_version", "blink1control_config" };
+
+        char *js = json_fetch(URL);
+        jsmntok_t *tokens = json_tokenise(js);
+
+       // The GitHub user API response is a single object. States required to
+       // parse this are simple: start of the object, keys, values we want to
+       // print, values we want to skip, and then a marker state for the end. 
+
+    typedef enum { START, KEY, PRINT, SKIP, STOP } parse_state;
+    parse_state state = START;
+
+    size_t object_tokens = 0;
+
+    for (size_t i = 0, j = 1; j > 0; i++, j--)
+    {
+        jsmntok_t *t = &tokens[i];
+
+        // Should never reach uninitialized tokens
+        log_assert(t->start != -1 && t->end != -1);
+
+        if (t->type == JSMN_ARRAY || t->type == JSMN_OBJECT)
+            j += t->size;
+
+        switch (state)
+        {
+            case START:
+                if (t->type != JSMN_OBJECT)
+                    log_die("Invalid response: root element must be an object.");
+
+                state = KEY;
+                object_tokens = t->size;
+
+                if (object_tokens == 0)
+                    state = STOP;
+
+                if (object_tokens % 2 != 0)
+                    log_die("Invalid response: object must have even number of children.");
+
+                break;
+
+            case KEY:
+                object_tokens--;
+
+                if (t->type != JSMN_STRING)
+                    log_die("Invalid response: object keys must be strings.");
+
+                state = SKIP;
+
+                for (size_t i = 0; i < sizeof(KEYS)/sizeof(char *); i++)
+                {
+                    if (json_token_streq(js, t, KEYS[i]))
+                    {
+                        printf("%s: ", KEYS[i]);
+                        state = PRINT;
+                        break;
+                    }
+                }
+
+                break;
+
+            case SKIP:
+                if (t->type != JSMN_STRING && t->type != JSMN_PRIMITIVE)
+                    log_die("Invalid response: object values must be strings or primitives.");
+
+                object_tokens--;
+                state = KEY;
+
+                if (object_tokens == 0)
+                    state = STOP;
+
+                break;
+
+            case PRINT:
+                if (t->type != JSMN_STRING && t->type != JSMN_PRIMITIVE) {
+                    //   log_die("Invalid response: object values must be strings or primitives.");
+                }
+
+                char *str = json_token_tostr(js, t);
+                puts(str);
+
+                object_tokens--;
+                state = KEY;
+
+                if (object_tokens == 0)
+                    state = STOP;
+
+                break;
+
+            case STOP:
+                // Just consume the tokens
+                break;
+
+            default:
+                log_die("Invalid state %u", state);
+        }
+    }
+*/
