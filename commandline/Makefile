@@ -126,6 +126,7 @@ CFLAGS += -DUSE_HIDAPI
 CFLAGS += -arch i386 -arch x86_64
 # don't need pthread with clang
 #CFLAGS += -pthread
+CFLAGS += -O2 -D_THREAD_SAFE -MT MD -MP 
 CFLAGS += -I./hidapi/hidapi 
 OBJS = ./hidapi/mac/hid.o
 endif

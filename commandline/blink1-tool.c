@@ -156,7 +156,7 @@ static void usage(char *myName)
 "where <cmd> is one of:\n"
 "  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
 "  --random, --random=<num>    Flash a number of random colors \n"
-"  --glimmer, --gimmer=<num>   Glimmer a color with --rgb (num times)\n"
+"  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
 "  --running, --running=<num>  Do running animation (num times)\n"
 "  --rgb=<red>,<green>,<blue>  Fade to RGB value\n"
 "  --hsb=<hue>,<sat>,<bri>     Fade to HSB value\n"
@@ -746,16 +746,16 @@ int main(int argc, char** argv)
         }
         msg("glimmering %d times rgb:#%2.2x%2.2x%2.2x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) {
-            rc = blink1_fadeToRGBN(dev, millis,r,g,b, 1);
-            rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 2);
+            blink1_fadeToRGBN(dev, millis,r,g,b, 1);
+            blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 2);
             blink1_sleep(delayMillis/2);
-            rc = blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 1);
-            rc = blink1_fadeToRGBN(dev, millis,r,g,b, 2);
+            blink1_fadeToRGBN(dev, millis,r/2,g/2,b/2, 1);
+            blink1_fadeToRGBN(dev, millis,r,g,b, 2);
             blink1_sleep(delayMillis/2);
         }
         // turn them both off
-        rc = blink1_fadeToRGBN(dev, millis, 0,0,0, 1);
-        rc = blink1_fadeToRGBN(dev, millis, 0,0,0, 2);
+        blink1_fadeToRGBN(dev, millis, 0,0,0, 1);
+        blink1_fadeToRGBN(dev, millis, 0,0,0, 2);
     }
     else if( cmd == CMD_SERVERDOWN ) { 
         //int on  = arg;
