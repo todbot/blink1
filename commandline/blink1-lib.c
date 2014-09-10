@@ -57,14 +57,13 @@ void blink1_sortCache(void);
 //----------------------------------------------------------------------------
 // implementation-varying code 
 
-#if USE_HIDAPI
-#include "blink1-lib-lowlevel-hidapi.h"
-#elif USE_HIDDATA
+#if USE_HIDDATA
 #include "blink1-lib-lowlevel-hiddata.h"
 #else
-#error "Need to define USE_HIDAPI or USE_HIDDATA"
+//#if USE_HIDAPI
+#include "blink1-lib-lowlevel-hidapi.h"
 #endif
-
+// default to USE_HIDAPI unless specifically told otherwise
 
 
 // -------------------------------------------------------------------------
@@ -81,11 +80,13 @@ int blink1_getCachedCount(void)
 //
 const char* blink1_getCachedPath(int i)
 {
+    if( i > blink1_getCachedCount()-1 ) return NULL;
     return blink1_infos[i].path;
 }
 //
 const char* blink1_getCachedSerial(int i)
 {
+    if( i > blink1_getCachedCount()-1 ) return NULL;
     return blink1_infos[i].serial;
 }
 
