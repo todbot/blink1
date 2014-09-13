@@ -304,7 +304,7 @@ static void usage(char *myName)
 "where <cmd> is one of:\n"
 "  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
 "  --random, --random=<num>    Flash a number of random colors \n"
-"  --glimmer, --gimmer=<num>   Glimmer a color with --rgb (num times)\n"
+"  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
 "  --running, --running=<num>  Do running animation (num times)\n"
 "  --rgb=<red>,<green>,<blue>  Fade to RGB value\n"
 "  --hsb=<hue>,<sat>,<bri>     Fade to HSB value\n"
