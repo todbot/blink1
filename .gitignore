@@ -169,3 +169,5 @@ pip-log.txt
 *.so
 # java build results
 *.class
+*.pro
+*.sav
