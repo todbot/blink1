@@ -98,6 +98,16 @@ int blink1_getCacheIndexByPath( const char* path )
     return -1;
 }
 
+int blink1_getCacheIndexById( uint32_t i )
+{
+    if( i > blink1_max_devices ) { // then i is a serial number not an array index
+        char serialstr[serialstrmax];
+        sprintf( serialstr, "%X", i);  // convert to wchar_t* 
+        return blink1_getCacheIndexBySerial( serialstr );
+    }
+    return i;
+}
+
 int blink1_getCacheIndexBySerial( const char* serial ) 
 {
     for( int i=0; i< cache_max; i++ ) { 
