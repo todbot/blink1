@@ -144,14 +144,15 @@ void HttpServer::startRead(){
                 status = "fadeToRGB: "+cstr+" t:"+QString::number(time);
                 for( int i=0; i<ids.size(); i++ ) {
                     QString id = ids.at(i);
-                    if( id == mw->getBlinkKey() ) {  // FIXME: ugh this is so hacky
-                        mw->stopPattern(mw->getActivePatternName());
-                        mw->setColorToBlinkN( c,time*1000,ledn);
-                    }
-                    else { 
+                    //blink1_getCacheIndexById( 
+                    //if( id == mw->getBlinkKey() ) {  // FIXME: ugh this is so hacky
+                    //    mw->stopPattern(mw->getActivePatternName());
+                    //    mw->setColorToBlinkN( c,time*1000,ledn);
+                    //}
+                    //else { 
                         //mw->blink1SetColorById( c, time*1000, id, ledn );
-                        emit blink1SetColorById( c, time*1000, id, ledn );
-                    }
+                    emit blink1SetColorById( c, time*1000, id, ledn );
+                        //}
                 }
             } else { 
                 status = "fadeToRGB: invalid color";

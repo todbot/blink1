@@ -361,6 +361,12 @@ const char*  blink1_getCachedSerial(int i);
  */
 int          blink1_getCacheIndexByPath( const char* path );
 /**
+ * Return cache index for a given blink1 id (0-max or serial number as uint32)
+ * @param i blink1 id (0-blink1_max_devices or serial as uint32)
+ * @return cache index or -1 if not found
+ */
+int          blink1_getCacheIndexById( uint32_t i );
+/**
  * Return cache index for a given blink1 serial number.
  * @param path platform-specific path string
  * @return cache index or -1 if not found

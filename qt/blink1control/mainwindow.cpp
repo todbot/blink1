@@ -75,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
              this,         SLOT(blink1SetColorById(QColor,int,QString,int)) );
 
     blink1_enumerate();
-    blink1dev = blink1_open(); // do initial enumerate and open so refreshBlink1State works  FIXME
+    //blink1dev = blink1_open(); // do initial enumerate and open so refreshBlink1State works  FIXME
 
     loadSettings();
 
@@ -212,8 +212,8 @@ void MainWindow::refreshBlink1State()
     }
     qDebug() << "--- refreshBlink1State: refreshing:" << refreshCounter++;
     
-    blink1_close(blink1dev);  // blink1_close checks for null
-    blink1dev=NULL;
+    //blink1_close(blink1dev);  // blink1_close checks for null
+    //blink1dev=NULL;
     // close all blink1s
     for( int i=0; i<blink1devcount; i++) {
         blink1_close( blink1devs[i] );
@@ -227,7 +227,9 @@ void MainWindow::refreshBlink1State()
     }
 
     qDebug() << "    refreshBlink1State: opening blink1Index:" << QString::number(blink1Index,16);
-    blink1dev = blink1_openById( blink1Index );
+    //blink1dev = blink1_openById( blink1Index );
+    int blid = blink1_getCacheIndexById( blink1Index );
+    blink1dev = blink1devs[ blid ];
 
     qDebug() << "    refreshBlink1State: opened";
     if( blink1dev ) {
@@ -292,16 +294,19 @@ void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1ser
     //if( blink1serialstr=="" ) return;
     qDebug() << "*** blink1SetColorById:"<< blink1serialstr<< "color:"<<color << " ms:"<<millis << "blink1Id:"<<blink1Id;
     bool ok;
-    int blink1ser  = blink1serialstr.toLong(&ok,16);
-    if( blink1ser > blink1_max_devices ) { // serial not id
-        blink1ser = blink1_getCacheIndexBySerial( blink1serialstr.toStdString().c_str() );
-        if( blink1ser == -1 ) blink1ser = 0; // in case bad serial provided
+    int blid  = blink1serialstr.toLong(&ok,16);
+    
+    blid = blink1_getCacheIndexById( blid );
+
+    bool ismaindev = ( blink1serialstr == blink1Id || blid==0 ) ;
+    qDebug() << "blink1SetColorById: blid:"<<blid<< " ismaindev:"<<ismaindev;
+
+    if( ismaindev ) {
+        setColorToBlinkN( color,millis, ledn);
+        return;
     }
-
-    bool ismaindev = ( blink1serialstr == blink1Id || blink1ser==0 ) ;
-    qDebug() << "blink1SetColorById: blink1ser:"<<blink1ser<< " ismaindev:"<<ismaindev;
-
-    blink1_device* bdev = (!ismaindev) ? blink1devs[ blink1ser ] : blink1dev;
+    blink1_device* bdev =  blink1devs[ blid ];
+    //blink1_device* bdev = (!ismaindev) ? blink1devs[ blink1ser ] : blink1dev;
     //blink1_device* bdev = (!ismaindev) ? blink1_openById( blink1ser ) : blink1dev;
     if( bdev ) {
         qDebug() << "blink1SetColorById: fading";
