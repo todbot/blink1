@@ -140,7 +140,7 @@ char* curl_fetch(const char* urlstr)
 
     chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
-
+    chunk.memory[0] = '\0';
     curl_handle = curl_easy_init();  /* init the curl session */
     curl_easy_setopt(curl_handle, CURLOPT_URL, urlstr);  /* specify URL to get */
     /* send all data to this function  */
@@ -154,6 +154,7 @@ char* curl_fetch(const char* urlstr)
     if(res != CURLE_OK) {   /* check for errors */
         fprintf(stderr, "curl_fetch() failed: %s\n",
                 curl_easy_strerror(res));
+        return NULL;
     }
     else {
         // Now, our chunk.memory points to a memory block that is chunk.size
@@ -164,12 +165,6 @@ char* curl_fetch(const char* urlstr)
                 msg("%c",chunk.memory[i]); 
             }
         }
-        
-        //printf("chunk.memory:%s\n", chunk.memory);
-        //json_value* jv = json_parse( chunk.memory, chunk.size );
-        //json_convert_value(jv);
-        //blink1control_getIds( jv );
-
     }
     
     curl_easy_cleanup(curl_handle);   /* cleanup curl stuff */
@@ -183,9 +178,10 @@ char* curl_fetch(const char* urlstr)
 void blink1control_printIds()
 {
     sprintf(urlbuf, "%s/blink1/id", baseUrl);
-    if( verbose > 1 ) msg("url: %s\n",urlbuf);
+    if( verbose > 0 ) msg("url: %s\n",urlbuf);
 
     char* js = curl_fetch( urlbuf );
+    if( js==NULL ) return; // FIXME:
     json_value* jv = json_parse( js, strlen(js));
 
     if( jv->type != json_object ) {
@@ -225,7 +221,7 @@ int blink1control_fadeToRGBN( int tmillis, int r, int g, int b, char* idstr, int
     sprintf(urlbuf,
             "%s/blink1/fadeToRGB?rgb=%%23%2.2x%2.2x%2.2x&time=%2.2f&ledn=%d&%s",
             baseUrl, r,g,b, (tmillis/1000.0), ledn, idarg);
-    if( verbose > 1 ) msg("url: %s\n",urlbuf);
+    if( verbose > 0 ) msg("url: %s\n",urlbuf);
 
     char* js = curl_fetch( urlbuf );
 
@@ -570,7 +566,9 @@ int main(int argc, char** argv)
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
                
-        blink1control_fadeToRGBN( millis, r,g,b, idstr, ledn );
+        msg("set dev:%s to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+            idstr,r,g,b,millis);
+       blink1control_fadeToRGBN( millis, r,g,b, idstr, ledn );
     }
     else if( cmd == CMD_BLINK ) { 
         uint8_t n = cmdbuf[0]; 
