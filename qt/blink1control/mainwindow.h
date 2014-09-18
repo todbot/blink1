@@ -303,7 +303,6 @@ private:
     QTimer* blink1timer;
     blink1_device* blink1dev;
     //bool blink1Refreshing;
-    //QMutex blink1mutex;
     int refreshCounter;
 
     uint8_t mode;

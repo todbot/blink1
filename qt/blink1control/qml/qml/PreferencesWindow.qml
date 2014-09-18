@@ -105,7 +105,7 @@ Window {
                 Label { text: "serverPort:" }
                 TextField { id: serverPortText; text: mw.serverPort }
 
-                Label { Layout.columnSpan:2; text: "(changes require restart)" } 
+                Label { Layout.columnSpan:2; text: "(requires restart)" } 
             }
         } // api server groupbox
 
