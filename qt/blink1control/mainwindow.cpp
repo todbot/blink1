@@ -29,6 +29,10 @@ void qt_set_sequence_auto_mnemonic(bool);
 extern void qt_mac_set_dock_menu(QMenu *);
 #endif
 
+static QMutex blink1mutex;
+static blink1_device* blink1devs[16];
+static int blink1devcount;
+
 #include "patternsReadOnly.h"
 
 enum {
@@ -65,8 +69,10 @@ MainWindow::MainWindow(QWidget *parent) :
     mode = NONE;
     duplicateCounter=0;
 
-    httpserver=new HttpServer();
+    httpserver = new HttpServer();
     httpserver->setController(this);
+    connect( httpserver, SIGNAL(blink1SetColorById(QColor,int,QString,int)), 
+             this,         SLOT(blink1SetColorById(QColor,int,QString,int)) );
 
     blink1_enumerate();
     blink1dev = blink1_open(); // do initial enumerate and open so refreshBlink1State works  FIXME
@@ -205,14 +211,22 @@ void MainWindow::refreshBlink1State()
         blink1_disableDegamma();
     }
     qDebug() << "--- refreshBlink1State: refreshing:" << refreshCounter++;
-    //blink1mutex.lock();
-
+    
     blink1_close(blink1dev);  // blink1_close checks for null
     blink1dev=NULL;
+    // close all blink1s
+    for( int i=0; i<blink1devcount; i++) {
+        blink1_close( blink1devs[i] );
+    }
+
+    blink1devcount = blink1_enumerate();
+    // open up all blink1s
+    for( int i=0; i<blink1devcount; i++ ) { 
+        blink1devs[i] = blink1_openById( i );
+        qDebug() << "    refreshBlink1State: opened blink1 #" << i <<":"<<blink1devs[i];
+    }
 
     qDebug() << "    refreshBlink1State: opening blink1Index:" << QString::number(blink1Index,16);
-    blink1_enumerate();
-    //qDebug() << "refreshBlink1State: enumerated";
     blink1dev = blink1_openById( blink1Index );
 
     qDebug() << "    refreshBlink1State: opened";
@@ -229,7 +243,6 @@ void MainWindow::refreshBlink1State()
         blink1Id = "none";
     }
 
-    //blink1mutex.unlock();
     qDebug() << "--- refreshBlink1State: done refreshing";
 
     blinkStatusAction->setText(blinkStatus);
@@ -277,23 +290,32 @@ void MainWindow::blink1Blink( QString blink1serialstr, QString colorstr, int mil
 void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1serialstr, int ledn )
 {
     //if( blink1serialstr=="" ) return;
-    qDebug() << "\n*** blink1SetColorById:"<< blink1serialstr<< "color:"<<color << " ms:"<<millis << "blink1Id:"<<blink1Id;
+    qDebug() << "*** blink1SetColorById:"<< blink1serialstr<< "color:"<<color << " ms:"<<millis << "blink1Id:"<<blink1Id;
     bool ok;
     int blink1ser  = blink1serialstr.toLong(&ok,16);
-    bool maindev = ( blink1serialstr == blink1Id || blink1ser==0 ) ;
-    qDebug() << "blink1SetColorById: blink1ser:"<<blink1ser<< " maindev:"<<maindev;
-    //blink1mutex.lock();
-    blink1_device* bdev = (!maindev) ? blink1_openById( blink1ser ) : blink1dev;
+    if( blink1ser > blink1_max_devices ) { // serial not id
+        blink1ser = blink1_getCacheIndexBySerial( blink1serialstr.toStdString().c_str() );
+        if( blink1ser == -1 ) blink1ser = 0; // in case bad serial provided
+    }
+
+    bool ismaindev = ( blink1serialstr == blink1Id || blink1ser==0 ) ;
+    qDebug() << "blink1SetColorById: blink1ser:"<<blink1ser<< " ismaindev:"<<ismaindev;
+
+    blink1_device* bdev = (!ismaindev) ? blink1devs[ blink1ser ] : blink1dev;
+    //blink1_device* bdev = (!ismaindev) ? blink1_openById( blink1ser ) : blink1dev;
     if( bdev ) {
         qDebug() << "blink1SetColorById: fading";
         blink1_fadeToRGBN(bdev, millis, color.red(),color.green(),color.blue(), ledn);
     }
-    if( !maindev ) {
-        qDebug() << "blink1SetColorById: closing not main device";
-        blink1_close(bdev);
+    else { 
+        qDebug() << "blink1SetColorById: null bdev";
     }
-    //blink1mutex.unlock();
-    //QThread::sleep(10);
+    if( !ismaindev ) {
+        //qDebug() << "blink1SetColorById: closing not main device";
+        //blink1_close(bdev);
+    }
+
+    //QThread::msleep(10); // no
     qDebug() << "*** blink1SetColorById: done";
 }
 
@@ -406,7 +428,7 @@ void MainWindow::updateInputs()
         emailsIterator->next();
         QString mailname=emailsIterator->key();
         //qDebug() << "updateInputs: "<< mailname;
-        addToLog(mailname);
+        addToLog("email: "+mailname);
         if(emails.value(mailname)->getFreqCounter()==0){
             emails.value(mailname)->checkMail();
         }
@@ -421,7 +443,7 @@ void MainWindow::updateInputs()
         hardwaresIterator->next();
         QString name=hardwaresIterator->key();
         //qDebug() << "updateInputs: " << name;
-        addToLog(name);
+        addToLog("hardware:"+name);
         if(hardwareMonitors.value(name)->getFreqCounter()==0){
             hardwareMonitors.value(name)->checkMonitor();
         }
@@ -470,10 +492,10 @@ void MainWindow::checkIfttt(QString txt)
         QString evname    = ev["name"].toString();
         QString evsource  = ev["source"].toString();
         qint64 evdate = evdatestr.toLongLong();
-        qDebug() << "evname:"<<evname<<" evdate:"<< evdate << " lastIftttDate:"<<lastIftttDate;
+        qDebug() << "evname:"<<evname<<"evdate:"<< evdate << "recent:"<<recentIftttDate << "last:"<<lastIftttDate;
 
         // is this event newer since last time we checked?
-        if( evdate > lastIftttDate ) {
+        if( evdate > lastIftttDate && evdate != recentIftttDate ) {
             recentIftttDate = evdate;
             addRecentEvent(evdate, evname+" - "+evsource, "IFTTT");
         }
@@ -678,7 +700,7 @@ void MainWindow::loadSettings()
     QString sIftttKey = settings.value("iftttKey", "").toString();
     QRegExp re("^[a-f0-9]+$");
     qDebug() << "loadSettings: " << sIftttKey << re.exactMatch(sIftttKey.toLower());
-    addToLog(sIftttKey);
+    addToLog("iftttKey:"+sIftttKey);
 
     if(sIftttKey=="" || sIftttKey=="none" || !re.exactMatch(sIftttKey.toLower())){
         sIftttKey="";

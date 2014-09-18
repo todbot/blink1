@@ -34,6 +34,12 @@ public slots:
     void acceptConnection();
     void startRead();
     void discardClient();
+ 
+signals:
+    void blink1SetColorById( QColor color, int millis, QString blink1serial, int ledn );
+
+
+
 private:
     MainWindow *mw;
     QString host;

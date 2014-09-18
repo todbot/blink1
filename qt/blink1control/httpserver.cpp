@@ -149,7 +149,8 @@ void HttpServer::startRead(){
                         mw->setColorToBlinkN( c,time*1000,ledn);
                     }
                     else { 
-                        mw->blink1SetColorById( c, time*1000, id, ledn );
+                        //mw->blink1SetColorById( c, time*1000, id, ledn );
+                        emit blink1SetColorById( c, time*1000, id, ledn );
                     }
                 }
             } else { 
