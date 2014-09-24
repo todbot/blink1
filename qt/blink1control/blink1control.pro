@@ -58,7 +58,6 @@ HEADERS  += mainwindow.h \
     email.h \
     simplecrypt.h \
     hardwaremonitor.h \
-    patternsReadOnly.h \
     httpserver.h \
     mainapp.h \
     cursorshapearea.h
