@@ -33,7 +33,7 @@ static QMutex blink1mutex;
 static blink1_device* blink1devs[16];
 static int blink1devcount;
 
-#include "patternsReadOnly.h"
+//#include "patternsReadOnly.h"
 
 enum {
     NONE = 0,
@@ -132,7 +132,7 @@ MainWindow::MainWindow(QWidget *parent) :
     updateBlink1();
 
     // load help file index.html to text property of QML
-    QString currPath = QDir::currentPath();
+    //QString currPath = QDir::currentPath();
     QString appDirPath = QCoreApplication::applicationDirPath();
     //fprintf( stderr, "currPath: %s\nappDirPath: %s\n", qPrintable(currPath),qPrintable(appDirPath));
     QString helpfilepath = appDirPath;
@@ -212,8 +212,7 @@ void MainWindow::refreshBlink1State()
     }
     qDebug() << "--- refreshBlink1State: refreshing:" << refreshCounter++;
     
-    //blink1_close(blink1dev);  // blink1_close checks for null
-    //blink1dev=NULL;
+    //blink1mutex.lock();
     // close all blink1s
     for( int i=0; i<blink1devcount; i++) {
         blink1_close( blink1devs[i] );
@@ -225,6 +224,7 @@ void MainWindow::refreshBlink1State()
         blink1devs[i] = blink1_openById( i );
         qDebug() << "    refreshBlink1State: opened blink1 #" << i <<":"<<blink1devs[i];
     }
+    //blink1mutex.unlock();
 
     qDebug() << "    refreshBlink1State: opening blink1Index:" << QString::number(blink1Index,16);
     //blink1dev = blink1_openById( blink1Index );
@@ -296,6 +296,7 @@ void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1ser
     bool ok;
     int blid  = blink1serialstr.toLong(&ok,16);
     
+    //blink1mutex.lock();
     blid = blink1_getCacheIndexById( blid );
 
     bool ismaindev = ( blink1serialstr == blink1Id || blid==0 ) ;
@@ -306,8 +307,7 @@ void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1ser
         return;
     }
     blink1_device* bdev =  blink1devs[ blid ];
-    //blink1_device* bdev = (!ismaindev) ? blink1devs[ blink1ser ] : blink1dev;
-    //blink1_device* bdev = (!ismaindev) ? blink1_openById( blink1ser ) : blink1dev;
+
     if( bdev ) {
         qDebug() << "blink1SetColorById: fading";
         blink1_fadeToRGBN(bdev, millis, color.red(),color.green(),color.blue(), ledn);
@@ -315,12 +315,7 @@ void MainWindow::blink1SetColorById( QColor color, int millis, QString blink1ser
     else { 
         qDebug() << "blink1SetColorById: null bdev";
     }
-    if( !ismaindev ) {
-        //qDebug() << "blink1SetColorById: closing not main device";
-        //blink1_close(bdev);
-    }
-
-    //QThread::msleep(10); // no
+    //blink1mutex.unlock();
     qDebug() << "*** blink1SetColorById: done";
 }
 
@@ -768,6 +763,20 @@ void MainWindow::loadSettings()
     // select blink(1) device to use
     QString blink1IndexStr = settings.value("blink1Index","").toString();
     setBlink1Index( blink1IndexStr );
+
+
+    QString patternspath = QCoreApplication::applicationDirPath();
+    if( mac() ) patternspath += "/../Resources/help/help/patternsReadOnly.json";  // FIXME: better way?
+    else        patternspath += "/help/help/patternsReadOnly.json";
+    QFile patternsfile(patternspath);
+    QString patternsReadOnly = "{}";
+    if( patternsfile.open(QFile::ReadOnly | QFile::Text) ) { 
+        QTextStream in(&patternsfile);
+        patternsReadOnly = in.readAll();
+        patternsfile.close();
+    } else { 
+        qDebug() << "couldn't open patternsfile: " << patternspath;
+    }
 
     // read only patterns
     QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
@@ -1655,10 +1664,11 @@ void MainWindow::add_new_mail(QString name,int type, QString server, QString log
     e->setResult(result);
     e->setParser(parser);
     QString email=login;
-    if(login.indexOf("@")==-1){
-        if(server.indexOf(".")!=-1)
-            email+="@"+server.mid(server.indexOf(".")+1);
-    }
+    // FIXME: wtf marcin?
+    //if(login.indexOf("@")==-1){
+    //    if(server.indexOf(".")!=-1)
+    //        email+="@"+server.mid(server.indexOf(".")+1);
+    //}
     e->setEmail(email);
     emails.insert(name,e);
     emit emailsUpdate();

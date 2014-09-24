@@ -1,0 +1,198 @@
+[
+    {
+        "date": 9500,
+        "name": "red flashes",
+        "pattern": "3,#ff0000,0.5,0,#000000,0.5,",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9490,
+        "name": "green flashes",
+        "pattern": "3,#00ff00,0.5,0,#000000,0.5,",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9480,
+        "name": "blue flashes",
+        "pattern": "3,#0000ff,0.5,0,#000000,0.5,",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9470,
+        "name": "white flashes",
+        "pattern": "3,#ffffff,0.5,0,#000000,0.5,",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9460,
+        "name": "yellow flashes",
+        "pattern": "3,#ffff00,0.5,0,#000000,0.5,",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9450,
+        "name": "purple flashes",
+        "pattern": "3,#ff00ff,0.5,0,#000000,0.5,",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9190,
+        "name": "groovy",
+        "pattern": "3,#ff4cff,1.0,0, #630000,0.2,0,#0000ff,0.1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9180,
+        "name": "policecar",
+        "pattern": "6, #ff0000,0.3,1, #0000ff,0.3,2, #000000,0.1,0, #ff0000,0.3,2, #0000ff,0.3,1, #000000,0.1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 9170,
+        "name": "fireengine",
+        "pattern": "6, #ff0000,0.3,1, #ff0000,0.3,2, #000000,0.1,0, #ff0000,0.3,2, #ff0000,0.3,1, #000000,0.1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8900,
+        "name": "palete colors",
+        "pattern": "3,#e7009a,1,0,#3d00e7,1,0,#00b8e7,1,0,#00e71e,1,0,#d7e700,1,0,#e70000,1,0,#e7e7e7,1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8890,
+        "name": "CMYK",
+        "pattern": "3,#00fff2,0.8,0,#000000,0.3,0,#65003c,0.8,0,#000000,0.3,0,#ffd905,0.8,0,#000000,0.1,0,#000000,0.7,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8880,
+        "name": "RGB",
+        "pattern": "3,#ff0000,0.8,0,#000000,0.3,0,#00ff00,0.8,0,#000000,0.3,0,#0000ff,0.8,0,#000000,0.3,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8870,
+        "name": "undervolt",
+        "pattern": "1,#821500,1,0,#634100,1,0,#554f00,1,0,#395800,1,0,#00580b,1,0,#005025,1,0,#005844,1,0,#00465a,1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8868,
+        "name": "fire shrine",
+        "pattern": "3,#751100,0,1,#ff1d00,0,2,#ff1000,0.4,1,#680300,0.4,2,#000000,0.9,1,#e01200,0,0,#000000,2,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8867,
+        "name": "molten lava",
+        "pattern": "3,#ff0000,0.2,1,#ff0000,0.2,2,#bd0000,0.1,1,#bd0000,0.1,2,#690000,0.1,1,#690000,0.1,2,#3f0000,0.2,1,#3f0000,0.2,2",
+        "readonly": true,
+        "system": true
+    },       
+    {
+        "date": 8865,
+        "name": "lighting storm",
+        "pattern": "3,#6f756f,0,1,#ffffff,0,2,#ffffff,0.4,1,#686868,0.4,2,#000000,0.9,1,#e0e0e0,0,0,#000000,2,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8863,
+        "name": "rain",
+        "pattern": "1,#0a01ff,0.1,1,#04004f,0,1,#1701ff,0.4,2,#04004f,0,2,#0019ff,0.3,1,#04004f,0.3,1,#1b01ff,0.3,2,#04004f,0,2",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8860,
+        "name": "nightfall",
+        "pattern": "1,#001980,1,0,#000000,10,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8850,
+        "name": "dawn",
+        "pattern": "1,#000000,1,0,#ff6800,15,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8840,
+        "name": "dancefloor",
+        "pattern": "6,#ff0004,0.1,1,#ff0004,0.1,2,#f2ff00,0.1,1,#f2ff00,0.1,2,#00ff37,0.1,1,#00ff2a,0.1,2,#ff00aa,0.1,1,#ff00b6,0.1,2",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8830,
+        "name": "rave",
+        "pattern": "6,#8b8800,0,0,#010b9e,0.1,0,#009b00,0.1,0,#a5008c,0.1,0,#01998e,0.1,0,#9b0007,0.1,0,#0114a5,0.1,0,#8c8d85,0.1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8820,
+        "name": "sexy",
+        "pattern": "3,#e7009a,0.4,1,#ff007b,0,2,#ff00dc,0.4,1,#680029,0.4,2,#000000,0.9,1,#e0006c,0,0,#53004d,2,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8810,
+        "name": "calmdown",
+        "pattern": "3,#00ff33,2,1,#ff00e9,2,2,#ff0004,2,1,#003fff,2,2,#faff00,2,1,#ffffff,2,1",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8800,
+        "name": "emergency",
+        "pattern": "3,#ff7c01,0,2,#732f00,0.1,0,#ff7e00,0,1,#602700,0.3,1",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8790,
+        "name": "lowbattery",
+        "pattern": "3,#7a0000,0.1,0,#000000,0,0,#7e0000,0.1,0,#000000,0.1,0,#000000,3,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 8780,
+        "name": "EKG",
+        "pattern": "5,#0c4f00,0,0,#29ff00,0,0,#0c4f00,0.1,0,#29ff00,0.1,0,#0c4f00,2.1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 7100,
+        "name": "patternA",
+        "pattern": "3,#ff4cff,0.7,0,#630000,0.2,0,#00ff00,0.1,0",
+        "readonly": true,
+        "system": true
+    },
+    {
+        "date": 7090,
+        "name": "patternB",
+        "pattern": "3,#ff4cff,0.7,0,#630000,0.2,0,#0000ff,0.1,0",
+        "readonly": true,
+        "system": true
+    }
+]
