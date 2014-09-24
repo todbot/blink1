@@ -263,6 +263,7 @@ int main(int argc, char** argv)
         {"delay",      required_argument, 0,      't'},
         {"id",         required_argument, 0,      'd'},
         {"led",        required_argument, 0,      'l'},
+        {"ledn",       required_argument, 0,      'l'},
         {"nogamma",    no_argument,       0,      'g'},
         {"help",       no_argument,       0,      'h'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
@@ -355,6 +356,7 @@ int main(int argc, char** argv)
             break;
         case 'g':
             nogamma = 1;
+            break;
         case 'a':
             openall = 1;
             break;

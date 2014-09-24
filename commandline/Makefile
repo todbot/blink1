@@ -84,6 +84,7 @@ USBLIB_TYPE ?= HIDAPI
 #USBLIB_TYPE = HIDDATA
 
 # uncomment for debugging HID stuff
+# or do "CFLAGS=-DDEBUG_PRINTF make"
 #CFLAGS += -DDEBUG_PRINTF
 
 
