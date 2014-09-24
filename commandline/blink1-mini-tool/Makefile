@@ -1,17 +1,13 @@
 #
+# blink1-mini-tool -- super minimal blink(1) controller 
+#                     for embedded Linuxes or other minimal systems
 #
-#
-#
-#
-#
-# Mac OS X
-#   - Install Xcode and command-line dev tools
-#   - Install MacPorts
-#   - sudo port install libusb-legacy
-#
-# Linux (Ubuntu) 
-#   - apt-get install gcc-avr avr-libc avrdude java librxtx-java
-#
+# Arduino Yun
+#   - Download Linino SDK from: http://download.linino.org/linino-utils/
+#   - Unzip tarball
+#   - Set environment variable WRT_SDK_HOME to resulting directory
+#   - "make OS=yun"
+#   
 # OpenWrt / DD-WRT
 #   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
 #   - set WRT_SDK_HOME environment variable
@@ -22,6 +18,15 @@
 #      "opkg install libusb-0.1-4-dev"
 #   - May need to symlink libusb 
 #      "cd /lib; ln -s libusb-0.1.so.4 libusb.so"
+#
+# Mac OS X
+#   - Install Xcode and command-line dev tools
+#   - Install MacPorts
+#   - sudo port install libusb-legacy
+#
+# Linux (Ubuntu) 
+#   - apt-get install gcc-avr avr-libc avrdude java librxtx-java
+#
 #
 #
 #
@@ -41,6 +46,8 @@ endif
 ifeq "$(UNAME)" "Darwin"
 	OS = macosx
 endif
+
+#GIT_TAG="$(strip $(shell git tag | tail -1))"
 
 
 #################  Mac OSx  ###################################################
@@ -62,8 +69,35 @@ USBFLAGS =   `libusb-config --cflags`
 USBLIBS  =   `libusb-config --libs`
 endif
 
+#################  Yun OpenWrt  #########################################
+ifeq "$(OS)" "yun"
+
+WRT_SDK_HOME := $(HOME)/openwrt/OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.6-linaro_uClibc-0.9.33.2
+WRT_TOOLCHAIN_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/toolchain-* | tail -1))
+WRT_TARGET_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/target-* | tail -1))
+STAGING_DIR=$(WRT_SDK_HOME)/staging_dir
+
+CC = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwrt-linux-gcc
+LD = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwrt-linux-ld
+USBFLAGS= -I$(WRT_TARGET_ROOT)/usr/include
+USBLIBS = -L$(WRT_TARGET_ROOT)/usr/lib -lusb -lusb-1.0
+export STAGING_DIR=$$(STAGING_DIR)
+
+endif
+
 #################  OpenWrt / DD-WRT #########################################
 ifeq "$(OS)" "wrt"
+
+WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
+WRT_TOOLCHAIN_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/toolchain-* | tail -1))
+WRT_TARGET_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/target-* | tail -1))
+STAGING_DIR=$(WRT_SDK_HOME)/staging_dir
+
+CC = $(WRT_TOOLCHAIN_ROOT)/bin/mipsel-linux-gcc
+LD = $(WRT_TOOLCHAIN_ROOT)/bin/mipsel-linux-ld
+USBFLAGS= -I$(WRT_TARGET_ROOT)/usr/include
+USBLIBS = -L$(WRT_TARGET_ROOT)/usr/lib -lusb -lusb-1.0
+export STAGING_DIR=$$(STAGING_DIR)
 
 #WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
 #CC = $(WRT_SDK_HOME)/staging_dir_mipsel/bin/mipsel-linux-gcc
@@ -71,14 +105,18 @@ ifeq "$(OS)" "wrt"
 #USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
 #USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
 
-WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
-CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
-LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
-USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include"
-USBLIBS  = "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
-LDFLAGS += -static
+#WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
+#CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
+#LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
+#USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include"
+#fUSBLIBS  = "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
+
+#LDFLAGS += -static
+
 endif
 
+
+##################### Common ###############################################
 
 CFLAGS=	$(OS_CFLAGS) -O -Wall -std=gnu99 $(USBFLAGS)
 LIBS=	$(OS_LIBS) $(USBLIBS) $(LDFLAGS)
@@ -99,6 +137,10 @@ help:
 	@echo "make OS=macosx  ... build for Mac OS X "
 	@echo "make clean ..... to delete objects and hex file"
 	@echo
+
+test:
+	@echo "WRT_TOOLCHAIN_ROOT=$(WRT_TOOLCHAIN_ROOT)"
+	@echo "WRT_TARGET_ROOT=$(WRT_TARGET_ROOT)"
 
 $(PROGRAM): $(OBJ)
 	$(CC) -o $(PROGRAM) $(OBJ) $(LIBS) 

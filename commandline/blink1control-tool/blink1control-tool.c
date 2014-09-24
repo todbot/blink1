@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdarg.h>    // vararg stuff
 #include <getopt.h>    // for getopt_long()
+#include <unistd.h>    // usleep
 #include <time.h>
 
 #include <curl/curl.h>
@@ -114,7 +115,7 @@ json_value* json_convert_value( json_value* jv)
         printf("json_string: '%s'\n", jv->u.string.ptr);
         break;
     case json_integer:
-        printf("json_integer:%lld\n", jv->u.integer );
+        printf("json_integer:%lld\n", (long long)jv->u.integer );
         break;
     case json_double:
         printf("json_double:\n");
@@ -149,11 +150,10 @@ char* curl_fetch(const char* urlstr)
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
     /* some servers don't like requests that are made without a user-agent
        field, so we provide one */
-    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "blink1control-tool/1.0");
     res = curl_easy_perform(curl_handle);    /* get it! */
     if(res != CURLE_OK) {   /* check for errors */
-        fprintf(stderr, "curl_fetch() failed: %s\n",
-                curl_easy_strerror(res));
+        fprintf(stderr, "curl_fetch failed: %s\n", curl_easy_strerror(res));
         return NULL;
     }
     else {
@@ -376,8 +376,8 @@ enum {
 //
 int main(int argc, char** argv)
 {
-    int openall = 0;
-    int nogamma = 0;
+    //int openall = 0;
+    //int nogamma = 0;
     int16_t arg=0;
 
     //int  rc;
@@ -402,7 +402,8 @@ int main(int argc, char** argv)
         {"delay",      required_argument, 0,      't'},
         {"id",         required_argument, 0,      'd'},
         {"led",        required_argument, 0,      'l'},
-        {"nogamma",    no_argument,       0,      'g'},
+        {"ledn",       required_argument, 0,      'l'},
+        //{"nogamma",    no_argument,       0,      'g'},
         {"help",       no_argument,       0,      'h'},
         {"list",       no_argument,       &cmd,   CMD_LIST },
         {"rgb",        required_argument, &cmd,   CMD_RGB },
@@ -487,9 +488,10 @@ int main(int argc, char** argv)
             } // switch(cmd)
             break;
         case 'g':
-            nogamma = 1;
+            //nogamma = 1;
+            break;
         case 'a':
-            openall = 1;
+            //openall = 1;
             break;
         case 'm':
             millis = strtol(optarg,NULL,10);
@@ -546,7 +548,7 @@ int main(int argc, char** argv)
         //exit(1);
     }
 
-    char idstr[100];
+    char idstr[100] = "";
         
     for( int i=0; i< numDevicesToUse; i++ ) {
         sprintf(idstr, "%s,", deviceIds[i]);
