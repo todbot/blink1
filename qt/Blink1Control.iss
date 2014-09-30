@@ -7,7 +7,7 @@
 AppPublisher=ThingM Corporation
 AppPublisherURL=http://thingm.com/
 AppName=Blink1Control
-AppVersion=1.91
+AppVersion=1.93
 DefaultDirName={pf}\Blink1Control
 DefaultGroupName=Blink1Control
 UninstallDisplayIcon={app}\Blink1Control.exe
