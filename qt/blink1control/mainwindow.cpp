@@ -33,8 +33,6 @@ static QMutex blink1mutex;
 static blink1_device* blink1devs[16];
 static int blink1devcount;
 
-//#include "patternsReadOnly.h"
-
 enum {
     NONE = 0,
     RGBSET,
@@ -619,7 +617,6 @@ void MainWindow::quit()
 
 void MainWindow::saveSettings()
 {
-    qDebug() << "saveSettings()";
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");
 
     settings.setValue("iftttKey", iftttKey);//sText);
@@ -691,6 +688,9 @@ void MainWindow::saveSettings()
     }
     QString harstr = QJsonDocument(qarrpm2).toJson(QJsonDocument::Compact);
     settings.setValue("hardwareMonitors", harstr);
+
+    settings.sync();  // just in case
+    qDebug() << "saveSettings() done";
 }
 
 void MainWindow::loadSettings()
@@ -714,12 +714,12 @@ void MainWindow::loadSettings()
     }
     iftttKey=sIftttKey;
 
-    autorun      = settings.value("autorun","").toBool();
+    autorun      = settings.value("autorun",false).toBool();
     dockIcon     = settings.value("dockIcon",true).toBool();
-    startmin     = settings.value("startmin","").toBool();
-    enableServer = settings.value("server","").toBool();
-    logging      = settings.value("logging","").toBool();
-    enableGamma  = settings.value("enableGamma",false).toBool();
+    startmin     = settings.value("startmin",false).toBool();
+    enableServer = settings.value("server",false).toBool();
+    logging      = settings.value("logging",false).toBool();
+    enableGamma  = settings.value("enableGamma",true).toBool();
     firstRun     = settings.value("firstRun",true).toBool();
 
     // allow selection of "host" and port for API server
