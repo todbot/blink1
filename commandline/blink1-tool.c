@@ -159,6 +159,7 @@ static void usage(char *myName)
 "  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
 "  --running, --running=<num>  Do running animation (num times)\n"
 "  --rgb=<red>,<green>,<blue>  Fade to RGB value\n"
+"  --rgb=[#]RRGGBB             Fade to RGB value, as hex color code\n"
 "  --hsb=<hue>,<sat>,<bri>     Fade to HSB value\n"
 "  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
 "  --on | --white              Turn blink(1) full-on white \n"
@@ -195,6 +196,8 @@ static void usage(char *myName)
 "  blink1-tool -m 100 --rgb=255,0,255    # fade to #FF00FF in 0.1 seconds \n"
 "  blink1-tool -t 2000 --random=100      # every 2 seconds new random color\n"
 "  blink1-tool --rgb=0xff,0,00 --blink 3 # blink red 3 times\n"
+"  blink1-tool --rgb=FF9900              # make blink1 pumpkin orange\n"
+"  blink1-tool --rgb=#FF9900             # make blink1 pumpkin orange\n"
 "\n"
             ,myName);
 //"  --hidread                  Read a blink(1) USB HID GetFeature report \n"
@@ -307,7 +310,16 @@ int main(int argc, char** argv)
          case 0:             // deal with long opts that have no short opts
             switch(cmd) { 
             case CMD_RGB:
-                hexread(rgbbuf, optarg, sizeof(rgbbuf));
+                // parse hex color code like "#FF00FF"
+                if( optarg[0] == '#' || strlen(optarg)==6 ) { 
+                    optarg = (optarg[0] == '#') ? optarg+1 : optarg;
+                    uint32_t poop = strtol(optarg, NULL, 16); 
+                    rgbbuf[0] = (poop >> 16) & 0xff; 
+                    rgbbuf[1] = (poop >>  8) & 0xff;
+                    rgbbuf[2] = (poop >>  0) & 0xff;
+                } else { 
+                    hexread(rgbbuf, optarg, sizeof(rgbbuf));
+                }
                 break;
             case CMD_HSB:
                 hexread(tmpbuf, optarg, 4);
