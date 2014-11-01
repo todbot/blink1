@@ -93,6 +93,7 @@ macx {
     BLINK1LIBPATH = $$BLINK1_LIB_DIR/libBlink1.dylib
     QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
     #message( "MYAPPDIR = $$MYAPPDIR" )
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
 }
 
 unix:!macx {
