@@ -208,28 +208,31 @@ void MainWindow::refreshBlink1State()
     } else {
         blink1_disableDegamma();
     }
-    qDebug() << "--- refreshBlink1State: refreshing:" << refreshCounter++;
+    qDebug() << "-- refreshBlink1State: refreshing:" << refreshCounter++;
     
     //blink1mutex.lock();
     // close all blink1s
     for( int i=0; i<blink1devcount; i++) {
         blink1_close( blink1devs[i] );
     }
+    bzero(blink1devs, sizeof(blink1devs)); // clear local device cache
 
-    blink1devcount = blink1_enumerate();
     // open up all blink1s
+    blink1devcount = blink1_enumerate();
     for( int i=0; i<blink1devcount; i++ ) { 
         blink1devs[i] = blink1_openById( i );
-        qDebug() << "    refreshBlink1State: opened blink1 #" << i <<":"<<blink1devs[i];
+        qDebug() << "   refreshBlink1State: opened blink1 #" << i <<":"<<blink1devs[i];
     }
     //blink1mutex.unlock();
-
-    qDebug() << "    refreshBlink1State: opening blink1Index:" << QString::number(blink1Index,16);
+    
+    qDebug() << "   refreshBlink1State: opening blink1Index:" << QString::number(blink1Index,16);
     //blink1dev = blink1_openById( blink1Index );
     int blid = blink1_getCacheIndexById( blink1Index );
+    qDebug() << "   refreshBlink1State: blid: "<<blid;
     blink1dev = blink1devs[ blid ];
+    qDebug() << "   refreshBlink1State: blink1dev: "<<blink1dev;
 
-    qDebug() << "    refreshBlink1State: opened";
+    qDebug() << "   refreshBlink1State: opened.";
     if( blink1dev ) {
         blinkStatus="blink(1) connected";
         QString serialstr = blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev));
@@ -243,7 +246,7 @@ void MainWindow::refreshBlink1State()
         blink1Id = "none";
     }
 
-    qDebug() << "--- refreshBlink1State: done refreshing";
+    qDebug() << "-- refreshBlink1State: done refreshing";
 
     blinkStatusAction->setText(blinkStatus);
     blinkIdAction->setText("blink(1) id: " + blink1Id);
