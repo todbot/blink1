@@ -387,6 +387,9 @@ distclean: clean
 	rm -f blink1-tool$(EXE)
 	rm -f blink1-tiny-server$(EXE)
 	rm -f $(LIBTARGET) $(LIBTARGET).a
+	#rm blink1-lib.{a,lib,exp,dll,def}
+	rm libblink1.so 
+	rm blink1-tool.exe
 
 # show shared library use
 # in general we want minimal to no dependecies for blink1-tool
