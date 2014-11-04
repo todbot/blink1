@@ -152,9 +152,10 @@ LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 EXE=
 
 INSTALL = install -D
-EXELOCATION ?= /usr/local/bin
-LIBLOCATION ?= /usr/local/lib
-INCLOCATION ?= /usr/local/include
+PREFIX ?= /usr/local
+EXELOCATION ?= $(PREFIX)/bin
+LIBLOCATION ?= $(PREFIX)/lib
+INCLOCATION ?= $(PREFIX)/include
 
 endif
 
@@ -218,9 +219,10 @@ LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
 INSTALL = install -D
-EXELOCATION ?= /usr/local/bin
-LIBLOCATION ?= /usr/local/lib
-INCLOCATION ?= /usr/local/include
+PREFIX ?= /usr/local
+EXELOCATION ?= $(PREFIX)/bin
+LIBLOCATION ?= $(PREFIX)/lib
+INCLOCATION ?= $(PREFIX)/include
 
 endif
 
@@ -255,9 +257,10 @@ LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
 INSTALL = install -D
-EXELOCATION ?= /usr/local/bin
-LIBLOCATION ?= /usr/local/lib
-INCLOCATION ?= /usr/local/include
+PREFIX ?= /usr/local
+EXELOCATION ?= $(PREFIX)/bin
+LIBLOCATION ?= $(PREFIX)/lib
+INCLOCATION ?= $(PREFIX)/include
 
 endif
 
