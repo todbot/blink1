@@ -16,7 +16,8 @@
 # Platform-specific notes:
 #
 # Mac OS X 
-#   - Install Xcode with "Unix Dev Support" and "Command-line tools" (in Preferences)
+#   - Install XCode
+#   - In Terminal, "xcode-select --install" to install command-line tools
 #   - make
 #
 # Windows XP/7  
@@ -84,7 +85,7 @@ USBLIB_TYPE ?= HIDAPI
 #USBLIB_TYPE = HIDDATA
 
 # uncomment for debugging HID stuff
-# or do "CFLAGS=-DDEBUG_PRINTF make"
+# or make with:   CFLAGS=-DDEBUG_PRINTF make
 #CFLAGS += -DDEBUG_PRINTF
 
 
@@ -108,11 +109,14 @@ ifeq "$(UNAME)" "FreeBSD"
 endif
 
 
-GIT_TAG="$(strip $(shell git tag | tail -1))"
 MACH_TYPE="$(strip $(shell uname -m))"
+GIT_TAG="$(strip $(shell git tag 2>&1 | tail -1 | cut -f1 -d' '))"
+# deal with case of no git or no git tags, check for presence of "v" (i.e. "v1.93")
+ifneq ($(findstring v,$(GIT_TAG)), v)
+  GIT_TAG = "v0"
+endif
 
 BLINK1_VERSION="$(GIT_TAG)-$(OS)-$(MACH_TYPE)"
-
 
 
 
