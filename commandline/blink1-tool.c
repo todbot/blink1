@@ -33,6 +33,9 @@
 #define BLINK1_VERSION "v0.0"
 #endif
 
+#ifdef _WIN32
+#define getpid _getpid
+#endif
 
 int millis = 300;
 int delayMillis = 500;
@@ -248,8 +251,7 @@ int main(int argc, char** argv)
     uint8_t tmpbuf[100];
     char serialnumstr[serialstrmax] = {'\0'}; 
 
-    uint16_t seed = time(NULL);
-    srand(seed);
+    srand( time(NULL) * getpid() );
     memset( cmdbuf, 0, sizeof(cmdbuf));
 
     static int cmd  = CMD_NONE;
