@@ -206,6 +206,8 @@ int     rval, i;
 
 int usbhidOpenDevice(usbDevice_t **device, int vendor, char *vendorName, int product, char *productName, int _usesReportIDs)
 {
+char drivername[2];
+int detachrc;
 struct usb_bus      *bus;
 struct usb_device   *dev;
 usb_dev_handle      *handle = NULL;
@@ -229,6 +231,22 @@ static int          didUsbInit = 0;
                     fprintf(stderr, "Warning: cannot open USB device: %s\n", usb_strerror());
                     continue;
                 }
+
+
+                // Likely no need to capture the return code. It will return an error if no driver is
+                // attached, which is A-OK. Nothing will be detached in that case.
+                usb_get_driver_np(handle, 0, drivername, sizeof(drivername));
+                // If we have an empty then nothing is attached, otherwise will be something like "dummy".
+                if(strlen(drivername) > 0){
+                    // Not doing this causes several issues writing control messages to the interface.
+                    detachrc = usb_detach_kernel_driver_np(handle, 0);
+                    if (detachrc != 0) {
+                        errorCode = USBOPEN_ERR_IO;
+                        fprintf(stderr, "Warning: cannot detach kernel driver from interface 0: %s\n", usb_strerror());
+                        continue;
+                    }
+                }
+
                 if(vendorName == NULL && productName == NULL){  /* name does not matter */
                     break;
                 }
@@ -281,11 +299,19 @@ void    usbhidCloseDevice(usbDevice_t *device)
 int usbhidSetReport(usbDevice_t *device, char *buffer, int len)
 {
 int bytesSent, reportId = buffer[0];
+int claimrc, releaserc;
 
     if(!usesReportIDs){
         buffer++;   /* skip dummy report ID */
         len--;
     }
+
+    claimrc = usb_claim_interface((void *)device, 0);
+    if(claimrc != 0){
+        fprintf(stderr, "Error claiming interface 0 before sending a control message: %s\n", usb_strerror());
+        return USBOPEN_ERR_IO;
+    }
+
     // original hiddata.h
     //    bytesSent = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_ENDPOINT_OUT, USBRQ_HID_SET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | (reportId & 0xff), 0, buffer, len, 5000);
     // modification by todbot, matches roughly what hiddata does
@@ -293,9 +319,20 @@ int bytesSent, reportId = buffer[0];
     bytesSent = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USBRQ_HID_SET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | (reportId & 0xff), 0, buffer, len, 5000);
     if(bytesSent != len){
         if(bytesSent < 0)
+        {
             fprintf(stderr, "Error sending message: %s\n", usb_strerror());
+        }
+
+        usb_release_interface((void *)device, 0);
         return USBOPEN_ERR_IO;
     }
+
+    releaserc = usb_release_interface((void *)device, 0);
+    if(releaserc != 0){
+        fprintf(stderr, "Error releasing interface 0 after sending a control message: %s\n", usb_strerror());
+        return USBOPEN_ERR_IO;
+    }
+
     return 0;
 }
 
@@ -304,17 +341,26 @@ int bytesSent, reportId = buffer[0];
 int usbhidGetReport(usbDevice_t *device, int reportNumber, char *buffer, int *len)
 {
 int bytesReceived, maxLen = *len;
+int claimrc, releaserc;
 
     if(!usesReportIDs){
         buffer++;   /* make room for dummy report ID */
         maxLen--;
     }
+
+    claimrc = usb_claim_interface((void *)device, 0);
+    if(claimrc != 0){
+        fprintf(stderr, "Error claiming interface 0 before sending a control message: %s\n", usb_strerror());
+        return USBOPEN_ERR_IO;
+    }
+
     // original hiddata.h
     //bytesReceived = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | reportNumber, 0, buffer, maxLen, 5000);
     // change by tod to use USB_RECIP_INTERFACE instead of USB_RECIP_DEVICE
     bytesReceived = usb_control_msg((void *)device, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USBRQ_HID_GET_REPORT, USB_HID_REPORT_TYPE_FEATURE << 8 | reportNumber, 0, buffer, maxLen, 5000);
     if(bytesReceived < 0){
         fprintf(stderr, "Error sending message: %s\n", usb_strerror());
+        usb_release_interface((void *)device, 0);
         return USBOPEN_ERR_IO;
     }
     *len = bytesReceived;
@@ -322,6 +368,13 @@ int bytesReceived, maxLen = *len;
         buffer[-1] = reportNumber;  /* add dummy report ID */
         (*len)++;
     }
+
+    releaserc = usb_release_interface((void *)device, 0);
+    if(releaserc != 0){
+        fprintf(stderr, "Error releasing interface 0 after sending a control message: %s\n", usb_strerror());
+        return USBOPEN_ERR_IO;
+    }
+
     return 0;
 }
 
