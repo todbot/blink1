@@ -1,0 +1,16 @@
+# released versions. 
+# format: versionid - short description.  one per line
+# last line is most recent version
+# comments begin with hash
+v1.6 - beta builds of new Qt-based Blink1Control
+v1.7 - Blink1Control w/ IFTTT fixes
+v1.8 - Blink1Control w/ tracking color picker
+v1.81 - Blink1Control smaller window & API server fixes
+v1.82 - Blink1Control w/ non-Webkit help page
+v1.83 - Blink1Control w/ device selection in config
+v1.9 - Blink1Control with installers and new color patterns
+v1.91 -  Blink1Control Hardware tab fixes
+v1.92 -  internal release
+v1.93 -  Blink1Control Advanced Preferences, blink1control-tool, more API fixes
+v1.94 -  Blink1Control crashing fixes (device scanning, logging)
+
