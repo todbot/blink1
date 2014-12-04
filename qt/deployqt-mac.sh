@@ -11,7 +11,11 @@
 
 APP_NAME=Blink1Control
 
-BUILD_DIR=build-blink1control-Desktop_Qt_5_3_clang_64bit-Release
+#BUILD_DIR=build-blink1control-Desktop_Qt_5_3_clang_64bit-Release
+BUILD_DIR=./build-blink1control-Desktop_Qt_5_4_clang_64bit-Release
+
+QT_BIN_PATH=${HOME}/Qt/5.4/clang_64/bin
+export PATH=${QT_BIN_PATH}:${PATH}
 
 # used passed in arg instead of default above
 if [ -n "$1" ] ; then
@@ -29,29 +33,21 @@ else
 fi
 
 # macdeployqt copies all the needed Qt libs
-macdeployqt ${EXE_PATH} -qmldir=${EXE_PATH}/Contents/Resources/qml -always-overwrite
+pushd ${BUILD_DIR}
+macdeployqt ${APP_NAME}.app -qmldir=./${APP_NAME}.app/Contents/Resources/qml -always-overwrite -verbose=2
+#macdeployqt ${EXE_PATH} -qmldir=${EXE_PATH}/Contents/Resources/qml -always-overwrite
 #macdeployqt ${EXE_PATH} -always-overwrite
-
-DO_WEBKIT=0
-if [ "$DO_WEBKIT" -eq 1 ] ; then
-echo "Copying extra WebKit stuff..."
-# except this one
-# fix bug in macdeployqt wrt QtWebKit
-# see: https://bugreports.qt-project.org/browse/QTBUG-35211
-QT_QMAKE=`which qmake`
-QT_PATH=`dirname ${QT_QMAKE}`
-LIBEXEC=$EXE_PATH/Contents/libexec
-mkdir -p ${LIBEXEC}
-cp ${QT_PATH}/../libexec/QtWebProcess ${LIBEXEC}
-fi
+popd
 
 # copy blink1 lib
+mkdir -p ${EXE_PATH}/Contents/Frameworks
 cp ../commandline/libBlink1.dylib ${EXE_PATH}/Contents/Frameworks
 
 # zip up
+echo "zipping up ${APP_NAME}"
 pushd ${BUILD_DIR}
 rm -f ../${APP_NAME}-mac.zip
-zip -r ../${APP_NAME}-mac.zip ${APP_NAME}.app
+zip -q -r ../${APP_NAME}-mac.zip ${APP_NAME}.app
 
 echo
 echo "created '${APP_NAME}-mac.zip'"
