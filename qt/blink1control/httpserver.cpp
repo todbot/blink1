@@ -86,6 +86,8 @@ void HttpServer::startRead(){
             resp.insert("blink1_serialnums",ja);
             resp.insert("blink1control_version", QString(BLINK1CONTROL_VERSION) );
             resp.insert("blink1control_config", settings.fileName() );
+            resp.insert("logging", mw->getLogging());
+            resp.insert("logfile", mw->getLogFileName());
             resp.insert("status",QString("blink1 id"));
         }
         else if( cmd == "/regenerateblink1id" ) {
