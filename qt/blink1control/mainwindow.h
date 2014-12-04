@@ -97,7 +97,7 @@ public:
     ~MainWindow();
 
 public slots:
-
+    
     void quit();
     void changeMinimizeOption();
     void showNormal();
@@ -267,21 +267,25 @@ public slots:
     bool addNewPatternFromPatternStr(QString name, QString patternStr);
     void startOrStopLogging(bool);
     bool getLogging();
+    QString getLogFileName();
     void updateColorsOnBigButtons2List();
 
     void setStartupPattern( QString patternName );
+    
+    void settingsExport( QString filepath );
+    void settingsImport( QString filepath );
+    void osFixes();
 
-
-private:
+ private:
     QtQuick2ApplicationViewer viewer;
 
-    void loadSettings();
-    void saveSettings();
+    void settingsLoad();
+    void settingsLoad( QSettings & settings );
+    void settingsSave(); 
+    void settingsSave( QSettings & settings );
 
     void createActions();
     void createTrayIcon();
-
-    QString m_sSettingsFile;
 
     QAction *minimizeAction;
     QAction *restoreAction;
@@ -338,12 +342,13 @@ private:
 
     HttpServer *httpserver;
 
+    bool refreshBlink1s;
     int blink1Index;
     QString getTimeFromInt(int t);
     bool mk2;
     bool logging;
     QFile *logFile;
-    QTextStream *out;
+    QTextStream *logstream;
     bool fromPattern;
 
     bool autorun;
@@ -352,7 +357,7 @@ private:
     bool enableServer;
     bool enableGamma;
     bool firstRun;
-
+    
     QString serverHost;
     int     serverPort; 
 
