@@ -22,5 +22,10 @@
     <!-- start of customized entries -->
     <key>NSSupportsAutomaticGraphicsSwitching</key>
     <true/>
+    <key>LSAppNapIsDisabled</key>
+    <string>True</string>
+    <key>NSAppSleepDisabled</key>
+    <true/>
+    <!-- the above doesn't seem to work, need: "defaults write com.thingm.Blink1Control NSAppSleepDisabled -bool YES" -->
 </dict>
 </plist>
