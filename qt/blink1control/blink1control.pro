@@ -1,6 +1,19 @@
 #-------------------------------------------------
+# Blink1Control Qt master build file
+#
+# Windows build requirements:
+# - Qt 5.4 w/ 'msvc2013-32-bit' build environment installed
+# - Visual Studio 2013  x86 (not 64-bit)
+# - MinGW 
+#
+# Mac OS X build requirements:
+# - Qt 5.4
+# - Xcode
+# - Xcode command-line tools
 #
 #-------------------------------------------------
+
+
 
 QT       += core gui widgets network quick qml 
 
@@ -11,7 +24,7 @@ QT       += core gui widgets network quick qml
 TARGET = Blink1Control
 TEMPLATE = app
 
-VERSION = 1.93
+VERSION = 1.94
 BLINK1CONTROL_VERSION = "v$$VERSION"
 # note: need to update version in Blink1Control.iss too
 
@@ -94,6 +107,7 @@ macx {
     QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
     #message( "MYAPPDIR = $$MYAPPDIR" )
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.8
+    #LIBS += -framework Foundation
 }
 
 unix:!macx {
