@@ -3,6 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Styles 1.1
 import QtQuick.Window 2.1
+import QtQuick.Dialogs 1.0
 
 //import "ToolTipTod2Creator.js" as ToolTipCreator
 
@@ -62,7 +63,7 @@ Window {
                 }
                 CheckBox { 
                     id: dockIconCheckbox
-                    //visible: false; //mw.mac();
+                    //visible: mw.mac();  // messes up spacing
                     //opacity: 0.1
                     enabled: mw.mac()
                     text: "Show Dock icon (requires restart)"
@@ -141,13 +142,13 @@ Window {
                     columns: 2
                     enabled: proxyTypeGroup.current != proxyType0
                     Label { text: "proxyHost:" }
-                    TextField { id: proxyHostText;  text: mw.proxyHost }
+                    TextField { id: proxyHostText;  } //text: mw.proxyHost }
                     Label { text: "proxyPort:" }
-                    TextField { id: proxyPortText;  text: mw.proxyPort }
+                    TextField { id: proxyPortText;  } //text: mw.proxyPort }
                     Label { text: "proxyUser:" }
-                    TextField { id: proxyUserText;  text: mw.proxyUser }
+                    TextField { id: proxyUserText;  } //text: mw.proxyUser }
                     Label { text: "proxyPass:" }
-                    TextField { id: proxyPassText;  text: mw.proxyPass }
+                    TextField { id: proxyPassText;  } //text: mw.proxyPass }
                 }
             }
         } // proxy groupbox
@@ -242,7 +243,27 @@ Window {
 
             } // radiobutton column ayout
         } // blink1 startup groupbox
-
+        GroupBox {
+            id: groupBlink1SettingsSaveLoad
+            title: "Import/Export settings"
+            Layout.fillWidth: true
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                Button {
+                    text: "Export Settings "
+                    onClicked: {
+                        fileDialogExport.open()                        
+                    }
+                }
+                Button {
+                    text: "Import Settings "
+                    onClicked: {
+                        fileDialogImport.open()
+                    }
+                }
+            }
+        }
+        
         } // right column
         } // main rowlayout
 
@@ -265,6 +286,11 @@ Window {
                     mw.serverHost = (serverHostGroup.current == serverHostAny) ? "any" : "localhost";
                     mw.serverPort = serverPortText.text;
 
+                    // this seems so messed up
+                    if( proxyType0.checked )        mw.proxyType = "none";
+                    else if( proxyType1.checked )   mw.proxyType = "socks5";
+                    else if( proxyType2.checked )   mw.proxyType = "http";
+
                     mw.proxyHost = proxyHostText.text;
                     mw.proxyPort = proxyPortText.text;
                     mw.proxyUser = proxyUserText.text;
@@ -276,6 +302,7 @@ Window {
                       mw.setBlink1Index( 0 );
                     }
 
+                    console.log("qml proxyUser: "+proxyUserText.text+", proxyPass: "+proxyPassText.text);
                     mw.updatePreferences();
 
                     prefsWindow.visible = false
@@ -288,8 +315,9 @@ Window {
     }// item
 
     onVisibilityChanged: {
-        console.log("** Visbility changes");
-        if( !visible ) return;
+        console.log("Preferences visbility changed");
+        if( !visible ) return;  // only do below when visible
+
         // load up values because bindings break? FIXME: don't understand this fully
         enableServerCheckbox.checked = mw.enableServer
         minimizedCheckbox.checked = mw.startmin
@@ -303,15 +331,22 @@ Window {
         }
         // FIXME: make proxyType an enumeration
         if( mw.proxyType == "" || mw.proxyType == "none" ) {
+            console.log("qml proxy none");
             proxyType0.checked = true
         }
         else if( mw.proxyType == "socks5" ) {
+            console.log("qml proxy socks5");
             proxyType1.checked = true
         }
         else if( mw.proxyType == "http" ) {
+            console.log("qml proxy http");
             proxyType2.checked = true
         }
-          
+        proxyHostText.text = mw.proxyHost;
+        proxyPortText.text = mw.proxyPort;
+        proxyUserText.text = mw.proxyUser;
+        proxyPassText.text = mw.proxyPass;
+  
         if( mw.blink1Index == 0 ) { 
             blink1tousefirstavailButton.checked = true
         }
@@ -324,5 +359,34 @@ Window {
         }
     }
 
+FileDialog {
+    id: fileDialogExport
+    title: "Select location of exported file"
+    selectExisting: false
+    nameFilters: ["Preferences INI files (*.ini)", "All files (*)"]
+    onAccepted: {
+        console.log("You chose: " + fileDialogExport.fileUrl)
+        mw.settingsExport( fileDialogExport.fileUrl )
+    }
+    onRejected: {
+        console.log("export canceled")
+    }
+}
 
+FileDialog {
+    id: fileDialogImport
+    title: "Choose a settings file to import"
+    selectExisting: true
+    nameFilters: ["Preferences INI files (*.ini)", "All files (*)"]
+    onAccepted: {
+        console.log("You chose: " + fileDialogImport.fileUrl)
+        mw.settingsImport( fileDialogImport.fileUrl )
+    }
+    onRejected: {
+        console.log("import canceled")
+    }
+}
+ 
+    
 } // window
+
