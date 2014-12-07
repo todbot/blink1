@@ -357,7 +357,8 @@ Rectangle {
             x: 0
             y: -5//9
             text: "Time (s):"
-            font.pointSize: if(mw.mac()) 11; else 8;
+            //font.pointSize: if(mw.mac()) 11; else 8;
+            font.pixelSize:11
         }
 
         SpinBox {
@@ -371,7 +372,8 @@ Rectangle {
             }
 
             id: spinTime
-            font.pointSize: (!mw.mac())?10:12
+            //font.pointSize: (!mw.mac())?10:12
+            font.pixelSize:12
             x: 47
             y: -6
             width: 62
@@ -390,7 +392,8 @@ Rectangle {
             x: 31
             y: 40
             text: "R:"
-            font.pointSize:  if(mw.mac()) 11; else 8;
+            //font.pointSize:  if(mw.mac()) 11; else 8;
+            font.pixelSize:11
         }
 
         SpinBox {
@@ -403,7 +406,8 @@ Rectangle {
                 height: parent.height
             }
             id: spinRed
-            font.pointSize: (!mw.mac())?10:12
+            //font.pointSize: (!mw.mac())?10:12
+            font.pixelSize:12
             x: 47
             y: 36
             width: 62
@@ -424,7 +428,8 @@ Rectangle {
             x: 31
             y: 65//70
             text: "G:"
-            font.pointSize:  if(mw.mac()) 11; else 8;
+            //font.pointSize:  if(mw.mac()) 11; else 8;
+            font.pixelSize:11
         }
 
         SpinBox {
@@ -437,7 +442,8 @@ Rectangle {
                 height: parent.height
             }
             id: spinGreen
-            font.pointSize: (!mw.mac())?10:12
+            //font.pointSize: (!mw.mac())?10:12
+            font.pixelSize:12
             x: 47
             y: 62//66
             width: 62
@@ -456,7 +462,8 @@ Rectangle {
             x: 32
             y: 90//100
             text: "B:"
-            font.pointSize:  if(mw.mac()) 11; else 8;
+            //font.pointSize:  if(mw.mac()) 11; else 8;
+            font.pixelSize:11
         }
 
         SpinBox {
@@ -469,7 +476,8 @@ Rectangle {
                 height: parent.height
             }
             id: spinBlue
-            font.pointSize: (!mw.mac())?10:12
+            //font.pointSize: (!mw.mac())?10:12
+            font.pixelSize:12
             x: 47
             y: 88//96
             width: 62
@@ -490,7 +498,8 @@ Rectangle {
             width: 62
             height: 22
             text: "FF0000"
-            font.pointSize: (!mw.mac())?10:12
+            //font.pointSize: (!mw.mac())?10:12
+            font.pixelSize:12
             placeholderText: qsTr("Text Field")
             inputMask: ">HHHHHH"
 
@@ -514,7 +523,8 @@ Rectangle {
             height: 14
             text: "HEX #"
             verticalAlignment: Text.AlignTop
-            font.pointSize:  if(mw.mac()) 11; else 8;
+            //font.pointSize:  if(mw.mac()) 11; else 8;
+            font.pixelSize:11
             horizontalAlignment: Text.AlignRight
         }
     }

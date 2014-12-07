@@ -97,7 +97,8 @@ Image {
     }
     Text{
         color: "white"
-        font.pointSize: (!mw.mac())?10:13
+        //font.pointSize: (!mw.mac())?10:13
+        font.pixelSize:13
         text: "Mail Settings"
         anchors.left: parent.left
         anchors.top: parent.top
@@ -136,7 +137,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Description:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -155,7 +157,8 @@ Image {
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: (!mw.mac())?10:12
+                //font.pointSize: (!mw.mac())?10:12
+                font.pixelSize:12
                 selectByMouse: true
                 maximumLength: 24
                 KeyNavigation.tab: mailserver
@@ -177,7 +180,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Account type:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
 
         ComboBox {
@@ -221,7 +225,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Mail server:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -244,7 +249,8 @@ Image {
                     anchors.topMargin: 5
                     width: 290
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     selectByMouse: true
                     maximumLength: 40
                     KeyNavigation.tab: username
@@ -265,7 +271,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Username:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -287,7 +294,8 @@ Image {
                     anchors.topMargin: 5
                     width: 290
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     selectByMouse: true
                     maximumLength: 40
                     KeyNavigation.tab: password
@@ -308,7 +316,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Password:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -331,7 +340,8 @@ Image {
                     anchors.topMargin: 5
                     width: 290
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     //clip: true
                     selectByMouse: true
                     maximumLength: 40
@@ -352,7 +362,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Port:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -371,7 +382,8 @@ Image {
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: (!mw.mac())?10:12
+                //font.pointSize: (!mw.mac())?10:12
+                font.pixelSize:12
                 selectByMouse: true
                 validator: IntValidator{}
                 maximumLength: 8
@@ -430,7 +442,8 @@ Image {
             anchors.topMargin: 3
             text: "Use SSL"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         MouseArea{
             cursorShape: Qt.PointingHandCursor
@@ -448,7 +461,8 @@ Image {
         anchors.topMargin: 15
         text: "Blink when:"
         color: "black"
-        font.pointSize: (!mw.mac())?8:11
+        //font.pointSize: (!mw.mac())?8:11
+        font.pixelSize:11
         width: 75
     }
 
@@ -512,7 +526,8 @@ Image {
                     anchors.topMargin: 5
                     width: 54
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     selectByMouse: true
                     validator: IntValidator{}
                     onTextChanged: {
@@ -579,7 +594,8 @@ Image {
                 anchors.top: parent.top
                 text: "Unread e-mails"
                 color: "black"
-                font.pointSize: (!mw.mac())?8:11
+                //font.pointSize: (!mw.mac())?8:11
+                font.pixelSize:11
             }
         }
     }
@@ -630,7 +646,8 @@ Image {
                 anchors.top: parent.top
                 text: "Subject contains:"
                 color: "black"
-                font.pointSize: (!mw.mac())?8:11
+                //font.pointSize: (!mw.mac())?8:11
+                font.pixelSize:11
                 width: 120
             }
             Rectangle{
@@ -651,7 +668,8 @@ Image {
                     anchors.topMargin: 5
                     width: 140
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     selectByMouse: true
                     maximumLength: 40
                     clip: true
@@ -707,7 +725,8 @@ Image {
                 anchors.top: parent.top
                 text: "Sender contains:"
                 color: "black"
-                font.pointSize: (!mw.mac())?8:11
+                //font.pointSize: (!mw.mac())?8:11
+                font.pixelSize:11
                 width: 120
             }
             Rectangle{
@@ -728,7 +747,8 @@ Image {
                     anchors.topMargin: 5
                     width: 140
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     selectByMouse: true
                     maximumLength: 40
                     clip: true
@@ -775,7 +795,8 @@ Image {
         anchors.bottomMargin: 30
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
     PushButton{
         id: cancelButton
@@ -794,6 +815,7 @@ Image {
         anchors.bottom: okButton.bottom
         label.text: "Cancel"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
 }

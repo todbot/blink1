@@ -80,7 +80,8 @@ Rectangle{
                 wrapMode: TextInput.WrapAnywhere
                 anchors.left: parent.left
                 anchors.leftMargin: 2
-                font.pointSize: (!mw.mac())?8:12
+                //font.pointSize: (!mw.mac())?8:12
+                font.pixelSize:12
                 MouseArea{
                     cursorShape: Qt.PointingHandCursor
                     anchors.fill: parent

@@ -47,7 +47,8 @@ Image {
         anchors.leftMargin: 55
         anchors.top: parent.top
         anchors.topMargin: 70
-        font.pointSize: (!mw.mac())?8:12
+        //font.pointSize: (!mw.mac())?8:12
+        font.pixelSize:12
     }
 
     ListView{
@@ -86,7 +87,8 @@ Image {
                 text: model.modelData
                 width: 500
                 wrapMode: Text.WrapAnywhere
-                font.pointSize: (!mw.mac())?8:12
+                //font.pointSize: (!mw.mac())?8:12
+                font.pixelSize:12
             }
         }
     }
@@ -103,6 +105,7 @@ Image {
         anchors.bottomMargin: 22
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
 }

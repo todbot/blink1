@@ -50,7 +50,8 @@ Image {
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: -10
         text: "Host ID"
-        font.pointSize: (!mw.mac())?9:12
+        //font.pointSize: (!mw.mac())?9:12
+        font.pixelSize:12
     }
     Rectangle{
         anchors.left: ehtl.right
@@ -69,7 +70,8 @@ Image {
             anchors.topMargin: 5
             width: parent.width-10
             height: 30
-            font.pointSize: (!mw.mac())?10:13
+            //font.pointSize: (!mw.mac())?10:13
+            font.pixelSize:13
             selectByMouse: true
             maximumLength: 30
             inputMask: "XXXXXXXX"
@@ -103,7 +105,8 @@ Image {
         anchors.bottomMargin: 22
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
     PushButton{
         id: cancelButton
@@ -118,6 +121,7 @@ Image {
         anchors.bottom: okButton.bottom
         label.text: "Cancel"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
 }

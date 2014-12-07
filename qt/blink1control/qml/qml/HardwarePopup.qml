@@ -73,7 +73,8 @@ Image {
     }
     Text{
         color: "white"
-        font.pointSize: (!mw.mac())?10:13
+        //font.pointSize: (!mw.mac())?10:13
+        font.pixelSize:13
         text: "Hardware - Properties"
         anchors.left: parent.left
         anchors.top: parent.top
@@ -112,7 +113,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Name:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         Rectangle{
             anchors.left: parent.left
@@ -131,7 +133,8 @@ Image {
                 anchors.topMargin: 5
                 width: 290
                 height: 30
-                font.pointSize: (!mw.mac())?10:12
+                //font.pointSize: (!mw.mac())?10:12
+                font.pixelSize:12
                 selectByMouse: true
                 maximumLength: 24
             }
@@ -152,7 +155,8 @@ Image {
             anchors.verticalCenter: parent.verticalCenter
             text: "Type:"
             color: "black"
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
         ComboBox {
             id: hType
@@ -209,7 +213,8 @@ Image {
             anchors.left: activity.right
             anchors.leftMargin: 15
             anchors.verticalCenter: activity.verticalCenter
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
     }
 
@@ -253,7 +258,8 @@ Image {
             anchors.left: alert.right
             anchors.leftMargin: 15
             anchors.verticalCenter: alert.verticalCenter
-            font.pointSize: (!mw.mac())?8:11
+            //font.pointSize: (!mw.mac())?8:11
+            font.pixelSize:11
         }
 
         ComboBox {
@@ -318,7 +324,8 @@ Image {
                     anchors.topMargin: 5
                     width: 54
                     height: 30
-                    font.pointSize: (!mw.mac())?10:12
+                    //font.pointSize: (!mw.mac())?10:12
+                    font.pixelSize:12
                     selectByMouse: true
                     validator: IntValidator{}
                     onTextChanged: {
@@ -416,7 +423,8 @@ Image {
         anchors.bottomMargin: 22
         label.text: "OK"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
     PushButton{
         id: cancelButton
@@ -435,7 +443,8 @@ Image {
         anchors.bottom: okButton.bottom
         label.text: "Cancel"
         label.color: "black"
-        label.font.pointSize: (!mw.mac())?9:12
+        //label.font.pointSize: (!mw.mac())?9:12
+        label.font.pixelSize:12
     }
 
 }
