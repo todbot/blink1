@@ -24,7 +24,8 @@ Item{
             color: "#D5D5D5"
             font.bold: true
             anchors.centerIn: parent
-            font.pointSize: (!mw.mac())?9:11
+            //font.pointSize: (!mw.mac())?9:11
+            font.pixelSize:11
         }
     }
 }

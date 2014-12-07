@@ -67,7 +67,8 @@ Image {
                 anchors.leftMargin: 30
                 anchors.verticalCenter: parent.verticalCenter
                 text: "Edit pattern"
-                font.pointSize: (!mw.mac())?8:12
+                //font.pointSize: (!mw.mac())?8:12
+                font.pixelSize:12
             }
         }
 

@@ -112,24 +112,13 @@ WINDEPLOYQT_OPTS+=" --no-webkit"
 ${QT_BIN_PATH}/windeployqt ${WINDEPLOYQT_OPTS}  Blink1Control.exe
 
 
-DO_WEBKIT=0
-if [ "$DO_WEBKIT" -eq 1 ] ; then
-echo "Copying extra WebKit stuff..."
-# fix bug in windeployqt
-# see: https://bugreports.qt-project.org/browse/QTBUG-35211
-cp ${QT_BIN_PATH}/QtWebProcess.exe .
-cp ${QT_BIN_PATH}/Qt5WebKitWidgets.dll .
-cp ${QT_BIN_PATH}/Qt5OpenGL.dll .
-cp ${QT_BIN_PATH}/Qt5PrintSupport.dll  .
-cp ${QT_BIN_PATH}/Qt5MultimediaWidgets.dll  .
-fi
-
 #exit 0   # uncomment for faster testing 
 
 # Build a zip bundle
+echo "zipping up ${APP_DIR}"
 cd ..
-rm -f ${APP_DIR}-win.zip
-zip -r ../${APP_DIR}-win.zip ${APP_DIR}
+rm -f ../${APP_DIR}-win.zip
+zip -q -r ../${APP_DIR}-win.zip ${APP_DIR}
 
 echo
 echo "Created '${APP_DIR}-win.zip'"

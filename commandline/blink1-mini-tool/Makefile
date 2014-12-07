@@ -88,13 +88,13 @@ endif
 #################  OpenWrt / DD-WRT #########################################
 ifeq "$(OS)" "wrt"
 
-WRT_SDK_HOME := $(HOME)/OpenWrt-SDK-Linux-i686-1
+WRT_SDK_HOME ?= $(HOME)/OpenWrt-SDK-Linux-i686-1
 WRT_TOOLCHAIN_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/toolchain-* | tail -1))
 WRT_TARGET_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/target-* | tail -1))
 STAGING_DIR=$(WRT_SDK_HOME)/staging_dir
 
-CC = $(WRT_TOOLCHAIN_ROOT)/bin/mipsel-linux-gcc
-LD = $(WRT_TOOLCHAIN_ROOT)/bin/mipsel-linux-ld
+CC = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwrt-linux-gcc
+LD = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwort-linux-ld
 USBFLAGS= -I$(WRT_TARGET_ROOT)/usr/include
 USBLIBS = -L$(WRT_TARGET_ROOT)/usr/lib -lusb -lusb-1.0
 export STAGING_DIR=$$(STAGING_DIR)

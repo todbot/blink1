@@ -7,17 +7,21 @@ import QtQuick.Dialogs 1.0
 
 //import "ToolTipTod2Creator.js" as ToolTipCreator
 
+
 Window {
     id: prefsWindow
 
-    width: mw.mac() ? 580 : 560 // Win version experimentally determined
+    width: mw.mac() ? 570 : 560 // Win version experimentally determined
     height: mw.mac() ? 510 : 450
-    // FIXME: surely there's a shorter way of saying "no resize"?
-    maximumWidth: width
-    maximumHeight: height
-    minimumWidth: width
-    minimumHeight: height
 
+    // FIXME: surely there's a shorter way of saying "no resize"?
+    //maximumWidth: width
+    //maximumHeight: height
+    //minimumWidth: width
+    //minimumHeight: height
+
+    //font.pixelSize:12
+    
     color: "#f9f9f9"
 
     title: "Blink1Control Advanced Preferences"
@@ -307,7 +311,7 @@ Window {
 
                     prefsWindow.visible = false
                 }
-            }
+            } // button
         } // rowlayout buttons
 
         } // main columnlayout
@@ -357,35 +361,35 @@ Window {
             blink1touseComboBox.currentIndex = i;
             console.log("idx:+"+idstr +" i="+i)
         }
+    } // onVisibilityChanged
+
+    FileDialog {
+        id: fileDialogExport
+        title: "Select location of exported file"
+        selectExisting: false
+        nameFilters: ["Preferences INI files (*.ini)", "All files (*)"]
+        onAccepted: {
+            console.log("You chose: " + fileDialogExport.fileUrl)
+            mw.settingsExport( fileDialogExport.fileUrl )
+        }
+        onRejected: {
+            console.log("export canceled")
+        }
     }
 
-FileDialog {
-    id: fileDialogExport
-    title: "Select location of exported file"
-    selectExisting: false
-    nameFilters: ["Preferences INI files (*.ini)", "All files (*)"]
-    onAccepted: {
-        console.log("You chose: " + fileDialogExport.fileUrl)
-        mw.settingsExport( fileDialogExport.fileUrl )
+    FileDialog {
+        id: fileDialogImport
+        title: "Choose a settings file to import"
+        selectExisting: true
+        nameFilters: ["Preferences INI files (*.ini)", "All files (*)"]
+        onAccepted: {
+            console.log("You chose: " + fileDialogImport.fileUrl)
+            mw.settingsImport( fileDialogImport.fileUrl )
+        }
+        onRejected: {
+            console.log("import canceled")
+        }
     }
-    onRejected: {
-        console.log("export canceled")
-    }
-}
-
-FileDialog {
-    id: fileDialogImport
-    title: "Choose a settings file to import"
-    selectExisting: true
-    nameFilters: ["Preferences INI files (*.ini)", "All files (*)"]
-    onAccepted: {
-        console.log("You chose: " + fileDialogImport.fileUrl)
-        mw.settingsImport( fileDialogImport.fileUrl )
-    }
-    onRejected: {
-        console.log("import canceled")
-    }
-}
  
     
 } // window
