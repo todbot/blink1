@@ -1,5 +1,5 @@
 #
-# blink1-mini-tool -- super minimal blink(1) controller 
+# blink1-mini-tool -- minimal blink(1) controller 
 #                     for embedded Linuxes or other minimal systems
 #
 # Arduino Yun
@@ -8,10 +8,12 @@
 #   - Set environment variable WRT_SDK_HOME to resulting directory
 #   - "make OS=yun"
 #   
-# OpenWrt / DD-WRT
+# OpenWrt / DD-WRT 
 #   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
 #   - set WRT_SDK_HOME environment variable
 #   - type "make OS=wrt" to build
+#   - note: "apt-get install lib32stdc++6 lib32z1" if using 32-bit SDK on 64-bit system
+#   - note: if your OpenWrt device is ar71xx-based, try 'make OS=yun' build instead
 #
 # BeagleBone / BeagleBoard (on Angstrom Linux)
 #   - Install USB dev support 
@@ -88,13 +90,14 @@ endif
 #################  OpenWrt / DD-WRT #########################################
 ifeq "$(OS)" "wrt"
 
-WRT_SDK_HOME ?= $(HOME)/OpenWrt-SDK-Linux-i686-1
+WRT_SDK_HOME := $(HOME)/openwrt/OpenWrt-SDK-brcm47xx-for-linux-i486-gcc-4.6-linaro_uClibc-0.9.33.2
 WRT_TOOLCHAIN_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/toolchain-* | tail -1))
 WRT_TARGET_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/target-* | tail -1))
 STAGING_DIR=$(WRT_SDK_HOME)/staging_dir
+# STAGING_DIR used by mipsel-openwrt-linux-gcc
 
-CC = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwrt-linux-gcc
-LD = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwort-linux-ld
+CC = $(WRT_TOOLCHAIN_ROOT)/bin/mip*-openwrt-linux-gcc
+LD = $(WRT_TOOLCHAIN_ROOT)/bin/mip*-openwrt-linux-ld
 USBFLAGS= -I$(WRT_TARGET_ROOT)/usr/include
 USBLIBS = -L$(WRT_TARGET_ROOT)/usr/lib -lusb -lusb-1.0
 export STAGING_DIR=$$(STAGING_DIR)
@@ -105,13 +108,7 @@ export STAGING_DIR=$$(STAGING_DIR)
 #USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir_mipsel/usr/include"
 #USBLIBS  = "$(WRT_SDK_HOME)/staging_dir_mipsel/usr/lib/libusb.a"
 
-#WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
-#CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
-#LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
-#USBFLAGS = "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include"
-#fUSBLIBS  = "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
-
-#LDFLAGS += -static
+LDFLAGS += -static
 
 endif
 
