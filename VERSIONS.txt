@@ -13,4 +13,5 @@ v1.91 -  Blink1Control Hardware tab fixes
 v1.92 -  internal release
 v1.93 -  Blink1Control Advanced Preferences, blink1control-tool, more API fixes
 v1.94 -  Blink1Control crashing fixes (device scanning, logging)
+v1.95 -  Blink1Control font size fix for high-DPI displays, blink1-mini-tool for OpenWrt systems
 
