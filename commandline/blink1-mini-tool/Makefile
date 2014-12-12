@@ -5,14 +5,16 @@
 # Arduino Yun
 #   - Download Linino SDK from: http://download.linino.org/linino-utils/
 #   - Unzip tarball
-#   - Set environment variable WRT_SDK_HOME to resulting directory
-#   - "make OS=yun"
+#   - Set WRT_SDK_HOME environment variable to resulting directory
+#   - Do "cd ${WRT_SDK_HOME} && make" to setup SDK
+#   - Do "make OS=yun" to build
 #   
 # OpenWrt / DD-WRT 
-#   - Download the OpenWrt SDK for Linux (only for Linux now, I think)
-#   - set WRT_SDK_HOME environment variable
-#   - type "make OS=wrt" to build
-#   - note: "apt-get install lib32stdc++6 lib32z1" if using 32-bit SDK on 64-bit system
+#   - Download & unzip the OpenWrt SDK for Linux
+#   - Set WRT_SDK_HOME environment variable to resulting directory
+#   - Do "cd ${WRT_SDK_HOME} && make" to setup SDK
+#   - Do "make OS=wrt" to build
+#   - note: "apt-get install lib32stdc++6 lib32z1" if using 32bit SDK on 64bit system
 #   - note: if your OpenWrt device is ar71xx-based, try 'make OS=yun' build instead
 #
 # BeagleBone / BeagleBoard (on Angstrom Linux)
