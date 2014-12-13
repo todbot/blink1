@@ -265,8 +265,8 @@ INCLOCATION ?= $(PREFIX)/include
 endif
 
 #################  WRT Linux  ################################################
-ifeq "$(OS)" "wrt"
-LIBTARGET = blink1-lib.so
+ifeq "$(OS)" "wrtlinux"
+LIBTARGET = libblink1.so
 
 # HIDAPI build doesn't work, use HIDDATA instead
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
@@ -292,24 +292,56 @@ EXE=
 
 endif
 
-##############  Cross-compile WRT Linux  #####################################
-ifeq "$(OS)" "wrtcross"
+##############  Cross-compile WRT Linux for Arduino Yun  #####################
+ifeq "$(OS)" "yun"
+LIBTARGET = libblink1.so
 
-ifeq "$(USBLIB_TYPE)" "HIDDATA"
+#ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA
 OBJS = ./hiddata.o
 
-WRT_SDK_HOME := $(HOME)/projects/openwrt/sdk/OpenWrt-SDK-ar71xx-for-Linux-i686-gcc-4.3.3+cs_uClibc-0.9.30.1
-CC = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-gcc
-LD = $(WRT_SDK_HOME)/staging_dir/toolchain-mips_r2_gcc-4.3.3+cs_uClibc-0.9.30.1/usr/bin/mips-openwrt-linux-ld
-CFLAGS += "-I$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/include" -fPIC
-LIBS   += "$(WRT_SDK_HOME)/staging_dir/target-mips_r2_uClibc-0.9.30.1/usr/lib/libusb.a"
-#LDFLAGS += -static
+WRT_SDK_HOME := $(HOME)/openwrt/OpenWrt-SDK-ar71xx-for-linux-x86_64-gcc-4.6-linaro_uClibc-0.9.33.2
+WRT_TOOLCHAIN_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/toolchain-* | tail -1))
+WRT_TARGET_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/target-* | tail -1))
+STAGING_DIR=$(WRT_SDK_HOME)/staging_dir
+
+CC = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwrt-linux-gcc
+LD = $(WRT_TOOLCHAIN_ROOT)/bin/mips-openwrt-linux-ld
+CFLAGS += -I$(WRT_TARGET_ROOT)/usr/include
+LIBS += -L$(WRT_TARGET_ROOT)/usr/lib -lusb -lusb-1.0
+export STAGING_DIR=$$(STAGING_DIR)
+
+#endif
+
+#EXEFLAGS = -static
+LIBFLAGS = -o $(LIBTARGET) $(LIBS)
+EXE=
 
 endif
 
+##############  Cross-compile WRT Linux  #####################################
+ifeq "$(OS)" "wrt"
+LIBTARGET = libblink1.so
+
+#ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+
+WRT_SDK_HOME := $(HOME)/openwrt/OpenWrt-SDK-brcm47xx-for-linux-i486-gcc-4.6-linaro_uClibc-0.9.33.2
+WRT_TOOLCHAIN_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/toolchain-* | tail -1))
+WRT_TARGET_ROOT=$(strip $(shell ls -d $(WRT_SDK_HOME)/staging_dir/target-* | tail -1))
+STAGING_DIR=$(WRT_SDK_HOME)/staging_dir
+
+CC = $(WRT_TOOLCHAIN_ROOT)/bin/mips*-openwrt-linux-gcc
+LD = $(WRT_TOOLCHAIN_ROOT)/bin/mips*-openwrt-linux-ld
+CFLAGS += -I$(WRT_TARGET_ROOT)/usr/include
+LIBS += -L$(WRT_TARGET_ROOT)/usr/lib -lusb -lusb-1.0
+export STAGING_DIR=$$(STAGING_DIR)
+
+#endif
+
 EXEFLAGS = -static
-LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+#LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
 EXE=
 
 endif
@@ -389,6 +421,7 @@ clean:
 	rm -f $(LIBTARGET)
 	rm -f blink1-tiny-server.o blink1-tool.o hiddata.o
 	rm -f server/mongoose/mongoose.o
+	rm -f blink1-tool$(EXE) blink1-tiny-server$(EXE)
 
 distclean: clean
 	rm -f blink1-tool$(EXE)
