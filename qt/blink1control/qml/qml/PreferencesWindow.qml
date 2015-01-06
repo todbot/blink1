@@ -172,7 +172,7 @@ Window {
                 ExclusiveGroup { id: blink1touseGroup }
                 RadioButton {  exclusiveGroup: blink1touseGroup
                     id: blink1tousefirstavailButton
-                    text: "First Avaialble"
+                    text: "First Available"
                     checked: true
                 }
                 RowLayout {
