@@ -59,7 +59,7 @@
 #   - exit
 #   
 # Raspberry Pi
-#   - apt-get install libusb-1.0.0-dev
+#   - apt-get install build-essential pkg-config libusb-1.0.0-dev 
 #   - make
 #
 # BeagleBone / BeagleBoard (on Angstrom Linux)
