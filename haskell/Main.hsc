@@ -15,16 +15,18 @@ foreign import ccall "blink1-lib.h blink1_open"
 foreign import ccall "blink1-lib.h blink1_enumerate"
   c_blink1_enumerate :: IO (CInt)
 
+foreign import ccall "blink1-lib.h blink1_close"
+  c_blink1_close:: Ptr Blink1Device -> IO ()
 
 data Blink1Device
-
-
 
 data Blink1Tool =
   Blink1Tool !(ForeignPtr Blink1Device)
 
 
   deriving (Eq, Ord, Show)
+
+-- closingFinalizer :: FinalizerPtr a -> FinalizerPtr a
 
 blink1open :: IO (Either String Blink1Tool)
 blink1open =
@@ -42,5 +44,4 @@ blink1open =
 main :: IO ()
 main = do
          _ <- blink1open
-
          return ()
