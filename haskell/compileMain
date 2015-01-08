@@ -1,0 +1,3 @@
+#! /bin/bash
+
+hsc2hs Main.hsc && ghc Main.hs -O -lblink1
