@@ -40,7 +40,8 @@ blink1tool fadeMillis r g b led =
 
 main :: IO ()
 main = do
-         result <- blink1tool 300 255 255 0 0
+         result <- blink1tool 300 255 255 0 1
          case result of
-           Left  msg     -> putStrLn msg
-           Right status  -> putStrLn ( "status was "++(show status))
+           Left  msg    -> putStrLn msg
+           Right (-1)   -> c_blink1_enumerate  >>= \numBlink1s -> putStrLn (" error : blink1 didnt work , enumeration is "++ (show numBlink1s))
+           Right status -> putStrLn ("status was "++(show status))
