@@ -1,0 +1,4 @@
+#! /bin/bash
+
+# script to compile a small example use of ffi through haskell, see Main.hs
+hsc2hs Blink1Tool.hsc && ghc Blink1Tool.hs Main.hs -O -lblink1
