@@ -157,14 +157,11 @@ static void usage(char *myName)
 "Usage: \n"
 "  %s <cmd> [options]\n"
 "where <cmd> is one of:\n"
-"  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
-"  --random, --random=<num>    Flash a number of random colors \n"
-"  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
-"  --running, --running=<num>  Do running animation (num times)\n"
+"  --list                      List connected blink(1) devices \n"
 "  --rgb=<red>,<green>,<blue>  Fade to RGB value\n"
 "  --rgb=[#]RRGGBB             Fade to RGB value, as hex color code\n"
 "  --hsb=<hue>,<sat>,<bri>     Fade to HSB value\n"
-"  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
+"  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
 "  --on | --white              Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --red                       Turn blink(1) red \n"
@@ -173,14 +170,16 @@ static void usage(char *myName)
 "  --cyan                      Turn blink(1) cyan (green + blue) \n"
 "  --magenta                   Turn blink(1) magenta (red + blue) \n"
 "  --yellow                    Turn blink(1) yellow (red + green) \n"
+"  --rgbread                   Read last RGB color sent (post gamma-correction)\n"
 "  --setpattline <pos>         Write pattern RGB val at pos (--rgb/hsb to set)\n"
 "  --getpattline <pos>         Read pattern RGB value at pos\n" 
 "  --savepattern               Save color pattern to flash (mk2)\n"
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
 "  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
-"  --running                   Multi-LED effect (uses --led & --rgb)\n"
-"  --list                      List connected blink(1) devices \n"
+"  --chase                     Multi-LED chase effect (uses --led & --rgb)\n"
+"  --random, --random=<num>    Flash a number of random colors \n"
+"  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
 " Nerd functions: (not used normally) \n"
 "  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
 "  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
@@ -198,9 +197,15 @@ static void usage(char *myName)
 "Examples \n"
 "  blink1-tool -m 100 --rgb=255,0,255    # fade to #FF00FF in 0.1 seconds \n"
 "  blink1-tool -t 2000 --random=100      # every 2 seconds new random color\n"
-"  blink1-tool --rgb=0xff,0,00 --blink 3 # blink red 3 times\n"
-"  blink1-tool --rgb=FF9900              # make blink1 pumpkin orange\n"
-"  blink1-tool --rgb=#FF9900             # make blink1 pumpkin orange\n"
+"  blink1-tool --rgb 0xff,0,00 --blink 3 # blink red 3 times\n"
+"  blink1-tool --rgb FF9900              # make blink1 pumpkin orange\n"
+"  blink1-tool --rgb #FF9900             # make blink1 pumpkin orange\n"
+"\n"
+"Notes \n"
+" - To blink a color with specific timing, specify 'blink' command last:\n"
+"   blink1-tool -t 200 -m 100 --rgb ff00ff --blink 5 \n"
+" - If using several blink(1)s, use '-d all' or '-d 0,2' to select 1st,3rd: \n"
+"   blink1-tool -d all -t 50 -m 50 -rgb 00ff00 --blink 10 \n"
 "\n"
             ,myName);
 //"  --hidread                  Read a blink(1) USB HID GetFeature report \n"
@@ -233,12 +238,36 @@ enum {
     CMD_STOP,
     CMD_GETPLAYSTATE,
     CMD_RANDOM,
-    CMD_RUNNING,
+    CMD_CHASE,
     CMD_VERSION,
     CMD_FWVERSION,
     CMD_SERVERDOWN,
     CMD_TESTTEST,
 };
+
+//
+// uses globals numDevicesToUse, deviceIds, quiet
+//
+int blink1_fadeToRGBForDevices( uint16_t mils, uint8_t rr,uint8_t gg, uint8_t bb, uint8_t nn ) {
+    blink1_device* d;
+    int rc;
+    for( int i=0; i< numDevicesToUse; i++ ) {
+        d = blink1_openById( deviceIds[i] );
+        if( d == NULL ) continue;
+        msg("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+            deviceIds[i], rr,gg,bb, mils);
+        if( nn==0 ) {
+            rc = blink1_fadeToRGB(d, mils, rr,gg,bb);
+        } else {
+            rc = blink1_fadeToRGBN(d,mils, rr,gg,bb, nn);
+        }
+        if( rc == -1 && !quiet ) { // on error, do something, anything. 
+            printf("error on fadeToRGBForDevices\n");
+        }
+        blink1_close( d );
+    }
+    return 0; // FIXME
+}
 
 //
 int main(int argc, char** argv)
@@ -296,7 +325,7 @@ int main(int argc, char** argv)
         {"stop",       no_argument,       &cmd,   CMD_STOP},
         {"playstate",  no_argument,       &cmd,   CMD_GETPLAYSTATE},
         {"random",     optional_argument, &cmd,   CMD_RANDOM },
-        {"running",    optional_argument, &cmd,   CMD_RUNNING },
+        {"chase",      optional_argument, &cmd,   CMD_CHASE },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"fwversion",  no_argument,       &cmd,   CMD_FWVERSION },
         //{"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
@@ -312,14 +341,15 @@ int main(int argc, char** argv)
          case 0:             // deal with long opts that have no short opts
             switch(cmd) { 
             case CMD_RGB:
+                    
                 // parse hex color code like "#FF00FF"
-                if( optarg[0] == '#' || strlen(optarg)==6 ) { 
+                if( strchr(optarg,',')==NULL && (optarg[0] == '#' || strlen(optarg)==6) ) { 
                     optarg = (optarg[0] == '#') ? optarg+1 : optarg;
                     uint32_t poop = strtol(optarg, NULL, 16); 
                     rgbbuf[0] = (poop >> 16) & 0xff; 
                     rgbbuf[1] = (poop >>  8) & 0xff;
                     rgbbuf[2] = (poop >>  0) & 0xff;
-                } else { 
+                } else {
                     hexread(rgbbuf, optarg, sizeof(rgbbuf));
                 }
                 break;
@@ -338,7 +368,7 @@ int main(int argc, char** argv)
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_RANDOM:
-            case CMD_RUNNING:
+            case CMD_CHASE:
             case CMD_GLIMMER:
                 arg = (optarg) ? strtol(optarg,NULL,0) : 0;// cmd w/ number arg
                 break;
@@ -561,6 +591,9 @@ int main(int argc, char** argv)
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
 
+        blink1_fadeToRGBForDevices( millis, r,g,b, ledn );
+        
+        /*
         for( int i=0; i< numDevicesToUse; i++ ) {
             dev = blink1_openById( deviceIds[i] );
             if( dev == NULL ) continue;
@@ -576,6 +609,7 @@ int main(int argc, char** argv)
             }
             blink1_close( dev );
         }
+        */
     }
     else if( cmd == CMD_RGBREAD ) { 
         uint8_t r,g,b;
@@ -678,11 +712,11 @@ int main(int argc, char** argv)
         }
     }
     // this whole thing is a huge mess currently // FIXME
-    else if( cmd == CMD_RUNNING ) { 
+    else if( cmd == CMD_CHASE) { 
         if( ledn == 0 ) ledn = 18;
 
         uint8_t do_rand = 0;
-        uint8_t running_cnt = 0;
+        uint8_t chase_cnt = 0;
         uint8_t leds[ledn][3];
         uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2] };
         if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) { // no rgb specified
@@ -691,7 +725,7 @@ int main(int argc, char** argv)
         }
         char ledstr[16];
         sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
-        printf("running effect with %d LEDs, color %s\n",
+        printf("chase effect with %d LEDs, color %s\n",
                ledn, ((do_rand) ? "random" : ledstr) );
         
         // make gradient
@@ -719,9 +753,9 @@ int main(int argc, char** argv)
             memcpy( leds[0],   c,         sizeof(c) );
 
             // change color if random
-            running_cnt++;
-            if( do_rand && running_cnt > (ledn*2) ) {
-                running_cnt = 0;
+            chase_cnt++;
+            if( do_rand && chase_cnt > (ledn*2) ) {
+                chase_cnt = 0;
                 c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
                 for( int i=0; i<ledn; i++ ) { 
                     leds[i][0] = c[0] * i / ledn;
@@ -745,11 +779,19 @@ int main(int argc, char** argv)
         }
         msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
+            rc = blink1_fadeToRGBForDevices( millis,r,g,b,ledn);
+            blink1_sleep(delayMillis);
+            rc = blink1_fadeToRGBForDevices( millis,0,0,0,ledn);
+            blink1_sleep(delayMillis);
+         }
+        /*
+        for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGBN(dev, millis,r,g,b,ledn);
             blink1_sleep(delayMillis);
             rc = blink1_fadeToRGBN(dev, millis,0,0,0,ledn);
             blink1_sleep(delayMillis);
-        }
+         }
+        */
     }
     else if( cmd == CMD_GLIMMER ) {
         uint8_t n = arg;
