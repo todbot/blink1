@@ -75,6 +75,8 @@
 # "HIDAPI" type is best for Mac, Windows, Linux Desktop, 
 #  but has dependencies on iconv, libusb-1.0, pthread, dl
 #
+# "HIDAPI_HIDRAW" uses udev instead of libusb
+#
 # "HIDDATA" type is best for low-resource Linux, 
 #  and the only dependencies it has is libusb-0.1
 #
@@ -82,6 +84,7 @@
 #
 
 USBLIB_TYPE ?= HIDAPI
+#USBLIB_TYPE = HIDAPI_HIDRAW
 #USBLIB_TYPE = HIDDATA
 
 # uncomment for debugging HID stuff
@@ -204,6 +207,14 @@ CFLAGS += -I./hidapi/hidapi
 OBJS = ./hidapi/libusb/hid.o
 CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
 LIBS   += `pkg-config libusb-1.0 --libs` -lrt -lpthread -ldl
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI_HIDRAW"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi 
+OBJS = ./hidapi/linux/hid.o
+CFLAGS += `pkg-config libusb-1.0 --cflags` -fPIC
+LIBS   += `pkg-config libusb-1.0 --libs` `pkg-config libudev --libs` -lrt 
 endif
 
 ifeq "$(USBLIB_TYPE)" "HIDDATA"
@@ -383,7 +394,7 @@ help:
 	@echo
 
 msg: 
-	@echo "Building for OS=$(OS) BLINK1_VERSION=$(BLINK1_VERSION)"
+	@echo "Building for OS=$(OS) BLINK1_VERSION=$(BLINK1_VERSION) USBLIB_TYPE=$(USBLIB_TYPE)"
 
 
 $(OBJS): %.o: %.c
