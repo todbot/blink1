@@ -12,6 +12,17 @@ Or you can compile it yourself by cloning the blink1 repo at:
   https://github.com/todbot/blink1
 
 
+This document includes the tips:
+* Getting blink1-tool working
+* First commands
+* Setting custom colors with '--rgb'
+* Blinking colors with '--blink'
+* Changing blink speed with '--delay' and '--millis'
+* Turn on one LED, then the other
+* Turn on one LED, then the other, with Windows batch 
+* 
+
+
 Getting `blink1-tool` working
 -----------------------------
 The first thing to do is to make sure you can run `blink1-tool`
@@ -31,9 +42,15 @@ where `blink1-tool` lives.  For instance, if you unzipped into your Downloads fo
     cd %HOMEPATH%/Downloads
     blink1-tool.exe
 
+On Linux, if you are running as non-root and haven't installed the blink1-udev-rules, you will need to use `sudo` with:
 
-First commands with blink1-tool
---------------------------------
+    sudo ./blink1-tool
+
+In all the examples below, when `blink-tool` is specified, it means either `./blink1-tool` or `blink1-tool.exe`, or `sudo ./blink1-tool` depending on your OS.
+
+
+## First commands with blink1-tool
+
 Now you can run `blink1-tool`, try out some of the built in color commands.
 
 In blink1-tool, all commands start with `--`. For example:
@@ -47,8 +64,8 @@ In blink1-tool, all commands start with `--`. For example:
     blink1-tool --magenta
  
 
-Setting custom colors 
-----------------------
+## Setting custom colors with '--rgb'
+
 The main way to set colors with `blink1-tool` is with the `--rgb` command.
 The `--rgb` option can take an red,green,blue triplet or a hex color code.
 
@@ -60,10 +77,47 @@ For instance, all these commands do the exact same thing to turn the blink(1) or
     blink1-tool --rgb #FFCC00          # hey I know, turn orange
     
 
+## Blinking colors with '--blink'
+
+One of the most used commands is `--blink`. It blinks a specific color a number of times.
+For instance, if you want to blink red 5 times for a red alert, do either:
+
+    blink1-tool --rgb #FF0000 --blink 5 
+    blink1-tool --red --blink 5
 
 
-Turn on one LED, then the other
--------------------------------
+## Changing blink speed using '--delay' and '--millis'
+
+If you want to make it blink faster, add the `--delay` option.
+The default delay value is 500 (500 milliseconds).  Too make the blinking faster,
+use a smaller value, like 100.
+
+    blink1-tool --delay 100 --rgb #FF0000 --blink 5 
+
+But if you do that you'll see the blink(1) doesn't go completely dark when blinking.
+This is because there's another time parameter you can set: the fade time.
+The fade time is what  blink(1) uses to smoothly fade from the current color
+to the new color.  Set it with `--millis`. It defaults to 300.
+Set `--delay` shorter for more abrupt changes.
+
+
+So here's a better red-alert:
+
+    blink1-tool --delay 100 --millis 50 --rgb #FF0000 --blink 5
+
+Usually you want `--millis` fade time to be 1/2 `--delay`.
+
+
+
+
+
+
+
+
+
+
+## Turn on one LED, then the other
+
 This examples uses the "-l" option to specify which LED to light.
 The default is "-l 0", which means all LEDs on a single blink(1) mk2.
 Note the "-l" option works with most, but not all, commands in blink1-tool.
@@ -76,8 +130,8 @@ Note the "-l" option works with most, but not all, commands in blink1-tool.
     done
 
 
-Turn on one LED, then the other, with Windows batch file
-------------------------------------------------------
+## Turn on one LED, then the other, with Windows batch file
+
 This examples uses the new "-l" option to specify which LED to light.
 The default is "-l 0", which means all LEDs on a single blink(1) mk2.
 Note the "-l" option works with most, but not all, commands in blink1-tool.
@@ -107,8 +161,8 @@ This example uses a Windows DOS batch file:
     endlocal
 
 
-Make all blink(1)s blink orange 5 times
----------------------------------------------------
+## Make all blink(1)s blink orange 5 times
+
 This example uses the existing "-d" option to specify which blink(1) to address.
 The '-d' option takes the "id" value given by the "--list" commmand,
 or "-all" to mean all blink(1)s.
@@ -123,8 +177,8 @@ or "-all" to mean all blink(1)s.
     % blink1-tool -d all --rgb #FF9900 --blink 5
 
 
-Turn all blink(1)s to the same color
------------------------------------------------
+## Turn all blink(1)s to the same color
+
 This example uses the existing "-d" option to specify which blink(1) to address.
 The '-d' option takes the "id" value given by the "--list" commmand,
 or "-all" to mean all blink(1)s.
