@@ -3,9 +3,9 @@ Tips and Tricks for blink1-tool
 ===============================
 
 Here are some examples of things you can do with blink(1)
-and the blink1-tool command-line program.
+and the `blink1-tool` command-line program.
 
-You can get the `blink1-tool` program for you operating system from:
+You can get the `blink1-tool` program for your operating system from:
   https://github.com/todbot/blink1/releases
 
 Or you can compile it yourself by cloning the blink1 repo at:
