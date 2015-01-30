@@ -4,7 +4,7 @@ blink1-tool command-line API
 
 The below is created from capturing the output of "blink1-tool" with no arguments.
 
-For example usage, see [blink1-tool-tips.md]()
+For example usage, see [blink1-tool-tips.md](blink1-tool-tips.md)
 
 ```
 Usage:
