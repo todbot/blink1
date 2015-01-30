@@ -12,23 +12,27 @@ Or you can compile it yourself by cloning the blink1 repo at:
   https://github.com/todbot/blink1
 
 
-This document includes the tips:
+This document includes the tips, separted into two sections:
 
-* [Getting blink1-tool working](#A1)
-* [First commands](#A2)
-* [Setting custom colors with '--rgb'](#A3)
-* [Blinking colors with '--blink'](#A4)
-* [Changing blink speed with '--delay' and '--millis'](#A5)
+
+Using blink1-tool:
+* [Getting blink1-tool working](#Astart)
+* [First commands](#Afirst)
+* [Setting custom colors with '--rgb'](#Acolors)
+* [Blinking colors with '--blink'](#Ablink)
+* [Changing blink speed with '--delay' and '--millis'](#Adelay)
+* [Finding and listing blink(1) devices](#Alist)
+* [Controlling multiple blink(1) devices](#Amulti)
+
+Writing scripts with blink1-tool:
+* [Mac/Linux: Turn on one LED, then the other](#A10)
+* [Windows: Turn on one LED, then the other](#A11)
+* [Make all blink(1)s blink orange 5 times](#A12)
+* [Turn all blink(1)s the same color](#A13)
 * 
-* Turn on one LED, then the other
-* Turn on one LED, then the other, with Windows batch 
-* Make all blink(1)s blink orange 5 times
-* Turn all blink(1)s the same color
-* 
 
-### <a name="getting-started"></a> Getting Started
 
-<a name="A1"></a>
+<a name="Astart"></a>
 ### Getting `blink1-tool` working
 
 The first thing to do is to make sure you can run `blink1-tool`
@@ -55,7 +59,7 @@ On Linux, if you are running as non-root and haven't installed the blink1-udev-r
 In all the examples below, when `blink-tool` is specified, it means either `./blink1-tool` or `blink1-tool.exe`, or `sudo ./blink1-tool` depending on your OS.
 
 
-<a name="A2"></a>
+<a name="Afirst"></a>
 ## First commands with blink1-tool
 
 Now that you can run `blink1-tool`, try out some of the built in color commands.
@@ -71,7 +75,7 @@ All commands start with `--`. For example:
     blink1-tool --magenta
  
 
-<a name="A3"></a>
+<a name="Acolors"></a>
 ## Setting custom colors with '--rgb'
 
 The main way to set colors is with the `--rgb` command.
@@ -85,7 +89,7 @@ For instance, all these commands do the exact same thing to turn the blink(1) or
     blink1-tool --rgb #FFCC00          # hey I know, turn orange
     
 
-<a name="A4"></a>
+<a name="Ablink"></a>
 ## Blinking colors with '--blink'
 
 One of the most used commands is `--blink`. It blinks a specific color a number of times.
@@ -95,7 +99,7 @@ For instance, if you want to blink red 5 times for a red alert, do either:
     blink1-tool --red --blink 5
 
 
-<a name="A5"></a>
+<a name="Adelay"></a>
 ## Changing blink speed using '--delay' and '--millis'
 
 If you want to make it blink faster, use the `--delay` option.
@@ -111,25 +115,72 @@ The fade time is what  blink(1) uses to smoothly fade from the current color
 to the new color.  Set it with `--millis`. It defaults to 300.
 Set `--delay` shorter for more abrupt changes.
 
-
 So here's a better red-alert:
 
     blink1-tool --delay 100 --millis 50 --rgb #FF0000 --blink 5
 
 Usually you want `--millis` fade time to be 1/2 `--delay`.
-These two options have short form of "-d" for "--delay" and "-m" for "--millis".
-So the above could be written:
+These two options have short form: `-d` for `--delay` and `-m` for `--millis`.
+The above could instead be written:
 
     blink1-tool -d 100 -m 50 --rgb #FF0000 --blink 5
 
 
+<A name="Alist"></a>
+## Finding and listing blink(1) devices
+
+You can have multiple blink(1) devices and address each one individually.
+This is useful if you want to dedicate different blink(1) devices to mean different
+things, like one-per-person in your continuous integration monitor or one-per-server
+for network monitoring.
+
+To find and list the all the blink(1) devices currently connected, use `--list`.
+Below is shows what you will see with four blink(1)s connected.
+
+    % blink1-tool --list
+    blink(1) list:
+    id:0 - serialnum:2143AB23 (mk2)
+    id:1 - serialnum:2143DC05 (mk2)
+    id:2 - serialnum:214369F0 (mk2)
+    id:3 - serialnum:2143BADC (mk2)
+
+<a name="Amulti"></a>
+## Controlling multiple blink(1) devices
+
+To control a specific blink(1), identify it with either its "id" number
+(0,1,2,3 in the above example) or its serial number.  The `--id` (short form: `-d`)
+option is used to specify.  For example, to control the blink(1) with id=2 from
+the previous example, do:
+
+    blink1-tool --id 2 --rgb #00FF00 --blink 3
+
+The `--id` option takes a comma-separated list of ids/serials, so if you want to
+control just blink(1)s with id=1 and id=3 from above, do:
+
+    blink1-tool --id 1,3 --rgb #00FF00 -- blink 3
+
+A special case is `--id all` which will control all currently connected blink(1) devices.
+This is great when you want to quickly set all blink(1)s to a color:
+
+    blink1-tool --id all --red
+
+
+<br>
+<br>
+<br>
+<br>
+<hr>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 
 
 
-
-
-## Turn on one LED, then the other
+<a name="A10"></a>
+## Mac/Linux: Turn on one LED, then the other
 
 This examples uses the "-l" option to specify which LED to light.
 The default is "-l 0", which means all LEDs on a single blink(1) mk2.
@@ -143,9 +194,10 @@ Note the "-l" option works with most, but not all, commands in blink1-tool.
     done
 
 
-## Turn on one LED, then the other, with Windows batch file
+<a name="A11"></a>
+## Windows: Turn on one LED, then the other
 
-This examples uses the new "-l" option to specify which LED to light.
+This examples uses the "-l" option to specify which LED to light.
 The default is "-l 0", which means all LEDs on a single blink(1) mk2.
 Note the "-l" option works with most, but not all, commands in blink1-tool.
 
@@ -174,6 +226,7 @@ This example uses a Windows DOS batch file:
     endlocal
 
 
+<a name="A12"></a>
 ## Make all blink(1)s blink orange 5 times
 
 This example uses the existing "-d" option to specify which blink(1) to address.
