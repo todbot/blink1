@@ -37,8 +37,10 @@
 #define getpid _getpid
 #endif
 
-int millis = 300;
-int delayMillis = 500;
+const int millisDefault = 300;
+const int delayMillisDefault = 500;
+int millis = -1;
+int delayMillis = -1;
 int numDevicesToUse = 1;
 int ledn = 0;
 
@@ -50,11 +52,10 @@ uint8_t rgbbuf[3];
 int verbose;
 int quiet=0;
 
-
 //---------------------------------------------------------------------------- 
 /*
   TBD: replace printf()s with something like this
-void logpri(int loglevel, char* fmt, ...)
+  void logpri(int loglevel, char* fmt, ...)
 {
     if( loglevel < verbose ) return;
     va_list ap;
@@ -326,6 +327,7 @@ int main(int argc, char** argv)
         {"playstate",  no_argument,       &cmd,   CMD_GETPLAYSTATE},
         {"random",     optional_argument, &cmd,   CMD_RANDOM },
         {"chase",      optional_argument, &cmd,   CMD_CHASE },
+        {"running",    optional_argument, &cmd,   CMD_CHASE },
         {"version",    no_argument,       &cmd,   CMD_VERSION },
         {"fwversion",  no_argument,       &cmd,   CMD_FWVERSION },
         //{"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
@@ -441,9 +443,11 @@ int main(int argc, char** argv)
                     deviceIds[numDevicesToUse++] = strtol(pch,NULL,base);
                     pch = strtok(NULL, " ,");
                 }
-                for( int i=0; i<numDevicesToUse; i++ ) { 
-                    printf("deviceId[%d]: %d\n", i, deviceIds[i]);
-                }
+                //if( !quiet ) {
+                //    for( int i=0; i<numDevicesToUse; i++ ) { 
+                //        printf("using deviceId[%d]: %d\n", i, deviceIds[i]);
+                //    }
+                //}
             }
             /*
             else if( strlen(optarg) == 8 ) { //
@@ -461,13 +465,21 @@ int main(int argc, char** argv)
             exit(1);
             break;
         }
-    }
+    } // while(1) arg parsing
 
     if(argc < 2){
         usage( "blink1-tool" );
         exit(1);
     }
-
+    /*
+    if( delayMillis != -1 && millis==0 ) 
+        millis = delayMillis/2;
+    else 
+        delayMillis = delayMillisDefault;
+    */
+    if( delayMillis==-1 ) delayMillis = delayMillisDefault;
+    if( millis == -1 ) millis = millisDefault;
+        
     // debug  (not on Windows though, no getuid())
     /*
     if( 0 ) { 
@@ -798,9 +810,9 @@ int main(int argc, char** argv)
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
+        if( n == 0 ) n = 3;
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 127;
-            if( n == 0 ) n = 3;
         }
         msg("glimmering %d times rgb:#%2.2x%2.2x%2.2x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) {
