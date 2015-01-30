@@ -12,7 +12,7 @@ Or you can compile it yourself by cloning the blink1 repo at:
   https://github.com/todbot/blink1
 
 
-This document includes tips separted into two sections:
+This document includes tips separated into two sections:
 
 
 Using blink1-tool:
