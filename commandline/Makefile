@@ -29,7 +29,7 @@
 #   - make
 #
 # Linux (Fedora 18+)
-#   - yum install make gcc 
+#   - yum install make gcc libusbx-devel
 #   - make 
 #
 # Linux (Fedora 17)
