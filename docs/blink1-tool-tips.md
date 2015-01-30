@@ -29,8 +29,9 @@ Writing scripts with blink1-tool:
 * [Windows: Turn on one LED, then the other](#A11)
 * [Make all blink(1)s blink orange 5 times](#A12)
 * [Turn all blink(1)s the same color](#A13)
-* 
-
+ 
+Also check out the 'blink1/commandline/scripts' directory for more examples:
+  https://github.com/todbot/blink1/tree/master/commandline/scripts 
 
 <a name="Astart"></a>
 ### Getting `blink1-tool` working
