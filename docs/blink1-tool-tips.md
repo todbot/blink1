@@ -13,18 +13,24 @@ Or you can compile it yourself by cloning the blink1 repo at:
 
 
 This document includes the tips:
-* Getting blink1-tool working
-* First commands
-* Setting custom colors with '--rgb'
-* Blinking colors with '--blink'
-* Changing blink speed with '--delay' and '--millis'
+
+* [Getting blink1-tool working](#A1)
+* [First commands](#A2)
+* [Setting custom colors with '--rgb'](#A3)
+* [Blinking colors with '--blink'](#A4)
+* [Changing blink speed with '--delay' and '--millis'](#A5)
+* 
 * Turn on one LED, then the other
 * Turn on one LED, then the other, with Windows batch 
+* Make all blink(1)s blink orange 5 times
+* Turn all blink(1)s the same color
 * 
 
+### <a name="getting-started"></a> Getting Started
 
-Getting `blink1-tool` working
------------------------------
+<a name="A1"></a>
+### Getting `blink1-tool` working
+
 The first thing to do is to make sure you can run `blink1-tool`
 and find blink(1) devices.  Once you download and unzip the blink1-tool zip for
 your OS (or build it yourself).  Try running it with no options.  It will give you
@@ -49,11 +55,12 @@ On Linux, if you are running as non-root and haven't installed the blink1-udev-r
 In all the examples below, when `blink-tool` is specified, it means either `./blink1-tool` or `blink1-tool.exe`, or `sudo ./blink1-tool` depending on your OS.
 
 
+<a name="A2"></a>
 ## First commands with blink1-tool
 
-Now you can run `blink1-tool`, try out some of the built in color commands.
+Now that you can run `blink1-tool`, try out some of the built in color commands.
 
-In blink1-tool, all commands start with `--`. For example:
+All commands start with `--`. For example:
 
     blink1-tool --on    # turn blink(1) on full-white
     blink1-tool --off   # turn blink(1) off
@@ -64,9 +71,10 @@ In blink1-tool, all commands start with `--`. For example:
     blink1-tool --magenta
  
 
+<a name="A3"></a>
 ## Setting custom colors with '--rgb'
 
-The main way to set colors with `blink1-tool` is with the `--rgb` command.
+The main way to set colors is with the `--rgb` command.
 The `--rgb` option can take an red,green,blue triplet or a hex color code.
 
 For instance, all these commands do the exact same thing to turn the blink(1) orange:
@@ -77,6 +85,7 @@ For instance, all these commands do the exact same thing to turn the blink(1) or
     blink1-tool --rgb #FFCC00          # hey I know, turn orange
     
 
+<a name="A4"></a>
 ## Blinking colors with '--blink'
 
 One of the most used commands is `--blink`. It blinks a specific color a number of times.
@@ -86,11 +95,13 @@ For instance, if you want to blink red 5 times for a red alert, do either:
     blink1-tool --red --blink 5
 
 
+<a name="A5"></a>
 ## Changing blink speed using '--delay' and '--millis'
 
-If you want to make it blink faster, add the `--delay` option.
-The default delay value is 500 (500 milliseconds).  Too make the blinking faster,
-use a smaller value, like 100.
+If you want to make it blink faster, use the `--delay` option.
+Delay is used to specify the time between events in blink1-tool.
+The default delay value is 500 (500 milliseconds).
+Too make the blinking faster, use a smaller value, like 100.
 
     blink1-tool --delay 100 --rgb #FF0000 --blink 5 
 
@@ -106,8 +117,10 @@ So here's a better red-alert:
     blink1-tool --delay 100 --millis 50 --rgb #FF0000 --blink 5
 
 Usually you want `--millis` fade time to be 1/2 `--delay`.
+These two options have short form of "-d" for "--delay" and "-m" for "--millis".
+So the above could be written:
 
-
+    blink1-tool -d 100 -m 50 --rgb #FF0000 --blink 5
 
 
 
@@ -248,8 +261,8 @@ and 32 (for mk2 devices).
     reading rgb at pos 15: r,g,b = 0x00,0x00,0x00 millis:1000
 
 
-Infinite Rainbow using Bash
----------------------------
+Infinite Rainbow using Bash Shell
+---------------------------------
 Use the new "--hsb" command to specify colors by HSB (hue, saturation, brightness)
 instead of the standard "--rgb" command.  Note that the HSB-to-RGB conversion
 is done within blink1-tool, not in the blink(1) device.
