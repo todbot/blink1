@@ -504,7 +504,7 @@ int main(int argc, char** argv)
             blink1_close(dev);
             sprintf(verbuf, ", fw version: %d", rc);
         }
-        msg("blink1-tool version: %s %s\n",BLINK1_VERSION,verbuf);
+        msg("blink1-tool version: %s%s\n",BLINK1_VERSION,verbuf);
         exit(0);
     }
 
