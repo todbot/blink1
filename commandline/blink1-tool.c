@@ -163,6 +163,7 @@ static void usage(char *myName)
 "  --rgb=[#]RRGGBB             Fade to RGB value, as hex color code\n"
 "  --hsb=<hue>,<sat>,<bri>     Fade to HSB value\n"
 "  --blink <numtimes>          Blink on/off (use --rgb to blink a color)\n"
+"  --flash <numtimes>          Flash on/off (same as blink)\n"
 "  --on | --white              Turn blink(1) full-on white \n"
 "  --off                       Turn blink(1) off \n"
 "  --red                       Turn blink(1) red \n"
@@ -321,6 +322,7 @@ int main(int argc, char** argv)
         {"magenta",    no_argument,       &cmd,   CMD_MAGENTA},
         {"yellow",     no_argument,       &cmd,   CMD_YELLOW},
         {"blink",      required_argument, &cmd,   CMD_BLINK},
+        {"flash",      required_argument, &cmd,   CMD_BLINK},
         {"glimmer",    optional_argument, &cmd,   CMD_GLIMMER},
         {"play",       required_argument, &cmd,   CMD_PLAY},
         {"stop",       no_argument,       &cmd,   CMD_STOP},
@@ -789,6 +791,7 @@ int main(int argc, char** argv)
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 255;
         }
+        blink1_close(dev);
         msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
         for( int i=0; i<n; i++ ) { 
             rc = blink1_fadeToRGBForDevices( millis,r,g,b,ledn);
