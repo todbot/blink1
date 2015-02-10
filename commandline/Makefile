@@ -307,6 +307,8 @@ endif
 ifeq "$(OS)" "yun"
 LIBTARGET = libblink1.so
 
+BLINK1_VERSION="$(GIT_TAG)-$(OS)-ar71xx"
+
 #ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA
 OBJS = ./hiddata.o
@@ -333,6 +335,8 @@ endif
 ##############  Cross-compile WRT Linux  #####################################
 ifeq "$(OS)" "wrt"
 LIBTARGET = libblink1.so
+
+BLINK1_VERSION="$(GIT_TAG)-$(OS)-brcm47xx"
 
 #ifeq "$(USBLIB_TYPE)" "HIDDATA"
 CFLAGS += -DUSE_HIDDATA

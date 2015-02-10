@@ -15,4 +15,6 @@ v1.93 -  Blink1Control Advanced Preferences, blink1control-tool, more API fixes
 v1.94 -  Blink1Control crashing fixes (device scanning, logging)
 v1.95 -  Blink1Control font size fix for high-DPI displays, blink1-mini-tool for OpenWrt systems
 v1.96 -  blink1-tool updates
+v1.97 -  blink1-tool fixes
+
 
