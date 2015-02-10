@@ -226,7 +226,7 @@ processinglib: jar
 	rm -rf blink1/library/html
 	cp -r ../processing/* blink1/examples
 	zip --exclude \*application.\* --exclude \*~ --exclude .DS_Store -r $(LIBZIPNAME) blink1
-	cp $(LIBZIPNAME) ../libraries
+	#cp $(LIBZIPNAME) ../libraries
 	@echo
 	@echo "now unzip $(LIBZIPNAME) into ~/Documents/Processing/libraries"
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
