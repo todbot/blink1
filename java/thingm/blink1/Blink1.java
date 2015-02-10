@@ -144,7 +144,8 @@ public class Blink1
   }
 
   public boolean error() {
-    return errorCode != 0;
+    //System.out.println("errorCode: "+errorCode);
+    return (errorCode < 0);
   }
 
   /**
@@ -184,7 +185,7 @@ public class Blink1
    * Causes an enumerate to happen.
    * Stores open device id statically in native lib.
    *
-   * @return blink1_command response code, -1 == fail 
+   * @returns Blink1 object 
    */
   public static native Blink1 open();
 
