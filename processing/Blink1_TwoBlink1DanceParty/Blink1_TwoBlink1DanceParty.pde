@@ -13,7 +13,8 @@
 import thingm.blink1.*;
 
 //name your blink1
-Blink1 myBlink1;
+Blink1 myBlink1A;
+Blink1 myBlink1B;
 
 //timer variables for how long it takes for the color to change
 //the higher the speedvar the slower the change rate
@@ -57,26 +58,31 @@ void setup()
   //textFont(createFont("helvetica", 11));
   background(bgVar);
 
-  //make a blink1, see whose there
-  myBlink1 = new Blink1();
-  int b1check = myBlink1.open();
-  if (b1check == 0) {
-    printBlink1List();
-    blink1Count = myBlink1.getCount();
-    if (blink1Count < 2) {
-      println("too few! too few!");
-    } 
-    else if (blink1Count > 2) {
-      println("goodness, what a party!!");
-    } 
-    else {
-      println("just the right number");
-    }
-    blink1FoundFlag = true;
+  // see who's there
+  blink1Count = Blink1.getCount();
+  printBlink1List();
 
-    //this is the function that turns off the Blink1s on Quit
-    prepareExitHandler();
+  if( blink1Count > 0 ) {
+    blink1FoundFlag = true;
   }
+  
+  if (blink1Count < 2) {
+    println("too few! too few!");
+  } 
+  else if (blink1Count > 2) {
+    println("goodness, what a party!!");
+  } 
+  else {
+    println("just the right number");
+  }
+
+  // make a blink1,
+  myBlink1A = Blink1.openById(0);
+  myBlink1B = Blink1.openById(1);
+
+  //this is the function that turns off the Blink1s on Quit
+  prepareExitHandler();
+
 }
 //------------------------------------------------------------------- END SETUP
 //------------------------------------------------------------------ START DRAW
@@ -104,7 +110,9 @@ void draw()
     c = generateRandomColor();
 
     if (blink1FoundFlag) {
-      sendColor2Blink1ByID(c, myID);
+      sendColorToBlink1ById(c,myID);
+      //sendColorToBothBlink1s(c);
+      //sendColor2Blink1ByID(c, myID);
       //OTHER OPTIONS
       //sendColor2Blink1BySerial(c, serialTest);
       //sendColor2Blink1ByPath(c, pathTest);
@@ -140,11 +148,10 @@ private void prepareExitHandler () {
       //System.out.println("SHUTDOWN HOOK");
       //What to do on closing here
       //TURN OFF & RELEASE myBlink1
-      myBlink1.openById(0);
-      myBlink1.setRGB(0, 0, 0);
-      myBlink1.openById(1);
-      myBlink1.setRGB(0, 0, 0);
-      myBlink1.close();
+      myBlink1A.setRGB(0, 0, 0);
+      myBlink1B.setRGB(0, 0, 0);
+      myBlink1A.close();
+      myBlink1B.close();
     }
   }
   ));
@@ -159,46 +166,56 @@ private void prepareExitHandler () {
 //------------------------------------------------------------ printBlink1List()
 //TELL ME WHO'S HERE 
 void printBlink1List() {
-  int howMany = myBlink1.getCount();
+  int howMany = Blink1.getCount();
   println( "There are " + howMany + " Blink(1)s detected");
-  String paths[] = myBlink1.getDevicePaths();
-  String serials[] = myBlink1.getDeviceSerials();
-  pathTest = paths[0];
-  serialTest = serials[0];
-  println( "ID" + ": "+ "serials" + " : " + "paths");
-  for ( int i=0; i<paths.length; i++ ) { 
-    println( i + ": "+ serials[i] + " : " + paths[i]);
+  if( howMany > 0 ) { 
+    String paths[] = Blink1.getDevicePaths();
+    String serials[] = Blink1.getDeviceSerials();
+    pathTest = paths[0];
+    serialTest = serials[0];
+    println( "ID" + ": "+ "serials" + " : " + "paths");
+    for ( int i=0; i<paths.length; i++ ) { 
+      println( i + ": "+ serials[i] + " : " + paths[i]);
+    }
+    
+    //int myFirmware = myBlink1.getFirmwareVersion();
+    //println("A Firmware Number: " + myFirmware);
   }
-  int myFirmware = myBlink1.getFirmwareVersion();
-  println("A Firmware Number: " + myFirmware);
+}
+
+void sendColorToBothBlink1s(color y) {
+  myBlink1A.setRGB(int(red(y)), int(green(y)), int(blue(y)));
+  myBlink1B.setRGB(int(red(y)), int(green(y)), int(blue(y)));
 }
 
 //------------------------------------------------------------ sendColor2Blink1()
 //UNPACKS A COLOR OBJECT AND SENDS IT TO BLINK1
 void sendColor2Blink1(color y) {
-  myBlink1.open();
-  myBlink1.setRGB(int(red(y)), int(green(y)), int(blue(y)));
+  //myBlink1.open();
+  myBlink1A.setRGB(int(red(y)), int(green(y)), int(blue(y)));
 }
 
 //-------------------------------------------------------- sendColor2Blink1ByID()
 //UNPACKS A COLOR OBJECT AND SENDS IT TO BLINK1
-void sendColor2Blink1ByID(color y, int i) {
-  myBlink1.openById(i);
+void sendColorToBlink1ById(color y, int i) {
+  Blink1 myBlink1 = Blink1.openById(i);
   myBlink1.setRGB(int(red(y)), int(green(y)), int(blue(y)));
   myBlink1.close();
 }
 
 //---------------------------------------------------- sendColor2Blink1BySerial()
-void sendColor2Blink1BySerial(color y, String mySerial) {
+void sendColorToBlink1BySerial(color y, String mySerial) {
   println(mySerial);
-  myBlink1.openBySerial(mySerial);
+  Blink1 myBlink1 = Blink1.openBySerial(mySerial);
   myBlink1.setRGB(int(red(y)), int(green(y)), int(blue(y)));
+  myBlink1.close();
 }
 
 //------------------------------------------------------ sendColor2Blink1ByPath()
-void sendColor2Blink1ByPath(color y, String myPath) {
-  myBlink1.openByPath(myPath);
+void sendColorToBlink1ByPath(color y, String myPath) {
+  Blink1 myBlink1 = Blink1.openByPath(myPath);
   myBlink1.setRGB(int(red(y)), int(green(y)), int(blue(y)));
+  myBlink1.close();
 }
 
 //--------------------------------------------------------- generateRandomColor()
