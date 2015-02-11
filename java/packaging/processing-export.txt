@@ -1,4 +1,4 @@
 application.macosx = blink1.jar, libBlink1.jnilib
-application.linux = blink1.jar, libBlink1.so
 application.windows = blink1.jar, Blink1.dll
+application.linux = blink1.jar, libBlink1.so
 
