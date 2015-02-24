@@ -332,7 +332,7 @@ static void usage(char *myName)
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
-"  -l <led>, --led=<led>       Set which RGB LED in a blink(1) mk2 to use\n"
+"  -l 1|2, --led=1|2           Set which RGB LED in a blink(1) mk2 to use\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
 "Examples \n"
