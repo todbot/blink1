@@ -366,10 +366,12 @@ int main(int argc, char** argv)
             case CMD_EEWRITE:
             case CMD_SETPATTLINE:
             case CMD_GETPATTLINE:
-            case CMD_BLINK:
             case CMD_PLAY:
             case CMD_SERVERDOWN:
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
+                break;
+            case CMD_BLINK:
+                arg = (optarg) ? strtol(optarg,NULL,0) : 1;// cmd w/ number arg
                 break;
             case CMD_RANDOM:
             case CMD_CHASE:
@@ -784,7 +786,7 @@ int main(int argc, char** argv)
 
     }
     else if( cmd == CMD_BLINK ) { 
-        uint8_t n = cmdbuf[0]; 
+        uint16_t n = arg; 
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
