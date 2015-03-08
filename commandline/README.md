@@ -8,6 +8,21 @@ The current support build products are:
 - `blink1-tool` -- command-line tool for controlling blink(1)
 - `blink1-lib` -- C library for controlling blink(1)
 
+Docker and blink(1)
+==========
+To build the image from the `Dockerfile`
+
+- `docker build -t robtec/blink1 .`
+
+Running the container
+
+- `docker run -d --privileged robtec/blink1`
+
+Note the `--privileged` tag, docker needs this to access the hosts USB controllers
+
+Docker resources
+- [Install Guide](https://docs.docker.com/installation/)
+- [Run Command](https://docs.docker.com/reference/run/)
 
 Supported platforms:
 
