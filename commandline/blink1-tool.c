@@ -49,6 +49,7 @@ uint32_t  deviceIds[blink1_max_devices];
 
 uint8_t cmdbuf[blink1_buf_size]; 
 uint8_t rgbbuf[3];
+uint8_t chasebuf[3];
 int verbose;
 int quiet=0;
 
@@ -179,7 +180,7 @@ static void usage(char *myName)
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
 "  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
-"  --chase                     Multi-LED chase effect (uses --led & --rgb)\n"
+"  --chase=<num,start,stop>    Multi-LED chase effect. <num>=0 runs forever.\n"
 "  --random, --random=<num>    Flash a number of random colors \n"
 "  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
 " Nerd functions: (not used normally) \n"
@@ -375,6 +376,7 @@ int main(int argc, char** argv)
                 break;
             case CMD_RANDOM:
             case CMD_CHASE:
+                hexread(chasebuf, optarg, sizeof(chasebuf));
             case CMD_GLIMMER:
                 arg = (optarg) ? strtol(optarg,NULL,0) : 0;// cmd w/ number arg
                 break;
@@ -728,12 +730,16 @@ int main(int argc, char** argv)
         }
     }
     // this whole thing is a huge mess currently // FIXME
-    else if( cmd == CMD_CHASE) { 
+    else if( cmd == CMD_CHASE) {
         if( ledn == 0 ) ledn = 18;
 
+        int loopcnt = (chasebuf[0] > 0) ? ((int)(chasebuf[0]))-1 : -1;
+        uint8_t led_start=chasebuf[1];
+        uint8_t led_end=chasebuf[2];
+        int chase_length = led_end-led_start;
+
+        // pick the color
         uint8_t do_rand = 0;
-        uint8_t chase_cnt = 0;
-        uint8_t leds[ledn][3];
         uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2] };
         if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) { // no rgb specified
             c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
@@ -741,49 +747,41 @@ int main(int argc, char** argv)
         }
         char ledstr[16];
         sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
-        printf("chase effect with %d LEDs, color %s\n",
-               ledn, ((do_rand) ? "random" : ledstr) );
-        
+        printf("chase effect %d to %d (with %d leds), color %s, ",
+               led_start, led_end, chase_length,
+               ((do_rand) ? "random" : ledstr));
+        if (loopcnt < 0)
+            printf("forever\n");
+        else
+            printf("%d times\n", loopcnt+1);
+
         // make gradient
-        for( int i=0; i<ledn; i++ ) {
-            leds[i][0] = c[0] * i / ledn;
-            leds[i][1] = c[1] * i / ledn;
-            leds[i][2] = c[2] * i / ledn;
+        uint8_t led_grad[chase_length][3];
+        for( int i=0; i<chase_length; i++ ) {
+            int temp = chase_length-i-1;
+            led_grad[temp][0] = c[0] * i / chase_length;
+            led_grad[temp][1] = c[1] * i / chase_length;
+            led_grad[temp][2] = c[2] * i / chase_length;
         }
-        
-        int loopcnt = (arg*ledn);
-        do { 
-            if(arg==0) loopcnt=1;
-            // output
-            for( int n=0; n<ledn; n++ )  {
-                uint8_t r = leds[n][0];
-                uint8_t g = leds[n][1];
-                uint8_t b = leds[n][2];
-                rc = blink1_fadeToRGBN(dev, 10 + (millis/ledn), r,g,b,n+1 );
-            }
-            blink1_sleep(delayMillis/ledn);
-            
-            // rotate
-            memcpy( c,      leds[ledn-1], sizeof(c) );
-            memcpy( leds+1, leds,         sizeof(c)*(ledn-1) );
-            memcpy( leds[0],   c,         sizeof(c) );
 
-            // change color if random
-            chase_cnt++;
-            if( do_rand && chase_cnt > (ledn*2) ) {
-                chase_cnt = 0;
-                c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
-                for( int i=0; i<ledn; i++ ) { 
-                    leds[i][0] = c[0] * i / ledn;
-                    leds[i][1] = c[1] * i / ledn;
-                    leds[i][2] = c[2] * i / ledn;
+        // do the animation
+        uint8_t first=1;
+        do {
+            for( int i=0; i < chase_length; ++i) { // i = front led lit
+                for( int j = 0; j<chase_length; ++j) {
+                    int grad_index=i-j;
+                    if (grad_index < 0) grad_index+=chase_length;
+                    uint8_t r = led_grad[grad_index][0];
+                    uint8_t g = led_grad[grad_index][1];
+                    uint8_t b = led_grad[grad_index][2];
+                    if ((j <= i) || (!first)) {
+                        rc = blink1_fadeToRGBN(dev, 10 + (millis/chase_length), r,g,b,led_start+j);
+                    }
                 }
+                blink1_sleep(delayMillis/chase_length);
             }
+            first = 0;
         } while( loopcnt-- );
-        // turn everyone off
-        blink1_sleep(delayMillis/ledn/2);
-        rc = blink1_fadeToRGB(dev, 10 + (millis/ledn), 0,0,0 );
-
     }
     else if( cmd == CMD_BLINK ) { 
         uint16_t n = arg; 
