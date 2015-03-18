@@ -44,7 +44,7 @@ and [options] are:
   -m ms,   --millis=millis    Set millisecs for color fading (default 300)
   -q, --quiet                 Mutes all stdout output (supercedes --verbose)
   -t ms,   --delay=millis     Set millisecs between events (default 500)
-  -l <led>, --led=<led>       Set which RGB LED in a blink(1) mk2 to use
+  -l 1|2, --led=1|2           Set which RGB LED in a blink(1) mk2 to use
   -v, --verbose               verbose debugging msgs
 
 Examples
