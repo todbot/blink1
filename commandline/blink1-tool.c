@@ -43,6 +43,8 @@ int millis = -1;
 int delayMillis = -1;
 int numDevicesToUse = 1;
 int ledn = 0;
+uint8_t ledns[18];
+uint8_t ledns_cnt=0;
 
 blink1_device* dev;
 uint32_t  deviceIds[blink1_max_devices];
@@ -194,7 +196,8 @@ static void usage(char *myName)
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
-"  -l <led>, --led=<led>       Set which RGB LED in a blink(1) mk2 to use\n"
+"  -l <led>, --led=<led>       Set which LED in a mk2 to use, 0=all,1=top,2=bottom\n"
+"  -l 1,3,5,7                  Can also specify list of LEDs to light\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
 "Examples \n"
@@ -249,7 +252,8 @@ enum {
 };
 
 //
-// uses globals numDevicesToUse, deviceIds, quiet
+// Fade to RGB for multiple blink1 devices.
+// Uses globals numDevicesToUse, deviceIds, quiet
 //
 int blink1_fadeToRGBForDevices( uint16_t mils, uint8_t rr,uint8_t gg, uint8_t bb, uint8_t nn ) {
     blink1_device* d;
@@ -344,17 +348,16 @@ int main(int argc, char** argv)
         if (opt==-1) break; // parsed all the args
         switch (opt) {
          case 0:             // deal with long opts that have no short opts
-            switch(cmd) { 
+            switch(cmd) {
             case CMD_RGB:
-                    
-                // parse hex color code like "#FF00FF"
+                // parse hex color code like "#FF00FF" or "FF00FF"
                 if( strchr(optarg,',')==NULL && (optarg[0] == '#' || strlen(optarg)==6) ) { 
                     optarg = (optarg[0] == '#') ? optarg+1 : optarg;
-                    uint32_t poop = strtol(optarg, NULL, 16); 
-                    rgbbuf[0] = (poop >> 16) & 0xff; 
-                    rgbbuf[1] = (poop >>  8) & 0xff;
-                    rgbbuf[2] = (poop >>  0) & 0xff;
-                } else {
+                    uint32_t colorint = strtol(optarg, NULL, 16); 
+                    rgbbuf[0] = (colorint >> 16) & 0xff; 
+                    rgbbuf[1] = (colorint >>  8) & 0xff;
+                    rgbbuf[2] = (colorint >>  0) & 0xff;
+                } else { // else it's a list like "0xff,0x00,0xff" or "255,0,255"
                     hexread(rgbbuf, optarg, sizeof(rgbbuf));
                 }
                 break;
@@ -420,6 +423,7 @@ int main(int argc, char** argv)
             break;
         case 'l':
             ledn = strtol(optarg,NULL,10);
+            ledns_cnt = hexread(ledns, optarg, sizeof(ledns));
             break;
         case 'q':
             if( optarg==NULL ) quiet++;
@@ -477,27 +481,6 @@ int main(int argc, char** argv)
         usage( "blink1-tool" );
         exit(1);
     }
-    /*
-    if( delayMillis != -1 && millis==0 ) 
-        millis = delayMillis/2;
-    else 
-        delayMillis = delayMillisDefault;
-    */
-    if( delayMillis==-1 ) delayMillis = delayMillisDefault;
-    if( millis == -1 ) millis = millisDefault;
-        
-    // debug  (not on Windows though, no getuid())
-    /*
-    if( 0 ) { 
-      uid_t id = getuid();
-      printf("userid:%d\n",id);
-
-      wchar_t myser[10];
-      dev = blink1_open();
-      hid_get_serial_number_string(dev, myser, 10);
-      printf("ser:%ls\n",myser);
-    }
-    */
 
     // get a list of all devices and their paths
     int count = blink1_enumerate();
@@ -514,12 +497,15 @@ int main(int argc, char** argv)
         exit(0);
     }
 
+    // rationalize various options to known-good state
+    if( delayMillis==-1 ) delayMillis = delayMillisDefault;
+    if( millis == -1 ) millis = millisDefault;
+    if( ledns_cnt == 0 ) { ledns[0] = 0; ledns_cnt = 1;  }
 
     if( count == 0 ) {
         msg("no blink(1) devices found\n");
         exit(1);
     }
-
 
     if( numDevicesToUse == 0 ) numDevicesToUse = count; 
 
@@ -609,25 +595,11 @@ int main(int argc, char** argv)
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
 
-        blink1_fadeToRGBForDevices( millis, r,g,b, ledn );
-        
-        /*
-        for( int i=0; i< numDevicesToUse; i++ ) {
-            dev = blink1_openById( deviceIds[i] );
-            if( dev == NULL ) continue;
-            msg("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
-                deviceIds[i],r,g,b,millis);
-            if( ledn==0 ) {
-                rc = blink1_fadeToRGB(dev,millis, r,g,b);
-            } else {
-                rc = blink1_fadeToRGBN(dev,millis,r,g,b, ledn);
-            }
-            if( rc == -1 && !quiet ) { // on error, do something, anything. 
-                printf("error on fadeToRGB\n");
-            }
-            blink1_close( dev );
+        msg("here");
+        for( int i=0; i< ledns_cnt; i++ ) {
+            msg("i=%d",i);
+            blink1_fadeToRGBForDevices( millis, r,g,b, ledns[i] );
         }
-        */
     }
     else if( cmd == CMD_RGBREAD ) { 
         uint8_t r,g,b;
@@ -734,8 +706,8 @@ int main(int argc, char** argv)
         if( ledn == 0 ) ledn = 18;
 
         int loopcnt = (chasebuf[0] > 0) ? ((int)(chasebuf[0]))-1 : -1;
-        uint8_t led_start=chasebuf[1];
-        uint8_t led_end=chasebuf[2];
+        uint8_t led_start = (chasebuf[1]) ? chasebuf[1] : 1;
+        uint8_t led_end = (chasebuf[2]) ? chasebuf[2] : 18;
         int chase_length = led_end-led_start;
 
         // pick the color
@@ -747,13 +719,11 @@ int main(int argc, char** argv)
         }
         char ledstr[16];
         sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
-        printf("chase effect %d to %d (with %d leds), color %s, ",
-               led_start, led_end, chase_length,
-               ((do_rand) ? "random" : ledstr));
-        if (loopcnt < 0)
-            printf("forever\n");
-        else
-            printf("%d times\n", loopcnt+1);
+        msg("chase effect %d to %d (with %d leds), color %s, %s",
+            led_start, led_end, chase_length,
+            ((do_rand) ? "random" : ledstr));
+        if (loopcnt < 0) msg("forever\n");
+        else             msg("%d times\n", loopcnt+1);
 
         // make gradient
         uint8_t led_grad[chase_length][3];
@@ -845,5 +815,44 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+    /*
+    // older idea in option rationalization section
+    if( delayMillis != -1 && millis==0 ) 
+        millis = delayMillis/2;
+    else 
+        delayMillis = delayMillisDefault;
+    */
+        
+    // debug  (not on Windows though, no getuid())
+    /*
+    if( 0 ) { 
+      uid_t id = getuid();
+      printf("userid:%d\n",id);
+
+      wchar_t myser[10];
+      dev = blink1_open();
+      hid_get_serial_number_string(dev, myser, 10);
+      printf("ser:%ls\n",myser);
+    }
+    */
+
+        /* // older idea on how to do this CMD_RGB
+        for( int i=0; i< numDevicesToUse; i++ ) {
+            dev = blink1_openById( deviceIds[i] );
+            if( dev == NULL ) continue;
+            msg("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+                deviceIds[i],r,g,b,millis);
+            if( ledn==0 ) {
+                rc = blink1_fadeToRGB(dev,millis, r,g,b);
+            } else {
+                rc = blink1_fadeToRGBN(dev,millis,r,g,b, ledn);
+            }
+            if( rc == -1 && !quiet ) { // on error, do something, anything. 
+                printf("error on fadeToRGB\n");
+            }
+            blink1_close( dev );
+        }
+        */
 
 
