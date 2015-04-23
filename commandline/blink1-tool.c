@@ -42,18 +42,23 @@ const int delayMillisDefault = 500;
 int millis = -1;
 int delayMillis = -1;
 int numDevicesToUse = 1;
-int ledn = 0;
-uint8_t ledns[18];
-uint8_t ledns_cnt=0;
 
 blink1_device* dev;
 uint32_t  deviceIds[blink1_max_devices];
 
-uint8_t cmdbuf[blink1_buf_size]; 
-uint8_t rgbbuf[3];
-uint8_t chasebuf[3];
 int verbose;
 int quiet=0;
+
+typedef struct {
+    uint8_t r; uint8_t g; uint8_t b;
+} rgb_t;
+
+typedef struct {
+    rgb_t color;
+    uint16_t millis; 
+    uint8_t ledn;     // number of led, or 0 for all
+} patternline_t;
+
 
 //---------------------------------------------------------------------------- 
 /*
@@ -114,7 +119,7 @@ static int  hexread(uint8_t *buffer, char *string, int buflen)
 
 // integer-only hsbtorgb
 // from: http://web.mit.edu/storborg/Public/hsvtorgb.c
-static void hsbtorgb( uint8_t* hsb, uint8_t* rgb)
+static void hsbtorgb( rgb_t* rgb, uint8_t* hsb )
 {
     uint8_t h = hsb[0];
     uint8_t s = hsb[1];
@@ -145,9 +150,25 @@ static void hsbtorgb( uint8_t* hsb, uint8_t* rgb)
         case 4:   r = t; g = p; b = v; break;
         default:  r = v; g = p; b = q; break;
     }    
-    rgb[0]=r;
-    rgb[1]=g;
-    rgb[2]=b;
+    rgb->r=r;
+    rgb->g=g;
+    rgb->b=b;
+}
+
+// parse a color in form either "#ff00ff" or "FF00FF"
+// or "255,0,255" or "0xff,0x00,0xff"
+void parsecolor(rgb_t* color, char* colorstr)
+{
+    // parse hex color code like "#FF00FF" or "FF00FF"
+    if( strchr(colorstr,',')==NULL && (colorstr[0] == '#' || strlen(colorstr)==6) ) { 
+        colorstr = (colorstr[0] == '#') ? colorstr+1 : colorstr;
+        uint32_t colorint = strtol(colorstr, NULL, 16); 
+        color->r = (colorint >> 16) & 0xff; 
+        color->g = (colorint >>  8) & 0xff;
+        color->b = (colorint >>  0) & 0xff;
+    } else { // else it's a list like "0xff,0x00,0xff" or "255,0,255"
+        hexread((uint8_t*)color, colorstr, 3);  // FIXME: hardcoded size
+    }
 }
 
 
@@ -248,6 +269,7 @@ enum {
     CMD_VERSION,
     CMD_FWVERSION,
     CMD_SERVERDOWN,
+    CMD_PLAYPATTERN,
     CMD_TESTTEST,
 };
 
@@ -276,15 +298,25 @@ int blink1_fadeToRGBForDevices( uint16_t mils, uint8_t rr,uint8_t gg, uint8_t bb
     return 0; // FIXME
 }
 
+
 //
 int main(int argc, char** argv)
 {
-    int openall = 0;
     int nogamma = 0;
-    int16_t arg=0;
+    
+    int16_t arg = 0;  // generic int arg for cmds that take an arg
+    char*  argbuf[100]; // generic str arg for cmds that take an arg
+    uint8_t chasebuf[3]; // could use other buf
+
+    uint8_t cmdbuf[blink1_buf_size]; 
+    rgb_t rgbbuf = {0,0,0};
+    
+    int ledn = 0;  // deprecated, soon to be removed
+    uint8_t ledns[18];
+    uint8_t ledns_cnt=0;
 
     int  rc;
-    uint8_t tmpbuf[100];
+    uint8_t tmpbuf[100]; // only used for hsb parsing
     char serialnumstr[serialstrmax] = {'\0'}; 
 
     srand( time(NULL) * getpid() );
@@ -292,12 +324,10 @@ int main(int argc, char** argv)
 
     static int cmd  = CMD_NONE;
 
-
     // parse options
     int option_index = 0, opt;
-    char* opt_str = "aqvhm:t:d:gl:";
+    char* opt_str = "qvhm:t:d:gl:";
     static struct option loptions[] = {
-        {"all",        no_argument,       0,      'a'},
         {"verbose",    optional_argument, 0,      'v'},
         {"quiet",      optional_argument, 0,      'q'},
         {"millis",     required_argument, 0,      'm'},
@@ -340,6 +370,7 @@ int main(int argc, char** argv)
         //{"serialnumread", no_argument,    &cmd,   CMD_SERIALNUMREAD },
         //{"serialnumwrite",required_argument, &cmd,CMD_SERIALNUMWRITE },
         {"servertickle",  required_argument, &cmd,CMD_SERVERDOWN },
+        {"playpattern",required_argument, &cmd,   CMD_PLAYPATTERN },
         {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
         {NULL,         0,                 0,      0}
     };
@@ -350,20 +381,11 @@ int main(int argc, char** argv)
          case 0:             // deal with long opts that have no short opts
             switch(cmd) {
             case CMD_RGB:
-                // parse hex color code like "#FF00FF" or "FF00FF"
-                if( strchr(optarg,',')==NULL && (optarg[0] == '#' || strlen(optarg)==6) ) { 
-                    optarg = (optarg[0] == '#') ? optarg+1 : optarg;
-                    uint32_t colorint = strtol(optarg, NULL, 16); 
-                    rgbbuf[0] = (colorint >> 16) & 0xff; 
-                    rgbbuf[1] = (colorint >>  8) & 0xff;
-                    rgbbuf[2] = (colorint >>  0) & 0xff;
-                } else { // else it's a list like "0xff,0x00,0xff" or "255,0,255"
-                    hexread(rgbbuf, optarg, sizeof(rgbbuf));
-                }
+                parsecolor( &rgbbuf, optarg);
                 break;
             case CMD_HSB:
-                hexread(tmpbuf, optarg, 4);
-                hsbtorgb( tmpbuf, rgbbuf );
+                hexread( tmpbuf, optarg, 4);
+                hsbtorgb( &rgbbuf, tmpbuf );
                 cmd = CMD_RGB; // haha! 
                 break;
             case CMD_EEREAD:
@@ -383,38 +405,41 @@ int main(int argc, char** argv)
             case CMD_GLIMMER:
                 arg = (optarg) ? strtol(optarg,NULL,0) : 0;// cmd w/ number arg
                 break;
+            case CMD_PLAYPATTERN:
+                strncpy( (char*)argbuf, optarg, sizeof(argbuf) );
+                break;
             case CMD_ON:
-                rgbbuf[0] = 255; rgbbuf[1] = 255; rgbbuf[2] = 255;
+                rgbbuf.r = 255; rgbbuf.g = 255; rgbbuf.b = 255;
                 break;
             case CMD_OFF:
-                rgbbuf[0] = 0; rgbbuf[1] = 0; rgbbuf[2] = 0;
+                rgbbuf.r = 0; rgbbuf.g = 0; rgbbuf.b = 0;
                 break;
             case CMD_RED:
-                rgbbuf[0] = 255;
+                rgbbuf.r = 255;
                 break;
             case CMD_GRN:
-                rgbbuf[1] = 255; 
+                rgbbuf.g = 255; 
                 break;
             case CMD_BLU:
-                rgbbuf[2] = 255; 
+                rgbbuf.b = 255; 
                 break;
             case CMD_CYAN:
-                rgbbuf[1] = 255; rgbbuf[2] = 255; 
+                rgbbuf.g = 255; rgbbuf.b = 255; 
                 break;
             case CMD_MAGENTA:
-                rgbbuf[0] = 255; rgbbuf[2] = 255; 
+                rgbbuf.r = 255; rgbbuf.b = 255; 
                 break;
             case CMD_YELLOW:
-                rgbbuf[0] = 255; rgbbuf[1] = 255; 
+                rgbbuf.r = 255; rgbbuf.g = 255; 
                 break;
             } // switch(cmd)
             break;
         case 'g':
             nogamma = 1;
             break;
-        case 'a':
-            openall = 1;
-            break;
+        //case 'a':
+        //   openall = 1;
+        //   break;
         case 'm':
             millis = strtol(optarg,NULL,10);
             break;
@@ -436,7 +461,7 @@ int main(int argc, char** argv)
                 fprintf(stderr,"going REALLY verbose\n");
             }
             break;
-        case 'd':
+        case 'd':  // devices to use
             if( strcmp(optarg,"all") == 0 ) {
                 numDevicesToUse = 0; //blink1_max_devices;
                 for( int i=0; i< blink1_max_devices; i++) {
@@ -454,21 +479,10 @@ int main(int argc, char** argv)
                     pch = strtok(NULL, " ,");
                 }
                 //if( !quiet ) {
-                //    for( int i=0; i<numDevicesToUse; i++ ) { 
+                //    for( int i=0; i<numDevicesToUse; i++ ) 
                 //        printf("using deviceId[%d]: %d\n", i, deviceIds[i]);
-                //    }
                 //}
             }
-            /*
-            else if( strlen(optarg) == 8 ) { //
-                deviceIds[0] = strtol( optarg, NULL, 16);
-                numDevicesToUse = 1;
-                //sprintf( serialnumstr, "%s", optarg);  // strcpy
-            } 
-            else {
-                numDevicesToUse = hexread((uint8_t*)deviceIds,optarg,sizeof(deviceIds));
-            }
-            */
             break;
         case 'h':
             usage( "blink1-tool" );
@@ -502,7 +516,7 @@ int main(int argc, char** argv)
     if( millis == -1 ) millis = millisDefault;
     if( ledns_cnt == 0 ) { ledns[0] = 0; ledns_cnt = 1;  }
 
-    if( count == 0 ) {
+    if( count == 0  ) {
         msg("no blink(1) devices found\n");
         exit(1);
     }
@@ -588,16 +602,14 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
-	     cmd == CMD_CYAN || cmd == CMD_MAGENTA || cmd == CMD_YELLOW ) { 
+             cmd == CMD_CYAN || cmd == CMD_MAGENTA || cmd == CMD_YELLOW ) { 
         blink1_close(dev); // close global device, open as needed
         
-        uint8_t r = rgbbuf[0];
-        uint8_t g = rgbbuf[1];
-        uint8_t b = rgbbuf[2];
+        uint8_t r = rgbbuf.r;
+        uint8_t g = rgbbuf.g;
+        uint8_t b = rgbbuf.b;
 
-        msg("here");
         for( int i=0; i< ledns_cnt; i++ ) {
-            msg("i=%d",i);
             blink1_fadeToRGBForDevices( millis, r,g,b, ledns[i] );
         }
     }
@@ -646,9 +658,9 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_SETPATTLINE ) {
-        uint8_t r = rgbbuf[0];
-        uint8_t g = rgbbuf[1];
-        uint8_t b = rgbbuf[2];
+        uint8_t r = rgbbuf.r;
+        uint8_t g = rgbbuf.g;
+        uint8_t b = rgbbuf.b;
         uint8_t p = cmdbuf[0];
         msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
         if( ledn>0 ) { // NOTE: only works for unreleased mk2a
@@ -712,13 +724,13 @@ int main(int argc, char** argv)
 
         // pick the color
         uint8_t do_rand = 0;
-        uint8_t c[3] = { rgbbuf[0], rgbbuf[1], rgbbuf[2] };
+        uint8_t c[3] = { rgbbuf.r, rgbbuf.g, rgbbuf.b };
         if( c[0] == 0 && c[1] == 0 && c[2] == 0 ) { // no rgb specified
             c[0] = rand()%255; c[1] = rand()%255; c[2] = rand()%255; 
             do_rand =1;
         }
         char ledstr[16];
-        sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf[0],rgbbuf[1],rgbbuf[2]);
+        sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf.r,rgbbuf.g,rgbbuf.b);
         msg("chase effect %d to %d (with %d leds), color %s, %s",
             led_start, led_end, chase_length,
             ((do_rand) ? "random" : ledstr));
@@ -755,9 +767,9 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_BLINK ) { 
         uint16_t n = arg; 
-        uint8_t r = rgbbuf[0];
-        uint8_t g = rgbbuf[1];
-        uint8_t b = rgbbuf[2];
+        uint8_t r = rgbbuf.r;
+        uint8_t g = rgbbuf.g;
+        uint8_t b = rgbbuf.b;
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 255;
         }
@@ -780,9 +792,9 @@ int main(int argc, char** argv)
     }
     else if( cmd == CMD_GLIMMER ) {
         uint8_t n = arg;
-        uint8_t r = rgbbuf[0];
-        uint8_t g = rgbbuf[1];
-        uint8_t b = rgbbuf[2];
+        uint8_t r = rgbbuf.r;
+        uint8_t g = rgbbuf.g;
+        uint8_t b = rgbbuf.b;
         if( n == 0 ) n = 3;
         if( r == 0 && b == 0 && g == 0 ) {
             r = g = b = 127;
@@ -807,6 +819,46 @@ int main(int argc, char** argv)
         msg("setting servertickle %s (@ %d millis)\n",((on)?"ON":"OFF"),delayMillis);
         blink1_serverdown( dev, on, delayMillis, st );
     }
+    else if( cmd == CMD_PLAYPATTERN ) {
+        msg("play pattern: %s\n",argbuf);
+        int repeats = -1;
+        
+        char* s;
+        s = strtok( (char*)argbuf, ",");
+        if(  s != NULL ) {
+            repeats = strtol(s,NULL,0);
+        }
+        msg("repeats: %d\n", repeats);
+        
+        patternline_t pattern[32];
+        int i=0;
+        while( s != NULL ) {
+            s = strtok(NULL, ",");
+            if( s == NULL ) { msg("no color "); break; }
+            parsecolor( &pattern[i].color, s );
+            
+            s = strtok(NULL, ",");
+            if( s == NULL ) { msg("no millis "); break; }
+            pattern[i].millis = atof(s) * 1000;
+
+            s = strtok(NULL, ",");
+            if( s == NULL ) { msg("no ledn "); break; }
+            pattern[i].ledn = strtol(s,NULL,0);
+            
+            i++;
+        }
+        int pattlen = i;
+        
+        int r = repeats;
+        while( r-- ) { 
+            for( int i=0; i<pattlen; i++ ) {
+                patternline_t pat = pattern[i];
+                //msg("%d: %2.2x,%2.2x,%2.2x : %d : %d\n", i, pat.color.r,pat.color.r,pat.color.b, pat.millis,pat.ledn );
+                blink1_fadeToRGBForDevices( pat.millis/2, pat.color.r,pat.color.g,pat.color.b, pat.ledn);
+                blink1_sleep( pat.millis );
+            }
+        }
+    }
     else if( cmd == CMD_TESTTEST ) { 
         msg("test test\n");
         rc = blink1_testtest(dev);
@@ -815,44 +867,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
-    /*
-    // older idea in option rationalization section
-    if( delayMillis != -1 && millis==0 ) 
-        millis = delayMillis/2;
-    else 
-        delayMillis = delayMillisDefault;
-    */
-        
-    // debug  (not on Windows though, no getuid())
-    /*
-    if( 0 ) { 
-      uid_t id = getuid();
-      printf("userid:%d\n",id);
-
-      wchar_t myser[10];
-      dev = blink1_open();
-      hid_get_serial_number_string(dev, myser, 10);
-      printf("ser:%ls\n",myser);
-    }
-    */
-
-        /* // older idea on how to do this CMD_RGB
-        for( int i=0; i< numDevicesToUse; i++ ) {
-            dev = blink1_openById( deviceIds[i] );
-            if( dev == NULL ) continue;
-            msg("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
-                deviceIds[i],r,g,b,millis);
-            if( ledn==0 ) {
-                rc = blink1_fadeToRGB(dev,millis, r,g,b);
-            } else {
-                rc = blink1_fadeToRGBN(dev,millis,r,g,b, ledn);
-            }
-            if( rc == -1 && !quiet ) { // on error, do something, anything. 
-                printf("error on fadeToRGB\n");
-            }
-            blink1_close( dev );
-        }
-        */
-
 
