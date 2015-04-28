@@ -92,7 +92,7 @@ macx:  LIBS += -L$$BLINK1_LIB_DIR -lBlink1
 #win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 win32-g++: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 win32-msvc*: LIBS += $$BLINK1_LIB_DIR/blink1-lib.lib
-unix:!macx: LIBS += $$BLINK1_LIB_DIR/blink1-lib.so
+unix:!macx: LIBS += $$BLINK1_LIB_DIR/libblink1.so
 
 DEFINES += BLINK1CONTROL_VERSION=\\\"$$BLINK1CONTROL_VERSION\\\"
 #message("DEFINES = $$DEFINES")
@@ -111,7 +111,7 @@ macx {
 }
 
 unix:!macx {
-    BLINK1LIBPATH = $$BLINK1_LIB_DIR/blink1-lib.so
+    BLINK1LIBPATH = $$BLINK1_LIB_DIR/libblink1.so
     QMAKE_PRE_LINK += $(COPY) $$BLINK1LIBPATH $$OUT_PWD
 }
 
