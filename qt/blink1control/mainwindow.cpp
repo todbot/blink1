@@ -98,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
     logstream=NULL;
     mode = NONE;
     duplicateCounter=0; // FIXME: bad name for this var
+    refreshCounter = 0;
 
     osFixes();
     
