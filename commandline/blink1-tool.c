@@ -595,10 +595,17 @@ int main(int argc, char** argv)
             printf("error\n");
         }
     }
-    else if( cmd == CMD_FWVERSION ) { 
-        rc = blink1_getVersion(dev);
-        msg("blink1-tool: firmware version: ");
-        printf("%d\n",rc);
+    else if( cmd == CMD_FWVERSION ) {
+        blink1_close(dev);
+        for( int i=0; i<count; i++ ) {
+            dev = blink1_openById( deviceIds[i] );
+            if( dev == NULL ) continue;
+            rc = blink1_getVersion(dev);
+            printf("id:%d - firmware:%d serialnum:%s %s\n", i, rc,
+                   blink1_getCachedSerial(i),
+                   (blink1_isMk2ById(i)) ? "(mk2)":"");
+            blink1_close(dev);
+        }
     }
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
@@ -832,20 +839,22 @@ int main(int argc, char** argv)
         
         patternline_t pattern[32];
         int i=0;
+        s = strtok(NULL, ","); // prep next parse
         while( s != NULL ) {
-            s = strtok(NULL, ",");
-            if( s == NULL ) { msg("no color "); break; }
             parsecolor( &pattern[i].color, s );
             
             s = strtok(NULL, ",");
-            if( s == NULL ) { msg("no millis "); break; }
+            if( s == NULL ) { msg("bad pattern: no millis\n"); break; }
             pattern[i].millis = atof(s) * 1000;
 
             s = strtok(NULL, ",");
-            if( s == NULL ) { msg("no ledn "); break; }
+            if( s == NULL ) { msg("bad pattern: no led\n"); break; }
             pattern[i].ledn = strtol(s,NULL,0);
             
             i++;
+            
+            s = strtok(NULL, ",");
+            if( s == NULL ) break;
         }
         int pattlen = i;
         
