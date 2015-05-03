@@ -829,6 +829,7 @@ int main(int argc, char** argv)
         blink1_serverdown( dev, on, delayMillis, st );
     }
     else if( cmd == CMD_PLAYPATTERN ) {
+        blink1_close(dev);
         msg("play pattern: %s\n",argbuf);
         int repeats = -1;
         
