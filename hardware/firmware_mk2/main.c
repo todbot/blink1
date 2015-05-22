@@ -38,9 +38,6 @@
  * pin 16 - VDD            - +5V on USB, 10uF & 100nF cap to Gnd
  *
  *
- * Part of the open source hardware blink(1) project. 
- * See https://github.com/todbot/blink1/ for details and licensing
- *
  * 2013, Tod E. Kurt, http://thingm.com/
  *
  ********************************************************************/
@@ -67,7 +64,7 @@
 
 //------------ chip configuration ------------------------------------
 
-#warning Using Internal Oscillator
+//#warning Using Internal Oscillator
 #pragma config FOSC     = INTOSC
 #pragma config WDTE     = OFF
 #pragma config PWRTE    = ON
@@ -92,7 +89,7 @@
 
 
 #define blink1_ver_major  '2'
-#define blink1_ver_minor  '3'
+#define blink1_ver_minor  '4'
 
 #define blink1_report_id 0x01
 
@@ -137,7 +134,7 @@ uint32_t serverdown_update_next;
 
 rgb_t ctmp;      // temp color holder
 uint16_t ttmp;   // temp time holder
-uint8_t ntmp;    // temp ledn holder
+uint8_t ledn;    // temp ledn holder
 
 
 // number of entries a color pattern can contain
@@ -427,11 +424,11 @@ void updateLEDs(void)
         if( (long)(now - pattern_update_next) > 0  ) { // time to get next line
             ctmp = pattern[playpos].color;
             ttmp = pattern[playpos].dmillis;
-            ntmp = pattern[playpos].ledn;
+            ledn = pattern[playpos].ledn;
             if( ttmp == 0 && ctmp.r == 0 & ctmp.g == 0 && ctmp.b == 0) {
                 // skip lines set to zero
             } else {
-                rgb_setDest( &ctmp, ttmp, ntmp );
+                rgb_setDest( &ctmp, ttmp, ledn );
             }
             playpos++;
             if( playpos == playend ) {
@@ -481,6 +478,7 @@ void updateMisc(void)
 //    - Set color pattern line  format: { 1, 'P', r,g,b,     th,tl, p }
 //    - Save color patterns     format: { 1, 'W', 0,0,0,       0,0, 0 } (2)
 //    - read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
+///// - Set ledn                format: { 1, 'l', n,0,0,       0,0, 0 } (2+)
 //    - Read EEPROM location    format: { 1, 'e', ad,0,0,      0,0, 0 } (1)
 //    - Write EEPROM location   format: { 1, 'E', ad,v,0,      0,0, 0 } (1)
 //    - Get version             format: { 1, 'v', 0,0,0,       0,0, 0 }
@@ -575,6 +573,7 @@ void handleMessage(const char* msgbuf)
         ptmp.color.g = msgbuf[3];
         ptmp.color.b = msgbuf[4];
         ptmp.dmillis = ((uint16_t)msgbuf[5] << 8) | msgbuf[6];
+        ptmp.ledn    = ledn;
         uint8_t pos  = msgbuf[7];
         if( pos >= patt_max ) pos = 0;  // just in case
         // save pattern line to RAM
@@ -595,6 +594,7 @@ void handleMessage(const char* msgbuf)
         hid_send_buf[4] = patt.color.b;
         hid_send_buf[5] = (patt.dmillis >> 8);
         hid_send_buf[6] = (patt.dmillis & 0xff);
+        hid_send_buf[7] = patt.ledn;
     }
     // Write color pattern to flash memory: { 1, 'W', 0x55,0xAA, 0xCA,0xFE, 0,0}
     //
@@ -607,6 +607,11 @@ void handleMessage(const char* msgbuf)
             msgbuf[5] == 0xFE ) {
             do_pattern_write = 1;
         }
+    }
+    // Set ledn : { 1, 'l', n, 0...}
+    //
+    else if( cmd == 'l' ) { 
+        ledn = msgbuf[2];
     }
 
     // read eeprom byte           format: { 1, 'e', addr, 0,0, 0,0,0,0}
