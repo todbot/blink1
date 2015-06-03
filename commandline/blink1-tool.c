@@ -204,8 +204,8 @@ static void usage(char *myName)
 "  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
 "  --playpattern <patternstr>  Play Blink1Control pattern string\n"            
 "  --servertickle <1/0>[,1/0]  Turn on/off servertickle (w/on/off, uses -t msec)\n"
-"  --chase=<num,start,stop>    Multi-LED chase effect. <num>=0 runs forever.\n"
-"  --random, --random=<num>    Flash a number of random colors \n"
+"  --chase, --chase=<num,start,stop> Multi-LED chase effect. <num>=0 runs forever.\n"
+"  --random, --random=<num>    Flash a number of random colors, num=1 if omitted \n"
 "  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
 " Nerd functions: (not used normally) \n"
 "  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
@@ -225,10 +225,12 @@ static void usage(char *myName)
 "Examples \n"
 "  blink1-tool -m 100 --rgb=255,0,255    # fade to #FF00FF in 0.1 seconds \n"
 "  blink1-tool -t 2000 --random=100      # every 2 seconds new random color\n"
-"  blink1-tool --rgb 0xff,0,00 --blink 3 # blink red 3 times\n"
-"  blink1-tool --rgb FF9900              # make blink1 pumpkin orange\n"
+"  blink1-tool --ledn 2 --random=100     # random colors on both LEDs \n"
+"  blink1-tool --rgb 0xff,0x00,0x00 --blink 3  # blink red 3 times\n"
 "  blink1-tool --rgb #FF9900             # make blink1 pumpkin orange\n"
+"  blink1-tool --rgb FF9900 --ledn 2     # make blink1 pumpkin orange on lower LED\n"
 "  blink1-tool --playpattern \"10,#ff00ff,0.1,0,#00ff00,0.1,0\"\n"
+"  blink1-tool --chase=5,3,18            # chase 5 times, on leds 3-18\n"
 "\n"
 "Notes \n"
 " - To blink a color with specific timing, specify 'blink' command last:\n"
@@ -729,7 +731,7 @@ int main(int argc, char** argv)
         int loopcnt = (chasebuf[0] > 0) ? ((int)(chasebuf[0]))-1 : -1;
         uint8_t led_start = (chasebuf[1]) ? chasebuf[1] : 1;
         uint8_t led_end = (chasebuf[2]) ? chasebuf[2] : 18;
-        int chase_length = led_end-led_start;
+        int chase_length = led_end-led_start+1;
 
         // pick the color
         uint8_t do_rand = 0;
@@ -740,7 +742,7 @@ int main(int argc, char** argv)
         }
         char ledstr[16];
         sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf.r,rgbbuf.g,rgbbuf.b);
-        msg("chase effect %d to %d (with %d leds), color %s, %s",
+        msg("chase effect %d to %d (with %d leds), color %s, ",
             led_start, led_end, chase_length,
             ((do_rand) ? "random" : ledstr));
         if (loopcnt < 0) msg("forever\n");
