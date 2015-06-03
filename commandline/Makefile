@@ -80,7 +80,9 @@
 # "HIDDATA" type is best for low-resource Linux, 
 #  and the only dependencies it has is libusb-0.1
 #
-# Try either on the commandline with "make USBLIB_TYPE=HIDDATA" 
+# Try either on the commandline with:
+#  make USBLIB_TYPE=HIDDATA
+#  make USBLIB_TYPE=HIDAPI_HIDRAW
 #
 
 USBLIB_TYPE ?= HIDAPI
