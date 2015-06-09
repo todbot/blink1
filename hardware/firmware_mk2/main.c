@@ -424,7 +424,7 @@ void updateLEDs(void)
         if( (long)(now - pattern_update_next) > 0  ) { // time to get next line
             ctmp = pattern[playpos].color;
             ttmp = pattern[playpos].dmillis;
-            ledn = pattern[playpos].ledn;
+            uint_t ledn = pattern[playpos].ledn;
             if( ttmp == 0 && ctmp.r == 0 & ctmp.g == 0 && ctmp.b == 0) {
                 // skip lines set to zero
             } else {
