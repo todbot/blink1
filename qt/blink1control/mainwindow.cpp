@@ -111,8 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     settingsLoad();
 
+    qWarning() << "BLINK1CONTROL STARTUP";
     addToLog("LOGGING: "+QString::number(logging));
-    startOrStopLogging( logging );
 
     QIcon ico = QIcon(":/images/blink1-icon0.png");
     QIcon icobw = QIcon(":/images/blink1-icon0-bw.png");
@@ -253,7 +253,8 @@ void MainWindow::refreshBlink1State()
     
     if( blink1dev ) {
         blinkStatus="blink(1) connected";
-        QString serialstr = blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev));
+        QString serialstr = QString(blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev)));
+        addToLog("refreshBink1State: blink1serial='"+serialstr+"'");
         blink1Id = serialstr;
         iftttKey = iftttKey.left(8) + blink1Id;
         mk2 = blink1_isMk2(blink1dev);
@@ -760,31 +761,32 @@ void MainWindow::settingsLoad()
 //
 void MainWindow::settingsLoad( QSettings & settings )
 {
+    logging      = settings.value("logging",false).toBool();
+    autorun      = settings.value("autorun",false).toBool();
+    dockIcon     = settings.value("dockIcon",true).toBool();
+    startmin     = settings.value("startmin",false).toBool();
+    enableServer = settings.value("server",false).toBool();
+    enableGamma  = settings.value("enableGamma",true).toBool();
+    firstRun     = settings.value("firstRun",true).toBool();
+
+    startOrStopLogging( logging );
 
     QString sIftttKey = settings.value("iftttKey", "").toString();
-    QRegExp re("^[a-f0-9]+$");
-    qDebug() << "settingsLoad: " << sIftttKey << re.exactMatch(sIftttKey.toLower());
-    addToLog("iftttKey:"+sIftttKey);
+    QRegExp re("^[a-f0-9]{16}"); // 16-digit hex 
+    addToLog("settingsLoad: iftttKey='" + sIftttKey  + "'"); //re.exactMatch(sIftttKey.toLower()));
 
-    if(sIftttKey=="" || sIftttKey=="none" || !re.exactMatch(sIftttKey.toLower())){
+    if(sIftttKey=="" || sIftttKey=="none" || !re.exactMatch(sIftttKey.toLower()) ) {
+        addToLog("settingsLoad: generating new IftttKey");
         sIftttKey="";
         srand(time(NULL));
             for(int i=0;i<8;i++){
                 int tmp=rand()%55+48;
                 while((tmp>=58 && tmp<=96))
-                    tmp=rand()%55+48;
+                    tmp=rand()%55+48;  // 48? 55? 96?  these are ascii I think?
                 sIftttKey.append(QChar(tmp).toLatin1());
             }
     }
     iftttKey=sIftttKey;
-
-    autorun      = settings.value("autorun",false).toBool();
-    dockIcon     = settings.value("dockIcon",true).toBool();
-    startmin     = settings.value("startmin",false).toBool();
-    enableServer = settings.value("server",false).toBool();
-    logging      = settings.value("logging",false).toBool();
-    enableGamma  = settings.value("enableGamma",true).toBool();
-    firstRun     = settings.value("firstRun",true).toBool();
 
     // allow selection of "host" and port for API server
     // serverHost can be "localhost" or "any"
@@ -804,7 +806,7 @@ void MainWindow::settingsLoad( QSettings & settings )
     proxyPass = settings.value("proxyPass","").toString();
 
     if( (proxyType == "socks5" || proxyType == "socks") && proxyHost !="" && proxyPort != 0 ) {
-        qDebug() << "Setting SOCKS5 proxy";
+        addToLog("Setting SOCKS5 proxy");
         QNetworkProxy proxy;
         proxy.setType( QNetworkProxy::Socks5Proxy );
         proxy.setHostName( proxyHost );
@@ -814,7 +816,7 @@ void MainWindow::settingsLoad( QSettings & settings )
         QNetworkProxy::setApplicationProxy(proxy);
     }
     else if( proxyType == "http" && proxyHost !="" && proxyPort != 0 ) {
-        qDebug() << "Setting HTTP proxy";
+        addToLog("Setting HTTP proxy");
         QNetworkProxy proxy;
         proxy.setType( QNetworkProxy::HttpProxy );
         proxy.setHostName( proxyHost );
@@ -828,7 +830,7 @@ void MainWindow::settingsLoad( QSettings & settings )
     QString blink1IndexStr = settings.value("blink1Index","").toString();
     setBlink1Index( blink1IndexStr );
 
-
+    // load up list of built-in light patterns
     QString patternspath = QCoreApplication::applicationDirPath();
     if( mac() ) patternspath += "/../Resources/help/help/patternsReadOnly.json";  // FIXME: better way?
     else        patternspath += "/help/help/patternsReadOnly.json";
@@ -839,13 +841,13 @@ void MainWindow::settingsLoad( QSettings & settings )
         patternsReadOnly = in.readAll();
         patternsfile.close();
     } else { 
-        qDebug() << "couldn't open patternsfile: " << patternspath;
+        addToLog( "couldn't open patternsfile: " + patternspath);
     }
 
     // read only patterns
     QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
     if( doc.isNull() ) {
-        qDebug() << "ERROR!: patternsReadOnly syntax error!";
+        addToLog("ERROR!: patternsReadOnly syntax error!");
     }
     //qDebug() << doc.toJson( QJsonDocument::Indented );
     QJsonArray qarr = doc.array();
@@ -883,7 +885,7 @@ void MainWindow::settingsLoad( QSettings & settings )
             inputs.insert( bi->name(), bi );
             // find most recent ifttt time
             if( bi->type() == "ifttt" ) {
-                qDebug() << "input name:"<<bi->name() <<" iftttTime: "<<bi->date() << " nowSecs: "<<nowSecs;
+                addToLog("input name:" + bi->name() +" iftttTime: " + bi->date() + " nowSecs: " + nowSecs);
                 if( bi->date() > nowSecs || bi->date() < 1 ) {  // if bad stored date, fix it
                     bi->setDate( nowSecs );
                 }
@@ -2126,11 +2128,9 @@ void MainWindow::startOrStopLogging(bool log){
     }
     logging = log;
     if(logging){
-        //logFile = new QFile("blink1control-log.txt");
-        //logFile = new QTemporaryFile("blink1control-log.txt");
         logFile = new QFile( QDir::tempPath() + "/blink1control-log.txt");
         if (!logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append)){
-            qDebug()<<"File open error";
+            qWarning()<<"File open error";
             delete logFile;
             logFile=NULL;
         }else{
