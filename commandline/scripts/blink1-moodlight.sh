@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Fade to random colors
 # 
