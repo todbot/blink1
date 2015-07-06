@@ -413,13 +413,15 @@ Start pattern playing, wait for it to stop
 
 Use the 'serverdown' to turn on if your server dies
 ---------------------------------------------------
-This will run infinitely, always keeping the blink(1) from not playing
-its color pattern.  But if the computer hangs, then after 2 seconds (2000 msecs)
+This will run infinitely, displaying green showing that things are okay,
+and always keeping the blink(1) from not playing its color pattern.  
+But if the computer hangs, then after 2 seconds (2000 msecs)
 the color pattern will play.
 
     while [ 1 ] 
       do
-        blink1-tool -t 2000 --servertickle
+        blink1-tool --green   # all good
+        blink1-tool -t 2000 --servertickle 1,1
         sleep 1
       done
 
