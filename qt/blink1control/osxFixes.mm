@@ -1,17 +1,20 @@
 
 #include "osxFixes.h"
 
-
-@implementation MyObject
-
 // C "trampoline" function to invoke Objective-C method
-int MyObjectDoSomethingWith (void *amw, void *aParameter)
+//int installOSXSleepWakeNotifiers (void *amainwindow, void *aParameter)
+int installOSXSleepWakeNotifiers(void *amainwindow)
 {
-    MyObject* obj = [[MyObject alloc]init];
-    [obj setMainWindow: (MainWindow*) amw];
-    // Call the Objective-C method using Objective-C syntax
-    return [obj doSomethingWith:aParameter];
+    OSXFixes* obj = [[OSXFixes alloc]init];
+    [obj setMainWindow: (MainWindow*) amainwindow];
+    return [obj installSleepWakeNotifiers]; // Call ObjC method using ObjC syntax
 }
+
+// ------------------
+// Objective-C object
+//
+@implementation OSXFixes
+
 
 //
 - (void) setMainWindow: (void*)amw
@@ -19,11 +22,11 @@ int MyObjectDoSomethingWith (void *amw, void *aParameter)
     mw = (MainWindow*)amw;
 }
 
-- (int) doSomethingWith:(void *) aParameter
+//- (int) installSleepNotifiers:(void *) aParameter
+- (int) installSleepWakeNotifiers
 {
     // The Objective-C function you wanted to call from C++.
     // do work here..
-    NSLog(@"I AM ALIVE!\n");
     //These notifications are filed on NSWorkspace's notification center, not the default
     // notification center. You will not receive sleep/wake notifications if you file
     //with the default notification center.
@@ -41,14 +44,37 @@ int MyObjectDoSomethingWith (void *amw, void *aParameter)
 - (void) receiveSleepNote: (NSNotification*) note
 {
     NSLog(@"receiveSleepNote: %@", [note name]);
-    mw->onApplicationStateChange((Qt::ApplicationState) 0x77 ); // 0x77 == sleep
+    //mw->onApplicationStateChange((Qt::ApplicationState) 0x77 ); // 0x77 == sleep
+    mw->goingToSleep();
 }
+//
 - (void) receiveWakeNote: (NSNotification*) note
 {
     NSLog(@"receiveWakeNote: %@", [note name]);
-    mw->onApplicationStateChange((Qt::ApplicationState) 0x66 ); // 0x66 == wake
+    //mw->onApplicationStateChange((Qt::ApplicationState) 0x66 ); // 0x66 == wake
+    mw->wakingUp();
 }
  
 @end
+
+
+    /* this doesn't seem to work
+//#ifdef Q_OS_MAC
+//#include <CoreFoundation/CoreFoundation.h>
+//#endif
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    if( mainBundle ){
+        // get the application's Info Dictionary. For app bundles this would live in the bundle's Info.plist,
+        // for regular executables it is obtained in another way.
+        CFMutableDictionaryRef infoDict = (CFMutableDictionaryRef) CFBundleGetInfoDictionary(mainBundle);
+        if( infoDict ){
+            CFDictionarySetValue(infoDict, CFSTR("NSAppSleepDisabled"), CFSTR("1"));
+            // Add or set the "LSUIElement" key with/to value "1". This can simply be a CFString.
+            //CFDictionarySetValue(infoDict, CFSTR("LSUIElement"), CFSTR("1"));
+            // That's it. We're now considered as an "agent" by the window server, and thus will have
+            // neither menubar nor presence in the Dock or App Switcher.
+        }
+    }
+    */
 
 
