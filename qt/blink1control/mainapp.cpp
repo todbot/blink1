@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include <QMessageBox>
+
 MainApp::MainApp(int &argc, char **argv) : QApplication ( argc, argv ) {};
 
 
@@ -17,13 +19,20 @@ bool MainApp::notify(QObject* receiver, QEvent* event)
     } catch (std::exception &e) {
         fprintf(stderr, "notify: std:exception!\n");
         qFatal("Error %s sending event %s to object %s (%s)", 
-            e.what(), typeid(*event).name(), qPrintable(receiver->objectName()),
-            typeid(*receiver).name());
+                   e.what(), typeid(*event).name(), qPrintable(receiver->objectName()),
+                   typeid(*receiver).name());
+        QMessageBox::critical(0, "Blink1Control",
+                                  "Error " + QString(e.what()) +
+                                  " sending event "+ typeid(*event).name() +
+                                  " to object "+ receiver->objectName() +
+                                  " ("+typeid(*receiver).name()+")");                              
     } catch (...) {
         fprintf(stderr, "notify: other exception!\n");
         qFatal("Error <unknown> sending event %s to object %s (%s)", 
             typeid(*event).name(), qPrintable(receiver->objectName()),
             typeid(*receiver).name());
+        QMessageBox::critical(0, "Blink1Control",
+                                  "Error <unknown> ");
     }        
 
     // qFatal aborts, so this isn't really necessary

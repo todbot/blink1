@@ -24,7 +24,8 @@
 #QT_BIN_PATH=/c/qt/Qt5.2.1/5.2.1/mingw48_32/bin
 #QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
 #QT_BIN_PATH=/c/qt/Qt5.3.1/5.3/msvc2013/bin
-QT_BIN_PATH=/c/qt/5.4/msvc2013/bin
+#QT_BIN_PATH=/c/qt/5.4/msvc2013/bin
+QT_BIN_PATH=/c/qt/5.5/msvc2013/bin
 
 # Where Visual Studio installation directory needed by "windeployqt.exe"
 #export VCINSTALLDIR=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 12.0/VC
@@ -37,7 +38,8 @@ export VCINSTALLDIR=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 12.0/V
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_3_MSVC2013_32bit-Release/release
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_4_MSVC2013_32bit-Release/release
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_4_MSVC2013_32bit-Release/release
-BUILD_DIR=build-blink1control-Desktop_Qt_5_4_2_MSVC2013_32bit-Release/release
+#BUILD_DIR=build-blink1control-Desktop_Qt_5_4_2_MSVC2013_32bit-Release/release
+BUILD_DIR=build-blink1control-Desktop_Qt_5_5_0_MSVC2013_32bit-Release/release
 
 # END CONFIGURATION
 

@@ -47,6 +47,8 @@
 #include <QFont>
 #include <QFontMetrics>
 
+#include <QErrorMessage> // for error dialog
+
 // maximum number events in the Recent Events list
 #define RECENT_EVENTS_MAX 200
 
@@ -56,7 +58,7 @@ namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public QAbstractNativeEventFilter
 {
     Q_OBJECT
     Q_PROPERTY(int led READ getLed WRITE setLed NOTIFY ledsUpdate)
@@ -79,9 +81,10 @@ class MainWindow : public QMainWindow
     // preference properties
     Q_PROPERTY(bool enableServer MEMBER enableServer NOTIFY prefsUpdate)
     Q_PROPERTY(bool autorun MEMBER autorun NOTIFY prefsUpdate) 
-    Q_PROPERTY(bool startmin MEMBER startmin NOTIFY prefsUpdate) 
+    Q_PROPERTY(bool startMinimized MEMBER startMinimized NOTIFY prefsUpdate) 
     Q_PROPERTY(bool dockIcon MEMBER dockIcon NOTIFY prefsUpdate)
     Q_PROPERTY(bool enableGamma MEMBER enableGamma NOTIFY prefsUpdate)
+    Q_PROPERTY(bool logging MEMBER logging NOTIFY prefsUpdate)
 
     Q_PROPERTY(QString serverHost MEMBER serverHost NOTIFY prefsUpdate)
     Q_PROPERTY(int     serverPort MEMBER serverPort NOTIFY prefsUpdate)
@@ -117,6 +120,9 @@ public slots:
     void on_buttonStrobe_clicked();
     void on_buttonColorwheel_clicked();
 
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
+    //bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+    
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
     static bool comparePatternsFunction(Blink1Pattern *bi1,Blink1Pattern *bi2){
@@ -137,6 +143,7 @@ public slots:
     QVariantList getBlink1Serials(); // qml
     QList<QObject*> getBigButtons();
 
+    void blink1CloseAll();
     void refreshBlink1State();
 
     void setColorToBlinkAndChangeActivePatternName(QColor,QString,int f=100);
@@ -192,7 +199,7 @@ public slots:
     void changeInputName(QString oldName,QString newName);
 
     void updatePreferences();
-    void setAutorun();
+    void changeAutorunOption();
     void showhideDockIcon();    
     void checkInput(QString key);
     void startStopServer();
@@ -209,6 +216,7 @@ public slots:
 
 
     void viewerActiveChanged();
+    void onApplicationStateChange(Qt::ApplicationState state);
     /*
     void changeEvent(QEvent * event);
     void viewerVisibilityChanged(QWindow::Visibility visibility);
@@ -342,6 +350,7 @@ public slots:
 
     HttpServer *httpserver;
 
+    bool sleepytime;
     bool refreshBlink1s;
     int blink1Index;
     QString getTimeFromInt(int t);
@@ -353,7 +362,7 @@ public slots:
 
     bool autorun;
     bool dockIcon;
-    bool startmin;
+    bool startMinimized;
     bool enableServer;
     bool enableGamma;
     bool firstRun;

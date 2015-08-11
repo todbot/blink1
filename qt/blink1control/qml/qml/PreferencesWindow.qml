@@ -12,7 +12,7 @@ Window {
     id: prefsWindow
 
     width: mw.mac() ? 570 : 560 // Win version experimentally determined
-    height: mw.mac() ? 510 : 450
+    height: mw.mac() ? 520 : 460
 
     // FIXME: surely there's a shorter way of saying "no resize"?
     //maximumWidth: width
@@ -52,7 +52,7 @@ Window {
                 CheckBox {
                     id: minimizedCheckbox
                     text: "Start minimized"
-                    checked: mw.startmin
+                    checked: mw.startMinimized
                     //onHoveredChanged: { console.log("hello "+hovered); }//ToolTipCreator.create("text on the tooltip, yo", parentItem).show() }
                 }
                 CheckBox {
@@ -267,6 +267,20 @@ Window {
                 }
             }
         }
+        GroupBox {
+            id: groupBlink1Logging
+            title: "Logging"
+            Layout.fillWidth: true
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                CheckBox {
+                    id: loggingCheckbox
+                    text: "Enable logging"
+                    checked: mw.logging
+                }
+                //Label { text: mw.getLogFileName()  }
+            }
+        }
         
         } // right column
         } // main rowlayout
@@ -282,11 +296,12 @@ Window {
                 onClicked: {
                     console.log("saving preferences...");
                     mw.enableServer = enableServerCheckbox.checked;
-                    mw.startmin = minimizedCheckbox.checked;
+                    mw.startMinimized = minimizedCheckbox.checked;
                     mw.autorun = loginCheckbox.checked;
                     mw.enableGamma = gammaCheckbox.checked;
                     mw.dockIcon = dockIconCheckbox.checked;
-
+                    mw.logging = loggingCheckbox.checked;
+                    
                     mw.serverHost = (serverHostGroup.current == serverHostAny) ? "any" : "localhost";
                     mw.serverPort = serverPortText.text;
 
@@ -324,7 +339,7 @@ Window {
 
         // load up values because bindings break? FIXME: don't understand this fully
         enableServerCheckbox.checked = mw.enableServer
-        minimizedCheckbox.checked = mw.startmin
+        minimizedCheckbox.checked = mw.startMinimized
         loginCheckbox.checked = mw.autorun
         dockIconCheckbox.checked = mw.dockIcon
 

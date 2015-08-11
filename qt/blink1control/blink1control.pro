@@ -75,6 +75,9 @@ HEADERS  += mainwindow.h \
     mainapp.h \
     cursorshapearea.h
 
+OBJECTIVE_SOURCES += \
+	osxFixes.mm
+
 #FORMS    += mainwindow.ui
 
 RESOURCES += \
@@ -88,11 +91,10 @@ RESOURCES += \
 BLINK1_LIB_DIR=$$PWD/../../commandline
 #message("BLINK1_LIB_DIR=$$BLINK1_LIB_DIR")
 
-macx:  LIBS += -L$$BLINK1_LIB_DIR -lBlink1
-#win32: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
-win32-g++: LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
+macx:        LIBS += -L$$BLINK1_LIB_DIR -lBlink1
+win32-g++:   LIBS += $$BLINK1_LIB_DIR/blink1-lib.dll
 win32-msvc*: LIBS += $$BLINK1_LIB_DIR/blink1-lib.lib
-unix:!macx: LIBS += $$BLINK1_LIB_DIR/libblink1.so
+unix:!macx:  LIBS += $$BLINK1_LIB_DIR/libblink1.so
 
 DEFINES += BLINK1CONTROL_VERSION=\\\"$$BLINK1CONTROL_VERSION\\\"
 #message("DEFINES = $$DEFINES")
@@ -102,7 +104,9 @@ INCLUDEPATH += $$BLINK1_LIB_DIR
 DEPENDPATH  += $$BLINK1_LIB_DIR
 
 macx {
-    MYAPPDIR=$$OUT_PWD/$${TARGET}.app/Contents/MacOS
+	QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
+	LIBS += -framework AppKit -framework Foundation
+	MYAPPDIR=$$OUT_PWD/$${TARGET}.app/Contents/MacOS
     BLINK1LIBPATH = $$BLINK1_LIB_DIR/libBlink1.dylib
     QMAKE_POST_LINK += $(COPY) $$BLINK1LIBPATH $$MYAPPDIR
     #message( "MYAPPDIR = $$MYAPPDIR" )
