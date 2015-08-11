@@ -5,6 +5,7 @@
 
 QSharedMemory sharedMemory;
 
+
 int main(int argc, char *argv[])
 {
     MainApp a(argc,argv);
@@ -28,8 +29,12 @@ int main(int argc, char *argv[])
     }
 
 #endif
-
+   
     MainWindow w;  // this seems messed up, why even use mainwindow?
 
+    // to capture power change (sleep/wake) on Windows
+    // (can we move this to osFixes?)
+    a.installNativeEventFilter(&w);
+    
     return a.exec();
 }
