@@ -120,6 +120,9 @@ public slots:
     void on_buttonStrobe_clicked();
     void on_buttonColorwheel_clicked();
 
+    void goingToSleep();
+    void wakingUp();
+    
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
     //bool nativeEvent(const QByteArray &eventType, void *message, long *result);
     

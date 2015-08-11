@@ -23,11 +23,13 @@
 // FIXME: this must be set to 5000 because of hard-coded values in QML by marcin/milo
 #define updateInputsMillis 5000
 
+// set to true to honor menu item mnemonics on OS X
 // see: http://qt-project.org/doc/qt-5/exportedfunctions.html
 //#ifdef Q_...
 void qt_set_sequence_auto_mnemonic(bool);
 //#endif 
 
+// allows us to set a OS X Dock menu
 // see: http://stackoverflow.com/questions/9334339/qt-add-qaction-menu-items-to-dock-icon-mac
 #ifdef Q_OS_MAC
 extern void qt_mac_set_dock_menu(QMenu *);
@@ -48,118 +50,28 @@ enum {
     STROBE
 };
 
-// from: http://blog.hostilefork.com/qt-essential-noisy-debug-hook/
-// By default, fairly big problems like QObject::connect not working due to not being able
-// to find a signal or slot goes to the debug output.  There can be a lot of spew which
-// makes that easy to miss.  While perhaps the release build would want to try and
-// keep going, it helps debugging to get told this ASAP.
+
+void noisyFailureMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
 //
-// Would be nice to chain to the default Qt platform error handler
-// However, this is not feasible as there is no "default error handler" function
-// The default error handling is merely what runs in qt_message_output
-//
-//     http://qt.gitorious.org/qt/qt/blobs/4.5/src/corelib/global/qglobal.cpp#line2004
-//
-void noisyFailureMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-    QByteArray localMsg = msg.toLocal8Bit();
-    fprintf(stderr, "debug: %s @ %s\n", localMsg.constData(), context.function );
-    
-    // this is another one that doesn't make sense as just a debug message.
-    // pretty serious sign of a problem
-    // http://www.developer.nokia.com/Community/Wiki/QPainter::begin:Paint_device_returned_engine_%3D%3D_0_(Known_Issue)
-    if ((type == QtDebugMsg)
-            && msg.contains("QPainter::begin")
-            && msg.contains("Paint device returned engine")) {
-        type = QtWarningMsg;
-    }
-
-    // This qWarning about "Cowardly refusing to send clipboard message to hung application..."
-    // is something that can easily happen if you are debugging and the application is paused.
-    // As it is so common, not worth popping up a dialog.
-    if ((type == QtWarningMsg)
-            && QString(msg).contains("QClipboard::event")
-            && QString(msg).contains("Cowardly refusing")) {
-        type = QtDebugMsg;
-    }
-
-    // only the GUI thread should display message boxes.  If you are
-    // writing a multithreaded application and the error happens on
-    // a non-GUI thread, you'll have to queue the message to the GUI
-    QCoreApplication * instance = QCoreApplication::instance();
-    const bool isGuiThread = 
-        instance && (QThread::currentThread() == instance->thread());
-
-    if (isGuiThread) {
-        QMessageBox messageBox;
-        switch (type) {
-        case QtDebugMsg:
-            return;
-        case QtWarningMsg:
-        case QtInfoMsg:
-            messageBox.setIcon(QMessageBox::Warning);
-            messageBox.setInformativeText(msg);
-            messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-            break;
-        case QtCriticalMsg:
-            messageBox.setIcon(QMessageBox::Critical);
-            messageBox.setInformativeText(msg);
-            messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-            break;
-        case QtFatalMsg:
-            messageBox.setIcon(QMessageBox::Critical);
-            messageBox.setInformativeText(msg);
-            messageBox.setStandardButtons(QMessageBox::Cancel);
-            break;
-        }
-
-        int ret = messageBox.exec();
-        if (ret == QMessageBox::Cancel)
-            abort();
-    } else {
-        if (type != QtDebugMsg)
-            abort(); // be NOISY unless overridden!        
-    }
-}
-
-
-#ifdef Q_OS_MAC
-//#include <CoreFoundation/CoreFoundation.h>
-#endif
 void MainWindow::osFixes()
 {
+    qDebug() << "running osFixes";
 #ifdef Q_OS_WIN
+    // to capture Windows power change (sleep/wake) on Windows
+    qApp->installNativeEventFilter(this);
 #endif
     
 #ifdef Q_OS_MAC
-    qDebug() << "running osFixes";
-
-    //osxFixes::doSomething();
-    // To invoke an Objective-C method from C++, use the C trampoline function
-    MyObjectDoSomethingWith(this, this);
+    // 
+    installOSXSleepWakeNotifiers(this); //, this);
     
     // FIXME: the below is lame, but it appears putting this in Info.plist
     // or in mainBundle dict doesn't work.
-    // appears to require app restart to take effect
+    // and appears to require app restart to take effect
     QProcess cmd;
     cmd.start("defaults write com.thingm.Blink1Control NSAppSleepDisabled -bool YES");
     cmd.waitForFinished();
-    
-    /* this doesn't seem to work
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    if( mainBundle ){
-        // get the application's Info Dictionary. For app bundles this would live in the bundle's Info.plist,
-        // for regular executables it is obtained in another way.
-        CFMutableDictionaryRef infoDict = (CFMutableDictionaryRef) CFBundleGetInfoDictionary(mainBundle);
-        if( infoDict ){
-            CFDictionarySetValue(infoDict, CFSTR("NSAppSleepDisabled"), CFSTR("1"));
-            // Add or set the "LSUIElement" key with/to value "1". This can simply be a CFString.
-            //CFDictionarySetValue(infoDict, CFSTR("LSUIElement"), CFSTR("1"));
-            // That's it. We're now considered as an "agent" by the window server, and thus will have
-            // neither menubar nor presence in the Dock or App Switcher.
-        }
-    }
-    */
 
 #endif
 }
@@ -294,7 +206,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setColorToBlink(cc,400);  // give a default non-black color to let people know it works
 
     connect( &viewer, SIGNAL(activeChanged()),this,SLOT(viewerActiveChanged()));
-	connect(qApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)), this, SLOT(onApplicationStateChange(Qt::ApplicationState)));
+	connect(qApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)),
+            this, SLOT(onApplicationStateChange(Qt::ApplicationState)));
     qApp->setQuitOnLastWindowClosed(false);  // this makes close button not quit qpp
 
     // some keyboard shortcut experiments that seem to ALL not work
@@ -304,35 +217,53 @@ MainWindow::MainWindow(QWidget *parent) :
     //resetAlertsShortcut = new QShortcut( QKeySequence(Qt::CTRL+Qt::Key_R), viewer.rootObject() );
     //resetAlertsShortcut->setContext(Qt::ApplicationShortcut);
     //connect( resetAlertsShortcut, SIGNAL(activated()), this, SLOT(resetAlertsOption()));
+}
 
+// call when we know we're about to suspend
+void MainWindow::goingToSleep()
+{
+    qDebug() << "GOINGTOSLEEP!";
+    sleepytime = true;            
+    on_buttonOff_clicked();
+}
+// call when we know we've been woken up
+void MainWindow::wakingUp()
+{
+    qDebug() << "WAKINGUP!";
+    sleepytime = false;
+    refreshBlink1s = true;
 }
 
 // to capture windows power management (sleep/wake) events
-bool MainWindow::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
-{
+// see: https://msdn.microsoft.com/en-us/library/windows/desktop/aa373247(v=vs.85).aspx
+// see: http://vb.mvps.org/articles/vsm20100105.pdf
+//bool MainWindow::nativeEventFilter(const QByteArray &eventType, void *message, long *result)
 #ifdef Q_OS_WIN
+bool MainWindow::nativeEventFilter(const QByteArray &, void *message, long* )
+{
+    //qDebug() << "nativeEvent: "<< message;
     MSG* msg = (MSG*)(message);
     if(msg->message == WM_POWERBROADCAST ) {
-        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa373247(v=vs.85).aspx
-        qDebug() << "WM_POWERBROADCAST! wParam:"<< msg->wParam;  // 4, 18, 7, 10,10, 10,10
+        //qDebug() << "WM_POWERBROADCAST! wParam:"<< msg->wParam;  // 4, 18, 7, 10,10, 10,10
         // (sleep) -> PBT_APMSUSPEND -> PBT_APMRESUMEAUTOMATIC -> PBT_APMRESUMESUSPEND -> PBT_APMPOWERSTATUSCHANGE
         if( msg->wParam == PBT_APMSUSPEND ) {
-            qDebug() << "SLEEPYTIME!";
-            sleepytime = true;            
-            on_buttonOff_clicked();
+            goingToSleep();
         }
         else if( msg->wParam == PBT_APMRESUMESUSPEND ) {
-            qDebug() << "WAKINGUP!";
-            sleepytime = false;
-            refreshBlink1s = true;
+            wakingUp();
         }
-        SYSTEM_POWER_STATUS pwr;
-        GetSystemPowerStatus(&pwr);
-        qDebug() << pwr.BatteryFlag << endl;
+        //SYSTEM_POWER_STATUS pwr;
+        // GetSystemPowerStatus(&pwr);
+        //qDebug() << pwr.BatteryFlag << endl;
     }
-#endif
     return false;
 }
+#else
+bool MainWindow::nativeEventFilter(const QByteArray &, void *, long* )
+{
+    return false;
+}
+#endif
 
 // called when window has focus
 void MainWindow::viewerActiveChanged() {
@@ -345,14 +276,6 @@ void MainWindow::viewerActiveChanged() {
 // (tho only Active & Inactive are issued)
 void MainWindow::onApplicationStateChange(Qt::ApplicationState state) {
     qDebug() << "applicationStateChanged: " << state;
-    if( state==0x77 ) {
-        sleepytime = true;
-        on_buttonOff_clicked();
-    }
-    else if( state==0x66 ) {
-        sleepytime = false;
-        refreshBlink1s = true;
-    }
 }
 
 // close all blink1s
@@ -2397,62 +2320,79 @@ void MainWindow::setStartupPattern( QString patternName )
 }
 
 
-// the below was in MainWindow::MainWindow
 
-    //
-    // testing what visiblitity we have into window handling
-    //
-    //connect(&viewer,SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosingSlot(QQuickCloseEvent*)));
-    //if(mac()) connect(&viewer,SIGNAL(visibleChanged(bool)),this,SLOT(viewerVisibleChangedSlot(bool)));
-    // instead of above, just watch for when app is quitting,
-    // and use static bool to make sure we don't quit twice
-    //connect( qApp, SIGNAL(aboutToQuit()), this, SLOT(quit()) );
-
-    //connect( &viewer, SIGNAL(changeEvent(QEvent *)), this, SLOT(viewerChangeEvent(QEvent*)) );
-    //connect( &viewer, SIGNAL(statusChanged(QQuickView::Status)), this, SLOT(viewerStatusChanged(QQuickView::Status)) );
-    //connect( &viewer, SIGNAL(closing(QQuickCloseEvent*)),this,SLOT(viewerClosing(QQuickCloseEvent*)));
-    //connect( &viewer, SIGNAL(windowStateChanged(Qt::WindowState)),this,SLOT(viewerWindowStateChanged(Qt::WindowState)));
-    //connect( &viewer, SIGNAL(visibilityChanged(QWindow::Visibility)), this, SLOT(viewerVisibilityChanged(QWindow::Visibility)) );
-
-// for testing the above connect()s
-
-/*
-void MainWindow::changeEvent(QEvent* e)
+// from: http://blog.hostilefork.com/qt-essential-noisy-debug-hook/
+// By default, fairly big problems like QObject::connect not working due to not being able
+// to find a signal or slot goes to the debug output.  There can be a lot of spew which
+// makes that easy to miss.  While perhaps the release build would want to try and
+// keep going, it helps debugging to get told this ASAP.
+//
+// Would be nice to chain to the default Qt platform error handler
+// However, this is not feasible as there is no "default error handler" function
+// The default error handling is merely what runs in qt_message_output
+//
+//     http://qt.gitorious.org/qt/qt/blobs/4.5/src/corelib/global/qglobal.cpp#line2004
+//
+void noisyFailureMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    qDebug() << "changeEvent " << e;
-    QMainWindow::changeEvent(e);
-}
-// called only on minimize?
-void MainWindow::viewerVisibilityChanged(QWindow::Visibility visibility) {
-    qDebug() << "viewerVisibilityChanged: " << visibility;
+    QByteArray localMsg = msg.toLocal8Bit();
+    fprintf(stderr, "debug: %s @ %s\n", localMsg.constData(), context.function );
+    
+    // this is another one that doesn't make sense as just a debug message.
+    // pretty serious sign of a problem
+    // http://www.developer.nokia.com/Community/Wiki/QPainter::begin:Paint_device_returned_engine_%3D%3D_0_(Known_Issue)
+    if ((type == QtDebugMsg)
+            && msg.contains("QPainter::begin")
+            && msg.contains("Paint device returned engine")) {
+        type = QtWarningMsg;
+    }
 
-}
-// called when minimize is finished
-void MainWindow::viewerWindowStateChanged(Qt::WindowState state) {
-    qDebug() << "viewerWindowStateChanged: " << state;
-    if( state == Qt::WindowMinimized ) {
-        qDebug() << "minimized!";
-        viewer.hide();
+    // This qWarning about "Cowardly refusing to send clipboard message to hung application..."
+    // is something that can easily happen if you are debugging and the application is paused.
+    // As it is so common, not worth popping up a dialog.
+    if ((type == QtWarningMsg)
+            && QString(msg).contains("QClipboard::event")
+            && QString(msg).contains("Cowardly refusing")) {
+        type = QtDebugMsg;
+    }
+
+    // only the GUI thread should display message boxes.  If you are
+    // writing a multithreaded application and the error happens on
+    // a non-GUI thread, you'll have to queue the message to the GUI
+    QCoreApplication * instance = QCoreApplication::instance();
+    const bool isGuiThread = 
+        instance && (QThread::currentThread() == instance->thread());
+
+    if (isGuiThread) {
+        QMessageBox messageBox;
+        switch (type) {
+        case QtDebugMsg:
+            return;
+        case QtWarningMsg:
+        case QtInfoMsg:
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.setInformativeText(msg);
+            messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            break;
+        case QtCriticalMsg:
+            messageBox.setIcon(QMessageBox::Critical);
+            messageBox.setInformativeText(msg);
+            messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            break;
+        case QtFatalMsg:
+            messageBox.setIcon(QMessageBox::Critical);
+            messageBox.setInformativeText(msg);
+            messageBox.setStandardButtons(QMessageBox::Cancel);
+            break;
+        }
+
+        int ret = messageBox.exec();
+        if (ret == QMessageBox::Cancel)
+            abort();
+    } else {
+        if (type != QtDebugMsg)
+            abort(); // be NOISY unless overridden!        
     }
 }
-void MainWindow::viewerStatusChanged(QQuickView::Status status) {
-    qDebug() << "viewerStatusChanged: " << status;
-}
-void MainWindow::viewerChangeEvent(QEvent* event) {
-    qDebug() << "viewerChangeEvent: " << event;
-}
-void MainWindow::viewerClosing(QQuickCloseEvent*event){
-    qDebug() << "viewerClosing: "<< event ;
-}
 
-// these three not needed now we're just watching QApp::aboutToQuit() and using quit() for everything
-void MainWindow::viewerClosingSlot(QQuickCloseEvent* event){
-    qDebug() << "viewerClosingSlot: "<< event;
-}
-void MainWindow::viewerVisibleChangedSlot(bool v){
-    qDebug() << "viewerVisibleChangedSlot: "<< v;
-}
-void MainWindow::markViewerAsClosing(){
-    qDebug() << "markViewerAsClosing: ";
-}
-*/
+// eof
