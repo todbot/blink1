@@ -11,8 +11,8 @@ import QtQuick.Dialogs 1.0
 Window {
     id: prefsWindow
 
-    width: mw.mac() ? 570 : 560 // Win version experimentally determined
-    height: mw.mac() ? 520 : 460
+    width:  mw.mac() ? 590 : 560 // Win version experimentally determined
+    height: mw.mac() ? 520 : 450
 
     // FIXME: surely there's a shorter way of saying "no resize"?
     //maximumWidth: width
@@ -251,8 +251,8 @@ Window {
             id: groupBlink1SettingsSaveLoad
             title: "Import/Export settings"
             Layout.fillWidth: true
-            ColumnLayout {
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+            RowLayout {
+                //Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                 Button {
                     text: "Export Settings "
                     onClicked: {
@@ -269,7 +269,7 @@ Window {
         }
         GroupBox {
             id: groupBlink1Logging
-            title: "Logging"
+            title: "Logging / Debug"
             Layout.fillWidth: true
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
@@ -278,7 +278,23 @@ Window {
                     text: "Enable logging"
                     checked: mw.logging
                 }
-                //Label { text: mw.getLogFileName()  }
+                RowLayout { 
+                Button {
+                    text: "open log file"
+                    tooltip: mw.getLogFileName()
+                    onClicked: {
+                        Qt.openUrlExternally("file:///"+mw.getLogFileName())
+                        //Qt.openUrlExternally("file://"+mw.getLogFileName())
+                    }        
+                }
+                Button {
+                    text: "open settings file"
+                    tooltip: mw.getSettingsFileName()
+                    onClicked: {
+                        Qt.openUrlExternally("file:///"+mw.getSettingsFileName())
+                    }        
+                }
+                }
             }
         }
         

@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "SHIFT key on start, turning on logging";
         logging = true;
         startOrStopLogging( logging );
-    }                              
+    }
     */    
     activePatternName="";
 
@@ -267,7 +267,7 @@ bool MainWindow::nativeEventFilter(const QByteArray &, void *, long* )
 
 // called when window has focus
 void MainWindow::viewerActiveChanged() {
-    qDebug() << "viewerActiveChanged: " << viewer.isActive();
+    //qDebug() << "viewerActiveChanged: " << viewer.isActive();
     //if( viewer.isActive() ) settingsSave();
 }
 
@@ -309,7 +309,7 @@ void MainWindow::refreshBlink1State()
     }
     refreshCounter++;
     qint64 nowMillis = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    addToLog( "refreshBlink1State: --- refreshing:" + QString::number(refreshCounter));
+    addToLog( "refreshBlink1State: --- starting. count:" + QString::number(refreshCounter));
     
     blink1CloseAll();
     
@@ -317,17 +317,17 @@ void MainWindow::refreshBlink1State()
     blink1devcount = blink1_enumerate();
     for( int i=0; i<blink1devcount; i++ ) { 
         blink1devs[i] = blink1_openById( i );
-        addToLog("refreshBlink1State: opened blink1 #" +QString::number(i)); // << blink1devs[i] );
+        addToLog("refreshBlink1State: open & cached blink1 #" +QString::number(i));
     }
     
-    addToLog("refreshBlink1State: opening blink1Index:" + QString::number(blink1Index,16) );
+    addToLog("refreshBlink1State: opening for use blink1Index:" + QString::number(blink1Index,16) );
     int blid = blink1_getCacheIndexById( blink1Index );
     blink1dev = blink1devs[ blid ];
 
     if( blink1dev ) {
         blinkStatus="blink(1) connected";
         QString serialstr = QString(blink1_getCachedSerial( blink1_getCacheIndexByDev(blink1dev)));
-        addToLog("refreshBink1State: reconnect, blink1serial='"+serialstr+"'");
+        addToLog("refreshBlink1State: connected, blink1serial='"+serialstr+"'");
         blink1Id = serialstr;
         iftttKey = iftttKey.left(8) + blink1Id;
         mk2 = blink1_isMk2(blink1dev);
@@ -338,6 +338,7 @@ void MainWindow::refreshBlink1State()
         iftttKey = iftttKey.left(8) + "00000000";
         blink1Id = "none";
         refreshBlink1s = true;
+        addToLog("refreshBlink1State: no blink(1) found");
     }
 
     qint64 elapsedMillis = QDateTime::currentDateTime().toMSecsSinceEpoch() - nowMillis;
@@ -433,7 +434,7 @@ void MainWindow::runPattern(QString name, bool fromQml)
     if(!patterns.value(name))
         return;
 
-    if(!fromQml){
+    if(!fromQml){  // FIXME: why do we need this boolean?
         if(patterns.contains(name)) patterns.value(name)->play(cc);
     }
 }
@@ -452,7 +453,7 @@ void MainWindow::setColorFromDataInput(QColor color)
 
 void MainWindow::updateInputs()
 {
-    qDebug() << "updateInputs()";
+    //qDebug() << "updateInputs()";
     refreshBlink1State(); // not sure why this is here, but whatever
 
     QString type;
@@ -530,6 +531,7 @@ void MainWindow::updateInputs()
             emails.value(mailname)->checkMail();
         }
         emails.value(mailname)->changeFreqCounter();
+        emails.value(mailname)->updateValues();
     }
 
     delete hardwaresIterator;
@@ -569,7 +571,7 @@ void MainWindow::updateInputs()
 void MainWindow::checkIfttt(QString txt)
 {
     //qDebug() << "todtest: checkIfttt(txt) " << txt;
-    QJsonDocument respdoc = QJsonDocument::fromJson( txt.toLatin1() );
+    QJsonDocument respdoc = QJsonDocument::fromJson( txt.toUtf8() );
     QJsonObject respobj = respdoc.object();
     QJsonValue statval = respobj.value( QString("status") );  // should really check status :)
     //qDebug() << "checkIfttt: status: " << statval.toString();
@@ -805,7 +807,7 @@ void MainWindow::settingsSave( QSettings & settings )
         qarrpm.append(obj);
     }
     QString emsstr = QJsonDocument(qarrpm).toJson(QJsonDocument::Compact);
-    settings.setValue("emails", emsstr);
+    settings.setValue("emailstoo", emsstr);
 
     // save hardware monitors (why aren't these inputs?)
     QJsonArray qarrpm2;
@@ -818,7 +820,7 @@ void MainWindow::settingsSave( QSettings & settings )
     settings.setValue("hardwareMonitors", harstr);
 
     settings.sync();  // just in case
-    //qDebug() << "settingsSave() done";
+    addToLog("settingsSave: done");
 }
 
 //
@@ -860,13 +862,15 @@ void MainWindow::settingsLoad( QSettings & settings )
     firstRun       = settings.value("firstRun",true).toBool();
 
     startOrStopLogging( logging );
-
+    addToLog("settingsLoad: settings loaded");
+    
     QString sIftttKey = settings.value("iftttKey", "").toString();
     QRegExp re("^[a-f0-9]{16}"); // 16-digit hex 
     addToLog("settingsLoad: iftttKey='" + sIftttKey  + "'"); //re.exactMatch(sIftttKey.toLower()));
 
+    // check to see if saved iftttKey is valid
     if(sIftttKey=="" || sIftttKey=="none" || !re.exactMatch(sIftttKey.toLower()) ) {
-        addToLog("settingsLoad: generating new IftttKey");
+        addToLog("settingsLoad: empty or bad IftttKey, generating new IftttKey");
         sIftttKey="";
         srand(time(NULL));
             for(int i=0;i<8;i++){
@@ -876,7 +880,7 @@ void MainWindow::settingsLoad( QSettings & settings )
                 sIftttKey.append(QChar(tmp).toLatin1());
             }
     }
-    iftttKey=sIftttKey;
+    iftttKey = sIftttKey;
 
     // allow selection of "host" and port for API server
     // serverHost can be "localhost" or "any"
@@ -923,7 +927,14 @@ void MainWindow::settingsLoad( QSettings & settings )
     // load up list of built-in light patterns
     QString patternspath = QCoreApplication::applicationDirPath();
     if( mac() ) patternspath += "/../Resources/help/help/patternsReadOnly.json";  // FIXME: better way?
-    else        patternspath += "/help/help/patternsReadOnly.json";
+    else {
+#if QT_NO_DEBUG        
+        patternspath += "/help/help/patternsReadOnly.json";
+#else
+        patternspath += "/../help/help/patternsReadOnly.json";
+#endif
+// how much do I dislike Qt? see above
+    }
     QFile patternsfile(patternspath);
     QString patternsReadOnly = "{}";
     if( patternsfile.open(QFile::ReadOnly | QFile::Text) ) { 
@@ -935,7 +946,7 @@ void MainWindow::settingsLoad( QSettings & settings )
     }
 
     // read only patterns
-    QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toLatin1() );
+    QJsonDocument doc = QJsonDocument::fromJson( patternsReadOnly.toUtf8() );
     if( doc.isNull() ) {
         addToLog("ERROR!: patternsReadOnly syntax error!");
     }
@@ -955,7 +966,7 @@ void MainWindow::settingsLoad( QSettings & settings )
 
     QString sPatternStr = settings.value("patterns","").toString();
     if( sPatternStr.length() ) {
-        QJsonDocument doc = QJsonDocument::fromJson( sPatternStr.toLatin1() );
+        QJsonDocument doc = QJsonDocument::fromJson( sPatternStr.toUtf8() );
         QJsonArray qarr = doc.array();
         for( int i=0; i< qarr.size(); i++ ) {
             Blink1Pattern* bp = new Blink1Pattern();
@@ -967,7 +978,7 @@ void MainWindow::settingsLoad( QSettings & settings )
     }
     QString sInputStr = settings.value("inputs","").toString();
     if( sInputStr.length() ) {
-        QJsonDocument doc = QJsonDocument::fromJson( sInputStr.toLatin1() );
+        QJsonDocument doc = QJsonDocument::fromJson( sInputStr.toUtf8() );
         QJsonArray qarr = doc.array();
         for( int i=0; i< qarr.size(); i++ ) {
             Blink1Input* bi = new Blink1Input();
@@ -975,7 +986,8 @@ void MainWindow::settingsLoad( QSettings & settings )
             inputs.insert( bi->name(), bi );
             // find most recent ifttt time
             if( bi->type() == "ifttt" ) {
-                addToLog("input name:" + bi->name() +" iftttTime: " + bi->date() + " nowSecs: " + nowSecs);
+                addToLog("input name:" + bi->name() +" iftttTime: " + bi->date() +
+                         " nowSecs: " + QString::number(nowSecs));
                 if( bi->date() > nowSecs || bi->date() < 1 ) {  // if bad stored date, fix it
                     bi->setDate( nowSecs );
                 }
@@ -991,7 +1003,7 @@ void MainWindow::settingsLoad( QSettings & settings )
 
     QString sButtStr = settings.value("bigbuttons2","").toString();
     if( sButtStr.length() ) {
-        QJsonDocument doc = QJsonDocument::fromJson( sButtStr.toLatin1() );
+        QJsonDocument doc = QJsonDocument::fromJson( sButtStr.toUtf8() );
         QJsonArray qarr = doc.array();
         for( int i=0; i< qarr.size(); i++ ) {
             BigButtons *bb = new BigButtons("",QColor());
@@ -1006,9 +1018,9 @@ void MainWindow::settingsLoad( QSettings & settings )
     }
     emit bigButtonsUpdate();
 
-    QString sEmStr = settings.value("emails","").toString();
+    QString sEmStr = settings.value("emailstoo","").toString();
     if( sEmStr.length() ) {
-        QJsonDocument docm = QJsonDocument::fromJson( sEmStr.toLatin1() );
+        QJsonDocument docm = QJsonDocument::fromJson( sEmStr.toUtf8() ); //sEmStr.toLatin1() );
         QJsonArray qarrm = docm.array();
         for( int i=0; i< qarrm.size(); i++ ) {
             Email* bp = new Email("");
@@ -1016,13 +1028,14 @@ void MainWindow::settingsLoad( QSettings & settings )
             connect(bp,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
             connect(bp,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
             bp->fromJson( qarrm.at(i).toObject() );
+            bp->setProxySettings( proxyType, proxyHost, proxyPort, proxyUser, proxyPass );
             emails.insert( bp->getName(), bp );
         }
     }
 
     QString sEmStr2 = settings.value("hardwareMonitors","").toString();
     if( sEmStr2.length() ) {
-        QJsonDocument docm = QJsonDocument::fromJson( sEmStr2.toLatin1() );
+        QJsonDocument docm = QJsonDocument::fromJson( sEmStr2.toUtf8() );
         QJsonArray qarrm = docm.array();
         for( int i=0; i< qarrm.size(); i++ ) {
             HardwareMonitor* bp = new HardwareMonitor("");
@@ -1337,7 +1350,7 @@ void MainWindow::showAboutDialog(){
     QString message = "Blink1Control \n";
     message += "   for blink(1) and blink(1) mk2.\n";
     message += "Version: " + QString(BLINK1CONTROL_VERSION)+ "\n";
-    message += "2013-2014 ThingM Corp.\n";
+    message += "2013-2015 ThingM Corp.\n";
     message += "Visit blink1.thingm.com for more info\n";
     QMessageBox::about(this, QString("About Blink1Control"), message);
 }
@@ -1381,7 +1394,41 @@ void MainWindow::playBigButton(int idx){
 // called by tray menu
 void MainWindow::changeAutorunOption() {
     autorun = autorunAction->isChecked();
+    qDebug() << "changeAutoRun:" << autorun;
     if( autorun ){
+#ifdef Q_OS_MAC
+            QFileInfo dir(QDir::homePath()+"/Library/LaunchAgents");
+            if(!dir.exists()) {
+                QDir d(QDir::homePath()+"/Library");
+                d.mkdir(QDir::homePath()+"/Library/LaunchAgents");
+            }
+            QFile file(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
+            file.open(QIODevice::WriteOnly | QIODevice::Text);
+            QTextStream out(&file);
+            out <<"<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version=\"1.0\"><dict>"
+                << "<key>Label</key><string>Blink1Control</string>"
+                << "<key>RunAtLoad</key><true/>"
+                << "<key>Program</key><string>"
+                << "/Applications/Blink1Control.app/Contents/MacOS/Blink1Control"
+                << "</string></dict></plist>";
+            file.close();
+
+            QProcess *myProcess = new QProcess();
+            QStringList arg;
+            arg.append("load");
+            arg.append("-w");
+            arg.append(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
+            myProcess->start("launchctl", arg);
+#endif
+#ifdef Q_OS_WIN
+        QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           QSettings::NativeFormat);
+        settings.setValue("blink", QCoreApplication::applicationFilePath().replace('/','\\'));
+#endif
+
+    }
+    else {  // turn off autorun / start at login
+
 #ifdef Q_OS_MAC
         QStringList arg;
         arg.append("unload");
@@ -1393,33 +1440,12 @@ void MainWindow::changeAutorunOption() {
             file.remove();
 #endif
 #ifdef Q_OS_WIN
-        QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
-        settings.remove("blink");
+        QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           QSettings::NativeFormat);
+        settings.remove("Blink1Control");
+        settings.remove("blink"); // remove old cruft
 #endif
-    }
-    else {
-#ifdef Q_OS_MAC
-            QFileInfo dir(QDir::homePath()+"/Library/LaunchAgents");
-            if(!dir.exists()){
-                QDir d(QDir::homePath()+"/Library");
-                d.mkdir(QDir::homePath()+"/Library/LaunchAgents");
-            }
-            QFile file(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
-            file.open(QIODevice::WriteOnly | QIODevice::Text);
-            QTextStream out(&file);
-            out <<"<plist version=\"1.0\"><dict><key>Label</key><string>Blink1Control</string><key>RunAtLoad</key><true/><key>Program</key><string>/Applications/Blink1Control.app/Contents/MacOS/Blink1Control</string></dict></plist>";
-            file.close();
 
-            QProcess *myProcess = new QProcess();
-            QStringList arg;
-            arg.append("load");
-            arg.append(QDir::homePath()+"/Library/LaunchAgents/Blink1Control.plist");
-            myProcess->start("launchctl", arg);
-#endif
-#ifdef Q_OS_WIN
-        QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
-        settings.setValue("blink", QCoreApplication::applicationFilePath().replace('/','\\'));
-#endif
     }
     //emit prefsUpdate();
     settingsSave();
@@ -1515,6 +1541,24 @@ QVariantList MainWindow::getRecentEvents(){
     }
     return recentList;
 }
+/*
+QVariantList MainWindow::getMailFreqs(){
+    QVariantList mailFreqsList;
+
+    mailFreqsList.append( "1 min", 12 );
+}
+*/
+/*
+QVariantList MainWindow::getMailFreqsNames(){
+    QVariantList mailFreqsNamesList;
+    mailFreqsNamesList.append( QString("1 min") );
+    mailFreqsNamesList.append( QString("5 min") );
+    mailFreqsNamesList.append( QString("15 min") );
+    mailFreqsNamesList.append( QString("30 min") );
+    mailFreqsNamesList.append( QString("1 hour") );
+    return mailFreqsNamesList;
+}
+*/
 QVariantList MainWindow::getPatternsNames(){
     QVariantList patternsNamesList;
 
@@ -1832,7 +1876,8 @@ bool MainWindow::mac(){
 void MainWindow::editColorAndTimeInPattern(QString pname,QString color,double time, int index){
     patterns.value(pname)->editColorAndTime(color, time, index);
 }
-void MainWindow::add_new_mail(QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser){
+// FIXME: much code duplication with add_new_mail and edit_mail
+void MainWindow::add_new_mail(QString name,int type, QString server, QString username, QString passwd, int port, bool ssl, int searchtype, QString searchstr ){
     addToLog("add_new_mail: "+name);
     if(name=="") name="name";
     int ile=0;
@@ -1840,26 +1885,19 @@ void MainWindow::add_new_mail(QString name,int type, QString server, QString log
         ile++;
         name=name+QString::number(ile);
     }
-    //qDebug()<<"add_new_mail:: "+name;
     Email *e=new Email(name);
     connect(e,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
     connect(e,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
     connect(e,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
     e->setServer(server);
-    e->setType(type);
-    e->setLogin(login);
+    e->setServerType( (Email::ServerType)type ); 
+    e->setUsername(username);
     e->setPasswd(passwd);
     e->setPort(port);
     e->setSsl(ssl);
-    e->setResult(result);
-    e->setParser(parser);
-    QString email=login;
-    // FIXME: wtf marcin?
-    //if(login.indexOf("@")==-1){
-    //    if(server.indexOf(".")!=-1)
-    //        email+="@"+server.mid(server.indexOf(".")+1);
-    //}
-    e->setEmail(email);
+    e->setSearchType( (Email::SearchType)searchtype );
+    e->setSearchString( searchstr );
+    e->setProxySettings( proxyType, proxyHost, proxyPort, proxyUser, proxyPass );
     emails.insert(name,e);
     emit emailsUpdate();
     e->checkMail();
@@ -1867,16 +1905,18 @@ void MainWindow::add_new_mail(QString name,int type, QString server, QString log
 // FIXME: This method is madness with so many parameters
 // "result" is which "Blink when" radio button is checked
 // "parser" is the thing to match (Subject or From)
-void MainWindow::edit_mail(QString oldname, QString name,int type, QString server, QString login, QString passwd, int port, bool ssl, int result, QString parser){
+// "result" is the kind of search to do (result=0 is "unread count", result=1 is "subject", result=2 is "Sender"
+// "result" is now "searchtype", "parser" is now "searchstr"
+void MainWindow::edit_mail(QString oldname, QString name,int type, QString server, QString username, QString passwd, int port, bool ssl, int searchtype, QString searchstr){
     addToLog("edit_mail: "+name);
     QString value;
     if(emails.contains(oldname)){
         Email *e=emails.value(oldname);
-        value=e->getValue();
+        value = e->getValue();
         if(name=="") name="name";
         if(oldname!=name){
             int tmpfreq=e->getFreq();
-            int tmplastid=e->getLastid();
+            int tmplastmsgid = e->getLastMsgId();
             QString tmpPatt=e->getPatternName();
             emails.remove(oldname);
             disconnect(e);
@@ -1890,29 +1930,27 @@ void MainWindow::edit_mail(QString oldname, QString name,int type, QString serve
             e=new Email(name);
             e->setFreq(tmpfreq);
             e->setPatternName(tmpPatt);
-            e->setLastid(tmplastid);
+            e->setLastMsgId(tmplastmsgid);
             connect(e,SIGNAL(runPattern(QString,bool)),this,SLOT(runPattern(QString,bool)));
             connect(e,SIGNAL(addReceiveEvent(int,QString,QString)),this,SLOT(addRecentEvent(int,QString,QString)));
             connect(e,SIGNAL(addToLog(QString)),this,SLOT(addToLog(QString)));
         }
         addToLog("edit_mail: "+name);
         e->setServer(server);
-        e->setType(type);
-        e->setLogin(login);
+        e->setServerType( (Email::ServerType)type );
+        e->setUsername(username);
         e->setPasswd(passwd);
         e->setPort(port);
         e->setSsl(ssl);
-        e->setResult(result);
-        e->setParser(parser);
+        //e->setSearchType( (searchtype==0) ? Email::UNREAD : (searchtype==1) ? Email::SUBJECT : Email::SENDER );
+        e->setSearchType( (Email::SearchType)searchtype );
+        e->setSearchString( searchstr );
         e->setValue(value);
-        QString email=login;
-        if(login.indexOf("@")==-1){
-            if(server.indexOf(".")!=-1)
-                email+="@"+server.mid(server.indexOf(".")+1);
-        }
-        e->setEmail(email);
+        e->setProxySettings( proxyType, proxyHost, proxyPort, proxyUser, proxyPass );
+        
         emails.insert(name,e);
-        e->setEdit(true);
+        
+        //e->settingsUpdated();  // FIXME: 
         e->checkMail();
     }
 }
@@ -1929,23 +1967,25 @@ void MainWindow::remove_email(QString name,bool update){
 void MainWindow::updateMail(){
     emit emailsUpdate();
 }
-
-void MainWindow::setFreqToEmail(QString name,int freq){
+/*
+void MainWindow::setFreqToEmailOld(QString name,int freq){
     int f;
-    if(freq==0){
-        f=12;
-    }else if(freq==1){
-        f=60;
-    }else if(freq==2){
-        f=180;
-    }else if(freq==3){
-        f=360;
-    }else{
-        f=720;
+    if(freq==0){        f=12;
+    }else if(freq==1){  f=60;
+    }else if(freq==2){  f=180;
+    }else if(freq==3){  f=360;
+    }else{              f=720;
     }
 
     if(emails.contains(name)){
         emails.value(name)->setFreq(f);
+        emit emailsUpdate();
+    }
+}
+*/
+void MainWindow::setFreqToEmail(QString name,int freq){
+    if(emails.contains(name)){
+        emails.value(name)->setFreq( freq );
         emit emailsUpdate();
     }
 }
@@ -2245,6 +2285,13 @@ QString MainWindow::getLogFileName() {
     QFileInfo fileInfo(logFile->fileName());
     return QString(fileInfo.absoluteFilePath());
 }
+QString MainWindow::getSettingsFileName() {
+    //return (logFile!=NULL) ? logFile->fileName() : "";
+    //QFileInfo fileInfo(logFile->fileName());
+    // FIXME: make this match settingsLoad() & settingsSave()
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "ThingM", "Blink1Control");
+    return settings.fileName();
+}
 
 QMap<QString,Blink1Input*> MainWindow::getFullInputList(){
     return inputs;
@@ -2336,7 +2383,10 @@ void MainWindow::setStartupPattern( QString patternName )
 void noisyFailureMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     QByteArray localMsg = msg.toLocal8Bit();
-    fprintf(stderr, "debug: %s @ %s\n", localMsg.constData(), context.function );
+    fprintf(stderr, "Blink1Control error: %s @ %s\n", localMsg.constData(), context.function );
+    //QString logstr;
+    //logstr.arg("noisyFailure: %s @ %s\n", localMsg.constData(), context.function); //nope
+    //addToLog( logstr );
     
     // this is another one that doesn't make sense as just a debug message.
     // pretty serious sign of a problem
