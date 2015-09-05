@@ -1,6 +1,6 @@
 import QtQuick 2.2
 import "content"
-import QtQuick.Controls 1.2
+import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.2
 import QtGraphicalEffects 1.0
 import QtQuick.Layouts 1.1
@@ -1126,8 +1126,8 @@ Image{
                             }
                             Text{
                                 text: name
-                                //font.pointSize: (!mw.mac())?10:12
-                                font.pixelSize:12
+                                font.pointSize: (!mw.mac())?9:10
+                                //font.pixelSize:12
                                 anchors.bottom: parent.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: "#666666"
@@ -2271,8 +2271,9 @@ Image{
                         id: inputsList2M
                         z: 100
                         property variant pnm: mw.getPatternsNames
+                        property variant mailFreqs: mw.getMailFreqs
                         clip: true
-                        model: mw.getMailsList//mw.getInputsList//myModel
+                        model: mw.getMailsList  //mw.getInputsList//myModel
                         currentIndex: -1
                         spacing: 3
 
@@ -2304,6 +2305,10 @@ Image{
                             id: del2M
                             property bool edit:false
                             property bool edit2:false
+                            property string patternName: model.modelData.patternName
+                            property string mailName: model.modelData.name
+                            property string mailFreq: model.modelData.freq  // this seems like a dumb way to do this
+
                             height:  {
                                 if(ti2M.height<25 && mailaccount.height<25) 29
                                 else{
@@ -2331,9 +2336,9 @@ Image{
                                 onDoubleClicked: {
                                     //todpopup.visible=true;
                                     if(mailpopup.visible) return;
-                                    mailpopup.oldname=model.modelData.name
+                                    mailpopup.oldname = model.modelData.name
                                     mw.markEmailEditing(model.modelData.name,true)
-                                    mailpopup.editData(model.modelData.name,model.modelData.type,model.modelData.server,model.modelData.login,model.modelData.passwd,model.modelData.port,model.modelData.ssl,model.modelData.result,model.modelData.parser)
+                                    mailpopup.editData(model.modelData.name, model.modelData.serverType, model.modelData.server, model.modelData.username, model.modelData.passwd, model.modelData.port, model.modelData.ssl, model.modelData.searchType, model.modelData.searchString)
                                     mailpopup.visible=true
                                 }
                             }
@@ -2345,6 +2350,7 @@ Image{
                                 anchors.topMargin: 5
                                 anchors.left: parent.left
                                 anchors.leftMargin: 15
+                                
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.verticalCenterOffset: -5
@@ -2363,10 +2369,59 @@ Image{
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.verticalCenterOffset: -5
                                     width: 150
-                                    text: model.modelData.email
+                                    text: model.modelData.username
                                     //font.pointSize: (!mw.mac())?8:12
                                     font.pixelSize:12
                                 }
+                                ComboBox {
+                                    id: pFreqM
+                                    width: 70
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.verticalCenterOffset: -5
+                                    style: ComboBoxStyle { font.pointSize: (!mw.mac())?8:12 }
+                                    currentIndex: {  // this seems like such a hack
+                                        for( var i=0; i< cbmailfreqs.count; i++ ) {
+                                          if( cbmailfreqs.get(i).freqval == del2M.mailFreq ) {
+                                            return i;
+                                          }
+                                        }
+                                        return 3;
+                                    }
+                                    model: ListModel {
+                                        id: cbmailfreqs
+                                        ListElement { text: "1 min";  freqval: 12 } // FIXME: wat
+                                        ListElement { text: "5 min";  freqval: 60 }
+                                        ListElement { text: "15 min"; freqval: 180 }
+                                        ListElement { text: "30 min"; freqval: 360 }
+                                        ListElement { text: "1 hour"; freqval: 720 }
+                                    }
+                                    onActivated: {
+                                        //console.log("*** pFreqM activated: "+index);
+                                        mw.setFreqToEmail( del2M.mailName, cbmailfreqs.get(index).freqval )
+                                    }
+                                    onCurrentIndexChanged: {
+                                        //console.log("*** pFreqM curentIndexChanged: "+ currentIndex + ", "+del2M.mailFreq)
+                                        //console.log("*** pFreqM curentIndexChanged: new = "+ currentIndex)
+                                    }
+                                }
+                                ComboBox {
+                                    id: pNameM
+                                    width: 100
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.verticalCenterOffset: -5
+                                    style: ComboBoxStyle { font.pointSize: (!mw.mac())?8:12 }
+                                    model: inputsList2M.pnm
+                                    currentIndex: inputsList2M.pnm.indexOf( del2M.patternName )
+                                    onActivated: {  // triggered when user changes combobox, sets index
+                                        mw.setPatternNameToEmail( del2M.mailName, inputsList2M.pnm[index] )
+                                        // this doesn't work: del2M.patternName = inputsList2M.pnm[index];
+                                    }
+                                    onCurrentIndexChanged: {  // triggered when code changes combobox  (this makes no sense)
+                                        //currentIndex = inputsList2M.pnm.indexOf( del2M.patternName )
+                                    }
+                                }
+
+                                /*
                                 Text{
                                     id: pFreqM
                                     anchors.verticalCenter: parent.verticalCenter
@@ -2417,8 +2472,12 @@ Image{
                                             anchors.rightMargin: 5
                                             anchors.verticalCenter: parent.verticalCenter
                                         }
+
                                     }
                                 }
+                                */
+/*
+                                
                                 Text{
                                     id: pNameM
                                     elide: Text.ElideMiddle
@@ -2474,7 +2533,8 @@ Image{
                                     height: 1
                                     width: 1
                                 }
-
+                                */
+                                                                                               
                                 Text{
                                     id: llastvalM
                                     anchors.verticalCenter: parent.verticalCenter
@@ -2485,7 +2545,7 @@ Image{
                                     color: (text==="CONNECTION ERROR")? "#c80b0b": "black"
                                     font.underline: (model.modelData.getErrorsList.length>0)? true: false
                                     //font.pointSize: (!mw.mac())?8:12
-                                    font.pixelSize:12
+                                    font.pixelSize:11
                                     MouseArea{
                                         anchors.fill: parent
                                         cursorShape: (model.modelData.getErrorsList.length>0)?Qt.PointingHandCursor:Qt.ArrowCursor
@@ -3305,14 +3365,7 @@ Image{
     }
 
     //popups
-/*
-    MailPopupTod{
-        x: 400 //parent.x+parent.width/2-400
-        y: 200 //parent.y+50
-        id: todpopup
-        visible: false
-    }
-*/
+
     MailPopup{
         x: parent.x+parent.width/2-200
         y: parent.y+50
@@ -3352,7 +3405,7 @@ Image{
             onClicked: {
                 parent.visible=false
                 comboPatternM.hide()
-                comboFreqM.hide()
+                //comboFreqM.hide()
                 comboPatternH.hide()
                 comboFreqH.hide()
                 comboFreq.hide()
@@ -3380,7 +3433,7 @@ Image{
         }
         onHiden: background.visible=false
     }
-    ComboBox1{
+/*    ComboBox1{
         id: comboFreqM
         width: 100
         items: timeM
@@ -3415,7 +3468,7 @@ Image{
         }
         onHiden: background.visible=false
     }
-
+*/
     ComboBox1{
         id: comboPatternH
         width: 145

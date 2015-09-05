@@ -6,7 +6,7 @@
 #include <QDebug>
 #include "blink1input.h"
 #include "blink1pattern.h"
-#include "email.h"
+#include "emailcurl.h"
 #include "hardwaremonitor.h"
 #include <QJsonArray>
 #include <QJsonObject>

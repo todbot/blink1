@@ -22,7 +22,7 @@
 #include "datainput.h"
 
 #include "bigbuttons.h"
-#include "email.h"
+#include "emailcurl.h"
 #include "hardwaremonitor.h"
 
 #include <time.h>
@@ -279,6 +279,7 @@ public slots:
     void startOrStopLogging(bool);
     bool getLogging();
     QString getLogFileName();
+    QString getSettingsFileName();
     void updateColorsOnBigButtons2List();
 
     void setStartupPattern( QString patternName );
@@ -396,10 +397,11 @@ signals:
     void ledsUpdate();
     void deviceUpdate();
     void prefsUpdate();
+    
 private slots:
     void updateInputs();
     void deleteDataInput(DataInput *dI);
-    void runPattern(QString, bool);
+    void runPattern(QString pattname, bool fromQml);
     void setColorFromDataInput(QColor);
     void checkIfttt(QString);
 };

@@ -31,7 +31,7 @@ Image {
         username.text=""
         password.text=""
         port.text="143"
-        ssl.checked=false
+        ssl.checked=true
         unreads.checked=true
         subject.checked=false
         sender.checked=false
@@ -50,6 +50,7 @@ Image {
         subjectinput.readOnly=true
         senderinput.readOnly=true
 
+        //console.log( "arg1:"+arg1+",arg2:"+arg2+"arg3:"+arg3+",arg4:"+arg4+"arg5:"+arg5+",arg6:"+arg6+"arg7:"+arg7+",arg8:"+arg8+",arg9:"+arg9);
         name.text=arg1
         type.currentIndex=arg2
         mailserver.text=arg3
@@ -58,16 +59,16 @@ Image {
         ssl.checked=arg7
 
         port.text=arg6
-        if(arg8===0){
+        if(arg8===0){  // SearchType = UNREAD
             unreads.checked=true
             unreadinput.readOnly=false
-            unreadscount.text=parseInt(arg9)
-        }else if(arg8===1){
+            unreadscount.text = parseInt(arg9)
+        }else if(arg8===1){ // SearchType == SUBJECT
             subject.checked=true
             subjectinput.readOnly=false
             subjectinput.text=arg9
         }else{
-            sender.checked=true
+            sender.checked=true  // SearchType == SENDER
             senderinput.readOnly=false
             senderinput.text=arg9
         }
@@ -193,18 +194,18 @@ Image {
             model: ListModel {
                 id: types
                 ListElement { text: "IMAP"; }
-                ListElement { text: "POP3"; }
+                ListElement { text: "POP3 (disabled)"; } // FIXME: currently unimplemented
                 ListElement { text: "GMAIL"; }
             }  
             onCurrentIndexChanged: {
-                console.debug(types.get(currentIndex).text);
+                //console.debug(types.get(currentIndex).text);
                 if( currentIndex==0 ) { // IMAP
                     port.text = (ssl.checked) ? "993" : "143";
                 }
                 else if( currentIndex==1 ) { // POP3
                     port.text = (ssl.checked) ? "995" : "110";
                 } 
-                else if( currentIndex==2 ) { // GMAIL
+                else if( currentIndex== 2 ) { // GMAIL
                     ssl.checked=true;
                     port.text="993";
                     mailserver.text="imap.gmail.com"
@@ -412,8 +413,8 @@ Image {
         width: 100
         Image{
             id: ssl
-            property bool checked: false
-            source: "qrc:/images/layout/checkbox-normal.png"
+            property bool checked: true
+            source: "qrc:/images/layout/checkbox-selected.png" // FIXME: so dumb, must chg this & above
             onCheckedChanged: {
                 if(checked){
                     if(type.currentIndex==1){
