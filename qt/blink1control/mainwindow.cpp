@@ -1193,7 +1193,7 @@ void MainWindow::createActions()
     offAction=new QAction("Off / Reset Alerts",this);
     connect(offAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
     offAction->setShortcut(Qt::Key_R | Qt::CTRL);
-    // shortcuts dont' work, instead must put in QML
+    // shortcuts dont' work, instead must put in QML, they're here for visual indication in menu
     //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
     // shortcuts don't work apparently in traymenus
     // offAction->setShortcut(Qt::Key_R | Qt::CTRL);
@@ -1204,10 +1204,12 @@ void MainWindow::createActions()
 
 void MainWindow::trayBigButtonTriggered(QAction* act)
 {
-    QString pname = act->text();
-    pname.replace("Set to ","");
-    qDebug() << "triggered:"<< act->text();
-    playBigButton( pname );
+    //QString pname = act->text();
+    //pname.replace("Set to ",""); 
+    //playBigButton( pname );
+    //QKeySequence k = act->shortcut();
+    qDebug() << "triggered:"<< act->text()<< ":" << act->toolTip();
+    playBigButton( act->toolTip().toInt()-1 );
 }
 
 void MainWindow::createTrayIcon()
@@ -1230,8 +1232,8 @@ void MainWindow::createTrayIcon()
     for( int i=0; i< bigButtons2.count(); i++ ) {
         BigButtons* b = bigButtons2.at(i);
         QAction* a = new QAction( "Set to "+b->getName(), this);
-        //a->setShortcut(QKeySequence("Ctrl+"+QString::number(i+1)));
-        //a->setShortcutContext(Qt::ApplicationShortcut);
+        a->setShortcut(QKeySequence("Ctrl+"+QString::number(i+1)));
+        a->setToolTip( QString::number(i+1) );
         bigButtonActions->addAction(a);
         trayIconMenu->addAction( a );
     }
@@ -1393,6 +1395,7 @@ void MainWindow::showNormal(){
     viewer.requestActivate();
     //viewer.activateWindow(); // for Windows
 }
+// play the first named bigbutton
 void MainWindow::playBigButton(QString name)
 {
     int idx = -1;
@@ -1403,6 +1406,7 @@ void MainWindow::playBigButton(QString name)
 }
 void MainWindow::playBigButton(int idx)
 {
+    if( idx >= bigButtons2.count() ) return;
     blink1timer->stop();
     QString tmp = bigButtons2.at(idx)->getPatternName();
     if( tmp=="" ) {
