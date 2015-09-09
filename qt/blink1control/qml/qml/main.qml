@@ -151,7 +151,52 @@ Image{
                 anchors.centerIn: parent
             }
         }
-
+                
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+R"; onTriggered: mw.resetAlertsOption(); }
+        }
+        Button {  // surely there's a better way to do these
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+1"; onTriggered: mw.playBigButton(0); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+2"; onTriggered: mw.playBigButton(1); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+3"; onTriggered: mw.playBigButton(2); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+4"; onTriggered: mw.playBigButton(3); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+5"; onTriggered: mw.playBigButton(4); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+6"; onTriggered: mw.playBigButton(5); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+7"; onTriggered: mw.playBigButton(6); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+8"; onTriggered: mw.playBigButton(7); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+9"; onTriggered: mw.playBigButton(8); }
+        }
+        Button {
+            style: ButtonStyle { background: Rectangle { color: "transparent" } }
+            Action { shortcut: "Ctrl+0"; onTriggered: mw.playBigButton(9); }
+        }
+/*
         Button {   // this is a holder for the action which gives us Cmd-R shortcut. FIXME: easier way?
             tooltip: "Reset alerts"
             //iconSource: "qrc:images/stop.png"
@@ -174,6 +219,7 @@ Image{
                 onTriggered: mw.resetAlertsOption()
             }
         }
+*/
         Button {
             tooltip: "Open Advanced Preferences"
             //iconSource: "qrc:images/layout/select-bg-right.png"
@@ -1147,7 +1193,7 @@ Image{
                         anchors.top: bigButtons1.bottom
                         anchors.topMargin: 15
                         height: 105
-                        width: (model.length*80)>400?400:model.length*80
+                        width: (model.length*80)>(9*80) ? (9*80): model.length*80
                         orientation: ListView.Horizontal
                         Component.onCompleted: positionViewAtEnd()
                         MouseArea{
