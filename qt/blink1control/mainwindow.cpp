@@ -292,9 +292,11 @@ void MainWindow::blink1CloseAll()
 void MainWindow::refreshBlink1State()
 {
     if( sleepytime ) {
-        addToLog( "refreshBlink1State: being sleepy...");
-        //sleepytime = false;
+        addToLog( "refreshBlink1State: sleeping...");
         blink1CloseAll();
+        blinkStatus = "blink(1) disconnected";
+        emit deviceUpdate();
+        return;
     }
    
     if( !refreshBlink1s ) {
@@ -1188,17 +1190,24 @@ void MainWindow::createActions()
     serverAction->setChecked(enableServer);
     connect(serverAction,SIGNAL(triggered()),this,SLOT(startStopServer()));
     
-    alertsAction=new QAction("Off / Reset Alerts",this);
-    connect(alertsAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
-    
-    resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
-    alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
-
+    offAction=new QAction("Off / Reset Alerts",this);
+    connect(offAction,SIGNAL(triggered()),this,SLOT(resetAlertsOption()));
+    offAction->setShortcut(Qt::Key_R | Qt::CTRL);
+    // shortcuts dont' work, instead must put in QML
+    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R),this); //, this, SLOT(resetAlertsOption()));
     // shortcuts don't work apparently in traymenus
-    //alertsAction->setShortcut(Qt::Key_R | Qt::CTRL);
+    // offAction->setShortcut(Qt::Key_R | Qt::CTRL);
     // this doesn't appear to work either
-    //resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SLOT(resetAlertsOption()));
+    // resetAlertsShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), this, SLOT(resetAlertsOption()));
     // neither does this work
+}
+
+void MainWindow::trayBigButtonTriggered(QAction* act)
+{
+    QString pname = act->text();
+    pname.replace("Set to ","");
+    qDebug() << "triggered:"<< act->text();
+    playBigButton( pname );
 }
 
 void MainWindow::createTrayIcon()
@@ -1216,8 +1225,19 @@ void MainWindow::createTrayIcon()
     trayIconMenu->addAction(dockIconAction);
     #endif
     trayIconMenu->addSeparator();
+    bigButtonActions = new QActionGroup(this);
+    connect( bigButtonActions, SIGNAL(triggered(QAction*)), this, SLOT(trayBigButtonTriggered(QAction*)) );
+    for( int i=0; i< bigButtons2.count(); i++ ) {
+        BigButtons* b = bigButtons2.at(i);
+        QAction* a = new QAction( "Set to "+b->getName(), this);
+        //a->setShortcut(QKeySequence("Ctrl+"+QString::number(i+1)));
+        //a->setShortcutContext(Qt::ApplicationShortcut);
+        bigButtonActions->addAction(a);
+        trayIconMenu->addAction( a );
+    }
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(offAction);
     trayIconMenu->addAction(settingAction);
-    trayIconMenu->addAction(alertsAction);
     trayIconMenu->addAction(quitAction);
 
     trayIcon = new QSystemTrayIcon(this);
@@ -1373,13 +1393,22 @@ void MainWindow::showNormal(){
     viewer.requestActivate();
     //viewer.activateWindow(); // for Windows
 }
-void MainWindow::playBigButton(int idx){
+void MainWindow::playBigButton(QString name)
+{
+    int idx = -1;
+    for( int i=0; i< bigButtons2.count(); i++) {
+        if( bigButtons2.at(i)->getName() == name ) idx = i;
+    }
+    playBigButton(idx);
+}
+void MainWindow::playBigButton(int idx)
+{
     blink1timer->stop();
-    QString tmp=bigButtons2.at(idx)->getPatternName();
-    if(tmp==""){
+    QString tmp = bigButtons2.at(idx)->getPatternName();
+    if( tmp=="" ) {
         this->led=bigButtons2.at(idx)->getLed();
         emit ledsUpdate();
-        cc=bigButtons2.at(idx)->getCol();
+        cc = bigButtons2.at(idx)->getCol();
         mode=RGBSET;
         updateBlink1();
         QMetaObject::invokeMethod((QObject*)viewer.rootObject(),"changeColor2", Q_ARG(QVariant, cc),Q_ARG(QVariant,0.0));

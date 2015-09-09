@@ -1,5 +1,5 @@
-import QtQuick 2.0
-import QtQuick.Controls 1.0
+import QtQuick 2.5
+import QtQuick.Controls 1.4
 
 Image {
     id: popup
@@ -30,7 +30,7 @@ Image {
         mailserver.text=""
         username.text=""
         password.text=""
-        port.text="143"
+        port.text="993"
         ssl.checked=true
         unreads.checked=true
         subject.checked=false

@@ -126,7 +126,8 @@ public slots:
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
     
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
-
+    void trayBigButtonTriggered(QAction* action);
+    
     static bool comparePatternsFunction(Blink1Pattern *bi1,Blink1Pattern *bi2){
         return bi1->date()>bi2->date();
     }
@@ -187,6 +188,7 @@ public slots:
     void updateBigButtonName(int idx, QString name);
     void updateBigButtonPatternName(int idx, QString name);
     void updateBigButtonLed(int idx, int l);
+    void playBigButton(QString name);
     void playBigButton(int idx);
     void removeBigButton2(int idx);
     void updateBigButtons();
@@ -307,10 +309,11 @@ public slots:
     QAction *autorunAction;
     QAction *dockIconAction;
     QAction *settingAction;
-    QAction *alertsAction;
+    QAction *offAction;
     QAction *serverAction;
     QAction *aboutAction;
-
+    QActionGroup* bigButtonActions;
+    
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
     QShortcut* resetAlertsShortcut;
