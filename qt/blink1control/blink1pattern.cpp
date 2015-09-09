@@ -42,6 +42,9 @@ QJsonObject Blink1Pattern::toJson()  // wtf marcin toFullJsonReadyToSave()
     obj.insert("date",date());
     obj.insert("readonly",isReadOnly());
     obj.insert("system",isSystem());
+    obj.insert("playing", isPlaying());
+    obj.insert("playCount", playcount());
+    obj.insert("playPos", mplaypos);
     return obj;
 }
 

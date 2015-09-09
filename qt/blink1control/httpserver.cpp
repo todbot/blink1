@@ -223,11 +223,17 @@ void HttpServer::startRead(){
             resp.insert("status",QString("input/ifttt not implemented yet"));
         }
         else if( cmd=="/pattern" || cmd=="/patterns" ) {
+            QString pname;
+            if( qurlquery.hasQueryItem("pname") ) {
+                pname = qurlquery.queryItemValue("pname");
+            }
             QJsonArray qarrp;
             QMap<QString,Blink1Pattern *>patterns=mw->getFullPatternList();
             foreach (QString nm, patterns.keys() ) {
-                QJsonObject obj = patterns.value(nm)->toJson(); //WithNameAndPatternStr();
-                qarrp.append(obj);
+                if( pname == "" || pname == nm ) {  // only add if all or a specific one
+                    QJsonObject obj = patterns.value(nm)->toJson(); //WithNameAndPatternStr();
+                    qarrp.append(obj);
+                }
             }
             resp.insert("patterns",qarrp);
             resp.insert("status",QString("patterns"));
