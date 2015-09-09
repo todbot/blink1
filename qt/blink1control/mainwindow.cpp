@@ -61,7 +61,7 @@ void MainWindow::osFixes()
     // to capture Windows power change (sleep/wake) on Windows
     qApp->installNativeEventFilter(this);
 #endif
-    
+
 #ifdef Q_OS_MAC
     // 
     installOSXSleepWakeNotifiers(this); //, this);
@@ -116,9 +116,6 @@ MainWindow::MainWindow(QWidget *parent) :
     blink1_enumerate();
 
     settingsLoad();
-
-    //qWarning() << "BLINK1CONTROL STARTUP";
-    //addToLog("logging: "+QString::number(logging));
 
     QIcon ico = QIcon(":/images/blink1-icon0.png");
     QIcon icobw = QIcon(":/images/blink1-icon0-bw.png");
@@ -179,14 +176,15 @@ MainWindow::MainWindow(QWidget *parent) :
     qmlRegisterType<QsltCursorShapeArea>("CursorTools", 1, 0, "CursorShapeArea");
     viewer.rootContext()->setContextProperty("mw", this);
     viewer.setMainQmlFile(QStringLiteral("qml/qml/main.qml"));
-    viewer.setFlags( Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
+    //viewer.setFlags( Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
+    viewer.setFlags( Qt::Window ); //| Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
 
     viewer.setMinimumHeight(717); // for bg-new.jpg
     viewer.setMaximumHeight(717);
     viewer.setMinimumWidth(1185);
     viewer.setMaximumWidth(1185);
     viewer.setTitle("Blink(1) Control");
-
+ 
     inputTimerCounter = 0;
     inputsTimer = new QTimer(this);
     inputsTimer->singleShot( updateInputsMillis, this, SLOT(updateInputs()));
@@ -222,14 +220,14 @@ MainWindow::MainWindow(QWidget *parent) :
 // call when we know we're about to suspend
 void MainWindow::goingToSleep()
 {
-    qDebug() << "GOINGTOSLEEP!";
+    addToLog("goingToSleep...");
     sleepytime = true;            
     on_buttonOff_clicked();
 }
 // call when we know we've been woken up
 void MainWindow::wakingUp()
 {
-    qDebug() << "WAKINGUP!";
+    addToLog("wakingUp...");
     sleepytime = false;
     refreshBlink1s = true;
 }
@@ -244,7 +242,7 @@ bool MainWindow::nativeEventFilter(const QByteArray &, void *message, long* )
     //qDebug() << "nativeEvent: "<< message;
     MSG* msg = (MSG*)(message);
     if(msg->message == WM_POWERBROADCAST ) {
-        //qDebug() << "WM_POWERBROADCAST! wParam:"<< msg->wParam;  // 4, 18, 7, 10,10, 10,10
+        qDebug() << "WM_POWERBROADCAST! wParam:"<< msg->wParam;  // 4, 18, 7, 10,10, 10,10
         // (sleep) -> PBT_APMSUSPEND -> PBT_APMRESUMEAUTOMATIC -> PBT_APMRESUMESUSPEND -> PBT_APMPOWERSTATUSCHANGE
         if( msg->wParam == PBT_APMSUSPEND ) {
             goingToSleep();
@@ -294,7 +292,7 @@ void MainWindow::blink1CloseAll()
 void MainWindow::refreshBlink1State()
 {
     if( sleepytime ) {
-        addToLog( "refreshBlink1State: BEING SLEEPY NOW");
+        addToLog( "refreshBlink1State: being sleepy...");
         //sleepytime = false;
         blink1CloseAll();
     }
@@ -600,7 +598,7 @@ void MainWindow::checkIfttt(QString txt)
         }
 
         foreach ( Blink1Input* input, inputs ) {
-            qDebug() << "blink1input: "<<input->type() <<":"<<input->arg1() <<":"<< input->date();
+            //qDebug() << "blink1input: "<<input->type() <<":"<<input->arg1() <<":"<< input->date();
             // check if this is an IFTTT input and does the event name match?
             // FIXME: name should be same as rule name (aka arg1)
             if( input->type() == "ifttt" ) {
@@ -1457,7 +1455,7 @@ void MainWindow::showhideDockIcon(){
     //emit prefsUpdate();
 #ifdef Q_OS_MAC
     QSettings settings(QCoreApplication::applicationDirPath()+"/../Info.plist",QSettings::NativeFormat);
-    settings.setValue("LSUIElement",dockIcon?0:1);
+    settings.setValue("LSUIElement",dockIcon ? 0 : 1 );
 #endif
     // for window do something like:
     // setWindowFlags(windowFlags() | Qt::Tool);

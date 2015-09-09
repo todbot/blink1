@@ -15,7 +15,7 @@
 
 
 
-QT       += core gui widgets network quick qml 
+QT       += core gui widgets network qml quick
 
 #CONFIG += console  # Win: uncomment to have console window open up for debugging
 #CONFIG -= app_bundle # Mac: uncommment to not build a .app bundle

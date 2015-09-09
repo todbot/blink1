@@ -124,7 +124,6 @@ public slots:
     void wakingUp();
     
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
-    //bool nativeEvent(const QByteArray &eventType, void *message, long *result);
     
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 

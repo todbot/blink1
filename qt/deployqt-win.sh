@@ -25,7 +25,8 @@
 #QT_BIN_PATH=/c/Qt/5.3/mingw482_32/bin
 #QT_BIN_PATH=/c/qt/Qt5.3.1/5.3/msvc2013/bin
 #QT_BIN_PATH=/c/qt/5.4/msvc2013/bin
-QT_BIN_PATH=/c/qt/5.5/msvc2013/bin
+QT_DIR=/c/qt/5.5/msvc2013
+QT_BIN_PATH=${QT_DIR}/bin
 
 # Where Visual Studio installation directory needed by "windeployqt.exe"
 #export VCINSTALLDIR=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio\ 12.0/VC
@@ -108,6 +109,8 @@ cp /c/windows/syswow64/{msvcp120,msvcr120}.dll .
 cp /c/OpenSSL-Win32/bin/libeay32.dll .
 cp /c/OpenSSL-Win32/bin/ssleay32.dll .
 
+# copy CURL DLLS  (FIXME: this seems to include SSL dlls yeah?)
+cp ${SRC_DIR}/libcurl-win/bin/*dll .
 
 #WINDEPLOYQT_OPTS=" --qmldir ${QML_DIR}"
 WINDEPLOYQT_OPTS+=" --no-translations"
@@ -130,7 +133,7 @@ rm -f ../${APP_DIR}-win.zip
 zip -q -r ../${APP_DIR}-win.zip ${APP_DIR}
 
 echo
-echo "Created '${APP_DIR}-win.zip'"
+echo "Done. Created '${APP_DIR}-win.zip'"
 
 popd
 
