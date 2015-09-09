@@ -221,7 +221,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::goingToSleep()
 {
     addToLog("goingToSleep...");
-    sleepytime = true;            
+    sleepytime = true;
     on_buttonOff_clicked();
 }
 // call when we know we've been woken up
