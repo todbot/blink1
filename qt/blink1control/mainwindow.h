@@ -191,6 +191,7 @@ public slots:
     void playBigButton(QString name);
     void playBigButton(int idx);
     void removeBigButton2(int idx);
+    void moveBigButton2(int oldidx, int idx);
     void updateBigButtons();
     void editColorAndTimeInPattern(QString pname,QString color,double time, int index);
 
