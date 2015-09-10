@@ -39,7 +39,7 @@ fi
 # change because bug: https://bugreports.qt.io/browse/QTBUG-46404
 pushd $QT_DIR/bin
 echo "EXE_PATH=${EXE_PATH}"
-./macdeployqt ${EXE_PATH} -qmldir=$EXE_PATH/Contents/Resources/qml/qml -always-overwrite -verbose=2
+./macdeployqt ${EXE_PATH} -qmldir=$EXE_PATH/Contents/Resources/qml/qml -always-overwrite -verbose=1
 popd
 
 
