@@ -10,7 +10,7 @@
      <key>CFBundleShortVersionString</key>
      <string>@SHORT_VERSION@</string>
     <key>CFBundleGetInfoString</key>
-    <string>@EXECUTABLE@  @SHORT_VERSION@ 2013-2014</string>
+    <string>@EXECUTABLE@  @SHORT_VERSION@ 2013-2015</string>
     <key>CFBundleSignature</key>
     <string>@TYPEINFO@</string>
     <key>CFBundleExecutable</key>

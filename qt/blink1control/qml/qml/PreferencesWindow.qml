@@ -20,7 +20,7 @@ Window {
     //minimumWidth: width
     //minimumHeight: height
 
-    //font.pixelSize:12
+    //font.pixelSize:12  // this doesn't work
     
     color: "#f9f9f9"
 
