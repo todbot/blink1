@@ -1835,10 +1835,21 @@ void MainWindow::removeBigButton2(int idx){
         BigButtons *tmp=bigButtons2.at(idx);
         bigButtons2.removeAt(idx);
         delete tmp;
-        if(!mac())
-            emit bigButtonsUpdate();
+        //if(!mac())
+        emit bigButtonsUpdate();
     }
 }
+void MainWindow::moveBigButton2(int oldidx, int newidx)
+{
+    if(oldidx<bigButtons2.size() && oldidx>=0 &&
+       newidx<bigButtons2.size() && newidx>=0 ) {
+        //bigButtons2.swap( oldidx, newidx );
+        BigButtons* tmp = bigButtons2.takeAt( oldidx );
+        bigButtons2.insert( newidx, tmp );
+    }
+    emit bigButtonsUpdate();
+}
+
 void MainWindow::updateBigButtons(){
     emit bigButtonsUpdate();
 }

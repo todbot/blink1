@@ -1316,7 +1316,8 @@ Image{
                                                 bigButtons2.currentIndex=index
                                                 bbti.oldName=bbti.text
                                                 bigButtonsMenu.popup()
-                                                if(mw.mac()) mw.updateBigButtons()
+                                                //mw.updateBigButtons()
+                                                //if(mw.mac()) mw.updateBigButtons()
                                             }else{
                                                 exitEditMode()
                                                 bigButtons2.currentIndex=index
@@ -1352,7 +1353,8 @@ Image{
                                                 bigButtons2.currentIndex=index
                                                 bbti.oldName=bbti.text
                                                 bigButtonsMenu.popup()
-                                                if(mw.mac()) mw.updateBigButtons()
+                                                //if(mw.mac()) mw.updateBigButtons()
+                                                //mw.updateBigButtons()
                                             }else{
                                                 exitEditMode()
                                                 bigButtons2.currentIndex=index
@@ -2783,6 +2785,12 @@ Image{
             text: "Delete button"
             onTriggered: {
                 mw.removeBigButton2(bigButtons2.currentIndex)
+            }
+        }
+        MenuItem {
+            text: "Move to 1st place"
+            onTriggered: {
+                mw.moveBigButton2(bigButtons2.currentIndex, 0)
             }
         }
     }
