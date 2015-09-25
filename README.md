@@ -94,6 +94,7 @@ The following directories exist:
 - java             -- Java / Processing library
 - processing       -- Processing applications  (http://processing.org)
 - python           -- Python APIs
+- ruby             -- Ruby APIs & Ruby Tools
 - go               -- Go library
 - libraries        -- libraries common to all systems (mostly just HTML app code)
 - qt               -- Blink1Control lives here, along with some Qt sample apps
