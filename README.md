@@ -97,7 +97,9 @@ The following directories exist:
   - blink1-lib -- C-library for controlling blink(1)
 - __java__             -- Java / Processing library
 - __processing__       -- Processing applications  (http://processing.org)
-- __python__           -- Python APIs
+- __nodejs__           -- NodeJs library
+- __python__           -- Python libraries (there are a couple to choose from)
+- __ruby__             -- Ruby APIs & Ruby Tools
 - __go__               -- Go library
 - __qt__               -- Blink1Control lives here, along with some Qt sample apps
 - __mac__              -- Mac OS X details and GUI control application

@@ -128,7 +128,7 @@ BLINK1_VERSION="$(GIT_TAG)-$(OS)-$(MACH_TYPE)"
 #################  Mac OS X  ##################################################
 ifeq "$(OS)" "macosx"
 LIBTARGET = libBlink1.dylib
-CFLAGS += -mmacosx-version-min=10.8 
+CFLAGS += -mmacosx-version-min=10.8
 #CFLAGS += -mmacosx-version-min=10.6 
 #CFLAGS += -fsanitize=address
 
