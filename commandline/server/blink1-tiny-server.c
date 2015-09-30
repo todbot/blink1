@@ -24,8 +24,24 @@
 
 #include "blink1-lib.h"
 
-const char* blink1_server_version = "0.92";
+const char* blink1_server_version = "0.94";
 
+//
+static void usage(char *myName)
+{
+    fprintf(stderr,
+"usage:\n"
+"  %s [options] \n"
+"where options are: \n"
+"  -p <port> -- port to start server on \n"
+"\n"
+"Supported URIs: \n"
+"    /blink1/on  -- turn blink1 on full white \n"
+"    /blink1/off -- turn blink1 off \n"
+"    /blink1/fadeToRGB?rgb=%%23ff00ff&time=1.0  -- fade to a color over a time \n"
+"    /blink1/blink?rgb=%%23ff0ff&time=1.0&count=3 -- blink a color, with time & repeats \n"
+            ,myName);
+}
 
 //
 static void get_qsvar(const struct mg_request_info *request_info,
@@ -158,7 +174,7 @@ static void *callback(enum mg_event event,
         else {
             sprintf(result, "unrecognized uri");
         }
-        if( result != NULL ) { 
+        if( result[0] != '\0' ) { 
             // Echo requested URI back to the client
             mg_printf(conn, "HTTP/1.1 200 OK\r\n"
                       "Content-Type: text/plain\r\n\r\n"
@@ -184,20 +200,37 @@ static void *callback(enum mg_event event,
 }
 
 //
-int main(void) {
-  struct mg_context *ctx;
-  const char *options[] = {"listening_ports", "8080", NULL};
+int main(int argc, char **argv)
+{
+    
+    if(argc < 2) {
+        usage(argv[0]);
+        exit(1);
+    }
 
-  char exit_flag = 0;
-  ctx = mg_start(&callback, NULL, options);
-  printf("blink1-server: running on port %s\n",
-         mg_get_option(ctx, "listening_ports"));
+    char* portstr;
 
-  while (exit_flag == 0) {
-      sleep(1);
-  }
-
-  mg_stop(ctx);
-
-  return 0;
+    char* opt = argv[1];
+    char* arg = argv[2];
+    
+    if( strcasecmp("-p", argv[1]) == 0 ) {
+        portstr = arg;
+    }
+    
+    
+    struct mg_context *ctx;
+    const char *options[] = {"listening_ports", portstr, NULL};
+    
+    char exit_flag = 0;
+    ctx = mg_start(&callback, NULL, options);
+    printf("blink1-server: running on port %s\n",
+           mg_get_option(ctx, "listening_ports"));
+    
+    while (exit_flag == 0) {
+        sleep(1);
+    }
+    
+    mg_stop(ctx);
+    
+    return 0;
 }
