@@ -1,4 +1,4 @@
-blink(1)  
+blink(1)
 ========
 
 "blink(1) is a super status light: it packs three dimensions of information 
@@ -89,23 +89,27 @@ What is in this repo
 --------------------
 The following directories exist:
 
-- docs             -- documentation about APIs and such
-- commandline      -- blink1-lib C library and blink1-tool command-line tools
-- java             -- Java / Processing library
-- processing       -- Processing applications  (http://processing.org)
-- python           -- Python APIs
-- go               -- Go library
-- libraries        -- libraries common to all systems (mostly just HTML app code)
-- qt               -- Blink1Control lives here, along with some Qt sample apps
-- mac              -- Mac OS X details and GUI control application
-- mac/scripts      -- command-line scripts to do cool things
-- windows          -- Windows details and GUI control application
-- windows/Blink1Lib     -- .NET library wrapping blink1-lib
-- windows/ManagedBlink1 -- 100% .NET library
-- windows/scripts  -- Windows command-line scripts to do cool things
-- linux            -- Linux details and scripts
-- linux/contrib    -- contributed Linux scripts
-- hardware         -- all hardware-related info (firmware & schematic & enclosure)
+- __docs__             -- Documentation of APIs and tips & tricks
+- __commandline__      -- blink1-lib C library and command-line tools, specifically:
+  - blink1-tool -- command-line tool for almost every OS
+  - blink1control-tool -- blink1-tool for use with Blink1Control GUI app 
+  - blink1-tiny-server -- simple HTTP to blink1 bridge
+  - blink1-lib -- C-library for controlling blink(1)
+- __java__             -- Java / Processing library
+- __processing__       -- Processing applications  (http://processing.org)
+- __python__           -- Python APIs
+- __go__               -- Go library
+- __qt__               -- Blink1Control lives here, along with some Qt sample apps
+- __mac__              -- Mac OS X details and GUI control application
+  - scripts      -- command-line scripts to do cool things
+- __windows__          -- Windows details and GUI control application
+  - Blink1Lib     -- .NET library wrapping blink1-lib
+  - ManagedBlink1 -- 100% .NET library
+  - scripts  -- Windows command-line scripts to do cool things
+- __linux__            -- Linux details and scripts
+  - contrib__    -- contributed Linux scripts
+- __libraries__        -- (deprecated) libraries common to all systems (mostly just HTML app code)
+- __hardware__         -- all hardware-related info (firmware & schematic & enclosure)
 
 
 Some docs that might be useful
