@@ -109,6 +109,7 @@ static int  hexread(uint8_t *buffer, char *string, int buflen)
 {
     char    *s;
     int     pos = 0;
+    if( string==NULL ) return -1;
     memset(buffer,0,buflen);  // bzero() not defined on Win32?
     while((s = strtok(string, ", ")) != NULL && pos < buflen){
         string = NULL;
@@ -405,7 +406,7 @@ int main(int argc, char** argv)
                 break;
             case CMD_RANDOM:
             case CMD_CHASE:
-                hexread(chasebuf, optarg, sizeof(chasebuf));
+                if(optarg) hexread(chasebuf, optarg, sizeof(chasebuf));
             case CMD_GLIMMER:
                 arg = (optarg) ? strtol(optarg,NULL,0) : 0;// cmd w/ number arg
                 break;
