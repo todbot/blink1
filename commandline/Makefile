@@ -157,7 +157,7 @@ EXEFLAGS =
 LIBFLAGS = -dynamiclib -o $(LIBTARGET) -Wl,-search_paths_first $(LIBS)
 EXE=
 
-INSTALL = install -D
+INSTALL = install
 PREFIX ?= /usr/local
 EXELOCATION ?= $(PREFIX)/bin
 LIBLOCATION ?= $(PREFIX)/lib
