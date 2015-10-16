@@ -104,7 +104,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     osFixes();
     sleepytime = false;
-    
+
+    // hush errors "QSslSocket: cannot resolve SSL_set_psk_client_callback"
+    QLoggingCategory::setFilterRules("qt.network.ssl.warning=false");
+
     //QErrorMessage::qtHandler(); // install handler that turns qWarning() into dialogs
     //qInstallMessageHandler(noisyFailureMessageHandler);
         
