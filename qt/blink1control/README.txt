@@ -14,11 +14,15 @@ lives at https://github.com/todbot/blink1/
 Installing & Running Blink1Control
 ----------------------------
 
+To run Blink1Control, double-click on Blink1Control.exe
+
 Blink1Control doesn't require an installer.
 Just unzip the Blink1Control-win.zip file copy the
 Blink1Control folder to a location of your choosing.
 
-To run Blink1Control, double-click on Blink1Control.exe
+If you prefer an installer, download the Blink1Control installer
+from http://blink1.thingm.com/blink1control 
+
  
 
 Want to Know More?
