@@ -2,12 +2,12 @@
 # Blink1Control Qt master build file
 #
 # Windows build requirements:
-# - Qt 5.4 w/ 'msvc2013-32-bit' build environment installed
+# - Qt 5.5 w/ 'msvc2013-32-bit' build environment installed
 # - Visual Studio 2013  x86 (not 64-bit)
 # - MinGW 
 #
 # Mac OS X build requirements:
-# - Qt 5.4
+# - Qt 5.5
 # - Xcode
 # - Xcode command-line tools
 #
@@ -17,7 +17,7 @@
 
 QT       += core gui widgets network qml quick
 
-#CONFIG += console  # Win: uncomment to have console window open up for debugging
+CONFIG += console  # Win: uncomment to have console window open up for debugging
 #CONFIG -= app_bundle # Mac: uncommment to not build a .app bundle
 #CONFIG += qtquickcompiler
 
@@ -109,8 +109,7 @@ macx {
     INCLUDEPATH += $$PWD/libcurl-mac/include
 }
 win32 {
-    #LIBS += -L$$PWD/libcurl-win/bin  -n'
-lcurl
+    #LIBS += -L$$PWD/libcurl-win/bin  -lcurl
     #LIBS += -L$$PWD/libcurl-win/bin  -lcurl -lwldap32 -lws2_32
     #DEFINES += CURL_STATICLIB
     LIBS += $$PWD/libcurl-win/lib/libcurldll.a 
@@ -156,7 +155,7 @@ win32 {
     #copyblink1lib.depends = $$DLLDIR/blink1-lib.dll  #(this doesnt' work)
     copycurllibs.commands   = @echo Copying curllibs...   && $(INSTALL_DIR) \"$$CURLLIBS\" \"$$DLLDIR\"
 	QMAKE_EXTRA_TARGETS += copyblink1lib copycurllibs
-	# enable this for production, too slow during development
+    # enable this for production, too slow during development
 	first.depends += copyblink1lib copycurllibs
 }
 

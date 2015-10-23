@@ -12,7 +12,9 @@
 APP_NAME=Blink1Control
 
 #BUILD_DIR=build-blink1control-Desktop_Qt_5_3_clang_64bit-Release
-BUILD_DIR=${PWD}/build-blink1control-Desktop_Qt_5_5_0_clang_64bit-Release
+#BUILD_DIR=${PWD}/build-blink1control-Desktop_Qt_5_5_0_clang_64bit-Release
+#BUILD_DIR=${PWD}/build-blink1control-Desktop_Qt_5_5_1_clang_64bit-Release
+BUILD_DIR=${PWD}/build-blink1control-Desktop_Qt_5_5_1_clang_64bit-Debug
 
 QT_DIR=${HOME}/Qt/5.5/clang_64
 QT_BIN_PATH=${QT_DIR}/bin
