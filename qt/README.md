@@ -20,21 +20,22 @@ versions in the "mac" and "win" directories.
 Building and Deploying the Blink1Contol Qt application
 -----------------------------------------------
 
-Blink1Control is built using Qt-5.3 on Mac and Windows
+Blink1Control is built using Qt-5.5 on Mac and Windows
 
 On Windows you need to install:
-- Qt-5.3 for Windows 32-bit (VS 2013)
+- Qt-5.5 for Windows 32-bit ('msvc2013 32-bit' in Qt setup)
 - MS Visual Studio 2013 (free to use)
 - OpenSSL Light from http://slproweb.com/products/Win32OpenSSL.html
 
 On Mac OS X you need to install:
-- QT-5.3 for Mac
+- QT-5.5 for Mac
 - Xcode
 
 On Ubuntu, you need to install:
-- QT-5.3 for Linux (64-bit)
+- QT-5.5 for Linux (64-bit)
 - sudo apt-get install build-essential
 - sudo apt-get install mesa-common-dev libgl-dev
+- Note: Linux version doesn't work correctly in many weird ways
 
 To build, open up QTCreator and press "build".
 
@@ -57,6 +58,24 @@ To build a Mac OS X DMG, get Aolor DMG Maker
 (http://dmgmakermac.aolor.com/ ) and use
 `Blink1Control.dmgdoc` setup file.
 
+Blink1Control and libcurl
+-------------------------
+Blink1Control contains pre-build versions of the libcurl library.
+It is located in:
+- blink1control/libcurl-mac
+- blink1contorl/libcurl-win
+
+On Mac, we build this library statically:
+0. Download libcurl sources
+1. brew install openssl --universal
+    which says that you get:
+    LDFLAGS:  -L/usr/local/opt/openssl/lib
+    CPPFLAGS: -I/usr/local/opt/openssl/include
+2. tar xvzf curl-7.43.0.tar.gz && cd curl-7.43.0
+3. CFLAGS=-mmacosx-version-min=10.8 ./configure --disable-shared --with-darwinssl --prefix=${HOME}/projects/curl/libcurl-mac
+4. make && make install   # (puts it in 'tst1' directory)
+5. rm -rf ~/projects/blink1/qt/blink1control/libcurl-mac
+5. mv ${HOME}/projects/curl/libcurl-mac  ~/projects/blink1/qt/blink1control
 
 
 Location of Blink1Control config file:

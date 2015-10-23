@@ -5,10 +5,10 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='libcurl.4.dylib'
+dlname=''
 
 # Names of this library.
-library_names='libcurl.4.dylib libcurl.dylib'
+library_names=''
 
 # The name of the static archive.
 old_library='libcurl.a'
@@ -17,7 +17,7 @@ old_library='libcurl.a'
 inherited_linker_flags=' '
 
 # Libraries that this one depends upon.
-dependency_libs=' -lssl -lcrypto -lldap -lz'
+dependency_libs=' -lldap -lz'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/tod/projects/qt/qt-curl-tst1/curl-7.43.0/libcurl-mac/lib'
+libdir='/Users/tod/projects/curl/libcurl-mac/lib'
