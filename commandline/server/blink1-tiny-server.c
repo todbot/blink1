@@ -34,6 +34,7 @@ static void usage(char *myName)
 "  %s [options] \n"
 "where options are: \n"
 "  -p <port> -- port to start server on \n"
+"  -h        -- print help message\n"
 "\n"
 "Supported URIs: \n"
 "    /blink1/on  -- turn blink1 on full white \n"
@@ -206,6 +207,14 @@ int main(int argc, char **argv)
     if(argc < 2) {
         usage(argv[0]);
         exit(1);
+    }
+
+    /* Quick hack to support -h */
+    for(int i=1; i<=argc; i++) {
+       if( strcasecmp("-h", argv[i]) == 0 ) { 
+            usage(argv[0]);
+            exit(1);
+        }   
     }
 
     char* portstr;
