@@ -34,6 +34,7 @@ static void usage(char *myName)
 "  %s [options] \n"
 "where options are: \n"
 "  -p <port> -- port to start server on \n"
+"  -h        -- print help message\n"
 "\n"
 "Supported URIs: \n"
 "    /blink1/on  -- turn blink1 on full white \n"
@@ -209,14 +210,21 @@ int main(int argc, char **argv)
     }
 
     char* portstr;
-
+    
+    // Quick hack to support -h, originally from mrichmon  
+    for(int i=1; i<argc; i++) {
+       if( strcasecmp("-h", argv[i]) == 0 ) { 
+            usage(argv[0]);
+            exit(1);
+        }   
+    }
+    
     char* opt = argv[1];
     char* arg = argv[2];
     
     if( strcasecmp("-p", argv[1]) == 0 ) {
         portstr = arg;
     }
-    
     
     struct mg_context *ctx;
     const char *options[] = {"listening_ports", portstr, NULL};
