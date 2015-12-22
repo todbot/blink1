@@ -113,6 +113,9 @@ ifeq "$(UNAME)" "FreeBSD"
 	OS=freebsd
 endif
 
+ifeq "$(UNAME)" "OpenBSD"
+	OS=openbsd
+endif
 
 MACH_TYPE:="$(strip $(shell uname -m))"
 GIT_TAG:="$(strip $(shell git tag 2>&1 | tail -1 | cut -f1 -d' '))"
@@ -278,6 +281,37 @@ INCLOCATION ?= $(PREFIX)/include
 
 endif
 
+#################  OpenBSD  ###################################################
+ifeq "$(OS)" "openbsd"
+LIBTARGET = libblink1.so
+# was blink1-lib.so
+
+ifeq "$(USBLIB_TYPE)" "HIDAPI"
+CFLAGS += -DUSE_HIDAPI
+CFLAGS += -I./hidapi/hidapi
+OBJS = ./hidapi/libusb/hid.o
+CFLAGS += `pkg-config libusb-1.0 --cflags` -I/usr/local/include -fPIC
+LIBS   += `pkg-config libusb-1.0 --libs` -L/usr/local/lib -lpthread -liconv
+endif
+
+ifeq "$(USBLIB_TYPE)" "HIDDATA"
+CFLAGS += -DUSE_HIDDATA
+OBJS = ./hiddata.o
+CFLAGS += `pkg-config libusb --cflags` -fPIC
+LIBS   += `pkg-config libusb --libs`
+endif
+
+LIBFLAGS = -shared -o $(LIBTARGET) $(LIBS)
+EXE=
+
+INSTALL = install
+PREFIX ?= /usr/local
+EXELOCATION ?= $(PREFIX)/bin
+LIBLOCATION ?= $(PREFIX)/lib
+INCLOCATION ?= $(PREFIX)/include
+
+endif
+
 #################  WRT Linux  ################################################
 ifeq "$(OS)" "wrtlinux"
 LIBTARGET = libblink1.so
@@ -389,6 +423,7 @@ help:
 	@echo "make OS=windows ... build Windows  blink1-lib and blink1-tool" 
 	@echo "make OS=linux   ... build Linux    blink1-lib and blink1-tool" 
 	@echo "make OS=freebsd ... build FreeBSD    blink1-lib and blink1-tool" 
+	@echo "make OS=openbsd ... build OpenBSD    blink1-lib and blink1-tool" 
 	@echo "make OS=macosx  ... build Mac OS X blink1-lib and blink1-tool" 
 	@echo "make OS=wrt     ... build OpenWrt blink1-lib and blink1-tool"
 	@echo "make OS=wrtcross... build for OpenWrt using cross-compiler"
