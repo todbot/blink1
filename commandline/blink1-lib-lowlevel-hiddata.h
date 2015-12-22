@@ -154,6 +154,7 @@ blink1_device* blink1_open(void)
     LOG("blink1_open\n");
     if( rc != USBOPEN_SUCCESS ) { 
         LOG("cannot open: \n");
+        static_dev = NULL;
     }
     return static_dev;
 }
