@@ -15,7 +15,7 @@ char *blink1_error_msg(int errCode)
         case USBOPEN_ERR_NOTFOUND:  return "The specified device was not found";
         case USBOPEN_ERR_IO:        return "Communication error with device";
         default:
-            sprintf(buffer, "Unknown USB error %d", errCode);
+            snprintf(buffer, sizeof(buffer), "Unknown USB error %d", errCode);
             return buffer;
     }
     return NULL;    /* not reached */
@@ -46,8 +46,10 @@ int blink1_enumerateByVidPid(int vid, int pid)
         if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
             if( cur_dev->serial_number != NULL ) { // can happen if not root
-                strcpy( blink1_infos[p].path,   cur_dev->path );
-                sprintf( blink1_infos[p].serial, "%ls", cur_dev->serial_number);
+                strncpy( blink1_infos[p].path, cur_dev->path,
+                    sizeof(blink1_infos[p].path));
+                snprintf(blink1_infos[p].serial, sizeof(blink1_infos[p].serial),
+                    "%ls", cur_dev->serial_number);
                 //wcscpy( blink1_infos[p].serial, cur_dev->serial_number );
                 //uint32_t sn = wcstol( cur_dev->serial_number, NULL, 16);
                 uint32_t serialnum = strtol( blink1_infos[p].serial, NULL, 16);
@@ -136,7 +138,7 @@ blink1_device* blink1_openById( uint32_t i )
 { 
     if( i > blink1_max_devices ) { // then i is a serial number not array index
         char serialstr[serialstrmax];
-        sprintf( serialstr, "%X", i);  // convert to wchar_t* 
+        snprintf(serialstr, sizeof(serialstr), "%X", i); // convert to wchar_t*
         return blink1_openBySerial( serialstr );  
     } 
     else {
