@@ -510,7 +510,7 @@ int main(int argc, char** argv)
             dev = blink1_openById( deviceIds[0] );
             rc = blink1_getVersion(dev);
             blink1_close(dev);
-            sprintf(verbuf, ", fw version: %d", rc);
+            snprintf(verbuf, sizeof(verbuf), ", fw version: %d", rc);
         }
         msg("blink1-tool version: %s%s\n",BLINK1_VERSION,verbuf);
         exit(0);
@@ -742,7 +742,8 @@ int main(int argc, char** argv)
             do_rand =1;
         }
         char ledstr[16];
-        sprintf(ledstr, "#%2.2x%2.2x%2.2x", rgbbuf.r,rgbbuf.g,rgbbuf.b);
+        snprintf(ledstr, sizeof(ledstr), "#%2.2x%2.2x%2.2x",
+            rgbbuf.r,rgbbuf.g,rgbbuf.b);
         msg("chase effect %d to %d (with %d leds), color %s, ",
             led_start, led_end, chase_length,
             ((do_rand) ? "random" : ledstr));
