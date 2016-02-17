@@ -161,10 +161,29 @@ pip-log.txt
 # Mac crap
 .DS_Store
 
-# tod stuff
+#### tod stuff
+
 # emacs
 *~
+
 # c build results
 *.o
+*.so
+
 # java build results
 *.class
+
+# misc
+*.pro
+*.sav
+*.pro.user*
+*.a
+*.def
+*.dll
+*.exp
+/commandline/blink1-tool
+/haskell/.cabal-sandbox/**/*
+/commandline/blink1-lib-v1.95-linux-armv7l.zip
+/commandline/blink1-tool-v1.95-linux-armv7l.zip
+/haskell/Main
+/haskell/Main.hi

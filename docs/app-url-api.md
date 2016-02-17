@@ -335,6 +335,8 @@ __Query args:__
 
 * `rgb` : hex RGB color (e.g. "#ff00ff")
 * `time` : time in seconds to complete fade (e.g. "0.8")
+* `id`: blink1 serial number (aka "blink1_id") of blink(1) device to control
+* `ledn`: LED number of a blink(1) to control. 0=all, 1=LED A, 2=LED B
 
 __Example:__
 

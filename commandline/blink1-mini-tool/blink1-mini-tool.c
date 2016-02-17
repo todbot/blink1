@@ -18,6 +18,7 @@
 #include <string.h>    // for memset() et al
 #include <stdint.h>    // for uint8_t
 #include <unistd.h>    // for usleep()
+#include <time.h>      // for time()
 
 #include "hiddata.h"
 
@@ -111,6 +112,7 @@ int main(int argc, char **argv)
         } else {
             hexread(argbuf, argv[2], sizeof(argbuf));
         }
+        srand(time(NULL) * getpid()); // feed the random number generator
         for( int i=0; i<argbuf[0]; i++ ) { 
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;

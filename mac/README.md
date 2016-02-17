@@ -1,6 +1,11 @@
 Blink1Control Mac OS X application for blink(1) 
 ===============================================
 
+### NOTE: This Blink1Control is deprecated.  New development is in   blink1/qt/blink1control. 
+
+
+-------
+
 To build, open `blink1/mac/Blink1Control/Blink1Control.xcodeproj` in Xcode4.
 
 All dependencies are included in the 'blink1' project.

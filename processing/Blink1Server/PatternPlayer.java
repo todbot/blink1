@@ -35,16 +35,15 @@ public class PatternPlayer  //implements Runnable
   {
     patterns = new HashMap<String,Pattern>();
 
-    blink1 = new Blink1();
-    int rc = blink1.open();
-    if( rc==-1 ) { 
+    blink1 = Blink1.open();
+    if( blink1.error() ) { 
       System.out.println("oops no blink1");
       statusText = "no blink1 found";
     }
     else {
       statusText = "blink1 found";
     }
-    blink1.close();
+    //blink1.close();
 
     executor = Executors.newSingleThreadScheduledExecutor();
     executor.scheduleAtFixedRate( new Runnable() { 
@@ -63,17 +62,17 @@ public class PatternPlayer  //implements Runnable
   public synchronized void updateBlink1( int colorMillis, Color c )
   {
     System.out.println("updateBlink1: "+colorMillis+":"+c);
-    blink1.open();
+    //blink1.open();
     blink1.fadeToRGB( colorMillis, c.getRed(), c.getGreen(), c.getBlue() );
-    blink1.close();
+    //blink1.close();
   }
 
   // note: synchronized
   public synchronized void pingBlink1()
   {
-    blink1.open();
+    //blink1.open();
     blink1.getFirmwareVersion();
-    blink1.close();
+    //blink1.close();
   }
   //
   public void updatePlayer( long nowMillis )

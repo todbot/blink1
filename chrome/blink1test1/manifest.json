@@ -3,11 +3,18 @@
   "version": "0.1",
   "manifest_version": 2,
   "minimum_chrome_version": "23",
+  "kiosk_enabled" : true,
   "app": {
     "background": {
       "scripts": ["background.js"]
     }
   },
   "permissions": ["usb"],
-  "optional_permissions": [ {"usbDevices": [{"vendorId": 10168, "productId": 493}]}]
+  "optional_permissions": [ 
+    {
+        "usbDevices": [ 
+           { "vendorId": 10168, "productId": 493 } 
+        ] 
+    } 
+  ]
 }

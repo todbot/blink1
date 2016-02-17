@@ -1,0 +1,65 @@
+
+blink1mk2 reprogramming steps
+=====================
+
+
+1.  Download and install MPLABX from Microchip to get MPLAB_IPE  (not MPLAB_IDE)
+
+2.  Run "mplab_ipe" and click on SQTP tab to generate serial numbers
+
+3.  Configure IPE with the following:
+  - Enable Advanced Mode and "login".
+  Then set:
+  - "Sequential" 
+  - "Start Value"      = 1234ABCD  (e.g. use real serial number start here)
+  - "Increment"        = 1
+  - "Start Address"    = 1FF8
+  - "Number of bytes"  = 4
+  - "Number of parts"  = 2089  (or how ever many parts you are programming)
+  - "Program Memory" and "RETLW" are checked
+ In the Settings menu, select "Release from Reset"
+
+4. Click on "Generate" and save resulting SQTP file somewhere.
+    SQTP file is Intel hex file containing serial numbers at address.
+    The first character is normally a ":".  SQTP changes this to a ";" when a serialnum is programmed.
+    But the SQTP generator puts serials in wrong order for blink1mk2.
+
+5. Run "blink1-hex-swizzle.py" to generate new SQTP file, like:
+    % cat original-sqtp.num | blink1-hex-swizzle.py > fixed-sqtp.num
+
+6. Back in "mplab_ipe", set it up for programming.  Most important bits:
+  - Device : "PIC16F1455"
+  - Tool: "PICkit3"
+  - Power tab: ICSP Options - "Low Voltage Program" checked
+  
+7. Program devices
+  - Load Source hex file ("blink1mk2.production.hex")
+  - Load SQTP hex file (the "fixed-sqtp.num" above)
+  - Click Program button
+
+
+
+
+-----
+For this run:
+starting serial number: 20002800
+file every 128 serials:
+reprogA = 20002800  *
+reprogB = 20002880  *
+reprogC = 20002900  *
+reprogD = 20002980  *
+reprogE = 20002A00  *
+reprogF = 20002A80  *
+reprogG = 20002B00  *
+reprogH = 20002B80  *
+reprogI = 20002C00  *
+reprogJ = 20002C80  *
+reprogK = 20002D00  *
+reprogL = 20002D80  *
+reprogM = 20002E00  *
+reprogN = 20002E80  *
+reprogO = 20002F00  *
+reprogP = 20002F80  *
+reprogQ = 20003000
+reprogR = 20003080
+
