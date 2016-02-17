@@ -178,7 +178,7 @@ static void *callback(enum mg_event event,
         if( result[0] != '\0' ) { 
             // Echo requested URI back to the client
             mg_printf(conn, "HTTP/1.1 200 OK\r\n"
-                      "Content-Type: text/plain\r\n\r\n"
+                      "Content-Type: application/json\r\n\r\n"
                       "{\n"
                       "\"uri\":  \"%s\",\n"
                       "\"result\":  \"%s\",\n"
