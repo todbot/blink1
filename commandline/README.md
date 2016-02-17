@@ -34,6 +34,20 @@ However, static builds can be problematic for some systems with "different"
 libusb implementations, so doing `make EXEFLAGS=` will generally build a non-static version.
 
 
+Docker and blink(1)
+==========
+To build the image from the `Dockerfile`
 
+- `docker build -t robtec/blink1 .`
+
+Running the container
+
+- `docker run -d --privileged robtec/blink1`
+
+Note the `--privileged` tag, docker needs this to access the hosts USB controllers
+
+Docker resources
+- [Install Guide](https://docs.docker.com/installation/)
+- [Run Command](https://docs.docker.com/reference/run/)
 
 
