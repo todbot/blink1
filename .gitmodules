@@ -4,3 +4,6 @@
 [submodule "qt/third-party/fervor"]
 	path = qt/third-party/fervor
 	url = https://github.com/todbot/fervor.git
+[submodule "commandline/blink1control-tool/json-parser"]
+	path = commandline/blink1control-tool/json-parser
+	url = https://github.com/udp/json-parser
