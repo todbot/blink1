@@ -426,6 +426,10 @@ Image{
                         width: 165
                         wrapMode: Text.WordWrap    //wrapMode: Text.WrapAnywhere
                         font.pixelSize: 12   //font.pointSize: (!mw.mac())?8:12
+                        onLinkActivated: {
+                            console.log("linkActivated1:"+ link);
+                            Qt.openUrlExternally(link);
+                        }
                     }
                     Text{
                         // FIXME: really?
@@ -433,6 +437,10 @@ Image{
                         color: "grey"
                         wrapMode: Text.WrapAnywhere
                         font.pixelSize: 12  //font.pointSize: (!mw.mac())?8:12
+                        onLinkActivated: {
+                            console.log("linkActivated2:"+ link);
+                            Qt.openUrlExternally(link);
+                        }
                     }
                 }
             }
