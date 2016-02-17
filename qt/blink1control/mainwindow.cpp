@@ -573,7 +573,7 @@ void MainWindow::updateInputs()
  */
 void MainWindow::checkIfttt(QString txt)
 {
-    //qDebug() << "todtest: checkIfttt(txt) " << txt;
+    qDebug() << "checkIfttt(txt) " << txt;
     QJsonDocument respdoc = QJsonDocument::fromJson( txt.toUtf8() );
     QJsonObject respobj = respdoc.object();
     QJsonValue statval = respobj.value( QString("status") );  // should really check status :)

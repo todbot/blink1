@@ -108,7 +108,9 @@ void DataInput::start()
     //qDebug() << "DataInput:start:"<<type<<":"<<input->arg1();
 
     if( type == "ifttt" ) {
-        url = "http://api.thingm.com/blink1/eventsall/" + iftttKey;
+        // url = "http://api.thingm.com/blink1/eventsall/" + iftttKey;
+        url = "http://feed.thingm.com/blink1/eventsall/" + iftttKey;
+        //url = "http://localhost:3232/blink1/eventsall/" + iftttKey;
         nr.setUrl(QUrl(url));
         reply = networkManager->get(nr);
         connect(reply, SIGNAL(finished()), this, SLOT(onFinished()));
