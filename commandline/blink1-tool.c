@@ -675,7 +675,7 @@ int main(int argc, char** argv)
         uint8_t b = rgbbuf.b;
         uint8_t p = cmdbuf[0];
         msg("saving rgb: 0x%2.2x,0x%2.2x,0x%2.2x @ %d, ms:%d\n",r,g,b,p,millis);
-        if( ledn>0 ) { // NOTE: only works for unreleased mk2a
+        if( ledn>=0 ) { // NOTE: only works for unreleased mk2a
             blink1_setLEDN(dev, ledn);  // FIXME: doesn't check return code
         }
         rc = blink1_writePatternLine(dev, millis, r,g,b, p );
