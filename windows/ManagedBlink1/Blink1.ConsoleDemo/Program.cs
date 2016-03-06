@@ -99,7 +99,7 @@ namespace ThingM.Blink1.ConsoleDemo
 
             Thread.Sleep(1000);
 
-            Console.WriteLine("Pass 1: Set Blink(1) to be BLACK.");
+            Console.WriteLine("Pass 2: Set Blink(1) to be BLACK.");
             blink1.SetColor(0, 0, 0);
 
             Thread.Sleep(1000);
