@@ -30,7 +30,7 @@ namespace ThingM.Blink1.ConsoleDemo
         /// The arguments.
         /// </param>
         public static void Main(string[] args)
-        {          
+        {
             TestCase1();
             TestCase2();
             TestCase3();
@@ -67,6 +67,7 @@ namespace ThingM.Blink1.ConsoleDemo
 
             Console.WriteLine("Pass 1: Set Blink(1) to fade to BLUE over 10 seconds.");
             blink1.FadeToColor(10000, 0, 0, 255, false);
+            Thread.Sleep(10000);
 
             Console.WriteLine("Pass 1: Closing Blink(1) connection.");
             blink1.Close();
@@ -157,7 +158,7 @@ namespace ThingM.Blink1.ConsoleDemo
                 Blink1Preset blink1Preset = blink1.ReadPreset(position);
 
                 Console.WriteLine(
-                    "Pass 3: Position:{0}, Millisecond:{1}, Red:{2}, Green:{3}, Blue:{4}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
+                    "Pass 3: Position:{0,3}, Millisecond:{1,5}, Red:{2,4}, Green:{3,4}, Blue:{4,4}, Hex: #{2:X02}{3:X02}{4:X02}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
             }
 
             Console.WriteLine("Pass 3: Closing Blink(1) connection.");
@@ -212,7 +213,7 @@ namespace ThingM.Blink1.ConsoleDemo
                 Blink1Preset blink1Preset = new Blink1Preset(Convert.ToUInt16(1000 + (position * 10)), GetRandomRgbColor());
 
                 Console.WriteLine(
-                    "Pass 5: Position:{0}, Millisecond:{1}, Red:{2}, Green:{3}, Blue:{4}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
+                    "Pass 5: Position:{0,3}, Millisecond:{1,5}, Red:{2,4}, Green:{3,4}, Blue:{4,4}, Hex: #{2:X02}{3:X02}{4:X02}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
                 blink1.SavePreset(blink1Preset, position);
             }
 
@@ -241,7 +242,7 @@ namespace ThingM.Blink1.ConsoleDemo
                 Blink1Preset blink1Preset = blink1.ReadPreset(position);
 
                 Console.WriteLine(
-                    "Pass 6: Position:{0}, Millisecond:{1}, Red:{2}, Green:{3}, Blue:{4}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
+                    "Pass 6: Position:{0,3}, Millisecond:{1,5}, Red:{2,4}, Green:{3,4}, Blue:{4,4}, Hex: #{2:X02}{3:X02}{4:X02}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
             }
 
             Console.WriteLine("Pass 6: Closing Blink(1) connection.");
