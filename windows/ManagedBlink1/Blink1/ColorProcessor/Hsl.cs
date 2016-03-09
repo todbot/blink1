@@ -63,7 +63,7 @@ namespace ThingM.Blink1.ColorProcessor
         #region Public Properties
 
         /// <summary>
-        ///     Gets or sets the hue component component of the color.
+        ///     Gets or sets the hue component of the color.
         /// </summary>
         public ushort Hue
         {

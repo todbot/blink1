@@ -94,7 +94,7 @@ namespace ThingM.Blink1.ColorProcessor
         /// Validate if the string format match the HTML hexadecimal #FFFFFF format.
         /// </summary>
         /// <param name="color">
-        /// The html color.
+        /// The HTML color.
         /// </param>
         /// <returns>
         /// True if the format is valid, false otherwise.
