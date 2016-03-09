@@ -31,6 +31,24 @@ namespace ThingM.Blink1.ConsoleDemo
         /// </param>
         public static void Main(string[] args)
         {
+            TestCase1();
+            TestCase2();
+            TestCase3();
+            TestCase4();
+            TestCase5();
+            TestCase6();
+            TestCase7();
+            TestCase8();
+
+            Console.WriteLine("We're done with the demo, press any key to stop the program.");
+            Console.ReadKey();
+        }
+
+        /// <summary>
+        ///     Pass 1: work on the first Blink(1) device found, synchronously
+        /// </summary>
+        private static void TestCase1()
+        {
             Console.WriteLine("####################################################################");
             Console.WriteLine("## Pass 1: work on the first Blink(1) device found, synchronously ##");
             Console.WriteLine("####################################################################");
@@ -48,20 +66,27 @@ namespace ThingM.Blink1.ConsoleDemo
             blink1.SetColor(255, 0, 0);
 
             Console.WriteLine("Pass 1: Set Blink(1) to fade to BLUE over 10 seconds.");
-            blink1.FadeToColor(3000, 0, 0, 255, false);
+            blink1.FadeToColor(10000, 0, 0, 255, false);
+            Thread.Sleep(10000);
 
             Console.WriteLine("Pass 1: Closing Blink(1) connection.");
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 2: work on the last Blink(1) device found, asynchronously
+        /// </summary>
+        private static void TestCase2()
+        {
             Console.WriteLine("####################################################################");
             Console.WriteLine("## Pass 2: work on the last Blink(1) device found, asynchronously ##");
             Console.WriteLine("####################################################################");
 
             List<string> devicePaths = Blink1Info.GetDevicePath();
 
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 2: Opening the last Blink(1) found via its HID path.");
             blink1.Open(devicePaths.Last());
@@ -99,7 +124,7 @@ namespace ThingM.Blink1.ConsoleDemo
 
             Thread.Sleep(1000);
 
-            Console.WriteLine("Pass 1: Set Blink(1) to be BLACK.");
+            Console.WriteLine("Pass 2: Set Blink(1) to be BLACK.");
             blink1.SetColor(0, 0, 0);
 
             Thread.Sleep(1000);
@@ -111,13 +136,19 @@ namespace ThingM.Blink1.ConsoleDemo
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 3: reading the current presets
+        /// </summary>
+        private static void TestCase3()
+        {
             Console.WriteLine("#########################################");
             Console.WriteLine("## Pass 3: reading the current presets ##");
             Console.WriteLine("#########################################");
 
             // Note, any dealing with presets is done asynchronously.
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 3: Opening the first Blink(1) found.");
             blink1.Open();
@@ -127,19 +158,25 @@ namespace ThingM.Blink1.ConsoleDemo
                 Blink1Preset blink1Preset = blink1.ReadPreset(position);
 
                 Console.WriteLine(
-                    "Pass 3: Position:{0}, Millisecond:{1}, Red:{2}, Green:{3}, Blue:{4}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
+                    "Pass 3: Position:{0,3}, Millisecond:{1,5}, Red:{2,4}, Green:{3,4}, Blue:{4,4}, Hex: #{2:X02}{3:X02}{4:X02}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
             }
 
             Console.WriteLine("Pass 3: Closing Blink(1) connection.");
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 4: playing the current presets
+        /// </summary>
+        private static void TestCase4()
+        {
             Console.WriteLine("#########################################");
             Console.WriteLine("## Pass 4: playing the current presets ##");
             Console.WriteLine("#########################################");
 
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 4: Opening the first Blink(1) found.");
             blink1.Open();
@@ -155,12 +192,18 @@ namespace ThingM.Blink1.ConsoleDemo
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 5: saving new random presets
+        /// </summary>
+        private static void TestCase5()
+        {
             Console.WriteLine("#######################################");
             Console.WriteLine("## Pass 5: saving new random presets ##");
             Console.WriteLine("#######################################");
 
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 5: Opening the first Blink(1) found.");
             blink1.Open();
@@ -170,7 +213,7 @@ namespace ThingM.Blink1.ConsoleDemo
                 Blink1Preset blink1Preset = new Blink1Preset(Convert.ToUInt16(1000 + (position * 10)), GetRandomRgbColor());
 
                 Console.WriteLine(
-                    "Pass 5: Position:{0}, Millisecond:{1}, Red:{2}, Green:{3}, Blue:{4}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
+                    "Pass 5: Position:{0,3}, Millisecond:{1,5}, Red:{2,4}, Green:{3,4}, Blue:{4,4}, Hex: #{2:X02}{3:X02}{4:X02}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
                 blink1.SavePreset(blink1Preset, position);
             }
 
@@ -178,12 +221,18 @@ namespace ThingM.Blink1.ConsoleDemo
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 6: reading the new random presets
+        /// </summary>
+        private static void TestCase6()
+        {
             Console.WriteLine("############################################");
             Console.WriteLine("## Pass 6: reading the new random presets ##");
             Console.WriteLine("############################################");
 
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 6: Opening the first Blink(1) found.");
             blink1.Open();
@@ -193,19 +242,25 @@ namespace ThingM.Blink1.ConsoleDemo
                 Blink1Preset blink1Preset = blink1.ReadPreset(position);
 
                 Console.WriteLine(
-                    "Pass 6: Position:{0}, Millisecond:{1}, Red:{2}, Green:{3}, Blue:{4}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
+                    "Pass 6: Position:{0,3}, Millisecond:{1,5}, Red:{2,4}, Green:{3,4}, Blue:{4,4}, Hex: #{2:X02}{3:X02}{4:X02}", position, blink1Preset.Millisecond, blink1Preset.Rgb.Red, blink1Preset.Rgb.Green, blink1Preset.Rgb.Blue);
             }
 
             Console.WriteLine("Pass 6: Closing Blink(1) connection.");
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 7: playing the new random presets
+        /// </summary>
+        private static void TestCase7()
+        {
             Console.WriteLine("############################################");
             Console.WriteLine("## Pass 7: playing the new random presets ##");
             Console.WriteLine("############################################");
 
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 7: Opening the first Blink(1) found.");
             blink1.Open();
@@ -221,12 +276,18 @@ namespace ThingM.Blink1.ConsoleDemo
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
+        }
 
+        /// <summary>
+        ///     Pass 8: work with the inactivity mode
+        /// </summary>
+        private static void TestCase8()
+        {
             Console.WriteLine("###########################################");
             Console.WriteLine("## Pass 8: work with the inactivity mode ##");
             Console.WriteLine("###########################################");
 
-            blink1 = new Blink1();
+            Blink1 blink1 = new Blink1();
 
             Console.WriteLine("Pass 8: Opening the first Blink(1) found.");
             blink1.Open();
@@ -264,8 +325,6 @@ namespace ThingM.Blink1.ConsoleDemo
             blink1.Close();
 
             Console.WriteLine(Environment.NewLine);
-            Console.WriteLine("We're done with the demo, press any key to stop the program.");
-            Console.ReadKey();
         }
 
         #endregion
