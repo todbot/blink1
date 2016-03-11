@@ -28,27 +28,24 @@ Note the "-l" option works with most, but not all, commands in blink1-tool.
 
 This example uses a Windows DOS batch file:
 
-    @echo off
-    REM Select your path to blink1-tool.exe 
-
+    @SETLOCAL
+    @ECHO OFF
+    
+    ::
+    :: Select your path to blink1-tool.exe 
+    ::
     SET PATH=%PATH%;c:\portable
-
-    set /a "x = 0"
-    :while
-    if %x% leq 7 (
-        echo " %x%
-        set /a "x = x + 1"
-	    blink1-tool.exe -l 1 --red  
-	    blink1-tool.exe -l 2 --blue
-	    timeout /T 1 > NUL
-
-	    blink1-tool.exe -l 1 --blue
-	    blink1-tool.exe -l 2 --red
-	    timeout /T 1 > NUL
-
-	    goto :while
+    
+    FOR /L %%i IN (1,1,7) DO (
+        echo %%i
+        blink1-tool.exe -l 1 --red  
+        blink1-tool.exe -l 2 --blue
+        timeout /T 1 > NUL
+    
+        blink1-tool.exe -l 1 --blue
+        blink1-tool.exe -l 2 --red
+        timeout /T 1 > NUL
     )
-    endlocal
 
 
 Turn all plugged-in blink(1)s to the same color
