@@ -17,7 +17,7 @@ namespace ThingM.Blink1.ColorProcessor
         #region Constants
 
         /// <summary>
-        /// The alice blue.
+        /// The Alice blue.
         /// </summary>
         public const string AliceBlue = "#F0F8FF";
 
@@ -212,7 +212,7 @@ namespace ThingM.Blink1.ColorProcessor
         public const string DarkViolet = "#9400D3";
 
         /// <summary>
-        /// The darkorange.
+        /// The dark orange.
         /// </summary>
         public const string Darkorange = "#FF8C00";
 
@@ -262,7 +262,7 @@ namespace ThingM.Blink1.ColorProcessor
         public const string Fuchsia = "#FF00FF";
 
         /// <summary>
-        /// The gainsboro.
+        /// The Gainsboro.
         /// </summary>
         public const string Gainsboro = "#DCDCDC";
 
@@ -312,7 +312,7 @@ namespace ThingM.Blink1.ColorProcessor
         public const string HotPink = "#FF69B4";
 
         /// <summary>
-        /// The indian red.
+        /// The Indian red.
         /// </summary>
         public const string IndianRed = "#CD5C5C";
 
@@ -517,7 +517,7 @@ namespace ThingM.Blink1.ColorProcessor
         public const string Moccasin = "#FFE4B5";
 
         /// <summary>
-        /// The navajo white.
+        /// The Navajo white.
         /// </summary>
         public const string NavajoWhite = "#FFDEAD";
 
@@ -587,7 +587,7 @@ namespace ThingM.Blink1.ColorProcessor
         public const string PeachPuff = "#FFDAB9";
 
         /// <summary>
-        /// The peru.
+        /// The Peru.
         /// </summary>
         public const string Peru = "#CD853F";
 

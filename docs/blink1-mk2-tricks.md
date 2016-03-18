@@ -1,23 +1,51 @@
 
-blink(1) mk2 blink1-tool tricks
+blink(1) mk2 blink1-tool tricks 
 ===============================
 
 Examples of things you can do with blink(1) mk2
-and the blink1-tool command-line program on a bash shell.
+and the blink1-tool command-line program.
 
 
 Turn on one LED, then the other
 -------------------------------
-This examples uses the new "-l" option to specify which LED to light.
+This examples uses the "-l" option to specify which LED to light.
 The default is "-l 0", which means all LEDs on a single blink(1) mk2.
 Note the "-l" option works with most, but not all, commands in blink1-tool.
 
-    % while [ 1 ] ; do
+    while [ 1 ] ; do
         blink1-tool -l 1 --red  && blink1-tool -l 2 --blue
         sleep 1
         blink1-tool -l 1 --blue && blink1-tool -l 2 --red
         sleep 1
-      done
+    done
+
+
+Turn on one LED, then the other with batch file in Windows
+------------------------------------------------------
+This examples uses the new "-l" option to specify which LED to light.
+The default is "-l 0", which means all LEDs on a single blink(1) mk2.
+Note the "-l" option works with most, but not all, commands in blink1-tool.
+
+This example uses a Windows DOS batch file:
+
+    @SETLOCAL
+    @ECHO OFF
+    
+    ::
+    :: Select your path to blink1-tool.exe 
+    ::
+    SET PATH=%PATH%;c:\portable
+    
+    FOR /L %%i IN (1,1,7) DO (
+        echo %%i
+        blink1-tool.exe -l 1 --red  
+        blink1-tool.exe -l 2 --blue
+        timeout /T 1 > NUL
+    
+        blink1-tool.exe -l 1 --blue
+        blink1-tool.exe -l 2 --red
+        timeout /T 1 > NUL
+    )
 
 
 Turn all plugged-in blink(1)s to the same color
@@ -97,7 +125,7 @@ Use the new "--hsb" command to specify colors by HSB (hue, saturation, brightnes
 instead of the standard "--rgb" command.  Note that the HSB-to-RGB conversion
 is done within blink1-tool, not in the blink(1) device.
 
-    % while [ 1 ]
+    while [ 1 ]
       do
         for h in {0..255..16}
         do
@@ -105,6 +133,27 @@ is done within blink1-tool, not in the blink(1) device.
           sleep 0.3
         done
       done
+
+
+Infinite Rainbow Using Batch file in Windows 
+------------------------------------------------------
+Use the "--hsb" command to specify colors by HSB (hue, saturation, brightness)
+instead of the standard "--rgb" command.  Note that the HSB-to-RGB conversion
+is done within blink1-tool, not in the blink(1) device.
+
+Here's an example in a Windows DOS batch file:
+
+    @echo off
+    REM Select your path to blink1-tool.exe 
+    REM Use millisleep.exe  from http://www.elifulkerson.com/projects/millisleep.php to slow down to 0.3 seconds
+        SET PATH=%PATH%;c:\portable
+        set /a "x = 0"
+        :while
+            set /a "x = x + 16"
+	        blink1-tool --hsb %x%,255,255
+	        millisleep 300 > NUL
+	    goto :while
+    endlocal
 
 
 Write a rainbow color pattern
@@ -155,7 +204,7 @@ Is blink(1) playing a color pattern?
 Start pattern playing, wait for it to stop
 ------------------------------------------
 
-# play red & green part of default pattern 3 times
+    # play red & green part of default pattern 3 times
     % blink1-tool --play 1,0,5,3
     # wait for "playing" to go to zero before continuing
     % while [ `blink1-tool --playstate | cut -c 20` != 0 ]
@@ -172,7 +221,7 @@ This will run infinitely, always keeping the blink(1) from not playing
 its color pattern.  But if the computer hangs, then after 2 seconds (2000 msecs)
 the color pattern will play.
 
-    % while [ 1 ] 
+    while [ 1 ] 
       do
         blink1-tool -t 2000 --servertickle
         sleep 1

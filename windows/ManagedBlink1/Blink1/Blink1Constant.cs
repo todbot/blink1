@@ -17,9 +17,11 @@ namespace ThingM.Blink1
         #region Constants
 
         /// <summary>
-        ///     The maximum number of presets supported by a Blink(1) device.
+        ///     The maximum number of presets supported by a Blink(1) device:
+        ///       1) for blink(1) mk1, 12 lines
+        ///       2) for blink(1) mk2, 32 lines  
         /// </summary>
-        public const int NumberOfPreset = 12;
+        public const int NumberOfPreset = 32;
 
         /// <summary>
         ///     The product id (493).

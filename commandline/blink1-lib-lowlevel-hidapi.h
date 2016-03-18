@@ -20,8 +20,10 @@ int blink1_enumerateByVidPid(int vid, int pid)
         if( (cur_dev->vendor_id != 0 && cur_dev->product_id != 0) &&  
             (cur_dev->vendor_id == vid && cur_dev->product_id == pid) ) { 
             if( cur_dev->serial_number != NULL ) { // can happen if not root
-                strcpy( blink1_infos[p].path,   cur_dev->path );
-                sprintf( blink1_infos[p].serial, "%ls", cur_dev->serial_number);
+                strncpy( blink1_infos[p].path, cur_dev->path,
+                    sizeof(blink1_infos[p].path));
+                snprintf(blink1_infos[p].serial, sizeof(blink1_infos[p].serial),
+                    "%ls", cur_dev->serial_number);
                 //wcscpy( blink1_infos[p].serial, cur_dev->serial_number );
                 //uint32_t sn = wcstol( cur_dev->serial_number, NULL, 16);
                 uint32_t serialnum = strtol( blink1_infos[p].serial, NULL, 16);
@@ -35,9 +37,13 @@ int blink1_enumerateByVidPid(int vid, int pid)
         cur_dev = cur_dev->next;
     }
     hid_free_enumeration(devs);
-    
-    blink1_cached_count = p;
 
+    LOG("blink1_enumerateByVidPid: done, %d devices found\n",p);
+    for( int i=0; i<p; i++ ) { 
+        LOG("blink1_enumerateByVidPid: blink1_infos[%d].serial=%s\n",
+            i, blink1_infos[i].serial);
+    }
+    blink1_cached_count = p;
     blink1_sortCache();
 
     return p;
@@ -48,7 +54,7 @@ blink1_device* blink1_openByPath(const char* path)
 {
     if( path == NULL || strlen(path) == 0 ) return NULL;
 
-    LOG("blink1_openByPath %s\n", path);
+    LOG("blink1_openByPath: %s\n", path);
 
     blink1_device* handle = hid_open_path( path ); 
 
@@ -69,7 +75,7 @@ blink1_device* blink1_openBySerial(const char* serial)
     int vid = blink1_vid();
     int pid = blink1_pid();
     
-    LOG("blink1_openBySerial %s at vid/pid %x/%x\n", serial, vid,pid);
+    LOG("blink1_openBySerial: %s at vid/pid %x/%x\n", serial, vid,pid);
 
     wchar_t wserialstr[serialstrmax] = {L'\0'};
 #ifdef _WIN32   // omg windows you suck
@@ -77,17 +83,18 @@ blink1_device* blink1_openBySerial(const char* serial)
 #else
     swprintf( wserialstr, serialstrmax, L"%s", serial); // convert to wchar_t*
 #endif
-    LOG("serialstr: '%ls' \n", wserialstr );
+    LOG("blink1_openBySerial: serialstr: '%ls' %d\n", wserialstr, 
+        blink1_getCacheIndexBySerial( serial ) );
     blink1_device* handle = hid_open(vid,pid, wserialstr ); 
-    if( handle ) LOG("got a blink1_device handle\n"); 
+    if( handle ) LOG("blink1_openBySerial: got a blink1_device handle\n"); 
 
     int i = blink1_getCacheIndexBySerial( serial );
     if( i >= 0 ) {
-        LOG("good, serial was in cache\n");
+        LOG("blink1_openBySerial: good, serial id:%d was in cache\n",i);
         blink1_infos[i].dev = handle;
     }
     else { // uh oh, not in cache, now what?
-        LOG("uh oh, serial was not in cache\n");
+        LOG("blink1_openBySerial: uh oh, serial id:%d was NOT IN CACHE\n",i);
     }
 
     return handle;
@@ -96,9 +103,10 @@ blink1_device* blink1_openBySerial(const char* serial)
 //
 blink1_device* blink1_openById( uint32_t i ) 
 { 
+    LOG("blink1_openById: %d \n", i );
     if( i > blink1_max_devices ) { // then i is a serial number not an array index
         char serialstr[serialstrmax];
-        sprintf( serialstr, "%X", i);  // convert to wchar_t* 
+        snprintf(serialstr, sizeof(serialstr), "%X", i); // convert to wchar_t*
         return blink1_openBySerial( serialstr );  
     } 
     else {
@@ -123,7 +131,7 @@ void blink1_close( blink1_device* dev )
         hid_close(dev);
     }
     dev = NULL;
-    hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
+    //hid_exit(); // FIXME: this cleans up libusb in a way that hid_close doesn't
 }
 
 //
@@ -135,7 +143,7 @@ int blink1_write( blink1_device* dev, void* buf, int len)
     int rc = hid_send_feature_report( dev, buf, len );
     // FIXME: put this in an ifdef?
     if( rc==-1 ) {
-        fprintf(stderr, "blink1_write error: %ls\n", hid_error(dev));
+        LOG("blink1_write error: %ls\n", hid_error(dev));
     }
     return rc;
 }
@@ -183,7 +191,7 @@ char *blink1_error_msg(int errCode)
         case USBOPEN_ERR_NOTFOUND:  return "The specified device was not found";
         case USBOPEN_ERR_IO:        return "Communication error with device";
         default:
-            sprintf(buf, "Unknown USB error %d", errCode);
+            snprintf(buf, sizeof(buf), "Unknown USB error %d", errCode);
             return buf;
     }
     */

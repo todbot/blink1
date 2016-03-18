@@ -1,0 +1,3 @@
+# another pattern test
+pattern: "white flashes"
+# and here's a color to ignore #996633

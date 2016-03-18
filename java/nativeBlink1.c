@@ -17,9 +17,9 @@ int isEnumerated = 0;
 blink1_device* getDevicePtr(JNIEnv *env, jobject obj)
 {
     jclass class = (*env)->GetObjectClass(env, obj); 
-    jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
-    jlong jhidptr = (*env)->GetLongField(env, obj, fieldId);
-    blink1_device* dev = (blink1_device*) jhidptr;
+    jfieldID fieldId = (*env)->GetFieldID(env, class, "blink1DevicePtr", "J");
+    jlong jdevptr = (*env)->GetLongField(env, obj, fieldId);
+    blink1_device* dev = (blink1_device*) jdevptr;
     return dev;
 }
 
@@ -27,7 +27,7 @@ blink1_device* getDevicePtr(JNIEnv *env, jobject obj)
 void setDevicePtr(JNIEnv *env, jobject obj, blink1_device* devt)
 {
     jclass class = (*env)->GetObjectClass(env, obj); 
-    jfieldID fieldId = (*env)->GetFieldID(env, class, "hidDevicePtr", "J");
+    jfieldID fieldId = (*env)->GetFieldID(env, class, "blink1DevicePtr", "J");
     (*env)->SetLongField(env, obj, fieldId, (jlong)devt );
 }
 
@@ -116,8 +116,8 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openByPath
 
     setDevicePtr(env,obj, devt);
    
-    if( devt == NULL ) setErrorCode(env,obj, -1);
-
+    setErrorCode(env,obj,  (devt == NULL) ? -1 : 0 );
+        
     return obj;
 }
 
@@ -133,7 +133,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openBySerial
 
     setDevicePtr(env,obj, devt);
 
-    if( devt == NULL ) setErrorCode(env,obj, -1);
+    setErrorCode(env,obj,  (devt == NULL) ? -1 : 0 );
 
     return obj;
 }
@@ -148,7 +148,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_openById
 
     setDevicePtr(env,obj, devt);
    
-    if( devt == NULL ) setErrorCode(env,obj, -1);
+    setErrorCode(env,obj,  (devt == NULL) ? -1 : 0 );
 
     return obj;
 }
@@ -167,7 +167,7 @@ JNIEXPORT jobject JNICALL Java_thingm_blink1_Blink1_open
     setDevicePtr(env,obj, devt);
     isEnumerated = 1;  // blink1_open() does enumeration (blink1_openById() does not)
     
-    if( devt == NULL ) setErrorCode(env,obj,-1);   
+    setErrorCode(env,obj,  (devt == NULL) ? -1 : 0 );
 
     return obj;
 }
@@ -181,6 +181,8 @@ JNIEXPORT void JNICALL Java_thingm_blink1_Blink1_close
     blink1_device* devt = getDevicePtr(env,obj);
     blink1_close(devt);
     setDevicePtr(env,obj, NULL);
+
+    setErrorCode(env,obj,0);
 }
 
 /**

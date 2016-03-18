@@ -1,8 +1,10 @@
-/*
- * blink(1) C library -- 
+/**
+ * blink(1) C library -- aka "blink1-lib" 
  *
+ * Part of the blink(1) open source hardware project
+ * See https://github.com/todbot/blink1 for details
  *
- * 2012, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
+ * 2012-2014, Tod E. Kurt, http://todbot.com/blog/ , http://thingm.com/
  *
  */
 
@@ -55,14 +57,13 @@ void blink1_sortCache(void);
 //----------------------------------------------------------------------------
 // implementation-varying code 
 
-#if USE_HIDAPI
-#include "blink1-lib-lowlevel-hidapi.h"
-#elif USE_HIDDATA
+#if USE_HIDDATA
 #include "blink1-lib-lowlevel-hiddata.h"
 #else
-#error "Need to define USE_HIDAPI or USE_HIDDATA"
+//#if USE_HIDAPI
+#include "blink1-lib-lowlevel-hidapi.h"
 #endif
-
+// default to USE_HIDAPI unless specifically told otherwise
 
 
 // -------------------------------------------------------------------------
@@ -79,11 +80,13 @@ int blink1_getCachedCount(void)
 //
 const char* blink1_getCachedPath(int i)
 {
+    if( i > blink1_getCachedCount()-1 ) return NULL;
     return blink1_infos[i].path;
 }
 //
 const char* blink1_getCachedSerial(int i)
 {
+    if( i > blink1_getCachedCount()-1 ) return NULL;
     return blink1_infos[i].serial;
 }
 
@@ -93,6 +96,16 @@ int blink1_getCacheIndexByPath( const char* path )
         if( strcmp( blink1_infos[i].path, (const char*) path ) == 0 ) return i;
     }
     return -1;
+}
+
+int blink1_getCacheIndexById( uint32_t i )
+{
+    if( i > blink1_max_devices ) { // then i is a serial number not an array index
+        char serialstr[serialstrmax];
+        snprintf(serialstr, sizeof(serialstr), "%X", i); // convert to wchar_t*
+        return blink1_getCacheIndexBySerial( serialstr );
+    }
+    return i;
 }
 
 int blink1_getCacheIndexBySerial( const char* serial ) 
@@ -403,6 +416,14 @@ int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis,
                            uint8_t* r, uint8_t* g, uint8_t* b, 
                            uint8_t pos)
 {
+    uint8_t ledn;
+    return blink1_readPatternLineN( dev, fadeMillis, r,g,b, &ledn, pos);
+}
+
+int blink1_readPatternLineN(blink1_device *dev, uint16_t* fadeMillis, 
+                            uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* ledn,
+                            uint8_t pos)
+{
     uint8_t buf[blink1_buf_size] = { blink1_report_id, 'R', 0,0,0, 0,0, pos };
 
     int rc = blink1_write(dev, buf, sizeof(buf) );
@@ -414,6 +435,7 @@ int blink1_readPatternLine(blink1_device *dev, uint16_t* fadeMillis,
         *g = buf[3];
         *b = buf[4];
         *fadeMillis = ((buf[5]<<8) + (buf[6] &0xff)) * 10;
+        *ledn = buf[7];
     }
     return rc;
 }
@@ -431,6 +453,20 @@ int blink1_savePattern( blink1_device *dev )
     buf[5] = 0xFE;
     buf[6] = 0x00;
     buf[7] = 0x00;
+    int rc = blink1_write(dev, buf, sizeof(buf) );
+    // note rc will always return -1 
+    // because of issue with flash programming timing out USB 
+    return 0; // assume success
+}
+
+// only for unreleased mk2a devices
+int blink1_setLEDN( blink1_device* dev, uint8_t ledn)
+{
+    uint8_t buf[blink1_buf_size];
+
+    buf[0] = blink1_report_id;     // report id
+    buf[1] = 'l';   // command code for "set ledn"
+    buf[2] = ledn;
     int rc = blink1_write(dev, buf, sizeof(buf) );
     return rc;
 }
@@ -473,10 +509,11 @@ void blink1_disableDegamma()
 static int blink1_degamma_log2lin( int n )  
 {
   //return  (int)(1.0* (n * 0.707 ));  // 1/sqrt(2)
-  return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
+    return (((1<<(n/32))-1) + ((1<<(n/32))*((n%32)+1)+15)/32);
 }
 // from http://rgb-123.com/ws2812-color-output/
 //   GammaE=255*(res/255).^(1/.45)
+//
 uint8_t GammaE[] = { 
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
@@ -555,40 +592,3 @@ void blink1_sleep(uint16_t millis)
 }
 
 
-
-/*
-
-//
-int blink1_nightlight(blink1_device *dev, uint8_t on)
-{
-    char buf[8] = { blink1_report_id, 'N', on };
-
-    int rc = blink1_write(dev, buf, sizeof(buf) );
-    
-    return rc;
-}
-
-
-//
-int blink1_command(blink1_device* dev, int num_send, int num_recv,
-                       uint8_t* buf_send, uint8_t* buf_recv )
-{
-    if( dev==NULL ) {
-        return -1; // BLINK1_ERR_NOTOPEN;
-    }
-    int err = 0;
-    if( (err = usbhidSetReport(dev, (char*)buf_send, num_send)) != 0) {
-        fprintf(stderr,"error writing data: %s\n",blink1_error_msg(err));
-        return err;
-    }
-     
-    if( num_recv > 0 ) { 
-        int len = num_recv;
-        if((err = usbhidGetReport(dev, 0, (char*)buf_recv, &len)) != 0) {
-            fprintf(stderr,"error reading data: %s\n",blink1_error_msg(err));
-        } else {  // it was good
-        }
-    }
-    return err;
-}
-*/

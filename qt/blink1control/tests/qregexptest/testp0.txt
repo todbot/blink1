@@ -1,0 +1,5 @@
+# simplest pattern output
+pattern: policecar
+# another comment
+# comments for everyone!
+

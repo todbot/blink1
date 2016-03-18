@@ -18,7 +18,6 @@
 #
 #
 
-TARGET = Blink1
 
 LIBUSBA_DIR = libusb-static
 #PROCESSING_LIBDIR = blink1/library
@@ -60,7 +59,7 @@ ifeq "$(OS)" "macosx"
 JAVA_HOME:=/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Home
 PATH:=$(JAVA_HOME)/bin:$(PATH)
 
-LIBTARGET = lib$(TARGET).jnilib
+LIBTARGET = libBlink1.jnilib
 #USBFLAGS = `/opt/local/bin/libusb-legacy-config --cflags`
 #USBLIBS = `/opt/local/bin/libusb-legacy-config --libs | cut -d' ' -f1 | cut -c3- `/libusb-legacy.a
 #USBLIBS +=  `libusb-legacy-config --libs | cut -d' ' -f 3- `
@@ -94,7 +93,7 @@ endif
 
 #################  Windows  ##################################################
 ifeq "$(OS)" "windows"
-LIBTARGET = $(TARGET).dll
+LIBTARGET = Blink1.dll
 LIBUSBA   = libusb-windows.a
 USBLIBS   = -lhid -lsetupapi
 
@@ -123,7 +122,7 @@ endif
 #################  Linux  ###################################################
 ifeq "$(OS)" "linux"
 # ???
-LIBTARGET = lib$(TARGET).so  # for linux
+LIBTARGET = libBlink1.so
 #USBFLAGS += `pkg-config libusb-1.0 --cflags`
 #USBLIBS  += `pkg-config libusb-1.0 --libs` 
 #OBJS = ../commandline/hidapi/libusb/hid.o
@@ -162,7 +161,7 @@ endif
 INCLUDES = -I. -I../commandline 
 INCLUDES += $(JAVAINCLUDE) $(JAVANATINC) 
 
-OBJS += ../commandline/blink1-lib.o  native$(TARGET).o 
+OBJS += ../commandline/blink1-lib.o  nativeBlink1.o 
 
 CFLAGS  += $(OS_CFLAGS) -O -Wall -std=gnu99  $(INCLUDES)
 LDFLAGS += $(OS_LDFLAGS) 
@@ -183,13 +182,15 @@ help:
 	@echo "make javadoc ... to make the javadoc"
 
 javac:
-#	javac -target 1.7 thingm/blink1/$(TARGET).java	
-#	javac -target $(JAVA_VER) thingm/blink1/$(TARGET).java	
-	javac thingm/blink1/$(TARGET).java	
+#	javac -target $(JAVA_VER) thingm/blink1/Blink1.java	
+	javac thingm/blink1/Blink1.java	
 
 jni:
 	which javah
-	javah -jni thingm.blink1.$(TARGET)
+	javah -jni thingm.blink1.Blink1
+
+clean-blink1lib:
+	make -C ../commandline clean
 
 # the "libprep" is to pull out the libusb.a into its own dir, for static build
 #libprep:
@@ -197,9 +198,8 @@ jni:
 #	cp `libusb-config --exec-prefix`/lib/libusb.a $(LIBUSBA_DIR)/$(LIBUSBA)
 
 #	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(LDFLAGS) $(OBJ)  -lc
-compile: msg $(OBJS)
+compile: msg clean-blink1lib $(OBJS)
 	$(CC)  -o $(LIBTARGET) $(CFLAGS) $(OBJS) $(LDFLAGS) 
-	#mkdir -p libtargets && mv $(LIBTARGET) libtargets
 	mv $(LIBTARGET) ../libraries
 
 .c.o:
@@ -211,7 +211,6 @@ msg:
 # packaging
 jar: javac jni compile
 	jar -cfm blink1.jar  packaging/Manifest.txt thingm/blink1/*.class
-	#mv blink1.jar libtargets
 	mv blink1.jar ../libraries
 
 processing: processinglib
@@ -226,7 +225,7 @@ processinglib: jar
 	rm -rf blink1/library/html
 	cp -r ../processing/* blink1/examples
 	zip --exclude \*application.\* --exclude \*~ --exclude .DS_Store -r $(LIBZIPNAME) blink1
-	cp $(LIBZIPNAME) ../libraries
+	#cp $(LIBZIPNAME) ../libraries
 	@echo
 	@echo "now unzip $(LIBZIPNAME) into ~/Documents/Processing/libraries"
 	@echo "or maybe ln -s \`pwd\`/blink1 ~/Documents/Processing/libraries/blink1"
@@ -242,7 +241,7 @@ clean:
 	rm -f libtargets/blink1.jar
 	rm -f $(OBJS)
 	rm -f libtargets/$(LIBTARGET)
-	rm -f $(LIBTARGET) thingm_blink1_$(TARGET).h
+	rm -f $(LIBTARGET) thingm_blink1_Blink1.h
 	rm -f blink1jar $(LIBZIPNAME)
 	rm -rf blink1
 

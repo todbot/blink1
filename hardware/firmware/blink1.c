@@ -78,7 +78,7 @@ patternline_t ee_pattern[patt_max]  EEMEM = {
 
 
 // next time 
-const uint32_t led_update_millis = 10;  // tick msec
+const  uint32_t led_update_millis = 10;  // tick msec
 static uint32_t led_update_next;
 static uint32_t pattern_update_next;
 static uint16_t serverdown_millis;

@@ -1,10 +1,8 @@
 //
 // This code creates a random color on the screen and displays it on
 // on a blink(1). The user can pause the action with a mouse click. The
-// software checks for a blink one on initiation and mouse-release. Only 
-// works when one blink1 is plugged in. 
+// software checks for a blink one startup and mouse-release.
 // 
-// Processing 2.0 Compatible
 //
 // Created December 11 2012
 // by Carlyn Maw for ThingM
@@ -21,7 +19,7 @@ Blink1 myBlink1;
 boolean blink1PluggedInFlag = false;
 
 //global that knows if random generator is playing or paused
-boolean playFlag = false;
+boolean playFlag = true;
 
 //is the mouse in the button
 boolean buttonFlag = false;
@@ -52,19 +50,17 @@ void setup()
   textFont(createFont("helvetica", 11));
   background(bgVar);
 
-
   // intantiate your blink1
-  myBlink1 = new Blink1();
-
+  myBlink1 = Blink1.open();
 
   //is it there - see function, also runs on mouse release
   checkForBlink1();
+
 }
 //------------------------------------------------------------------- END SETUP
 //------------------------------------------------------------------ START DRAW
 void draw()
 {
-
 
   //incrementing global for setting clock, ticks up every frame
   //cannot just use millis since millis will not increment smoothly
@@ -75,41 +71,39 @@ void draw()
   //(playFlag is in by checkForBlink1())
   if (((t % speedVar) == 0) && playFlag) {
     //extra little check in case in the time elapsed blink1 has been unplugged.
-    int b1check = myBlink1.open();
-    if (b1check == 0) {
-      background(bgVar);
-      //generate the colors
-      //random creates a float, it needs to be cast as an int. 
-      int r = int(random(255));
-      int g = int(random(255));     
-      int b = int(random(255));
 
-      //write these colors to the screen
-      textAlign(LEFT, CENTER);
-      fill(102, 51, 51);
-      text(r, width/2-50, (height/2)+swatchH/2);
-      textAlign(CENTER, CENTER);
-      fill(51, 102, 51);
-      text(g, width/2, (height/2)+swatchH/2);
-      textAlign(RIGHT, CENTER);
-      fill(51, 51, 102);
-      text(b, width/2+50, (height/2)+swatchH/2);
+    background(bgVar);
+    //generate the colors
+    //random creates a float, it needs to be cast as an int. 
+    int r = int(random(255));
+    int g = int(random(255));     
+    int b = int(random(255));
+    
+    //write these colors to the screen
+    textAlign(LEFT, CENTER);
+    fill(102, 51, 51);
+    text(r, width/2-50, (height/2)+swatchH/2);
+    textAlign(CENTER, CENTER);
+    fill(51, 102, 51);
+    text(g, width/2, (height/2)+swatchH/2);
+    textAlign(RIGHT, CENTER);
+    fill(51, 51, 102);
+    text(b, width/2+50, (height/2)+swatchH/2);
+    
+    //set a color property
+    c = color(r, g, b);
+    
+    //update the blink1 .setRGB seems pretty obvious. 
+    myBlink1.setRGB( r, g, b );
 
-      //set a color property
-      c = color(r, g, b);
-
-      //update the blink1 .setRGB seems pretty obvious. 
-      myBlink1.setRGB( r, g, b );
-
-      //draw the swatch
-      rectMode(CENTER);
-      noStroke();
-      rect(width/2, (height/2)-swatchOffSet, swatchW, swatchH);
+    if( myBlink1.error() ) {
+      println("error setting color, blink(1) unplugged?");
     }
-    else {
-      println("I've been unplugged!");
-      checkForBlink1();
-    }
+    
+    //draw the swatch
+    rectMode(CENTER);
+    noStroke();
+    rect(width/2, (height/2)-swatchOffSet, swatchW, swatchH);
   }
 
   //if there is no blink1 plugged in, set the swatch color to black
@@ -133,7 +127,7 @@ void draw()
 //on mouse release, look to see if the blink one is still there.
 void mouseReleased() {
   if (buttonFlag) {
-  checkForBlink1();
+    checkForBlink1();
   }
 }
 
@@ -146,36 +140,35 @@ void mouseReleased() {
 //--------------------------------------------------------- START checkForBlink1
 void checkForBlink1() {
   //the .open command looks to see if what blink one is available and 
-  //prepares it to recieve commands. Only one blink1 can be open at a time
-  //anything but 0 is an error code and therefore a fail
-  int b1check = myBlink1.open();
+  //prepares it to recieve commands.
+  if( myBlink1.error() ) {
+    myBlink1.close();
+    myBlink1 = Blink1.open();
+  }
+  boolean b1error = myBlink1.error();
+  
+  //println("b1error: "+b1error + ", blink1PluggedInFlag: "+blink1PluggedInFlag );
 
-  if ((blink1PluggedInFlag == false) && (b1check != 0)) {
-    println("uh oh, still no Blink1 device found");
-    blink1PluggedInFlag = false;
-    playFlag = false;
-  } 
-  else if ((blink1PluggedInFlag == true) && (b1check != 0)) {
-    println("uh oh, you took out the Blink1 device");
+  if( b1error ) {
+    if( blink1PluggedInFlag ) {
+      println("uh oh, you took out the blink(1) device");
+    }
+    else { 
+      println("uh oh, no blink(1) device found");
+    }
     blink1PluggedInFlag = false;
     playFlag = false;
   }
-  else if ((blink1PluggedInFlag == false) && (b1check == 0)) {    
-    blink1PluggedInFlag = true;
-    println("Blink1 device found");
-    playFlag = true;
-    //prevents Lag
-    t = speedVar - 1;
-  } 
-  else if ((blink1PluggedInFlag == true) && (b1check == 0)) { 
-    if (playFlag) {
-      playFlag = false;
-    }
-    else {
+  else { // else no error
+    if( blink1PluggedInFlag == true ) {
+      playFlag = !playFlag; // toggle play/pause
+    } else {
+      println("blink(1) device found");
       playFlag = true;
-      t = speedVar - 1;
     }
+    blink1PluggedInFlag = true;
   }
+  
 }
 
 //--------------------------------------------------------- END checkForBlink1

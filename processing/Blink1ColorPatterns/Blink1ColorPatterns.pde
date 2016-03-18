@@ -9,12 +9,14 @@ import thingm.blink1.*;
 import java.util.Random;
 import java.awt.Color;
 
+// number of LEDs connected to your blink1, 18 is the max
+int ledn = 18;
+
 Blink1 blink1;
 Random rand;
 
 long nextUpdate;
 long runningUpdate;
-int ledn = 18;
 int runningMillis = 50;
 
 Color[] ledcolors = new Color[ledn];

@@ -40,7 +40,7 @@ one or more blink(1) devices.  You can use this program inside of
 shell scripts or batch files, or in a pinch, call them from within PHP
 web pages.
 
-It is documented in [blink1-tool](docs/blink1-tool.md).
+It is documented in [blink1-tool](https://github.com/todbot/blink1/blob/master/docs/blink1-tool.md).
 
 
 Local Web API
@@ -48,8 +48,8 @@ Local Web API
 The local Web API is a REST API with JSON responses that comes with
 the Mac OS X and Windows control applications.
 
-It is documented in [app-url-api](docs/app-url-api.md).
-And has a set of step-by-step examples in [app-url-api-examples](docs/app-url-api-examples).
+It is documented in [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md).
+And has a set of step-by-step examples in [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md).
 
 
 IFTTT API

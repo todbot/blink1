@@ -520,7 +520,7 @@ namespace ThingM.Blink1.ColorManager
         {
             // Given the center of a circle and its radius, along
             // with the angle corresponding to the point, find the coordinates. 
-            // In other words, conver  t from polar to rectangular coordinates.
+            // In other words, convert from polar to rectangular coordinates.
             double radians = degrees / DEGREES_PER_RADIAN;
 
             return new Point((int)(centerPoint.X + Math.Floor(radius * Math.Cos(radians))), (int)(centerPoint.Y - Math.Floor(radius * Math.Sin(radians))));
