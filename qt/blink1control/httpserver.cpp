@@ -107,6 +107,7 @@ void HttpServer::startRead(){
             resp.insert("time",QString::number(time));
             mw->setColorToBlink(QColor(cstr),time*1000);
         }
+        */
         else if( cmd == "/off" ) {
             mw->stopPattern(mw->getActivePatternName());
             QString cstr = "#000000";
@@ -116,8 +117,7 @@ void HttpServer::startRead(){
             resp.insert("time",QString::number(time));
             mw->setColorToBlink(QColor(cstr),time*1000);
         }
-        */
-        else if( cmd == "/fadeToRGB" || cmd == "/on" || cmd == "/off" ) {
+        else if( cmd == "/fadeToRGB" || cmd == "/on"  ) {
             bool ok;
             QString cstr = qurlquery.queryItemValue("rgb");
             double time  = qurlquery.queryItemValue("time").toDouble(&ok);
