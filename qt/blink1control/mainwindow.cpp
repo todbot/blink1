@@ -1315,9 +1315,7 @@ void MainWindow::on_buttonWhite_clicked()
 
 void MainWindow::on_buttonOff_clicked()
 {
-    foreach (QString name, patterns.keys()) {
-       stopPattern(name);
-    }
+    stopAllPatterns();
     mode = OFF;
     led=0;
     emit ledsUpdate();
@@ -1732,6 +1730,11 @@ void MainWindow::stopPattern(QString name){
     patterns.value(name)->stop();
 }
 
+void MainWindow::stopAllPatterns(){
+    foreach (QString name, patterns.keys()) {
+       stopPattern(name);
+    }
+}
 void MainWindow::removeColorAndTimeFromPattern(QString name,int idx){
     patterns.value(name)->removeColorAndTime(idx);
 }
