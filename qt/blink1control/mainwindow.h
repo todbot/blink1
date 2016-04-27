@@ -173,6 +173,7 @@ public slots:
     void playOrStopPattern(QString name);
     void playPattern(QString name);
     void stopPattern(QString name);
+    void stopAllPatterns();
 
     void removeColorAndTimeFromPattern(QString name,int idx);
     void changePatternRepeats(QString name);
