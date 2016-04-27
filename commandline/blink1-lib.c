@@ -168,7 +168,7 @@ int blink1_getVersion(blink1_device *dev)
     return rc;
 }
 
-//
+// mk1 only, not supported on mk2
 int blink1_eeread(blink1_device *dev, uint16_t addr, uint8_t* val)
 {
     char buf[blink1_buf_size] = {blink1_report_id, 'e', addr };
@@ -183,7 +183,7 @@ int blink1_eeread(blink1_device *dev, uint16_t addr, uint8_t* val)
     return rc;
 }
 
-//
+// mk1 only, not supported on mk2
 int blink1_eewrite(blink1_device *dev, uint16_t addr, uint8_t val)
 {
     char buf[blink1_buf_size] = {blink1_report_id, 'E', addr, val };
@@ -193,10 +193,10 @@ int blink1_eewrite(blink1_device *dev, uint16_t addr, uint8_t val)
     return rc;
 }
 
-// FIXME: this doesn't work
+// FIXME: this doesn't work, use hidapi info instead
 int blink1_serialnumread(blink1_device *dev, uint8_t** serialnum)
 {
-    int rc = 0;
+    int rc = -1;
     for( int i=0; i<blink1_serialnum_len; i++ ) { // serial num is 8 chars long
         //blink1_eeread( dev, blink1_eeaddr_serialnum+i, (serialnum+i) );
     }
@@ -332,10 +332,17 @@ int blink1_readRGB(blink1_device *dev, uint16_t* fadeMillis,
 // - on == 1 or 0, enable or disable
 // - millis == milliseconds to wait until triggering 
 // - st == 1 or 0, stay lit or set off()  (mk2 firmware only)
-int blink1_serverdown(blink1_device *dev, uint8_t on, uint16_t millis, uint8_t st)
+// FIXME: bug in firmware?
+// - millis = 100000 => dms = 10000, dms_hi =  39, dms_lo =  16 :: real time = 34 secs
+// - millis =  50000 => dms =  5000, dms_hi =  19, dms_lo = 136 :: real time = 50 secs
+// - millis = 652800 => dms = 65280, dms_hi = 255, dms_lo =   0 :: real time = 62 secs
+// - millis =  62000 => dms =  6200, dms_hi =  24, dms_lo =  56 :: real time = 62 secs
+// 
+int blink1_serverdown(blink1_device *dev, uint8_t on, uint32_t millis, uint8_t st)
 {
-    int dms = millis/10;  // millis_divided_by_10
+    uint16_t dms = millis / 10;  // millis_divided_by_10
 
+    // printf("serverdown: millis: %u, dms: %d = %d / %d\n", millis, dms, (dms>>8), (dms % 0xff) );
     uint8_t buf[blink1_buf_size];
     buf[0] = blink1_report_id;
     buf[1] = 'D';
@@ -582,7 +589,7 @@ int blink1_pid(void)
 }
 
 // simple cross-platform millis sleep func
-void blink1_sleep(uint16_t millis)
+void blink1_sleep(uint32_t millis)
 {
 #ifdef WIN32
             Sleep(millis);

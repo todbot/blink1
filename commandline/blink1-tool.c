@@ -38,9 +38,9 @@
 #endif
 
 const int millisDefault = 300;
-const int delayMillisDefault = 500;
+const int32_t delayMillisDefault = 500;
 int millis = -1;
-int delayMillis = -1;
+int32_t delayMillis = -1;
 int numDevicesToUse = 1;
 
 blink1_device* dev;
@@ -208,9 +208,7 @@ static void usage(char *myName)
 "  --chase, --chase=<num,start,stop> Multi-LED chase effect. <num>=0 runs forever.\n"
 "  --random, --random=<num>    Flash a number of random colors, num=1 if omitted \n"
 "  --glimmer, --glimmer=<num>  Glimmer a color with --rgb (num times)\n"
-" Nerd functions: (not used normally) \n"
-"  --eeread <addr>             Read an EEPROM byte from blink(1)\n"
-"  --eewrite <addr>,<val>      Write an EEPROM byte to blink(1) \n"
+" Nerd functions: \n"
 "  --fwversion                 Display blink(1) firmware version \n"
 "  --version                   Display blink1-tool version info \n"
 "and [options] are: \n"
@@ -219,17 +217,17 @@ static void usage(char *myName)
 "  -m ms,   --millis=millis    Set millisecs for color fading (default 300)\n"
 "  -q, --quiet                 Mutes all stdout output (supercedes --verbose)\n"
 "  -t ms,   --delay=millis     Set millisecs between events (default 500)\n"
-"  -l <led>, --led=<led>       Set which LED in a mk2 to use, 0=all,1=top,2=bottom\n"
+"  -l <led>, --led=<led>       Which LED to use, 0=all/1=top/2=bottom (mk2 only)\n"
 "  -l 1,3,5,7                  Can also specify list of LEDs to light\n"
 "  -v, --verbose               verbose debugging msgs\n"
 "\n"
 "Examples \n"
 "  blink1-tool -m 100 --rgb=255,0,255    # fade to #FF00FF in 0.1 seconds \n"
 "  blink1-tool -t 2000 --random=100      # every 2 seconds new random color\n"
-"  blink1-tool --ledn 2 --random=100     # random colors on both LEDs \n"
+"  blink1-tool --led 2 --random=100      # random colors on both LEDs \n"
 "  blink1-tool --rgb 0xff,0x00,0x00 --blink 3  # blink red 3 times\n"
 "  blink1-tool --rgb '#FF9900'           # make blink1 pumpkin orange\n"
-"  blink1-tool --rgb FF9900 --ledn 2     # make blink1 pumpkin orange on lower LED\n"
+"  blink1-tool --rgb FF9900 --led 2      # make blink1 pumpkin orange on lower LED\n"
 "  blink1-tool --playpattern \'10,#ff00ff,0.1,0,#00ff00,0.1,0\'\n"
 "  blink1-tool --chase=5,3,18            # chase 5 times, on leds 3-18\n"
 "\n"
@@ -829,7 +827,7 @@ int main(int argc, char** argv)
         //int on  = arg;
         int on = cmdbuf[0];
         int st = cmdbuf[1];
-        msg("setting servertickle %s (@ %d millis)\n",((on)?"ON":"OFF"),delayMillis);
+        msg("setting servertickle %s (@ %ld millis)\n",((on)?"ON":"OFF"),delayMillis);
         blink1_serverdown( dev, on, delayMillis, st );
     }
     else if( cmd == CMD_PLAYPATTERN ) {

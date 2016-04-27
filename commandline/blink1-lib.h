@@ -215,10 +215,10 @@ int blink1_serialnumwrite(blink1_device *dev, uint8_t* serialnumstr);
  * Tickle blink1 serverdown functionality.
  * @note 'st' param for mk2 firmware only
  * @param on  enable or disable: enable=1, disable=0
- * @param millis milliseconds to wait until triggering 
+ * @param millis milliseconds to wait until triggering (up to 65,355 millis)
  * @param stay lit (st=1) or set off() (st=0)
  */
-int blink1_serverdown(blink1_device *dev, uint8_t on, uint16_t millis, 
+int blink1_serverdown(blink1_device *dev, uint8_t on, uint32_t millis, 
                       uint8_t st);
 
 /**
@@ -329,7 +329,7 @@ int blink1_degamma(int n);
  * Simple wrapper for cross-platform millisecond delay.
  * @param delayMillis number of milliseconds to wait
  */
-void blink1_sleep(uint16_t delayMillis);
+void blink1_sleep(uint32_t delayMillis);
 
 /**
  * Vendor ID for blink1 devices.
