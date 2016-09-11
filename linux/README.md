@@ -18,15 +18,27 @@ Then to make the blink(1) do things, do something like:
 Type "./blink1-tool" by itself to get a help screen.
 
 
-Mini-HTTP server "blink1-server-simple"
+Mini-HTTP server "blink1-tiny-server"
 ---------------------------------------
 There is a small web server based on Mongoose in the commandline directory
-that is not built by default.  Do a "make blink1-server-simple" to build it.
-If you run it, it will sit on port 8080 and control the blink1 via a few
-special URLs.  
+that is not built by default.  To build and run it:
 
-For example, to turn the blink(1) blue over 5 seconds:
+```
+cd blink1/commandline
+make blink1-tiny-server
+./blink1-tiny-server -p 8080
+```
+
+Control the blink1 via a few special URLs, which you can see with `./blink1-tiny-server -h`.
+
+Example of using it: Turn the blink(1) blue over 5 seconds:
+
+```
   % curl 'http://127.0.0.1:8080/blink1/fadeToRGB?rgb=%230000ff&time=5.00'
+```
+  
+In this directory, there is an init script for starting `blink1-tiny-server`
+at boot. See the comments in the file for how to install and use it.
 
 
 
