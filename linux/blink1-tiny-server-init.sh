@@ -4,7 +4,7 @@
 # Provides:		blink1-tiny-server
 # Required-Start:	$remote_fs $syslog
 # Required-Stop:	$remote_fs $syslog
-# Default-Start:	4 5
+# Default-Start:	2 3 4 5
 # Default-Stop:		
 # Short-Description:	Simple API server for blink(1) USB light
 ### END INIT INFO
