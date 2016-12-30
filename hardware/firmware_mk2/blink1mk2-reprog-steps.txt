@@ -9,7 +9,7 @@ blink1mk2 reprogramming steps
 
 3.  Configure IPE with the following:
   - Enable Advanced Mode and "login".
-  Then set:
+  Then set in "SQTP Settings":
   - "Sequential" 
   - "Start Value"      = 1234ABCD  (e.g. use real serial number start here)
   - "Increment"        = 1
@@ -24,7 +24,7 @@ blink1mk2 reprogramming steps
     The first character is normally a ":".  SQTP changes this to a ";" when a serialnum is programmed.
     But the SQTP generator puts serials in wrong order for blink1mk2.
 
-5. Run "blink1-hex-swizzle.py" to generate new SQTP file, like:
+5. Run "blink1mk2-hex-swizzle.py" to generate new SQTP file, like:
     % cat original-sqtp.num | blink1-hex-swizzle.py > fixed-sqtp.num
 
 6. Back in "mplab_ipe", set it up for programming.  Most important bits:
@@ -39,9 +39,20 @@ blink1mk2 reprogramming steps
 
 
 
+For 20160929 run:
+starting serial number: 2000A000
+file contains 400 serials
+- received : 444 parts
+- reprogrammed good: 9*15 + xx + 5*10 = 
+- already programmed: 4*12 = 48
+- total good: 9*15 + 8*15 + 5*10 = 305
+- bad part: 444 - 305 = 
+-- programmed but bad LED:
+-- not programmable:
+-- mechanically broken:
 
 -----
-For this run:
+For 20150128 run:
 starting serial number: 20002800
 file every 128 serials:
 reprogA = 20002800  *
