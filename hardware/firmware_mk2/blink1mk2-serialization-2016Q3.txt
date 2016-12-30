@@ -28,6 +28,6 @@ d. Serial numbers increment highest-byte first, like:
 
 e. The 10,000th serial number value is: 0x20,0x00,0x93,0x90.
 
-f. Extra serial numbers (600+) for testing / makeup: ending to 0x20,0x00,0x95,0xFF is allowed.
+f. Extra serial numbers for testing / makeup to 0x20,0x00,0x93,0xFF is allowed.
 
 
