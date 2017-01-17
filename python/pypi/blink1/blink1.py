@@ -201,7 +201,7 @@ class Blink1:
     def get_serial_number(self):
         """Get blink(1) serial number
         """
-        return usb.util.get_string(self.dev, 256, 3)
+        return usb.util.get_string(self.dev, 3)
 
 
 @contextmanager
