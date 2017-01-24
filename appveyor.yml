@@ -7,6 +7,9 @@ platform:
 - x64
 
 install:
+- ps: $env:Path += ";C:\MinGW\bin";
+
+build_script:
 - ps: cd commandline
 - ps: make
 - ps: make package
