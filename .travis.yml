@@ -28,9 +28,9 @@ script:
     - cd ..
 
 before_deploy:
-    - DFILE1=$(ls commandline/blink1-tool*zip);
-    - DFILE2=$(ls commandline/blink1-tiny-server*zip);
-    - DFILE3=$(ls commandline/blink1-lib*zip);
+    - DFILE1=$(ls commandline/blink1-tool*zip)
+    - DFILE2=$(ls commandline/blink1-lib*zip)
+    - DFILE3=$(ls commandline/blink1-tiny-server*zip)
     # what about blink1control-tool
 
 deploy:
