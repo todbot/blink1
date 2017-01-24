@@ -36,3 +36,4 @@ deploy:
     - "${DFILE3}"
   on:
     repo: todbot/blink1
+    tags: true
