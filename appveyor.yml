@@ -8,8 +8,8 @@ platform:
 
 install:
 - ps: $env:Path += ";C:\MinGW\bin;"
-- ps: $env:Path += "C:\MinGW\msys\1.0\bin";
-- ps: $env:Path += "C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin";
+- ps: $env:Path += ";C:\MinGW\msys\1.0\bin";
+- ps: $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin";
 
 build_script:
 - ps: dir C:\MinGW\msys\1.0\bin
