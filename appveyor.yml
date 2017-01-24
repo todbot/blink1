@@ -10,6 +10,7 @@ install:
 - ps: $env:Path += ";C:\MinGW\bin";
 
 build_script:
+- ps: dir C:\MinGW\bin
 - ps: cd commandline
 - ps: make
 - ps: make package
