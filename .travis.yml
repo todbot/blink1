@@ -24,5 +24,20 @@ script:
     - make
     - make blink1-tiny-server
     - make package
+    - ls -alrth
 
-    
+before_deploy:
+    - DFILE1=$(ls commandline/blink1-tool*zip);
+    - DFILE2=$(ls commandline/blink1-tiny-server*zip);
+
+deploy:
+    skip_cleanup: true
+
+    provider: releases
+    api_key:
+        secure: mg9kDnOTZdDNLrU+0ZzNeqA1hP9x3uUW5POEA8+nL1odEWQnBVL5gmFKSqV8zub52yazdEebCiDad/WpX2I7F20PmZA/LDlQO6TWdVhT5BEfgdpatOtdyvGggd6e2AG+Rv73z5Svkf+N6wCPXxNMmBl+OqU5fZigZDpib/SPijobAKvwOnHfSURL1NiBTrp5vzdpX21M7p87MrA19Pojcn7WFZ3KR0l79oXorlr6HchNY645UkdLwDHenYMGto4h5ShaLW/XYGQFulQY+RYH3RR4AVxRVxB1xsW8jvu/EQjCcAQg3pkHMw8wAbVG3siiZZLKgHfwIF3U5o7RHoYchvOxHF0FMK+NMgZdJeZBBLXm6r6UnsNXkZOHJh4QbgMRqcFxHZdLNFg6PVTNrWvLsngS/gnlMy7UxaW598vNtL2gOQ9LmtOfJmxu2exYmKfwM1tTLsMt7H5Qc2JgGQi1ZZGzRVbS7r0Xjrl25+NXAm/OylDl2Dh6zkCGm4X0d77M5RplL9+Ov+7ZEbRo8uNqyloEJGNzOVC+avCJADCNFbA2PcppAdASx7YTeshXSwm3QfNIIXpCtYjFeydKbW8V0fXy8cCX27InAD6W/IykBggaO+qUW4uBZ0eOk2s0VArLwmPQVL10yYIfGl9PTjRfbVJYjYCf3qXjSn/qWXYIu0g=
+    file:
+        - "${DFILE1}"
+        - "${DFILE2}"
+    on:
+        repo: todbot/blink1
