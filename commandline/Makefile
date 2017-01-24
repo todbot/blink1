@@ -70,6 +70,7 @@
 #
 #
 
+CC ?= gcc
 
 # pick low-level implemenation style
 # "HIDAPI" type is best for Mac, Windows, Linux Desktop,
@@ -84,8 +85,6 @@
 #  make USBLIB_TYPE=HIDDATA
 #  make USBLIB_TYPE=HIDAPI_HIDRAW
 #
-
-CC ?= gcc
 
 USBLIB_TYPE ?= HIDAPI
 #USBLIB_TYPE = HIDAPI_HIDRAW
