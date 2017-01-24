@@ -15,7 +15,7 @@ build_script:
 - ps: dir C:\MinGW\msys\1.0\bin
 - ps: cd commandline
 - ps: make CC=gcc
-- ps: make package
+- ps: make CC=gcc package
 - ps: dir C:\msys64
 
 artifacts:
