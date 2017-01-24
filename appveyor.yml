@@ -11,6 +11,7 @@ install:
 - ps: $env:Path += "C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin";
 
 build_script:
+- ps: dir C:\MinGW\msys\1.0\bin
 - ps: cd commandline
 - ps: make CC=gcc
 - ps: make package
