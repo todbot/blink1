@@ -1,11 +1,11 @@
 blink(1)
 ========
 
-"blink(1) is a super status light: it packs three dimensions of information 
-(color, brightness and pattern) into a single tiny package that fits into 
-any USB port on nearly every device. It makes it incredibly easy to connect 
-any data source in the cloud or on your computer to a full-color RGB LED so 
-you can know what's happening without checking any windows, going to any 
+"blink(1) is a super status light: it packs three dimensions of information
+(color, brightness and pattern) into a single tiny package that fits into
+any USB port on nearly every device. It makes it incredibly easy to connect
+any data source in the cloud or on your computer to a full-color RGB LED so
+you can know what's happening without checking any windows, going to any
 websites or typing any commands."
 
 The official repository of blink(1) software is:
@@ -24,6 +24,14 @@ https://github.com/todbot/blink1/releases
 Ready-to-run Applications to play with
 ---------------------------------------
 
+### Blink1Control2 ###
+
+Blink1Control2 is the update to Blink1Control.
+
+You can find it at:
+https://github.com/todbot/Blink1Control2
+
+
 ### Blink1Control ###
 
 Blink1Control is a GUI application for hooking events to blink(1)
@@ -35,13 +43,13 @@ Blink1Control can receive events from:
 - [IFTTT](http://ifttt.com/channels)'s many channels
 - IMAP/POP/GMAIL email services
 - URLs containing text or JSON
-- Local files or executed scripts 
+- Local files or executed scripts
 - Hardware monitors like CPU, battery, RAM
 
 This verison of Blink1Control supercedes the Mac-specific and Windows-specific
 versions in the "mac" and "win" directories.
 
-- **Download Blink1Control** 
+- **Download Blink1Control**
    - Mac OS X: [Blink1Control-mac.zip](https://github.com/todbot/blink1/releases)
    - Windows:  [Blink1Control-win.zip](https://github.com/todbot/blink1/releases)
 
@@ -67,7 +75,7 @@ Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/Blink1ColorPicker-mac.zip),
 [(Windows)](http://thingm.com/blink1/downloads/Blink1ColorPicker-win.zip)
 
-- Blink1Test0 -- a very simple random-color app. 
+- Blink1Test0 -- a very simple random-color app.
 Download:
 [(Mac OSX)](http://thingm.com/blink1/downloads/Blink1Test0-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/Blink1Test0-win.zip)
@@ -77,9 +85,9 @@ Download:
 
 For script-writers, programmers and hackers, there's the command-line tool:
 
-- **blink1-tool** -- command-line program for use in your own scripts. 
-  - Download for: 
-[(Mac OSX)](http://thingm.com/blink1/downloads/blink1-tool-mac.zip) / 
+- **blink1-tool** -- command-line program for use in your own scripts.
+  - Download for:
+[(Mac OSX)](http://thingm.com/blink1/downloads/blink1-tool-mac.zip) /
 [(Windows)](http://thingm.com/blink1/downloads/blink1-tool-win.zip) /
 [(Linux64)](http://thingm.com/blink1/downloads/blink1-tool-linux_x86_64.zip) /
 [(RaspberryPi)](http://thingm.com/blink1/downloads/blink1-tool-raspi.zip)
@@ -92,7 +100,7 @@ The following directories exist:
 - __docs__             -- Documentation of APIs and tips & tricks
 - __commandline__      -- blink1-lib C library and command-line tools, specifically:
   - blink1-tool -- command-line tool for almost every OS
-  - blink1control-tool -- blink1-tool for use with Blink1Control GUI app 
+  - blink1control-tool -- blink1-tool for use with Blink1Control GUI app
   - blink1-tiny-server -- simple HTTP to blink1 bridge
   - blink1-lib -- C-library for controlling blink(1)
 - __java__             -- Java / Processing library
@@ -121,7 +129,7 @@ Some docs that might be useful
 - [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
 - [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 
-Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages) 
+Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages)
 
 
 More Info about blink(1)
@@ -140,4 +148,3 @@ Copyright (c) ThingM, 2012-2014
 
 License: CC BY-SA 3.0
 http://creativecommons.org/licenses/by-sa/3.0/
-
