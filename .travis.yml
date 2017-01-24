@@ -24,6 +24,7 @@ script:
     - make
     - make blink1-tiny-server
     - make package
+    - make package-tiny-server
     - ls -alrth
     - cd ..
 
