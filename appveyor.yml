@@ -3,20 +3,26 @@ os: unstable
 ##
 
 platform:
-#- x86
+- x86
 - x64
 
 install:
-- ps: $env:Path += ";C:\MinGW\bin;"
-- ps: $env:Path += ";C:\MinGW\msys\1.0\bin";
+#- ps: $env:Path += ";C:\MinGW\bin;"
+#- ps: $env:Path += ";C:\MinGW\msys\1.0\bin";
 - ps: $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin";
+#- ps: $env:Path += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin\"
+- ps: if ( $env:Platform -eq "x64" ) {
+        $env:Path += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin\"
+      } else {
+        $env:Path += ";C:\msys64\mingw32\bin;C:\msys64\usr\bin\"
+      }
 
 build_script:
-- ps: dir C:\MinGW\msys\1.0\bin
+#- ps: dir C:\MinGW\msys\1.0\bin
+#- ps: dir C:\msys64
 - ps: cd commandline
 - ps: make CC=gcc
 - ps: make CC=gcc package
-- ps: dir C:\msys64
 
 artifacts:
     - path: 'commandline\blink1-tool*.zip'
