@@ -12,9 +12,9 @@ install:
 - ps: $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin";
 #- ps: $env:Path += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin\"
 - ps: if ( $env:Platform -eq "x64" ) {
-        $env:Path = ";C:\msys64\mingw64\bin;C:\msys64\usr\bin\" + $env:Path
+        $env:Path = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:Path
       } else {
-        $env:Path = ";C:\msys64\mingw32\bin;C:\msys64\usr\bin\" + $env:Path
+        $env:Path = "C:\msys64\mingw32\bin;C:\msys64\usr\bin;" + $env:Path
       }
 
 build_script:
