@@ -32,9 +32,14 @@ before_deploy:
 - DFILE3=$(ls commandline/blink1-tiny-server*zip)
 - DFILE4=$(ls commandline/blink1control-tool/blink1control-tool*zip)
 
-#addons:
-#    artifacts: true
-    
+addons:
+    artifacts: true
+    paths:
+        - "${DFILE1}"
+        - "${DFILE2}"
+        - "${DFILE3}"
+        - "${DFILE4}"
+
 deploy:
   skip_cleanup: true
   provider: releases
