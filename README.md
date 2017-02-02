@@ -31,6 +31,10 @@ Blink1Control2 is the update to Blink1Control.
 You can find it at:
 https://github.com/todbot/Blink1Control2
 
+** Download Blink1Control2**
+- Mac OS X: https://github.com/todbot/Blink1Control2/releases
+- Windows: https://github.com/todbot/Blink1Control2/releases
+
 
 ### Blink1Control ###
 
