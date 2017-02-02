@@ -17,6 +17,12 @@ script:
 - make blink1-tiny-server
 - make package
 - make package-tiny-server
+- cd blink1control-tool
+- make curl-setup
+- make
+- make package
+- ls -alth
+- cd ..
 - ls -alrth
 - cd ..
 
@@ -24,6 +30,7 @@ before_deploy:
 - DFILE1=$(ls commandline/blink1-tool*zip)
 - DFILE2=$(ls commandline/blink1-lib*zip)
 - DFILE3=$(ls commandline/blink1-tiny-server*zip)
+- DFILE4=$(ls commandline/blink1control-tool/blink1control-tool*zip)
 
 deploy:
   skip_cleanup: true
@@ -34,6 +41,6 @@ deploy:
     - "${DFILE1}"
     - "${DFILE2}"
     - "${DFILE3}"
+    - "${DFILE4}"
   on:
-    repo: todbot/blink1
     tags: true
