@@ -209,6 +209,14 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    /* Quick hack to support -h */
+    for(int i=1; i<=argc; i++) {
+       if( strcasecmp("-h", argv[i]) == 0 ) { 
+            usage(argv[0]);
+            exit(1);
+        }   
+    }
+
     char* portstr;
     
     // Quick hack to support -h, originally from mrichmon  
