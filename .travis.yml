@@ -13,10 +13,7 @@ addons:
 
 script:
 - cd commandline
-- make
-- make blink1-tiny-server
-- make package
-- make package-tiny-server
+- make package package-tiny-server
 - cd blink1control-tool
 - make curl-setup
 - make
@@ -32,13 +29,14 @@ before_deploy:
 - DFILE3=$(ls commandline/blink1-tiny-server*zip)
 - DFILE4=$(ls commandline/blink1control-tool/blink1control-tool*zip)
 
-addons:
-    artifacts: true
-    paths:
-        - "${DFILE1}"
-        - "${DFILE2}"
-        - "${DFILE3}"
-        - "${DFILE4}"
+# uncommenting addons causes makes to fail, why?
+#addons:
+#    artifacts: true
+#    paths:
+#        - "${DFILE1}"
+#        - "${DFILE2}"
+#        - "${DFILE3}"
+#        - "${DFILE4}"
 
 deploy:
   skip_cleanup: true

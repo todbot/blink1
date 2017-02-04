@@ -21,7 +21,9 @@ build_script:
 #- ps: dir C:\MinGW\msys\1.0\bin
 #- ps: dir C:\msys64
 - ps: cd commandline
-- ps: make CC=gcc
+- ps: make CC=gcc package package-tiny-server
+- ps: cd blink1control-tool
+- ps: make CC=gcc curl-setup
 - ps: make CC=gcc package
 
 artifacts:
@@ -29,3 +31,7 @@ artifacts:
       name: blink1-tool
     - path: 'commandline\blink1-lib*.zip'
       name: blink1-lib
+    - path: 'commandline\blink1-tiny-server*.zip'
+      name: blink1-tiny-server
+    - path: 'commandline\blink1control-tool\blink1control-tool*.zip'
+      name: blink1control-tool
