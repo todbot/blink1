@@ -432,6 +432,7 @@ help:
 	@echo "make lib        ... build blink1-lib shared library"
 	@echo "make blink1-tiny-server ... build tiny REST server"
 	@echo "make package    ... zip up blink1-tool and blink1-lib "
+	@echo "make package-tiny-server ... package tiny REST server"
 	@echo "make clean      ... delete build products, leave binaries & libs"
 	@echo "make distclean  ... delele binaries and libs too"
 	@echo
