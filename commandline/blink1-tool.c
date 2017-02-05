@@ -286,8 +286,8 @@ int blink1_fadeToRGBForDevices( uint16_t mils, uint8_t rr,uint8_t gg, uint8_t bb
     for( int i=0; i< numDevicesToUse; i++ ) {
         d = blink1_openById( deviceIds[i] );
         if( d == NULL ) continue;
-        msg("set dev:%X to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
-            deviceIds[i], rr,gg,bb, mils);
+        msg("set dev:%X:%d to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
+            deviceIds[i], nn, rr,gg,bb, mils, nn);
         if( nn==0 ) {
             rc = blink1_fadeToRGB(d, mils, rr,gg,bb);
         } else {
@@ -317,6 +317,7 @@ int main(int argc, char** argv)
     int ledn = 0;  // deprecated, soon to be removed
     uint8_t ledns[18];
     uint8_t ledns_cnt=0;
+    // FIXME: what was I thinking with this 'ledns'
 
     int  rc;
     uint8_t tmpbuf[100]; // only used for hsb parsing
