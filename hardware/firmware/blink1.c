@@ -87,6 +87,7 @@ static uint32_t serverdown_update_next;
 rgb_t cplay;     // holder for currently playing color
 uint16_t tplay;
 uint8_t playpos;
+uint8_t playStartPos = 0;
 uint8_t playing; // boolean
 // in-memory copy of EEPROM pattern 
 patternline_t pattern[patt_max];
@@ -140,7 +141,7 @@ static uint8_t msgbuf[REPORT_COUNT+1];
 //static uint8_t msgbufout[8];
 
 // HID descriptor, 1 report, 8 bytes long
-PROGMEM char usbHidReportDescriptor[24] = {
+PROGMEM const char usbHidReportDescriptor[24] = {
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
@@ -301,6 +302,7 @@ void handleMessage(void)
     else if( cmd == 'p' ) { 
         playing = msgbufp[1]; 
         playpos = msgbufp[2];
+		playStartPos = playpos;
         startPlaying();
     }
     // write color pattern entry - {'P', r,g,b, th,tl, p, 0}
@@ -457,7 +459,7 @@ static void updateLEDs(void)
             tplay = pattern[playpos].dmillis;
             rgb_setDest( &cplay, tplay );
             playpos++;
-            if( playpos == patt_max ) playpos = 0; // loop the pattern
+            if( playpos == patt_max ) playpos = playStartPos; // loop the pattern
             pattern_update_next += tplay*10;
         }
     }
