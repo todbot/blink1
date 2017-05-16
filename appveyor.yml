@@ -24,7 +24,9 @@ build_script:
 - ps: make CC=gcc package
 #- ps: make CC=gcc package-tiny-server
 - ps: cd blink1control-tool
-- ps: make CC=gcc curl-setup
+- ps: make curl-setup
+- ps: git submodule init
+- ps: git submodule update
 - ps: make CC=gcc package
 
 artifacts:
