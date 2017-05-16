@@ -20,6 +20,15 @@
 #   - In Terminal, "xcode-select --install" to install command-line tools
 #   - make
 #
+# Windows 10 using MSYS2
+#   - Install MSYS2 : https://github.com/msys2/msys2/wiki/MSYS2-installation
+#   - pacman -S mingw-w64-x86_64-gcc (or just 'toolchain')
+#   - pacman -S make
+#   - pacman -S git
+#   - git clone https://github.com/todbot/blink1
+#   - cd blink1/commandline
+#   - make
+#
 # Windows XP/7
 #   - Install MinGW and MSYS (http://www.tdragon.net/recentgcc/ )
 #   - make
