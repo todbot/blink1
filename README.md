@@ -22,7 +22,7 @@ https://github.com/todbot/blink1/releases
 
 
 Ready-to-run Applications to play with
----------------------------------------
+--------------------------------------
 
 ### Blink1Control2 ###
 
