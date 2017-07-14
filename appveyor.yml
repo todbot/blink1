@@ -23,11 +23,14 @@ build_script:
 - ps: cd commandline
 - ps: make CC=gcc package
 #- ps: make CC=gcc package-tiny-server
-- ps: cd blink1control-tool
-- ps: make curl-setup
-- ps: git submodule init
-- ps: git submodule update
-- ps: make CC=gcc package
+
+# NOTE: blink1control-tool takes a while to build because of curl, for CI dev, comment out?
+#- ps: cd blink1control-tool
+# also, it fails on x64 for some reason
+#- ps: make curl-setup
+#- ps: git submodule init
+#- ps: git submodule update
+#- ps: make CC=gcc package
 
 artifacts:
     - path: 'commandline\blink1-tool*.zip'
