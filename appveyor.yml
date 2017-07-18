@@ -28,7 +28,7 @@ build_script:
 #- ps: dir C:\msys64
 - ps: cd commandline
 - ps: make CC=gcc package
-#- ps: make CC=gcc package-tiny-server
+- ps: make CC=gcc package-tiny-server
 
 # NOTE: blink1control-tool takes a while to build because of curl, for CI dev, comment out?
 # also, it fails on x64 for some reason
