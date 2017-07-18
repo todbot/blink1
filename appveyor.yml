@@ -1,18 +1,14 @@
 os: unstable
 
 environment:
-    doBlink1Control: false
-##
+    doBlink1Control: true
+#
 
 platform:
 - x86
 - x64
 
 install:
-#- ps: $env:Path += ";C:\MinGW\bin;"
-#- ps: $env:Path += ";C:\MinGW\msys\1.0\bin";
-#- ps: $env:Path = 3;" + $env:Path
-#- ps: $env:Path += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin\"
 - ps: $env:Path = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin;" + $env:Path
 - ps: if ( $env:Platform -eq "x64" ) {
        $env:Path = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:Path
@@ -24,14 +20,11 @@ install:
 - ps: env
 
 build_script:
-#- ps: dir C:\MinGW\msys\1.0\bin
-#- ps: dir C:\msys64
 - ps: cd commandline
 - ps: make CC=gcc package
 - ps: make CC=gcc package-tiny-server
 
-# NOTE: blink1control-tool takes a while to build because of curl, for CI dev, comment out?
-# also, it fails on x64 for some reason
+# NOTE: blink1control-tool takes a while to build because of curl, for CI dev, set doBlink1Control=false
 - ps: if ( $env:doBlink1Control -eq "true" ) {
       cd blink1control-tool
       make curl-setup
@@ -39,19 +32,13 @@ build_script:
       git submodule update
       make CC=gcc package
     }
-#- ps: cd blink1control-tool
-# also, it fails on x64 for some reason
-#- ps: make curl-setup
-#- ps: git submodule init
-#- ps: git submodule update
-#- ps: make CC=gcc package
 
 artifacts:
     - path: 'commandline\blink1-tool*.zip'
       name: blink1-tool
     - path: 'commandline\blink1-lib*.zip'
       name: blink1-lib
-    #- path: 'commandline\blink1-tiny-server*.zip'
-    #  name: blink1-tiny-server
+    - path: 'commandline\blink1-tiny-server*.zip'
+      name: blink1-tiny-server
     - path: 'commandline\blink1control-tool\blink1control-tool*.zip'
       name: blink1control-tool
