@@ -1,6 +1,6 @@
 
 
-# On Mac: 
+# On Mac:
 # % wget http://curl.haxx.se/download/curl-7.37.1.tar.gz
 # % tar xvzf curl-7.37.1.tar.gz
 # % cd curl-7.37.1
@@ -8,13 +8,13 @@
 # % make && make install
 # % cd ..
 # % gcc -static -o curl-simple curl-simple.c `curl-mac/bin/curl-config --cflags` `curl-mac/bin/curl-config --static-libs`
-# 
+#
 # On Win:
 # % wget http://curl.haxx.se/download/curl-7.37.1.tar.gz
 # % tar xvzf curl-7.37.1.tar.gz
 # % cd curl-7.37.1
-# # In the file libcurl.pc.in add -DCURL_STATICLIB to Cflags. 
-# % ./configure --prefix `pwd`/../curl-win --disable-shared --disable-ldap --without-zlib --without-libssh2 
+# # In the file libcurl.pc.in add -DCURL_STATICLIB to Cflags.
+# % ./configure --prefix `pwd`/../curl-win --disable-shared --disable-ldap --without-zlib --without-libssh2
 # % make && make install
 # % cd ..
 # % gcc -static -o curl-simple curl-simple.c `curl-win2/bin/curl-config --cflags` `curl-win2/bin/curl-config --static-libs`
@@ -99,9 +99,9 @@ CFLAGS += -g
 CFLAGS += -DBLINK1_VERSION=\"$(BLINK1_VERSION)\"
 CFLAGS += -lm
 # to fix usleep() not being found on Ubuntu14
-CFLAGS += -D_BSD_SOURCE  
+CFLAGS += -D_BSD_SOURCE
 
-#CFLAGS += -I jsmn-example 
+#CFLAGS += -I jsmn-example
 #JSFILES=jsmn-example/jsmn.c jsmn-example/json.c jsmn-example/buf.c jsmn-example/log.c
 
 CFLAGS +=  -I json-parser
@@ -123,16 +123,20 @@ curl-setup:
 	tar xvzf curl-7.37.1.tar.gz
 	cd curl-7.37.1 && ./configure --prefix=`pwd`/../curl-$(OS) --disable-shared --disable-ldap --without-zlib --without-libssh2 --without-ssl --disable-crypto-auth && make && make install
 
+json-parser-setup:
+	@echo "setting up json-parser"
+	unzip json-parser.zip
+
 #blink1control-tool: $(OBJS) blink1control-tool.o
 blink1control-tool: blink1control-tool.c FORCE
-	$(CC) -o blink1control-tool$(EXE)  blink1control-tool.c $(JSFILES) $(CFLAGS) 
+	$(CC) -o blink1control-tool$(EXE)  blink1control-tool.c $(JSFILES) $(CFLAGS)
 
 package: blink1control-tool
 	@echo "Packaging up blink1control-tool for '$(PKGOS)'"
 	zip blink1control-tool-$(PKGOS).zip blink1control-tool$(EXE)
 	@#mkdir -f ../builds && cp blink1control-tool-$(PKGOKS).zip ../builds
 
-clean: 
+clean:
 	rm -f $(OBJS)
 	rm -f *.o
 	rm -f blink1control-tool$(EXE)
@@ -140,4 +144,3 @@ clean:
 	#pushd jsmn && make clean && popd
 
 FORCE:
-
