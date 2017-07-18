@@ -30,6 +30,7 @@ build_script:
       make curl-setup ;
       git submodule init ;
       git submodule update ;
+      cd json-parser; git checkout v1.1.0 ; cd ..
       make CC=gcc package ;
     }
 
