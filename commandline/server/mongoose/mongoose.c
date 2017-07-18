@@ -2746,6 +2746,7 @@ struct mg_connection *mg_connect_opt(struct mg_mgr *mgr, const char *address,
     params.cert = opts.ssl_cert;
     params.key = opts.ssl_key;
     params.ca_cert = opts.ssl_ca_cert;
+    params.cipher_suites = opts.ssl_cipher_suites;
     if (opts.ssl_ca_cert != NULL) {
       if (opts.ssl_server_name != NULL) {
         if (strcmp(opts.ssl_server_name, "*") != 0) {
@@ -2850,6 +2851,7 @@ struct mg_connection *mg_bind_opt(struct mg_mgr *mgr, const char *address,
     params.cert = opts.ssl_cert;
     params.key = opts.ssl_key;
     params.ca_cert = opts.ssl_ca_cert;
+    params.cipher_suites = opts.ssl_cipher_suites;
     if (mg_ssl_if_conn_init(nc, &params, &err_msg) != MG_SSL_OK) {
       MG_SET_PTRPTR(opts.error_string, err_msg);
       mg_destroy_conn(nc, 1 /* destroy_if */);
@@ -4060,7 +4062,7 @@ enum mg_ssl_if_result mg_ssl_if_conn_accept(struct mg_connection *nc,
 static enum mg_ssl_if_result mg_use_cert(SSL_CTX *ctx, const char *cert,
                                          const char *key, const char **err_msg);
 static enum mg_ssl_if_result mg_use_ca_cert(SSL_CTX *ctx, const char *cert);
-static enum mg_ssl_if_result mg_set_cipher_list(SSL_CTX *ctx);
+static enum mg_ssl_if_result mg_set_cipher_list(SSL_CTX *ctx, const char *cl);
 
 enum mg_ssl_if_result mg_ssl_if_conn_init(
     struct mg_connection *nc, const struct mg_ssl_if_conn_params *params,
@@ -4105,7 +4107,10 @@ enum mg_ssl_if_result mg_ssl_if_conn_init(
 #endif
   }
 
-  mg_set_cipher_list(ctx->ssl_ctx);
+  if (mg_set_cipher_list(ctx->ssl_ctx, params->cipher_suites) != MG_SSL_OK) {
+    MG_SET_PTRPTR(err_msg, "Invalid cipher suite list");
+    return MG_SSL_ERROR;
+  }
 
   if (!(nc->flags & MG_F_LISTENING) &&
       (ctx->ssl = SSL_new(ctx->ssl_ctx)) == NULL) {
@@ -4287,9 +4292,10 @@ static enum mg_ssl_if_result mg_use_cert(SSL_CTX *ctx, const char *cert,
   return MG_SSL_OK;
 }
 
-static enum mg_ssl_if_result mg_set_cipher_list(SSL_CTX *ctx) {
-  return (SSL_CTX_set_cipher_list(ctx, mg_s_cipher_list) == 1 ? MG_SSL_OK
-                                                              : MG_SSL_ERROR);
+static enum mg_ssl_if_result mg_set_cipher_list(SSL_CTX *ctx, const char *cl) {
+  return (SSL_CTX_set_cipher_list(ctx, cl ? cl : mg_s_cipher_list) == 1
+              ? MG_SSL_OK
+              : MG_SSL_ERROR);
 }
 
 const char *mg_set_ssl(struct mg_connection *nc, const char *cert,
@@ -4348,6 +4354,7 @@ struct mg_ssl_if_ctx {
   mbedtls_x509_crt *cert;
   mbedtls_pk_context *key;
   mbedtls_x509_crt *ca_cert;
+  struct mbuf cipher_suites;
 };
 
 /* Must be provided by the platform. ctx is struct mg_connection. */
@@ -4393,6 +4400,7 @@ enum mg_ssl_if_result mg_ssl_if_conn_init(
   }
   nc->ssl_if_data = ctx;
   ctx->conf = MG_CALLOC(1, sizeof(*ctx->conf));
+  mbuf_init(&ctx->cipher_suites, 0);
   mbedtls_ssl_config_init(ctx->conf);
   mbedtls_ssl_conf_dbg(ctx->conf, mg_ssl_mbed_log, nc);
   if (mbedtls_ssl_config_defaults(
@@ -4418,7 +4426,10 @@ enum mg_ssl_if_result mg_ssl_if_conn_init(
     return MG_SSL_ERROR;
   }
 
-  mg_set_cipher_list(ctx, NULL);
+  if (mg_set_cipher_list(ctx, params->cipher_suites) != MG_SSL_OK) {
+    MG_SET_PTRPTR(err_msg, "Invalid cipher suite list");
+    return MG_SSL_ERROR;
+  }
 
   if (!(nc->flags & MG_F_LISTENING)) {
     ctx->ssl = MG_CALLOC(1, sizeof(*ctx->ssl));
@@ -4552,6 +4563,7 @@ void mg_ssl_if_conn_free(struct mg_connection *nc) {
     mbedtls_ssl_config_free(ctx->conf);
     MG_FREE(ctx->conf);
   }
+  mbuf_free(&ctx->cipher_suites);
   memset(ctx, 0, sizeof(*ctx));
   MG_FREE(ctx);
 }
@@ -4621,21 +4633,26 @@ static const int mg_s_cipher_list[] = {
 static enum mg_ssl_if_result mg_set_cipher_list(struct mg_ssl_if_ctx *ctx,
                                                 const char *ciphers) {
   if (ciphers != NULL) {
-    int ids[50], n = 0, l, id;
+    int l, id;
     const char *s = ciphers;
     char *e, tmp[50];
-    while (s != NULL && n < (int) (sizeof(ids) / sizeof(ids[0])) - 1) {
+    while (s != NULL) {
       e = strchr(s, ':');
       l = (e != NULL ? (e - s) : (int) strlen(s));
       strncpy(tmp, s, l);
+      tmp[l] = '\0';
       id = mbedtls_ssl_get_ciphersuite_id(tmp);
-      DBG(("%s -> %d", tmp, id));
-      if (id != 0) ids[n++] = id;
+      DBG(("%s -> %04x", tmp, id));
+      if (id != 0) {
+        mbuf_append(&ctx->cipher_suites, &id, sizeof(id));
+      }
       s = (e != NULL ? e + 1 : NULL);
     }
-    if (n == 0) return MG_SSL_ERROR;
-    ids[n] = 0;
-    mbedtls_ssl_conf_ciphersuites(ctx->conf, ids);
+    if (ctx->cipher_suites.len == 0) return MG_SSL_ERROR;
+    id = 0;
+    mbuf_append(&ctx->cipher_suites, &id, sizeof(id));
+    mbedtls_ssl_conf_ciphersuites(ctx->conf,
+                                  (const int *) ctx->cipher_suites.buf);
   } else {
     mbedtls_ssl_conf_ciphersuites(ctx->conf, mg_s_cipher_list);
   }
@@ -6238,7 +6255,7 @@ void mg_send_head(struct mg_connection *c, int status_code,
 void mg_http_send_error(struct mg_connection *nc, int code,
                         const char *reason) {
   if (!reason) reason = mg_status_message(code);
-  DBG(("%p %d %s", nc, code, reason));
+  LOG(LL_DEBUG, ("%p %d %s", nc, code, reason));
   mg_send_head(nc, code, strlen(reason),
                "Content-Type: text/plain\r\nConnection: close");
   mg_send(nc, reason, strlen(reason));
@@ -6282,7 +6299,7 @@ void mg_http_serve_file(struct mg_connection *nc, struct http_message *hm,
                         const struct mg_str extra_headers) {
   struct mg_http_proto_data *pd = mg_http_get_proto_data(nc);
   cs_stat_t st;
-  DBG(("%p [%s] %.*s", nc, path, (int) mime_type.len, mime_type.p));
+  LOG(LL_DEBUG, ("%p [%s] %.*s", nc, path, (int) mime_type.len, mime_type.p));
   if (mg_stat(path, &st) != 0 || (pd->file.fp = mg_fopen(path, "rb")) == NULL) {
     int code, err = mg_get_errno();
     switch (err) {
@@ -6720,8 +6737,8 @@ static int mg_is_authorized(struct http_message *hm, const char *path,
     }
   }
 
-  DBG(("%s %s %d %d", path, passwords_file ? passwords_file : "",
-       is_global_pass_file, authorized));
+  LOG(LL_DEBUG, ("%s '%s' %d %d", path, passwords_file ? passwords_file : "",
+                 is_global_pass_file, authorized));
   return authorized;
 }
 #else
@@ -6818,7 +6835,7 @@ static void mg_scan_directory(struct mg_connection *nc, const char *dir,
   struct dirent *dp;
   DIR *dirp;
 
-  DBG(("%p [%s]", nc, dir));
+  LOG(LL_DEBUG, ("%p [%s]", nc, dir));
   if ((dirp = (opendir(dir))) != NULL) {
     while ((dp = readdir(dirp)) != NULL) {
       /* Do not show current dir and hidden files */
@@ -6832,7 +6849,7 @@ static void mg_scan_directory(struct mg_connection *nc, const char *dir,
     }
     closedir(dirp);
   } else {
-    DBG(("%p opendir(%s) -> %d", nc, dir, mg_get_errno()));
+    LOG(LL_DEBUG, ("%p opendir(%s) -> %d", nc, dir, mg_get_errno()));
   }
 }
 
@@ -6929,7 +6946,7 @@ MG_INTERNAL void mg_find_index_file(const char *path, const char *list,
     MG_FREE(*index_file);
     *index_file = NULL;
   }
-  DBG(("[%s] [%s]", path, (*index_file ? *index_file : "")));
+  LOG(LL_DEBUG, ("[%s] [%s]", path, (*index_file ? *index_file : "")));
 }
 
 #if MG_ENABLE_HTTP_URL_REWRITES
@@ -7004,8 +7021,8 @@ void mg_http_reverse_proxy(struct mg_connection *nc,
   be = mg_connect_http_base(nc->mgr, mg_reverse_proxy_handler, opts, "http://",
                             "https://", purl, &path, NULL /* user */,
                             NULL /* pass */, &addr);
-  DBG(("Proxying %.*s to %s (rule: %.*s)", (int) hm->uri.len, hm->uri.p, purl,
-       (int) mount.len, mount.p));
+  LOG(LL_DEBUG, ("Proxying %.*s to %s (rule: %.*s)", (int) hm->uri.len,
+                 hm->uri.p, purl, (int) mount.len, mount.p));
 
   if (be == NULL) {
     LOG(LL_ERROR, ("Error connecting to %s: %s", purl, error));
@@ -7225,7 +7242,8 @@ MG_INTERNAL int mg_uri_to_local_path(struct http_message *hm,
   }
 
 out:
-  DBG(("'%.*s' -> '%s' + '%.*s'", (int) hm->uri.len, hm->uri.p,
+  LOG(LL_DEBUG,
+      ("'%.*s' -> '%s' + '%.*s'", (int) hm->uri.len, hm->uri.p,
        *local_path ? *local_path : "", (int) remainder->len, remainder->p));
   return ok;
 }
@@ -7331,7 +7349,8 @@ MG_INTERNAL void mg_send_http_file(struct mg_connection *nc, char *path,
       (mg_match_prefix(opts->cgi_file_pattern, strlen(opts->cgi_file_pattern),
                        index_file ? index_file : path) > 0);
 
-  DBG(("%p %.*s [%s] exists=%d is_dir=%d is_dav=%d is_cgi=%d index=%s", nc,
+  LOG(LL_DEBUG,
+      ("%p %.*s [%s] exists=%d is_dir=%d is_dav=%d is_cgi=%d index=%s", nc,
        (int) hm->method.len, hm->method.p, path, exists, is_directory, is_dav,
        is_cgi, index_file ? index_file : ""));
 
@@ -13491,6 +13510,7 @@ enum mg_ssl_if_result mg_ssl_if_conn_init(
   if (params->ca_cert != NULL && strcmp(params->ca_cert, "*") != 0) {
     ctx->ssl_ca_cert = strdup(params->ca_cert);
   }
+  /* TODO(rojer): cipher_suites. */
   if (params->server_name != NULL) {
     ctx->ssl_server_name = strdup(params->server_name);
   }
@@ -13707,7 +13727,9 @@ void mg_lwip_mgr_schedule_poll(struct mg_mgr *mgr);
 
 #include <lwip/pbuf.h>
 #include <lwip/tcp.h>
+#if CS_PLATFORM != CS_P_STM32
 #include <lwip/tcp_impl.h>
+#endif
 #include <lwip/udp.h>
 
 /* Amalgamated: #include "common/cs_dbg.h" */
@@ -13929,7 +13951,8 @@ void mg_lwip_if_connect_tcp(struct mg_connection *nc,
  * Lwip included in the SDKs for nRF5x chips has different type for the
  * callback of `udp_recv()`
  */
-#if CS_PLATFORM == CS_P_NRF51 || CS_PLATFORM == CS_P_NRF52
+#if CS_PLATFORM == CS_P_NRF51 || CS_PLATFORM == CS_P_NRF52 || \
+    CS_PLATFORM == CS_P_STM32
 static void mg_lwip_udp_recv_cb(void *arg, struct udp_pcb *pcb, struct pbuf *p,
                                 const ip_addr_t *addr, u16_t port)
 #else
