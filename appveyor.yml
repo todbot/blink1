@@ -26,11 +26,11 @@ build_script:
 
 # NOTE: blink1control-tool takes a while to build because of curl, for CI dev, set doBlink1Control=false
 - ps: if ( $env:doBlink1Control -eq "true" ) {
-      cd blink1control-tool
-      make curl-setup
-      git submodule init
-      git submodule update
-      make CC=gcc package
+      cd blink1control-tool ;
+      make curl-setup ;
+      git submodule init ;
+      git submodule update ;
+      make CC=gcc package ;
     }
 
 artifacts:
