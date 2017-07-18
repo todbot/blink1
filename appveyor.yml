@@ -29,9 +29,10 @@ build_script:
 #      cd json-parser; git checkout v1.1.0 ; cd .. ;
 #      git submodule init ;
 #      git submodule update ;
+#      git submodule update --init --recursive ;
 - ps: if ( $env:doBlink1Control -eq "true" ) {
       cd blink1control-tool ;
-      git submodule update --init --recursive ;
+      make json-parser-setup ;
       make curl-setup ;
       make CC=gcc package
     }
