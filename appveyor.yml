@@ -18,6 +18,7 @@ install:
 # add zip command for scripts later
 - ps: pacman -S zip --noconfirm
 - ps: env
+- ps: get-command git
 
 build_script:
 - ps: cd commandline
@@ -25,13 +26,14 @@ build_script:
 - ps: make CC=gcc package-tiny-server
 
 # NOTE: blink1control-tool takes a while to build because of curl, for CI dev, set doBlink1Control=false
+#      cd json-parser; git checkout v1.1.0 ; cd .. ;
+#      git submodule init ;
+#      git submodule update ;
 - ps: if ( $env:doBlink1Control -eq "true" ) {
       cd blink1control-tool ;
+      git submodule update --init --recursive ;
       make curl-setup ;
-      git submodule init ;
-      git submodule update ;
-      cd json-parser; git checkout v1.1.0 ; cd ..
-      make CC=gcc package ;
+      make CC=gcc package
     }
 
 artifacts:
