@@ -196,6 +196,8 @@ LIBTARGET = blink1-lib.dll
 #LIBS +=  -mwindows -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 #LIBS +=  -mwindows -lsetupapi -Wl,-Bdynamic -lgdi32 -Wl,--enable-auto-import -static-libgcc -static-libstdc++ -lkernel32
 LIBS +=             -lsetupapi -Wl,--enable-auto-import -static-libgcc -static-libstdc++
+# needed for Mongoose & blink1-tiny-server
+LIBS += -lws2_32
 
 ifeq "$(USBLIB_TYPE)" "HIDAPI"
 CFLAGS += -DUSE_HIDAPI
