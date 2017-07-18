@@ -3,14 +3,14 @@
  * blink1-tiny-server -- a small cross-platform REST/JSON server for
  *                       controlling a blink(1) device
  *
- * 
+ *
  * Supported URLs:
  *
  *  localhost:8080/blink1/on
  *  localhost:8080/blink1/off
  *  localhost:8080/blink1/blink?rgb=%23ff0ff&time=1.0&count=3
  *  localhost:8080/blink1/fadeToRGB?rgb=%23ff00ff&time=1.0
- *  
+ *
  *
  */
 
@@ -40,25 +40,35 @@ static int  hexread(uint8_t *buffer, char *string, int buflen)
 }
 
 // given a string of hex color code ("#FF3322") or rgb triple ("255,0,0" or
-// "0xff,0x23,0x00"), produce a parsed byte array 
+// "0xff,0x23,0x00"), produce a parsed byte array
 static void parse_rgbstr(uint8_t* rgb, char* rgbstr)
 {
     if( rgbstr != NULL && strlen(rgbstr) ) {
-        if( rgbstr[0] == '#' ) { 
+        if( rgbstr[0] == '#' ) {
             uint32_t rgbval = strtoul(rgbstr+1,NULL,16); // FIXME: hack
             rgb[0] = ((rgbval >> 16) & 0xff);
             rgb[1] = ((rgbval >>  8) & 0xff);
             rgb[2] = ((rgbval >>  0) & 0xff);
         }
-        else { 
+        else {
             hexread(rgb, rgbstr, 3);
         }
     }
 }
 
+// used in ev_handler below
+#define do_blink1_color() \
+    blink1_device* dev = blink1_open(); \
+    if( blink1_fadeToRGB( dev, millis, r,g,b ) == -1 ) { \
+        fprintf(stderr, "off: blink1 device error\n"); \
+        sprintf(result, "%s; couldn't find blink1", result); \
+    } \
+    blink1_close(dev); \
+
+
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     struct http_message *hm = (struct http_message *) ev_data;
-    
+
     if( ev != MG_EV_HTTP_REQUEST ) {
         return;
     }
@@ -71,7 +81,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     uint8_t rgb[3] = {0,0,0};
     uint8_t r = rgb[0], g = rgb[1], b = rgb[2];
     uint8_t count = 1;
-    
+
     struct mg_str* uri = &hm->uri;
     struct mg_str* querystr = &hm->query_string;
 
@@ -86,43 +96,40 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     if( mg_get_http_var(querystr, "rgb", tmpstr, sizeof(tmpstr)) > 0 ) {
         parse_rgbstr( rgb, tmpstr);
         r = rgb[0]; g = rgb[1]; b = rgb[2];
-    } 
+    }
     if( mg_get_http_var(querystr, "count", tmpstr, sizeof(tmpstr)) > 0 ) {
         count = strtod(tmpstr,NULL);
     }
-    
-    if( mg_vcmp( uri, "/blink1") == 0 ) {
-        
+
+    if( mg_vcmp( uri, "/") == 0 ||
+        mg_vcmp( uri, "/blink1") == 0 ) {
+        sprintf(result, "welcome to blink1 api server. All URIs start with '/blink1'");
     }
     else if( mg_vcmp( uri, "/blink1/off") == 0 ) {
         sprintf(result, "blink1 off");
         r = 0; g = 0; b = 0;
-        blink1_device* dev = blink1_open();
-        if( blink1_fadeToRGB( dev, millis, r,g,b ) == -1 ) {
-            fprintf(stderr, "off: blink1 device error\n");
-            sprintf(result, "%s; couldn't find blink1", result);
-        }
-        blink1_close(dev);
+        do_blink1_color();
     }
     else if( mg_vcmp( uri, "/blink1/on") == 0 ) {
         sprintf(result, "blink1 on");
         r = 255; g = 255; b = 255;
-        blink1_device* dev = blink1_open();
-        if( blink1_fadeToRGB( dev, millis, r,g,b ) == -1 ) {
-            fprintf(stderr, "on: blink1 device error\n");
-            sprintf(result, "%s; couldn't find blink1", result);
-        }
-        blink1_close(dev);
+        do_blink1_color();
+    }
+    else if( mg_vcmp( uri, "/blink1/red") == 0 ) {
+        r = 255; g = 0; b = 0;
+        do_blink1_color();
+    }
+    else if( mg_vcmp( uri, "/blink1/green") == 0 ) {
+        r = 0; g = 255; b = 0;
+        do_blink1_color();
+    }
+    else if( mg_vcmp( uri, "/blink1/blue") == 0 ) {
+        r = 0; g = 0; b = 255;
+        do_blink1_color();
     }
     else if( mg_vcmp( uri, "/blink1/fadeToRGB") == 0 ) {
         sprintf(result, "blink1 fadeToRGB");
-        
-        blink1_device* dev = blink1_open();
-        if( blink1_fadeToRGB( dev, millis, r,g,b) == -1 ) {
-            fprintf(stderr, "fadeToRGB: blink1 device error\n");
-            sprintf(result, "%s; couldn't find blink1", result);
-        }
-        blink1_close(dev);
+        do_blink1_color();
     }
     else if( mg_vcmp( uri, "/blink1/blink") == 0 ) {
         sprintf(result, "blink1 blink");
@@ -153,19 +160,19 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
         sprintf(result, "%s; unrecognized uri", result);
         //mg_serve_http(nc, hm, s_http_server_opts); /* Serve static content */
     }
-    
+
     if( result[0] != '\0' ) {
         sprintf(tmpstr, "#%2.2x%2.2x%2.2x", r,g,b );
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, 
+        mg_printf_http_chunk(nc,
                              "{\n"
                              "\"uri\":  \"%s\",\n"
                              "\"result\":  \"%s\",\n"
                              "\"millis\": \"%d\",\n"
                              "\"rgb\": \"%s\",\n"
                              "\"version\": \"%s\"\n"
-                             "}\n", 
-                             uristr, 
+                             "}\n",
+                             uristr,
                              result,
                              millis,
                              tmpstr,
@@ -173,7 +180,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
                              );
         mg_send_http_chunk(nc, "", 0); /* Send empty chunk, the end of response */
     }
-    
+
 }
 
 int main(int argc, char *argv[]) {
@@ -183,37 +190,37 @@ int main(int argc, char *argv[]) {
     int i;
     char *cp;
     const char *err_str;
-    
+
     mg_mgr_init(&mgr, NULL);
-    
+
   /* Process command line options to customize HTTP server */
   for (i = 1; i < argc; i++) {
       if (strcmp(argv[i], "-p") == 0 && i + 1 < argc) {
           s_http_port = argv[++i];
       }
   }
-  
+
   /* Set HTTP server options */
     memset(&bind_opts, 0, sizeof(bind_opts));
     bind_opts.error_string = &err_str;
-    
+
     nc = mg_bind_opt(&mgr, s_http_port, ev_handler, bind_opts);
     if (nc == NULL) {
         fprintf(stderr, "Error starting server on port %s: %s\n", s_http_port,
                 *bind_opts.error_string);
         exit(1);
     }
-    
+
     mg_set_protocol_http_websocket(nc);
-    
+
     s_http_server_opts.enable_directory_listing = "no";
-    
+
     printf("blink1-server: running on port %s\n", s_http_port);
-    
+
     for (;;) {
         mg_mgr_poll(&mgr, 1000);
     }
     mg_mgr_free(&mgr);
-    
+
     return 0;
 }
