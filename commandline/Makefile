@@ -23,7 +23,7 @@
 # Windows 10 using MSYS2
 #   - Install Visual Studio 2015
 #   - Install MSYS2 : https://github.com/msys2/msys2/wiki/MSYS2-installation
-#   - pacman -S base-devel make git
+#   - pacman -S base-devel make git zip unzip
 #   - pacman -S mingw-w64-x86_64-toolchain
 #   - add to PATH compiler and Windows linker:
 #         export PATH=${PATH}:/c/msys64/mingw64/bin
