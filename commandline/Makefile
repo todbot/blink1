@@ -21,10 +21,13 @@
 #   - make
 #
 # Windows 10 using MSYS2
+#   - Install Visual Studio 2015
 #   - Install MSYS2 : https://github.com/msys2/msys2/wiki/MSYS2-installation
-#   - pacman -S mingw-w64-x86_64-gcc (or just 'toolchain')
-#   - pacman -S make
-#   - pacman -S git
+#   - pacman -S base-devel make git
+#   - pacman -S mingw-w64-x86_64-toolchain
+#   - add to PATH compiler and Windows linker:
+#         export PATH=${PATH}:/c/msys64/mingw64/bin
+#         export PATH=${PATH}:"/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin"
 #   - git clone https://github.com/todbot/blink1
 #   - cd blink1/commandline
 #   - make
