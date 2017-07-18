@@ -1,21 +1,24 @@
 os: unstable
-#environment:
+
+environment:
+    doBlink1Control: false
 ##
 
 platform:
-#- x86
+- x86
 - x64
 
 install:
-- ps: $env:Path += ";C:\MinGW\bin;"
-- ps: $env:Path += ";C:\MinGW\msys\1.0\bin";
-- ps: $env:Path = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\vc\bin;" + $env:Path
+#- ps: $env:Path += ";C:\MinGW\bin;"
+#- ps: $env:Path += ";C:\MinGW\msys\1.0\bin";
+#- ps: $env:Path = 3;" + $env:Path
 #- ps: $env:Path += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin\"
 - ps: if ( $env:Platform -eq "x64" ) {
        $env:Path = "C:\msys64\mingw64\bin;C:\msys64\usr\bin;" + $env:Path
      } else {
        $env:Path = "C:\msys64\mingw32\bin;C:\msys64\usr\bin;" + $env:Path
      }
+- ps: env
 
 build_script:
 #- ps: dir C:\MinGW\msys\1.0\bin
@@ -25,6 +28,14 @@ build_script:
 #- ps: make CC=gcc package-tiny-server
 
 # NOTE: blink1control-tool takes a while to build because of curl, for CI dev, comment out?
+# also, it fails on x64 for some reason
+ps: if ( $env:doBlink1Control -eq "true" ) {
+      cd blink1control-tool
+      make curl-setup
+      git submodule init
+      git submodule update
+      make CC=gcc package
+    }
 #- ps: cd blink1control-tool
 # also, it fails on x64 for some reason
 #- ps: make curl-setup
