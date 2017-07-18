@@ -15,6 +15,7 @@ script:
 - cd commandline
 - make package package-tiny-server
 - cd blink1control-tool
+- make json-parser-setup
 - make curl-setup
 - make
 - make package
