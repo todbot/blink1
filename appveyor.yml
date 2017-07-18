@@ -16,7 +16,7 @@ install:
        $env:Path = "C:\msys64\mingw32\bin;C:\msys64\usr\bin;" + $env:Path
      }
 # add zip command for scripts later
-- ps: pacman -S zip --noconfirm
+- ps: pacman -S zip unzip --noconfirm
 - ps: env
 - ps: get-command git
 
