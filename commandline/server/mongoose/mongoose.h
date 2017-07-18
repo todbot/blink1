@@ -23,7 +23,7 @@
 #ifndef CS_MONGOOSE_SRC_COMMON_H_
 #define CS_MONGOOSE_SRC_COMMON_H_
 
-#define MG_VERSION "6.6"
+#define MG_VERSION "6.7"
 
 /* Local tweaks, applied before any of Mongoose's own headers. */
 #ifdef MG_LOCALS
@@ -57,7 +57,8 @@
 #define CS_P_NRF51 12
 #define CS_P_NRF52 10
 #define CS_P_PIC32 11
-/* Next id: 16 */
+#define CS_P_STM32 16
+/* Next id: 17 */
 
 /* If not specified explicitly, we guess platform by defines. */
 #ifndef CS_PLATFORM
@@ -87,6 +88,8 @@
 #elif defined(TARGET_IS_TM4C129_RA0) || defined(TARGET_IS_TM4C129_RA1) || \
     defined(TARGET_IS_TM4C129_RA2)
 #define CS_PLATFORM CS_P_TM4C129
+#elif defined(STM32)
+#define CS_PLATFORM CS_P_STM32
 #endif
 
 #ifndef CS_PLATFORM
@@ -117,6 +120,7 @@
 /* Amalgamated: #include "common/platforms/platform_nxp_lpc.h" */
 /* Amalgamated: #include "common/platforms/platform_nxp_kinetis.h" */
 /* Amalgamated: #include "common/platforms/platform_pic32.h" */
+/* Amalgamated: #include "common/platforms/platform_stm32.h" */
 
 /* Common stuff */
 
@@ -470,6 +474,7 @@ typedef struct stat cs_stat_t;
 
 #include <assert.h>
 #include <ctype.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <machine/endian.h>
@@ -1516,6 +1521,36 @@ char* inet_ntoa(struct in_addr in);
 #endif /* CS_PLATFORM == CS_P_PIC32 */
 
 #endif /* CS_COMMON_PLATFORMS_PLATFORM_PIC32_H_ */
+#ifdef MG_MODULE_LINES
+#line 1 "common/platforms/platform_stm32.h"
+#endif
+/*
+ * Copyright (c) 2014-2016 Cesanta Software Limited
+ * All rights reserved
+ */
+
+#ifndef CS_COMMON_PLATFORMS_PLATFORM_STM32_H_
+#define CS_COMMON_PLATFORMS_PLATFORM_STM32_H_
+#if CS_PLATFORM == CS_P_STM32
+
+#include <sys/types.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
+#include <memory.h>
+
+#define to64(x) strtoll(x, NULL, 10)
+#define INT64_FMT PRId64
+#define SIZE_T_FMT "u"
+
+#ifndef CS_ENABLE_STDIO
+#define CS_ENABLE_STDIO 1
+#endif
+
+#endif /* CS_PLATFORM == CS_P_STM32 */
+#endif /* CS_COMMON_PLATFORMS_PLATFORM_STM32_H_ */
 #ifdef MG_MODULE_LINES
 #line 1 "common/platforms/lwip/mg_lwip.h"
 #endif
@@ -3091,6 +3126,7 @@ struct mg_ssl_if_conn_params {
   const char *key;
   const char *ca_cert;
   const char *server_name;
+  const char *cipher_suites;
 };
 
 enum mg_ssl_if_result mg_ssl_if_conn_init(
@@ -3410,15 +3446,30 @@ struct mg_bind_opts {
   const char **error_string; /* Placeholder for the error string */
   struct mg_iface *iface;    /* Interface instance */
 #if MG_ENABLE_SSL
-  /* SSL settings. */
-  const char *ssl_cert;    /* Server certificate to present to clients
-                            * Or client certificate to present to tunnel
-                            * dispatcher. */
-  const char *ssl_key;     /* Private key corresponding to the certificate.
-                              If ssl_cert is set but ssl_key is not, ssl_cert
-                              is used. */
-  const char *ssl_ca_cert; /* CA bundle used to verify client certificates or
-                            * tunnel dispatchers. */
+  /*
+   * SSL settings.
+   *
+   * Server certificate to present to clients or client certificate to
+   * present to tunnel dispatcher (for tunneled connections).
+   */
+  const char *ssl_cert;
+  /* Private key corresponding to the certificate. If ssl_cert is set but
+   * ssl_key is not, ssl_cert is used. */
+  const char *ssl_key;
+  /* CA bundle used to verify client certificates or tunnel dispatchers. */
+  const char *ssl_ca_cert;
+  /* Colon-delimited list of acceptable cipher suites.
+   * Names depend on the library used, for example:
+   *
+   * ECDH-ECDSA-AES128-GCM-SHA256:DHE-RSA-AES128-SHA256 (OpenSSL)
+   * TLS-ECDH-ECDSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256
+   *   (mbedTLS)
+   *
+   * For OpenSSL the list can be obtained by running "openssl ciphers".
+   * For mbedTLS, names can be found in library/ssl_ciphersuites.c
+   * If NULL, a reasonable default is used.
+   */
+  const char *ssl_cipher_suites;
 #endif
 };
 
@@ -3458,15 +3509,33 @@ struct mg_connect_opts {
   const char **error_string; /* Placeholder for the error string */
   struct mg_iface *iface;    /* Interface instance */
 #if MG_ENABLE_SSL
-  /* SSL settings. */
-  const char *ssl_cert;    /* Client certificate to present to the server */
-  const char *ssl_key;     /* Private key corresponding to the certificate.
-                              If ssl_cert is set but ssl_key is not, ssl_cert
-                              is used. */
-  const char *ssl_ca_cert; /* Verify server certificate using this CA bundle.
-                              If set to "*", then SSL is enabled but no cert
-                              verification is performed. */
-
+  /*
+   * SSL settings.
+   * Client certificate to present to the server.
+   */
+  const char *ssl_cert;
+  /*
+   * Private key corresponding to the certificate.
+   * If ssl_cert is set but ssl_key is not, ssl_cert is used.
+   */
+  const char *ssl_key;
+  /*
+   * Verify server certificate using this CA bundle. If set to "*", then SSL
+   * is enabled but no cert verification is performed.
+   */
+  const char *ssl_ca_cert;
+  /* Colon-delimited list of acceptable cipher suites.
+   * Names depend on the library used, for example:
+   *
+   * ECDH-ECDSA-AES128-GCM-SHA256:DHE-RSA-AES128-SHA256 (OpenSSL)
+   * TLS-ECDH-ECDSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256
+   *   (mbedTLS)
+   *
+   * For OpenSSL the list can be obtained by running "openssl ciphers".
+   * For mbedTLS, names can be found in library/ssl_ciphersuites.c
+   * If NULL, a reasonable default is used.
+   */
+  const char *ssl_cipher_suites;
   /*
    * Server name verification. If ssl_ca_cert is set and the certificate has
    * passed verification, its subject will be verified against this string.
