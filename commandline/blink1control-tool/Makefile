@@ -104,6 +104,7 @@ CFLAGS += -D_BSD_SOURCE
 #CFLAGS += -I jsmn-example
 #JSFILES=jsmn-example/jsmn.c jsmn-example/json.c jsmn-example/buf.c jsmn-example/log.c
 
+CFLAGS += -Wno-pointer-to-int-cast
 CFLAGS +=  -I json-parser
 JSFILES = json-parser/json.c
 
@@ -114,7 +115,7 @@ JSFILES = json-parser/json.c
 all: msg blink1control-tool
 
 msg:
-	@echo "Be sure to 'make curl-setup' if you have not already"
+	@echo "Be sure to 'make curl-setup' and 'make json-parser-setup' if you have not already"
 	@echo "Building for OS=$(OS) BLINK1_VERSION=$(BLINK1_VERSION)"
 
 curl-setup:
