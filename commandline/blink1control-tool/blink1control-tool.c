@@ -30,8 +30,8 @@ char progname[] = "blink1control-tool";
 // start from blink1-lib.h
 #define blink1_max_devices 16
 
-#define cache_max 16  
-#define serialstrmax (8 + 1) 
+#define cache_max 16
+#define serialstrmax (8 + 1)
 #define pathstrmax 128
 
 #define blink1mk2_serialstart 0x20000000
@@ -48,7 +48,7 @@ int ledn = 0;
 
 char  deviceIds[blink1_max_devices][10];
 
-uint8_t cmdbuf[blink1_buf_size]; 
+uint8_t cmdbuf[blink1_buf_size];
 uint8_t rgbbuf[3];
 int verbose;
 int quiet=0;
@@ -73,29 +73,29 @@ void msg(char* fmt, ...)
 }
 
 //
-static size_t 
+static size_t
 curlWriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t realsize = size * nmemb;
     struct curlMemoryStruct *mem = (struct curlMemoryStruct *)userp;
-    
+
     mem->memory = realloc(mem->memory, mem->size + realsize + 1);
     if(mem->memory == NULL) {     /* out of memory! */
         printf("not enough memory (realloc returned NULL)\n");
         return 0;
     }
-    
+
     memcpy(&(mem->memory[mem->size]), contents, realsize);
     mem->size += realsize;
     mem->memory[mem->size] = 0;
-    
+
     return realsize;
 }
 
 
 json_value* json_convert_value( json_value* jv)
 {
-    switch(jv->type) { 
+    switch(jv->type) {
     case json_object:
         printf("json_object: \n");
         for( int i=0; i< jv->u.object.length; i++ ) {
@@ -107,7 +107,7 @@ json_value* json_convert_value( json_value* jv)
         break;
     case json_array:
         printf("json_array:\n");
-        for( int i=0; i< jv->u.array.length; i++ ) { 
+        for( int i=0; i< jv->u.array.length; i++ ) {
             return json_convert_value( jv->u.array.values[i] );
         }
         break;
@@ -115,7 +115,8 @@ json_value* json_convert_value( json_value* jv)
         printf("json_string: '%s'\n", jv->u.string.ptr);
         break;
     case json_integer:
-        printf("json_integer:%lld\n", (long long)jv->u.integer );
+        printf("json_integer:%ld\n", (long)jv->u.integer );
+        //printf("json_integer:%lld\n", (long long)jv->u.integer );
         break;
     case json_double:
         printf("json_double:\n");
@@ -124,7 +125,7 @@ json_value* json_convert_value( json_value* jv)
         printf("json_boolean:\n");
         break;
     default:
-        printf("default:\n");        
+        printf("default:\n");
         break;
     }
     printf("at end\n");
@@ -159,14 +160,14 @@ char* curl_fetch(const char* urlstr)
     else {
         // Now, our chunk.memory points to a memory block that is chunk.size
         // bytes big and contains the remote file.
-        if( verbose > 1 ) { 
+        if( verbose > 1 ) {
             msg("%lu bytes retrieved\n", (long)chunk.size);
-            for( int i=0; i<chunk.size; i++ ){ 
-                msg("%c",chunk.memory[i]); 
+            for( int i=0; i<chunk.size; i++ ){
+                msg("%c",chunk.memory[i]);
             }
         }
     }
-    
+
     curl_easy_cleanup(curl_handle);   /* cleanup curl stuff */
     //if(chunk.memory)
     //    free(chunk.memory);
@@ -192,14 +193,14 @@ void blink1control_printIds()
     for( int i=0; i< jv->u.object.length; i++ ) {
         char* name = jv->u.object.values[i].name;
         json_value* jjv = jv->u.object.values[i].value;
-        
-        if( strcmp(name,"blink1_serialnums")==0 ) { 
+
+        if( strcmp(name,"blink1_serialnums")==0 ) {
             if( jjv->u.array.length==0 ) {
                 printf("no blink(1) devices found\n");
                 free(js);
                 return;
             }
-            for( int j=0; j < jjv->u.array.length; j++ ) { 
+            for( int j=0; j < jjv->u.array.length; j++ ) {
                 json_value* jjjv = jjv->u.array.values[j];
                 //printf("id: %s\n", (int) jjjv->u.integer);
                 char* serialnum = jjjv->u.string.ptr;
@@ -215,7 +216,7 @@ void blink1control_printIds()
 int blink1control_fadeToRGBN( int tmillis, int r, int g, int b, char* idstr, int ledn)
 {
     char idarg[100] = "";
-    if( idstr != NULL ) { 
+    if( idstr != NULL ) {
         sprintf(idarg, "id=%s",idstr);
     }
     sprintf(urlbuf,
@@ -226,7 +227,7 @@ int blink1control_fadeToRGBN( int tmillis, int r, int g, int b, char* idstr, int
     char* js = curl_fetch( urlbuf );
 
     free(js);
-    
+
     return 0;  // FIXME:
 }
 
@@ -235,7 +236,7 @@ void blink1_sleep(uint16_t millis)
 {
 #ifdef WIN32
             Sleep(millis);
-#else 
+#else
             usleep( millis * 1000);
 #endif
 }
@@ -264,20 +265,20 @@ static void hsbtorgb( uint8_t* hsb, uint8_t* rgb)
     unsigned char region, fpart, p, q, t;
     uint8_t r,g,b;
 
-    if(s == 0) {          // color is grayscale 
+    if(s == 0) {          // color is grayscale
         r = g = b = v;
         return;
     }
-    
-    region = h / 43;      // make hue 0-5 
-    fpart = (h - (region * 43)) * 6; // find remainder part, make it from 0-255 
-    
-    // calculate temp vars, doing integer multiplication 
+
+    region = h / 43;      // make hue 0-5
+    fpart = (h - (region * 43)) * 6; // find remainder part, make it from 0-255
+
+    // calculate temp vars, doing integer multiplication
     p = (v * (255 - s)) >> 8;
     q = (v * (255 - ((s * fpart) >> 8))) >> 8;
     t = (v * (255 - ((s * (255 - fpart)) >> 8))) >> 8;
-        
-    // assign temp vars based on color cone region 
+
+    // assign temp vars based on color cone region
     switch(region) {
         case 0:   r = v; g = t; b = p; break;
         case 1:   r = q; g = v; b = p; break;
@@ -285,7 +286,7 @@ static void hsbtorgb( uint8_t* hsb, uint8_t* rgb)
         case 3:   r = p; g = q; b = v; break;
         case 4:   r = t; g = p; b = v; break;
         default:  r = v; g = p; b = q; break;
-    }    
+    }
     rgb[0]=r;
     rgb[1]=g;
     rgb[2]=b;
@@ -315,7 +316,7 @@ static void usage(char *myName)
 "  --magenta                   Turn blink(1) magenta (red + blue) \n"
 "  --yellow                    Turn blink(1) yellow (red + green) \n"
 "  --setpattline <pos>         Write pattern RGB val at pos (--rgb/hsb to set)\n"
-"  --getpattline <pos>         Read pattern RGB value at pos\n" 
+"  --getpattline <pos>         Read pattern RGB value at pos\n"
 "  --savepattern               Save color pattern to flash (mk2)\n"
 "  --play <1/0,pos>            Start playing color sequence (at pos)\n"
 "  --play <1/0,start,end,cnt>  Playing color sequence sub-loop (mk2)\n"
@@ -346,7 +347,7 @@ static void usage(char *myName)
 }
 
 // local states for the "cmd" option variable
-enum { 
+enum {
     CMD_NONE = 0,
     CMD_LIST,
     CMD_RGB,
@@ -385,7 +386,7 @@ int main(int argc, char** argv)
 
     //int  rc;
     uint8_t tmpbuf[100];
-    //char serialnumstr[serialstrmax] = {'\0'}; 
+    //char serialnumstr[serialstrmax] = {'\0'};
 
     srand( time(NULL) * getpid() );
     memset( cmdbuf, 0, sizeof(cmdbuf));
@@ -442,23 +443,23 @@ int main(int argc, char** argv)
         if (opt==-1) break; // parsed all the args
         switch (opt) {
          case 0:             // deal with long opts that have no short opts
-            switch(cmd) { 
+            switch(cmd) {
             case CMD_RGB:
                 // parse hex color code like "#FF00FF"
-                if( optarg[0] == '#' || strlen(optarg)==6 ) { 
+                if( optarg[0] == '#' || strlen(optarg)==6 ) {
                     optarg = (optarg[0] == '#') ? optarg+1 : optarg;
-                    uint32_t poop = strtol(optarg, NULL, 16); 
-                    rgbbuf[0] = (poop >> 16) & 0xff; 
+                    uint32_t poop = strtol(optarg, NULL, 16);
+                    rgbbuf[0] = (poop >> 16) & 0xff;
                     rgbbuf[1] = (poop >>  8) & 0xff;
                     rgbbuf[2] = (poop >>  0) & 0xff;
-                } else { 
+                } else {
                     hexread(rgbbuf, optarg, sizeof(rgbbuf));
                 }
                 break;
             case CMD_HSB:
                 hexread(tmpbuf, optarg, 4);
                 hsbtorgb( tmpbuf, rgbbuf );
-                cmd = CMD_RGB; // haha! 
+                cmd = CMD_RGB; // haha!
                 break;
             case CMD_SETPATTLINE:
             case CMD_GETPATTLINE:
@@ -482,19 +483,19 @@ int main(int argc, char** argv)
                 rgbbuf[0] = 255;
                 break;
             case CMD_GRN:
-                rgbbuf[1] = 255; 
+                rgbbuf[1] = 255;
                 break;
             case CMD_BLU:
-                rgbbuf[2] = 255; 
+                rgbbuf[2] = 255;
                 break;
             case CMD_CYAN:
-                rgbbuf[1] = 255; rgbbuf[2] = 255; 
+                rgbbuf[1] = 255; rgbbuf[2] = 255;
                 break;
             case CMD_MAGENTA:
-                rgbbuf[0] = 255; rgbbuf[2] = 255; 
+                rgbbuf[0] = 255; rgbbuf[2] = 255;
                 break;
             case CMD_YELLOW:
-                rgbbuf[0] = 255; rgbbuf[1] = 255; 
+                rgbbuf[0] = 255; rgbbuf[1] = 255;
                 break;
             } // switch(cmd)
             break;
@@ -527,19 +528,19 @@ int main(int argc, char** argv)
         case 'd':
             if( strcmp(optarg,"all") == 0 ) {
                 numDevicesToUse = 0; //blink1_max_devices;  //FIXME
-            } 
+            }
             else { // if( strcmp(optarg,",") != -1 ) { // comma-separated list
                 char* pch;
                 //int base = 0;
                 pch = strtok( optarg, " ,");
                 numDevicesToUse = 0;
-                while( pch != NULL ) { 
+                while( pch != NULL ) {
                     //int base = (strlen(pch)==8) ? 16:0;
                     strcpy( deviceIds[numDevicesToUse++], pch );
                     pch = strtok(NULL, " ,");
                 }
                 // verbose
-                for( int i=0; i<numDevicesToUse; i++ ) { 
+                for( int i=0; i<numDevicesToUse; i++ ) {
                     printf("deviceId[%d]: %s\n", i, deviceIds[i]);
                 }
             }
@@ -560,7 +561,7 @@ int main(int argc, char** argv)
     }
 
     char idstr[100] = "";
-        
+
     for( int i=0; i< numDevicesToUse; i++ ) {
         sprintf(idstr, "%s,", deviceIds[i]);
     }
@@ -568,23 +569,23 @@ int main(int argc, char** argv)
 
     curl_global_init(CURL_GLOBAL_ALL);
 
-    if( cmd == CMD_VERSION ) { 
+    if( cmd == CMD_VERSION ) {
         // FIXME: do something here
-    } 
+    }
     else if( cmd == CMD_RGB || cmd == CMD_ON  || cmd == CMD_OFF ||
              cmd == CMD_RED || cmd == CMD_BLU || cmd == CMD_GRN ||
-             cmd == CMD_CYAN || cmd == CMD_MAGENTA || cmd == CMD_YELLOW ) { 
+             cmd == CMD_CYAN || cmd == CMD_MAGENTA || cmd == CMD_YELLOW ) {
 
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
-               
+
         msg("set dev:%s to rgb:0x%2.2x,0x%2.2x,0x%2.2x over %d msec\n",
             idstr,r,g,b,millis);
        blink1control_fadeToRGBN( millis, r,g,b, idstr, ledn );
     }
-    else if( cmd == CMD_BLINK ) { 
-        uint8_t n = cmdbuf[0]; 
+    else if( cmd == CMD_BLINK ) {
+        uint8_t n = cmdbuf[0];
         uint8_t r = rgbbuf[0];
         uint8_t g = rgbbuf[1];
         uint8_t b = rgbbuf[2];
@@ -592,24 +593,24 @@ int main(int argc, char** argv)
             r = g = b = 255;
         }
         msg("blink %d times rgb:%x,%x,%x: \n", n,r,g,b);
-        for( int i=0; i<n; i++ ) { 
+        for( int i=0; i<n; i++ ) {
             blink1control_fadeToRGBN( millis, r,g,b, idstr, ledn );
             blink1_sleep(delayMillis);
             blink1control_fadeToRGBN( millis, 0,0,0, idstr, ledn );
             blink1_sleep(delayMillis);
         }
     }
-    else if( cmd == CMD_RANDOM ) { 
+    else if( cmd == CMD_RANDOM ) {
         //int cnt = blink1_getCachedCount();
         if( arg==0 ) arg = 1;
         msg("random %d times: \n", arg);
-        for( int i=0; i<arg; i++ ) { 
+        for( int i=0; i<arg; i++ ) {
             uint8_t r = rand()%255;
             uint8_t g = rand()%255;
             uint8_t b = rand()%255 ;
             //uint8_t id = rand() % blink1_getCachedCount();
 
-            msg("%d: %d/%d : %2.2x,%2.2x,%2.2x \n", 
+            msg("%d: %d/%d : %2.2x,%2.2x,%2.2x \n",
                 i, 0,  0, r,g,b);
               //i, id, blink1_getCachedCount(), r,g,b);
 
@@ -640,18 +641,18 @@ int main(int argc, char** argv)
         blink1control_fadeToRGBN( millis, 0,0,0, idstr, 1);
         blink1control_fadeToRGBN( millis, 0,0,0, idstr, 2);
     }
-    else if( cmd == CMD_LIST ) { 
+    else if( cmd == CMD_LIST ) {
         //int count = 0;
         printf("blink(1) list: \n");
         //for( int i=0; i< count; i++ ) {
-            //printf("id:%d - serialnum:%s %s\n", i, blink1_getCachedSerial(i), 
+            //printf("id:%d - serialnum:%s %s\n", i, blink1_getCachedSerial(i),
             //       (blink1_isMk2ById(i)) ? "(mk2)":"");
         //}
-        
+
         blink1control_printIds();
     }
 
-    curl_global_cleanup();   // we're done with libcurl, so clean it up 
+    curl_global_cleanup();   // we're done with libcurl, so clean it up
 
 }
 
@@ -689,7 +690,7 @@ int main(int argc, char** argv)
 
        // The GitHub user API response is a single object. States required to
        // parse this are simple: start of the object, keys, values we want to
-       // print, values we want to skip, and then a marker state for the end. 
+       // print, values we want to skip, and then a marker state for the end.
 
     typedef enum { START, KEY, PRINT, SKIP, STOP } parse_state;
     parse_state state = START;
