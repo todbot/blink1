@@ -32,9 +32,13 @@ before_deploy:
 - DFILE1=$(ls commandline/blink1-tool*zip)
 - DFILE2=$(ls commandline/blink1-lib*zip)
 - DFILE3=$(ls commandline/blink1-tiny-server*zip)
-- DFILE4=$(ls commandline/blink1control-tool/blink1control-tool*zip)
+# FIXME: how to make this not fail w/ error?
+#- DFILE4=$(ls commandline/blink1control-tool/blink1control-tool*zip)
 - mkdir build
-- mv $DFILE1 $DFILE2 $DFILE3 $DFILE4 build
+- mv $DFILE1 build
+- mv $DFILE2 build
+- mv $DFILE3 build
+#- mv $DFILE4 build
 
 # uncommenting addons causes makes to fail, why?
 #addons:
