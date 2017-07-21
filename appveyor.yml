@@ -1,7 +1,7 @@
 os: unstable
 
 environment:
-    doBlink1Control: true
+    doBlink1Control: false
 #
 
 platform:
@@ -18,6 +18,7 @@ install:
 # add zip command for scripts later
 - ps: pacman -S zip unzip --noconfirm
 - ps: env
+# 'which git' in powershell
 - ps: get-command git
 
 build_script:
@@ -26,10 +27,6 @@ build_script:
 - ps: make CC=gcc package-tiny-server
 
 # NOTE: blink1control-tool takes a while to build because of curl, for CI dev, set doBlink1Control=false
-#      cd json-parser; git checkout v1.1.0 ; cd .. ;
-#      git submodule init ;
-#      git submodule update ;
-#      git submodule update --init --recursive ;
 - ps: if ( $env:doBlink1Control -eq "true" ) {
       cd blink1control-tool ;
       make json-parser-setup ;
@@ -46,3 +43,12 @@ artifacts:
       name: blink1-tiny-server
     - path: 'commandline\blink1control-tool\blink1control-tool*.zip'
       name: blink1control-tool
+
+deploy:
+  provider: S3
+  access_key_id:
+      secure: k+MjsHqRpP9DkNI3S+8W5CedlW+P6MbL2I+s9UKfH2w=
+  secret_access_key:
+      secure: QiRehApfnik9m7tDFwssuTgeLlcGO3LrnJvL6apGxESPOtBt/8beI6ebxczBBB99
+  bucket: todtravistest2
+  folder: blink1

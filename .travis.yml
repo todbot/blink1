@@ -12,23 +12,29 @@ addons:
     - libudev-dev
 
 script:
-- cd commandline
+- pushd commandline
 - make package package-tiny-server
-- cd blink1control-tool
-- make json-parser-setup
-- make curl-setup
-- make
-- make package
-- ls -alth
-- cd ..
+
+# FIXME: make this a conditional build like in appveyor
+#- pushd blink1control-tool
+#- make json-parser-setup
+#- make curl-setup
+#- make
+#- make package
+#- ls -alth
+#- popd ..
+#-
+
 - ls -alrth
-- cd ..
+- popd
 
 before_deploy:
 - DFILE1=$(ls commandline/blink1-tool*zip)
 - DFILE2=$(ls commandline/blink1-lib*zip)
 - DFILE3=$(ls commandline/blink1-tiny-server*zip)
 - DFILE4=$(ls commandline/blink1control-tool/blink1control-tool*zip)
+- mkdir build
+- mv $DFILE1 $DFILE2 $DFILE3 $DFILE4 build
 
 # uncommenting addons causes makes to fail, why?
 #addons:
@@ -40,14 +46,23 @@ before_deploy:
 #        - "${DFILE4}"
 
 deploy:
-  skip_cleanup: true
-  provider: releases
-  api_key:
-    secure: gXX2CJ5j9INqRaHzPBoYfMbM3etTruK/sQSnoBfIfw9g3qFRUwSQ8vAkdYMmdKs3Zt/z4e07dbS0q08TL/7rR7Y2R6QOZXTIIzFKjixcJAXcsqZwzNyPO1BZInkoJ/XJZ3TlQLTy3dzhKJ2BIm79rwPjuVufElEVgiigQxbk8L6wHYBk+yu+E4PS/yp8xKabJiMIwttZeU/iW+zRMNWk9LEkYvoHHx3+pAC3NIwYXqX+yoCdzYLmVYqq+rbfgtBkNUo8ZjKZWojSW4DN8mjuekr7t4lqLs6s8+cTvncYjIMcObyWWvLvYOg18c5Z0n7p3CU7cFgzqrjX+gBQdTu3KEf9eM8tKQAUjkhp8zBcAYxIHOUeAKpbiNrB5azPbNny/17xMag7v3QEg8ORgaOin6jv7rpR5ai8eURDTJseNz1tcFzsLyFJ82gc7DLttM3vrDB291rcezbOjOLHHF/hZNhqGrk2iHbbtQVCWO3vtBYZ9KniseqQdlvGArXKKgmKfXWib5r8+mOdMdkIDrcekXdkLa/BqibgA0hF9eHqM0CwFiR5S3naAP44IbzVSYpJTB0yQCwj56BLmgOORSpyGcfSeGezcXNIDZRSjtoL3pYkP5Tu3dhflxfL6PGagXwjJ3klhG0mEZC0L/t5JSaA4R1LWd9uU5Hu5634WL9R5cs=
-  file:
-    - "${DFILE1}"
-    - "${DFILE2}"
-    - "${DFILE3}"
-    - "${DFILE4}"
-  on:
-    tags: true
+    skip_cleanup: true
+    provider: s3
+    # You can refer to environment variables from Travis repo settings
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: todtravistest2
+    # 's3' provider doesn't do "file:" and only copies a directory, so set that
+    local_dir: build
+    upload-dir: blink1
+
+#  provider: releases
+#  api_key:
+#    secure: gXX2CJ5j9INqRaHzPBoYfMbM3etTruK/sQSnoBfIfw9g3qFRUwSQ8vAkdYMmdKs3Zt/z4e07dbS0q08TL/7rR7Y2R6QOZXTIIzFKjixcJAXcsqZwzNyPO1BZInkoJ/XJZ3TlQLTy3dzhKJ2BIm79rwPjuVufElEVgiigQxbk8L6wHYBk+yu+E4PS/yp8xKabJiMIwttZeU/iW+zRMNWk9LEkYvoHHx3+pAC3NIwYXqX+yoCdzYLmVYqq+rbfgtBkNUo8ZjKZWojSW4DN8mjuekr7t4lqLs6s8+cTvncYjIMcObyWWvLvYOg18c5Z0n7p3CU7cFgzqrjX+gBQdTu3KEf9eM8tKQAUjkhp8zBcAYxIHOUeAKpbiNrB5azPbNny/17xMag7v3QEg8ORgaOin6jv7rpR5ai8eURDTJseNz1tcFzsLyFJ82gc7DLttM3vrDB291rcezbOjOLHHF/hZNhqGrk2iHbbtQVCWO3vtBYZ9KniseqQdlvGArXKKgmKfXWib5r8+mOdMdkIDrcekXdkLa/BqibgA0hF9eHqM0CwFiR5S3naAP44IbzVSYpJTB0yQCwj56BLmgOORSpyGcfSeGezcXNIDZRSjtoL3pYkP5Tu3dhflxfL6PGagXwjJ3klhG0mEZC0L/t5JSaA4R1LWd9uU5Hu5634WL9R5cs=
+#  file:
+#    - "${DFILE1}"
+#    - "${DFILE2}"
+#    - "${DFILE3}"
+#    - "${DFILE4}"
+# on:
+#    tags: true
