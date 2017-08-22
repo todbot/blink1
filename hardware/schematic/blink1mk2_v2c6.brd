@@ -8,9 +8,9 @@
 </settings>
 <grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="10" display="yes" altdistance="0.005" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
-<layer number="2" name="Route2" color="1" fill="3" visible="yes" active="yes"/>
-<layer number="3" name="Route3" color="4" fill="3" visible="yes" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
+<layer number="2" name="Route2" color="1" fill="3" visible="no" active="yes"/>
+<layer number="3" name="Route3" color="4" fill="3" visible="no" active="yes"/>
 <layer number="4" name="Route4" color="1" fill="4" visible="no" active="no"/>
 <layer number="5" name="Route5" color="4" fill="4" visible="no" active="no"/>
 <layer number="6" name="Route6" color="1" fill="8" visible="no" active="no"/>
@@ -21,11 +21,11 @@
 <layer number="11" name="Route11" color="4" fill="7" visible="no" active="no"/>
 <layer number="12" name="Route12" color="1" fill="5" visible="no" active="no"/>
 <layer number="13" name="Route13" color="4" fill="5" visible="no" active="no"/>
-<layer number="14" name="Route14" color="1" fill="6" visible="yes" active="yes"/>
-<layer number="15" name="Route15" color="4" fill="6" visible="yes" active="yes"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="14" name="Route14" color="1" fill="6" visible="no" active="yes"/>
+<layer number="15" name="Route15" color="4" fill="6" visible="no" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
-<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="no" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
@@ -54,9 +54,9 @@
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="50" name="dxf" color="7" fill="1" visible="no" active="yes"/>
 <layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
@@ -1592,10 +1592,10 @@
 <wire x1="4.318" y1="0.762" x2="3.81" y2="2.032" width="0" layer="20"/>
 <wire x1="3.81" y1="2.032" x2="1.143" y2="2.032" width="0" layer="20"/>
 <wire x1="1.143" y1="13.208" x2="1.143" y2="2.032" width="0" layer="20"/>
-<wire x1="0" y1="7.62" x2="19.05" y2="7.62" width="0" layer="51"/>
+<wire x1="0" y1="7.62" x2="19.05" y2="7.62" width="0" layer="48"/>
 <text x="12.7" y="1.016" size="0.508" layer="21" ratio="10" rot="R90">LEDstrip</text>
-<dimension x1="13.208" y1="0.762" x2="13.208" y2="14.478" x3="16.51" y3="7.62" textsize="0.6096" layer="51" dtype="vertical" width="0.0762" unit="inch" visible="yes"/>
-<dimension x1="1.143" y1="13.208" x2="13.716" y2="12.7" x3="7.4295" y3="15.748" textsize="0.6096" layer="51" dtype="horizontal" width="0.0762" unit="inch" visible="yes"/>
+<dimension x1="13.208" y1="0.762" x2="13.208" y2="14.478" x3="16.51" y3="7.62" textsize="0.6096" layer="48" dtype="vertical" width="0.0762" unit="inch" visible="yes"/>
+<dimension x1="1.143" y1="13.208" x2="13.716" y2="12.7" x3="7.4295" y3="15.748" textsize="0.6096" layer="48" dtype="horizontal" width="0.0762" unit="inch" visible="yes"/>
 <polygon width="0.254" layer="48">
 <vertex x="12.192" y="3.048"/>
 <vertex x="14.732" y="3.048"/>

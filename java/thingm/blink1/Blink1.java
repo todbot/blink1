@@ -216,6 +216,7 @@ public class Blink1
   public static native Blink1 openById( int id );
   
   /**
+   * FIXME: THIS SHOULD BE REMOVED. NO LONGER USED
    * Do a transaction with the Blink1.
    * Length of both byte arrays determines amount of data sent or received.
    *
