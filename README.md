@@ -9,10 +9,7 @@ you can know what's happening without checking any windows, going to any
 websites or typing any commands."
 
 The official repository of blink(1) software is:
-    https://github.com/thingm/blink1/
-
-That repo pulls from the active development repo:
-   https://github.com/todbot/blink1/
+    https://github.com/todbot/blink1/
 
 Please submit any issues or pull-requests there.
 
@@ -31,7 +28,7 @@ Blink1Control2 is the update to Blink1Control.
 You can find it at:
 https://github.com/todbot/Blink1Control2
 
-** Download Blink1Control2**
+** Download Blink1Control2 **
 - Mac OS X: https://github.com/todbot/Blink1Control2/releases
 - Windows: https://github.com/todbot/Blink1Control2/releases
 
