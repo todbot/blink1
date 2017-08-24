@@ -11,22 +11,33 @@ websites or typing any commands."
 The official repository of blink(1) software is:
     https://github.com/todbot/blink1/
 
-Please submit any issues or pull-requests there.
+Please submit issues or pull-requests there.
+For the application Blink1Control2, visit: https://github.com/todbot/Blink1Control2
 
 Official releases of pre-built software are available at:
 https://github.com/todbot/blink1/releases
 
 
 
-Ready-to-run Applications to play with
----------------------------------------
+Ready-to-run Applications
+-------------------------
 
 ### Blink1Control2 ###
 
-Blink1Control2 is the update to Blink1Control.
+[Blink1Control2](https://github.com/todbot/Blink1Control2) is the  GUI application for controlling and hooking events to blink(1). It is the primary user-level application for controlling blink(1).
+It is an event-based system for triggering blink(1) color patterns.
+Those events can be on your computer or on the Net.
+
+Blink1Control2 can receive events from:
+- [IFTTT](http://ifttt.com/channels)'s many channels
+- IMAP/GMAIL email services
+- Skype events
+- URLs containing text or JSON
+- Local files or executed scripts
 
 You can find it at:
 https://github.com/todbot/Blink1Control2
+
 
 ** Download Blink1Control2 **
 - Mac OS X: https://github.com/todbot/Blink1Control2/releases
@@ -35,10 +46,7 @@ https://github.com/todbot/Blink1Control2
 
 ### Blink1Control ###
 
-Blink1Control is a GUI application for hooking events to blink(1)
-and is the primary user-level application for controlling blink(1).
-It is an event-based system for triggering blink(1) color patterns.
-Those events can be on your computer or on the Net.
+Blink1Control is the previous-generation GUI application for hooking events to blink(1)
 
 Blink1Control can receive events from:
 - [IFTTT](http://ifttt.com/channels)'s many channels
