@@ -9,14 +9,17 @@ you can know what's happening without checking any windows, going to any
 websites or typing any commands."
 
 The official repository of blink(1) software is:
-    https://github.com/todbot/blink1/
+- https://github.com/todbot/blink1/ – submit issues/bugs or pull requests there
+- https://github.com/todbot/blink1/releases – official releases of pre-built software
 
-Please submit issues or pull-requests there.
-For the application Blink1Control2, visit: https://github.com/todbot/Blink1Control2
+For the application Blink1Control2, visit:
+- https://github.com/todbot/Blink1Control2
+- https://github.com/todbot/Blink1Control2/releases
 
-Official releases of pre-built software are available at:
-https://github.com/todbot/blink1/releases
+#### APIs/SDKs ####
+This repo contains official blink(1) APIs in: C, Java, Processing, Python, and .NET.
 
+Other popular APIs are available in NodeJs, Ruby, Go, Haskell, and more.
 
 
 Ready-to-run Applications
@@ -46,7 +49,7 @@ https://github.com/todbot/Blink1Control2
 
 ### Blink1Control ###
 
-Blink1Control is the previous-generation GUI application for hooking events to blink(1)
+Blink1Control is the previous-generation GUI application for hooking events to blink(1).
 
 Blink1Control can receive events from:
 - [IFTTT](http://ifttt.com/channels)'s many channels
@@ -151,7 +154,7 @@ Other
 
 blink(1) is open source hardware
 
-Copyright (c) ThingM, 2012-2014
+Copyright (c) ThingM, 2012-2017
 
 'blink(1)' is a trademark of ThingM Corporation
 
