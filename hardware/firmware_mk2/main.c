@@ -476,6 +476,8 @@ void updateMisc(void)
 //    - PlayLoop                format: { 1, 'p', on,sp,ep,c,    0, 0 } (2)
 //    - Playstate readback      format: { 1, 'S', 0,0,0,       0,0, 0 } (2)
 //    - Set color pattern line  format: { 1, 'P', r,g,b,     th,tl, p }
+//    - Led A pattern line      format: { 1, 'Q', r,g,b,     th,tl, p }
+//    - Led B pattern line      format: { 1, 'q', r,g,b,     th,tl, p }
 //    - Save color patterns     format: { 1, 'W', 0,0,0,       0,0, 0 } (2)
 //    - read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
 ///// - Set ledn                format: { 1, 'l', n,0,0,       0,0, 0 } (2+)
@@ -582,6 +584,46 @@ void handleMessage(const char* msgbuf)
             //do_pattern_write = 1;
             //writePatternFlash();
         //}
+    }
+    // Led A pattern line         format: { 1, 'Q', r,g,b,      th,tl, pos }
+    //
+    else if( cmd == 'Q' ) {
+        // was doing this copy with a cast, but broke it out for clarity
+        ptmp.color.r = msgbuf[2];
+        ptmp.color.g = msgbuf[3];
+        ptmp.color.b = msgbuf[4];
+        ptmp.dmillis = ((uint16_t)msgbuf[5] << 8) | msgbuf[6];
+        ptmp.ledn = 1;
+        uint8_t pos  = msgbuf[7];
+        if( pos >= patt_max ) pos = 0;  // just in case
+        // save pattern line to RAM
+        memcpy( &pattern[pos], &ptmp, sizeof(patternline_t) );
+        //if( pos == (patt_max-1) ) {  // NOTE: writing last position causes write to flash
+            //do_pattern_write = 1;
+            //writePatternFlash();
+        //}
+        // reset ptmp ledn, or subsequent pattern lines will be confusing
+        ptmp.ledn = 0;
+    }
+    // Led B pattern line         format: { 1, 'q', r,g,b,      th,tl, pos }
+    //
+    else if( cmd == 'q' ) {
+        // was doing this copy with a cast, but broke it out for clarity
+        ptmp.color.r = msgbuf[2];
+        ptmp.color.g = msgbuf[3];
+        ptmp.color.b = msgbuf[4];
+        ptmp.dmillis = ((uint16_t)msgbuf[5] << 8) | msgbuf[6];
+        ptmp.ledn = 2;
+        uint8_t pos  = msgbuf[7];
+        if( pos >= patt_max ) pos = 0;  // just in case
+        // save pattern line to RAM
+        memcpy( &pattern[pos], &ptmp, sizeof(patternline_t) );
+        //if( pos == (patt_max-1) ) {  // NOTE: writing last position causes write to flash
+            //do_pattern_write = 1;
+            //writePatternFlash();
+        //}
+        // reset ptmp ledn, or subsequent pattern lines will be confusing
+        ptmp.ledn = 0;
     }
     //  Read color pattern line   format: { 1, 'R', 0,0,0,        0,0, pos }
     //
