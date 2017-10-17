@@ -6,10 +6,13 @@
  *
  * Supported URLs:
  *
- *  localhost:8080/blink1/on
- *  localhost:8080/blink1/off
- *  localhost:8080/blink1/blink?rgb=%23ff0ff&time=1.0&count=3
- *  localhost:8080/blink1/fadeToRGB?rgb=%23ff00ff&time=1.0
+ *  localhost:8000/blink1/on
+ *  localhost:8000/blink1/off
+ *  localhost:8000/blink1/red
+ *  localhost:8000/blink1/green
+ *  localhost:8000/blink1/blue
+ *  localhost:8000/blink1/blink?rgb=%23ff0ff&time=1.0&count=3
+ *  localhost:8000/blink1/fadeToRGB?rgb=%23ff00ff&time=1.0
  *
  *
  */
@@ -18,7 +21,7 @@
 
 #include "blink1-lib.h"
 
-const char* blink1_server_version = "0.97";
+const char* blink1_server_version = "0.99";
 
 static const char *s_http_port = "8000";
 static struct mg_serve_http_opts s_http_server_opts;
@@ -63,7 +66,10 @@ static void parse_rgbstr(uint8_t* rgb, char* rgbstr)
         fprintf(stderr, "off: blink1 device error\n"); \
         sprintf(result, "%s; couldn't find blink1", result); \
     } \
-    blink1_close(dev); \
+    else { \
+        sprintf(result, "blink1 set color #%2.2x%2.2x%2.2x", r,g,b);  \
+    } \
+    blink1_close(dev); 
 
 
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
@@ -102,8 +108,9 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     }
 
     if( mg_vcmp( uri, "/") == 0 ||
-        mg_vcmp( uri, "/blink1") == 0 ) {
-        sprintf(result, "welcome to blink1 api server. All URIs start with '/blink1'");
+        mg_vcmp( uri, "/blink1") == 0 ||
+        mg_vcmp( uri, "/blink1/") == 0  ) {
+        sprintf(result, "welcome to blink1-tiny-server api server. All URIs start with '/blink1', e.g. '/blink1/red', '/blink1/off', '/blink1/fadeToRGB?rgb=%%23FF00FF'");
     }
     else if( mg_vcmp( uri, "/blink1/off") == 0 ) {
         sprintf(result, "blink1 off");
@@ -116,14 +123,17 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
         do_blink1_color();
     }
     else if( mg_vcmp( uri, "/blink1/red") == 0 ) {
+        sprintf(result, "blink1 red");
         r = 255; g = 0; b = 0;
         do_blink1_color();
     }
     else if( mg_vcmp( uri, "/blink1/green") == 0 ) {
+        sprintf(result, "blink1 green");
         r = 0; g = 255; b = 0;
         do_blink1_color();
     }
     else if( mg_vcmp( uri, "/blink1/blue") == 0 ) {
+        sprintf(result, "blink1 on");
         r = 0; g = 0; b = 255;
         do_blink1_color();
     }
