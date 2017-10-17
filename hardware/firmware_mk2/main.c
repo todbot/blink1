@@ -19,7 +19,17 @@
  * RAM-based serial numbers and is provided.
  *
  * PIC16F1455 pins (MLF/QFN pkg) used in blink(1) mk2:
- *
+ *the global ledn variable is used by the "// Set ledn : { 1, 'l', n, 0...}" usb command when writing pattern lines, and as far as I can see, nowhere else.
+
+Except here. The fact that the play loop also uses the global variable is a bug, I think? I hope? It has two consequences that this pull request fixes.
+A) Theoretically one could screw up a pattern being played by writing the "set ledn" command with absurd timing.
+B) much more likely to happen, one could screw up a pattern being written by writing it while the device is playing.
+
+as in, the device is looping patterns 1-4 indefinitely, alternating the colors of led1 and led2. If I try to write pattern line 20 to set both leds the same color, the resulting pattern line written will most likely only color one of the leds.
+
+tl;dr: the device currently doesnt support writing patterns with the 'P' command while it is simultaneously playing a pattern. This commit naively fixes that.
+
+
  * pin 1  - RA5            - n/c
  * pin 2  - RA4            - n/c
  * pin 3  - RA3/MCLR/VPP   - VPP testpad, 10k pullup to VDD
@@ -424,7 +434,7 @@ void updateLEDs(void)
         if( (long)(now - pattern_update_next) > 0  ) { // time to get next line
             ctmp = pattern[playpos].color;
             ttmp = pattern[playpos].dmillis;
-            ledn = pattern[playpos].ledn;
+            uint_t ledn = pattern[playpos].ledn;
             if( ttmp == 0 && ctmp.r == 0 & ctmp.g == 0 && ctmp.b == 0) {
                 // skip lines set to zero
             } else {
