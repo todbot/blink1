@@ -30,6 +30,13 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <math.h>
+
+static int
+nonlinearity(int x) {
+  int value = round(255.0 * pow(x/255.0, 2.2));
+  return fmax(0, fmin(255, value));
+}
 
 static void
 usage(const char* hunh) {
@@ -84,6 +91,11 @@ color(int fd, char action, int R, int G, int B, int T, int step) {
   if (T>65535) T=65535;
   if (step>15) step=15;
   
+  R = nonlinearity(R);
+  G = nonlinearity(G);
+  B = nonlinearity(B);
+
+
   buf[0] = 1;
   buf[1] = action;
   buf[2] = R; /* R */
