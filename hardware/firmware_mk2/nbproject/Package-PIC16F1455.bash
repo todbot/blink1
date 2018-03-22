@@ -10,9 +10,9 @@ CND_CONF=PIC16F1455
 CND_DISTDIR=dist
 TMPDIR=build/${CND_CONF}/${IMAGE_TYPE}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/blink1mk2.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-OUTPUT_BASENAME=blink1mk2.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-PACKAGE_TOP_DIR=blink1mk2/
+OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/firmware_mk2.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+OUTPUT_BASENAME=firmware_mk2.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+PACKAGE_TOP_DIR=firmwaremk2/
 
 # Functions
 function checkReturnCode
@@ -57,15 +57,15 @@ mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/blink1mk2/bin
+makeDirectory ${TMPDIR}/firmwaremk2/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f ${CND_DISTDIR}/${CND_CONF}/package/blink1mk2.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/package/firmwaremk2.tar
 cd ${TMPDIR}
-tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/blink1mk2.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/firmwaremk2.tar *
 checkReturnCode
 
 # Cleanup
