@@ -273,7 +273,7 @@ enum {
     CMD_FWVERSION,
     CMD_SERVERDOWN,
     CMD_PLAYPATTERN,
-    CMD_TESTTEST,
+    CMD_TESTTEST
 };
 
 //
@@ -322,7 +322,8 @@ int main(int argc, char** argv)
     int  rc;
     uint8_t tmpbuf[100]; // only used for hsb parsing
     char serialnumstr[serialstrmax] = {'\0'}; 
-
+    uint8_t reportid = 1; // unused normally, just for testing
+    
     srand( time(NULL) * getpid() );
     memset( cmdbuf, 0, sizeof(cmdbuf));
 
@@ -376,6 +377,7 @@ int main(int argc, char** argv)
         {"servertickle",  required_argument, &cmd,CMD_SERVERDOWN },
         {"playpattern",required_argument, &cmd,   CMD_PLAYPATTERN },
         {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
+        {"reportid",   required_argument, 0,      'i' },
         {NULL,         0,                 0,      0}
     };
     while(1) {
@@ -465,6 +467,9 @@ int main(int argc, char** argv)
                 fprintf(stderr,"going REALLY verbose\n");
             }
             break;
+        case 'i': // report id, for testing
+          reportid = strtol(optarg,NULL,10);
+          break;
         case 'd':  // devices to use
             if( strcmp(optarg,"all") == 0 ) {
                 numDevicesToUse = 0; //blink1_max_devices;
@@ -875,8 +880,8 @@ int main(int argc, char** argv)
         }
     }
     else if( cmd == CMD_TESTTEST ) { 
-        msg("test test\n");
-        rc = blink1_testtest(dev);
+      msg("test test reportid:%d\n",reportid);
+      rc = blink1_testtest(dev, reportid);
     }
 
 

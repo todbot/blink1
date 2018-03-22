@@ -479,15 +479,16 @@ int blink1_setLEDN( blink1_device* dev, uint8_t ledn)
 }
 
 //
-int blink1_testtest( blink1_device *dev)
+int blink1_testtest( blink1_device *dev, uint8_t reportid )
 {
-    uint8_t buf[blink1_buf_size] = { blink1_report_id, '!', 0,0,0, 0,0,0 };
+    uint8_t count = (reportid==1) ? 8 : 64;  // FIXME: hack
+    uint8_t buf[64] = { reportid, '!', 0,0,0, 0,0,0 };
 
-    int rc = blink1_write(dev, buf, sizeof(buf) );
+    int rc = blink1_write(dev, buf, count );
     blink1_sleep( 50 ); //FIXME:
     if( rc != -1 ) { // no error
-        rc = blink1_read(dev, buf, sizeof(buf));
-        for( int i=0; i<sizeof(buf); i++ ) { 
+        rc = blink1_read(dev, buf, count);
+        for( int i=0; i<count; i++ ) { 
             printf("%2.2x,",(uint8_t)buf[i]);
         }
         printf("\n");

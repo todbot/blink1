@@ -309,7 +309,7 @@ int blink1_savePattern(blink1_device *dev);
  */
 int blink1_setLEDN( blink1_device* dev, uint8_t ledn);
 
-int blink1_testtest(blink1_device *dev);
+int blink1_testtest(blink1_device *dev, uint8_t reportid);
 
 char *blink1_error_msg(int errCode);
 
