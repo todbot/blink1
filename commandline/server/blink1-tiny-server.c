@@ -71,7 +71,6 @@ static void parse_rgbstr(uint8_t* rgb, char* rgbstr)
     } \
     blink1_close(dev); 
 
-
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     struct http_message *hm = (struct http_message *) ev_data;
 
@@ -79,13 +78,13 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
         return;
     }
 
+    static uint8_t r,g,b;
     char result[1000];  result[0] = 0;
     char uristr[1000];
     char tmpstr[1000];
     int rc;
     uint16_t millis = 100;
     uint8_t rgb[3] = {0,0,0};
-    uint8_t r = rgb[0], g = rgb[1], b = rgb[2];
     uint8_t count = 1;
 
     struct mg_str* uri = &hm->uri;
@@ -107,10 +106,12 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
         count = strtod(tmpstr,NULL);
     }
 
-    if( mg_vcmp( uri, "/") == 0 ||
-        mg_vcmp( uri, "/blink1") == 0 ||
-        mg_vcmp( uri, "/blink1/") == 0  ) {
+    if( mg_vcmp( uri, "/") == 0 ) {
         sprintf(result, "welcome to blink1-tiny-server api server. All URIs start with '/blink1', e.g. '/blink1/red', '/blink1/off', '/blink1/fadeToRGB?rgb=%%23FF00FF'");
+    }
+    else if( mg_vcmp( uri, "/blink1") == 0 ||
+             mg_vcmp( uri, "/blink1/") == 0  ) {
+        sprintf(result, "blink1 status");
     }
     else if( mg_vcmp( uri, "/blink1/off") == 0 ) {
         sprintf(result, "blink1 off");
