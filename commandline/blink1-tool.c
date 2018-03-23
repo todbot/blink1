@@ -273,6 +273,8 @@ enum {
     CMD_FWVERSION,
     CMD_SERVERDOWN,
     CMD_PLAYPATTERN,
+    CMD_WRITENOTE,
+    CMD_READNOTE,
     CMD_TESTTEST
 };
 
@@ -308,7 +310,7 @@ int main(int argc, char** argv)
     int nogamma = 0;
     
     int16_t arg = 0;  // generic int arg for cmds that take an arg
-    char*  argbuf[100]; // generic str arg for cmds that take an arg
+    char*  argbuf[150]; // generic str arg for cmds that take an arg
     uint8_t chasebuf[3]; // could use other buf
 
     uint8_t cmdbuf[blink1_buf_size]; 
@@ -378,6 +380,9 @@ int main(int argc, char** argv)
         {"playpattern",required_argument, &cmd,   CMD_PLAYPATTERN },
         {"testtest",   no_argument,       &cmd,   CMD_TESTTEST },
         {"reportid",   required_argument, 0,      'i' },
+        {"writenote",  required_argument, &cmd,   CMD_WRITENOTE},
+        {"readnote",   required_argument, &cmd,   CMD_READNOTE},
+        {"notestr",    required_argument, 0,      'n'},
         {NULL,         0,                 0,      0}
     };
     while(1) {
@@ -403,6 +408,8 @@ int main(int argc, char** argv)
                 hexread(cmdbuf, optarg, sizeof(cmdbuf));  // cmd w/ hexlist arg
                 break;
             case CMD_BLINK:
+            case CMD_WRITENOTE:
+            case CMD_READNOTE:
                 arg = (optarg) ? strtol(optarg,NULL,0) : 1;// cmd w/ number arg
                 break;
             case CMD_RANDOM:
@@ -448,6 +455,9 @@ int main(int argc, char** argv)
         //   break;
         case 'm':
             millis = strtol(optarg,NULL,10);
+            break;
+        case 'n':
+            strncpy( (char*)argbuf, optarg, sizeof(argbuf) );
             break;
         case 't':
             delayMillis = strtol(optarg,NULL,10);
@@ -879,7 +889,24 @@ int main(int argc, char** argv)
             }
         }
     }
-    else if( cmd == CMD_TESTTEST ) { 
+    else if( cmd == CMD_WRITENOTE ) {
+      uint8_t noteid = arg;
+      uint8_t* notebuf = (uint8_t*)argbuf;
+      blink1_writeNote( dev, noteid, notebuf);
+    }
+    else if( cmd == CMD_READNOTE ) {
+      uint8_t noteid = arg;
+      uint8_t notebuf[100];
+      uint8_t* notebufp = notebuf; // why do I need to do this?
+      notebuf[0] = 't';
+      notebuf[1] = 'o';
+      notebuf[2] = 'd';
+      notebuf[3] = 0;
+    
+      blink1_readNote( dev, noteid, &notebufp);
+      printf("note %d: %s\n", noteid, notebuf);
+    }
+    else if( cmd == CMD_TESTTEST ) {
       msg("test test reportid:%d\n",reportid);
       rc = blink1_testtest(dev, reportid);
     }

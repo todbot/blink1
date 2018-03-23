@@ -479,10 +479,36 @@ int blink1_setLEDN( blink1_device* dev, uint8_t ledn)
 }
 
 //
+int blink1_writeNote( blink1_device* dev, uint8_t noteid, const uint8_t* notebuf)
+{
+  uint8_t buf[blink1_report2_size] = { blink1_report2_id, 'F', noteid };
+  memcpy( buf+3, notebuf, 100); // FIXME: notes are 100 bytes
+  int rc = blink1_write(dev, buf, blink1_report2_size);
+  if( rc == -1 ) {
+    printf("blink1_writeNote: oops error\n");
+  }
+  return rc;
+}
+//
+int blink1_readNote( blink1_device* dev, uint8_t noteid,  uint8_t** notebuf)
+{
+    uint8_t buf[blink1_report2_size] = { blink1_report2_id, 'f', noteid  };
+
+    //int rc = blink1_write(dev, buf, blink1_report2_size );
+    //blink1_sleep( 50 ); // FIXME:
+    int rc = blink1_read(dev, buf, blink1_report2_size );
+    
+    uint8_t* notedata = buf+3;
+    memcpy( *notebuf, notedata, 100); // skip over report id, cmd FIXME: harccoded 100
+
+    return rc;
+}
+
+//
 int blink1_testtest( blink1_device *dev, uint8_t reportid )
 {
-    uint8_t count = (reportid==1) ? 8 : 64;  // FIXME: hack
-    uint8_t buf[64] = { reportid, '!', 0,0,0, 0,0,0 };
+    uint8_t count = (reportid==1) ? blink1_report_size : blink1_report2_size; 
+    uint8_t buf[blink1_report2_size] = { reportid, '!', 0,0,0, 0,0,0 };
 
     int rc = blink1_write(dev, buf, count );
     blink1_sleep( 50 ); //FIXME:
