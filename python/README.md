@@ -1,7 +1,7 @@
-Original Python Libraries
-=========================
+blink1-python
+=============
 
-Official blink(1) Python library lives at this repo:
+The official blink(1) Python library lives at this repo:
 
 * https://github.com/todbot/blink1-python
 
