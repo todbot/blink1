@@ -1,11 +1,14 @@
 Original Python Libraries
 =========================
 
-Python libraries
-----------------
+Official blink(1) Python library lives at this repo:
 
-- `alternative_libraries` - The original ThingM blink(1) python libraries.
+* https://github.com/todbot/blink1-python
 
-- `pypi` - A newer python library with support for Python 3.x and automatic installation via the Python package index.
+It is published to PyPi: https://pypi.org/project/blink1/
 
-- `blink1buildlight` - A zeromq based distributed build-light control system able to control multiple blink(1) lights.
+You can install it by doing `pip install blink1`
+
+
+This directory is out of date and will be deleted eventually.
+
