@@ -198,7 +198,7 @@ ROM BYTE configDescriptor1[]={
     USB_DESCRIPTOR_INTERFACE,               // INTERFACE descriptor type
     0,                      // Interface Number
     0,                      // Alternate Setting Number
-    1,                      // Number of endpoints in this intf
+    2,                      // Number of endpoints in this intf
     HID_INTF,               // Class code
     0,     // Subclass code
     0,     // Protocol code
