@@ -89,7 +89,7 @@
 
 
 #define blink1_ver_major  '2'
-#define blink1_ver_minor  '4'
+#define blink1_ver_minor  '5'
 
 #define blink1_report_id 0x01
 
@@ -140,6 +140,9 @@ uint8_t ledn;    // temp ledn holder
 // number of entries a color pattern can contain
 #define patt_max 32
 #define patt_maxflash 16
+
+uint8_t playstart_serverdown = 0;        // start play position for serverdown
+uint8_t playend_serverdown   = patt_max; // end play position for serverdown
 
 uint8_t playpos   = 0; // current play position
 uint8_t playstart = 0; // start play position
@@ -415,6 +418,8 @@ void updateLEDs(void)
         if( (long)(now - serverdown_update_next) > 0 ) {
             serverdown_millis = 0;  // disable this check
             playing = 1;
+            playstart = playstart_serverdown;
+            playend   = playend_serverdown;
             startPlaying();
         }
     }
@@ -624,12 +629,13 @@ void handleMessage(const char* msgbuf)
     //
     else if( cmd == 'D' ) {
         uint8_t serverdown_on = msgbuf[2];
-        uint16_t t = ((uint16_t)msgbuf[3] << 8) | msgbuf[4];
+        uint32_t t = ((uint16_t)msgbuf[3] << 8) | msgbuf[4];
         uint8_t st = msgbuf[5];
-        playstart  = msgbuf[6];
-        playend    = msgbuf[7];
-        if( playend == 0 || playend > patt_max )
-            playend = patt_max;
+        playstart_serverdown  = msgbuf[6];
+        playend_serverdown    = msgbuf[7];
+        playend_serverdown++;  // to make 'p' play command
+        if( playend_serverdown == 0 || playend_serverdown > patt_max )
+            playend_serverdown = patt_max;
 
         if( serverdown_on ) {
             serverdown_millis = t;
