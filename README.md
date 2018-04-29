@@ -100,6 +100,7 @@ Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages)
 # Copyright and License
 
 blink(1) is open source hardware OSHW US000051
+
 <img src="./docs/imgs/blink1-oshw.jpg" width="425">
 
 Copyright (c) ThingM, 2012-2018
