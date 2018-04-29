@@ -1,33 +1,36 @@
-blink(1)
-========
+blink(1) USB RGB LED
+====================
 
-"blink(1) is a super status light: it packs three dimensions of information
+"[blink(1)](https://blink1.thingm.com/) is a super status light:
+it packs three dimensions of information
 (color, brightness and pattern) into a single tiny package that fits into
 any USB port on nearly every device. It makes it incredibly easy to connect
 any data source in the cloud or on your computer to a full-color RGB LED so
 you can know what's happening without checking any windows, going to any
-websites or typing any commands."
+websites or typing any commands." - Get a blink(1) at https://buy.thingm.com/
 
-The official repository of blink(1) software is:
-- https://github.com/todbot/blink1/ – submit issues/bugs or pull requests there
-- https://github.com/todbot/blink1/releases – official releases of pre-built software
+The official repositories for blink(1) software are:
 
-For the application Blink1Control2, visit:
-- https://github.com/todbot/Blink1Control2
-- https://github.com/todbot/Blink1Control2/releases
+| repository | description |
+| ---------- | ----------- |
+| [Blink1Control2](https://github.com/todbot/Blink1Control2) | Graphical app for Mac / Windows / Linux |
+| [blink1-tool](https://github.com/todbot/blink1-tool) | Command-line tool & C-library for all platforms |
+| [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
+| [blink1-python](https://github.com/todbot/blink1-python) | Python library |
+| [node-blink1](https://github.com/sandeepmistry/node-blink1) | Node.js library |
+| [blink1](https://github.com/todbot/blink1) | Hardware/firmware design, misc docs & notes (this repo) |
 
-#### APIs/SDKs ####
-This repo contains official blink(1) APIs in: C, Java, Processing, Python, and .NET.
+See below for descriptions of each, including APIs for languages not mentioned.
 
-Other popular APIs are available in NodeJs, Ruby, Go, Haskell, and more.
 
 
 Ready-to-run Applications
 -------------------------
 
 ### Blink1Control2 ###
+<img src="./docs/imgs/blink1control2-screenshot1.png" width="425">
 
-[Blink1Control2](https://github.com/todbot/Blink1Control2) is the  GUI application for controlling and hooking events to blink(1). It is the primary user-level application for controlling blink(1).
+[Blink1Control2](https://github.com/todbot/Blink1Control2) is an application for controlling and hooking events to blink(1). It is the primary user-level application for controlling blink(1).
 It is an event-based system for triggering blink(1) color patterns.
 Those events can be on your computer or on the Net.
 
@@ -38,7 +41,7 @@ Blink1Control2 can receive events from:
 - URLs containing text or JSON
 - Local files or executed scripts
 
-You can find it at:
+More information about Blink1Control2 at:
 https://github.com/todbot/Blink1Control2
 
 
@@ -47,27 +50,6 @@ https://github.com/todbot/Blink1Control2
 - Windows: https://github.com/todbot/Blink1Control2/releases
 
 
-### Blink1Control ###
-
-Blink1Control is the previous-generation GUI application for hooking events to blink(1).
-
-Blink1Control can receive events from:
-- [IFTTT](https://ifttt.com/channels)'s many channels
-- IMAP/POP/GMAIL email services
-- URLs containing text or JSON
-- Local files or executed scripts
-- Hardware monitors like CPU, battery, RAM
-
-This verison of Blink1Control supercedes the Mac-specific and Windows-specific
-versions in the "mac" and "win" directories.
-
-- **Download Blink1Control**
-   - Mac OS X: [Blink1Control-mac.zip](https://github.com/todbot/blink1/releases)
-   - Windows:  [Blink1Control-win.zip](https://github.com/todbot/blink1/releases)
-
-- Previous versions of Blink1Control written in Cocoa or .NET (not recommended) -
-[Blink1Control-mac-old.zip](https://thingm.com/blink1/downloads/old/Blink1Control-mac-old.zip) -
-[Blink1Control-win-old.zip](https://thingm.com/blink1/downloads/old/Blink1Control-win-old.zip)
 
 ### Toy / Test Applications ###
 
@@ -95,19 +77,19 @@ Download:
 
 ### blink1-tool ###
 
-For script-writers, programmers and hackers, there's the command-line tool:
+For script-writers, programmers and hackers, there's the command-line tool `blink1-tool1`
+and its relatives.  It lives in the repo: https://github.com/todbot/blink1-tool
 
 - **blink1-tool** -- command-line program for use in your own scripts.
   - Download for:
-[(Mac OSX)](https://thingm.com/blink1/downloads/blink1-tool-mac.zip) /
-[(Windows)](https://thingm.com/blink1/downloads/blink1-tool-win.zip) /
-[(Linux64)](https://thingm.com/blink1/downloads/blink1-tool-linux_x86_64.zip) /
-[(RaspberryPi)](https://thingm.com/blink1/downloads/blink1-tool-raspi.zip)
+[(Mac OSX)](https://thingm.com/blink1-tool/releases) /
+[(Windows)](https://thingm.com/blink1-tool/releases) /
+[(Linux64)](https://thingm.com/blink1-tool/releases) /
+[(RaspberryPi)](https://thingm.com/blink1-tool/releases)
 
 
 What is in this repo
 --------------------
-The following directories exist:
 
 - __docs__             -- Documentation of APIs and tips & tricks
 - __commandline__      -- blink1-lib C library and command-line tools, specifically:
@@ -144,13 +126,10 @@ Some docs that might be useful
 Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages)
 
 
-More Info about blink(1)
-------------------------
-https://blink1.thingm.com/
 
 
-Other
------
+
+# Copyright and License
 
 blink(1) is open source hardware
 
