@@ -26,10 +26,8 @@ See below for descriptions of each, including APIs for languages not mentioned.
 This repo used to house all blink(1)-related code, but is now a clearinghouse and links to official and supported blink(1) repositories.
 
 
-Ready-to-run Applications
--------------------------
 
-### Blink1Control2 ###
+## Blink1Control2 ##
 <img src="./docs/imgs/blink1control2-screenshot1.png" width="425">
 
 [Blink1Control2](https://github.com/todbot/Blink1Control2) is an application for controlling and hooking events to blink(1). It is the primary user-level application for controlling blink(1).
@@ -47,36 +45,26 @@ Blink1Control2 has its own repository. More information at:
 https://github.com/todbot/Blink1Control2
 
 
-** Download Blink1Control2 **
+#### Download Blink1Control2 ####
 - Mac OS X: https://github.com/todbot/Blink1Control2/releases
 - Windows: https://github.com/todbot/Blink1Control2/releases
 
 
+## blink1-tool ##
 
-
-
-### blink1-tool ###
-
-For script-writers, programmers and hackers, there's the command-line tool `blink1-tool`
-and its relatives.  It lives in the repo: https://github.com/todbot/blink1-tool
+`blink1-tool` is a C-based command-line for script-writers, programmers and hackers. It lives in the repo: https://github.com/todbot/blink1-tool
 
 - **blink1-tool** -- command-line program for use in your own scripts.
   - Download for:
-[(Mac OSX)](https://thingm.com/blink1-tool/releases) /
-[(Windows)](https://thingm.com/blink1-tool/releases) /
-[(Linux64)](https://thingm.com/blink1-tool/releases) /
-[(RaspberryPi)](https://thingm.com/blink1-tool/releases)
+[Mac OSX](https://thingm.com/blink1-tool/releases) /
+[Windows](https://thingm.com/blink1-tool/releases) /
+[Linux](https://thingm.com/blink1-tool/releases) /
+[RaspberryP)](https://thingm.com/blink1-tool/releases)
 
 
-What is in this repo
---------------------
+## What is in this repo ##
 
 - __docs__             -- Documentation of APIs and tips & tricks
-- __commandline__      -- blink1-lib C library and command-line tools, specifically:
-  - blink1-tool -- command-line tool for almost every OS
-  - blink1control-tool -- blink1-tool for use with Blink1Control GUI app
-  - blink1-tiny-server -- simple HTTP to blink1 bridge
-  - blink1-lib -- C-library for controlling blink(1)
 - __java__             -- Java / Processing library info
 - __processing__       -- Processing applications  (https://processing.org)
 - __nodejs__           -- NodeJs library info
@@ -92,7 +80,7 @@ What is in this repo
   - scripts  -- Windows command-line scripts to do cool things
 - __linux__            -- Linux details and scripts
   - contrib__    -- contributed Linux scripts
-just HTML app code)
+- __chrome__           -- ChromeOS info
 - __hardware__         -- all hardware-related info (firmware & schematic & enclosure)
 
 
@@ -111,9 +99,10 @@ Also see the [wiki pages](https://github.com/todbot/blink1/wiki/_pages)
 
 # Copyright and License
 
-blink(1) is open source hardware
+blink(1) is open source hardware OSHW US000051
+<img src="./docs/imgs/blink1-oshw.jpg" width="425">
 
-Copyright (c) ThingM, 2012-2017
+Copyright (c) ThingM, 2012-2018
 
 'blink(1)' is a trademark of ThingM Corporation
 
