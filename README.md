@@ -1,6 +1,6 @@
 blink(1) USB RGB LED
 ====================
-<img src="./docs/imgs/blink1mk2-twocolor-long.jpg" width="600">
+<img src="./docs/imgs/blink1mk2-twocolor-long.jpg" width="600"><img src="./docs/imgs/blink1-logos.jpg" width="175">
 
 "[blink(1)](https://blink1.thingm.com/) is a super status light:
 it packs three dimensions of information
@@ -10,12 +10,14 @@ any data source in the cloud or on your computer to a full-color RGB LED so
 you can know what's happening without checking any windows, going to any
 websites or typing any commands." - Get a blink(1) at https://buy.thingm.com/
 
+More technically, blink(1) is a Smart LED controller with built-in USB firmware. blink(1) has a huge range of support from the Linux kernel to Node.js.
+
 The official repositories for blink(1) software are:
 
 | repository | description |
 | ---------- | ----------- |
 | [Blink1Control2](https://github.com/todbot/Blink1Control2) | Graphical app for Mac / Windows / Linux |
-| [blink1-tool](https://github.com/todbot/blink1-tool) | Command-line tool & C-library for all platforms |
+| [blink1-tool](https://github.com/todbot/blink1-tool) | Command-line tools & C-library for all platforms |
 | [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
 | [blink1-python](https://github.com/todbot/blink1-python) | Python library |
 | [node-blink1](https://github.com/sandeepmistry/node-blink1) | Node.js library |
