@@ -58,10 +58,10 @@ https://github.com/todbot/Blink1Control2
 
 - **blink1-tool** -- command-line program for use in your own scripts.
   - Download for:
-[Mac OSX](https://thingm.com/blink1-tool/releases) /
-[Windows](https://thingm.com/blink1-tool/releases) /
-[Linux](https://thingm.com/blink1-tool/releases) /
-[RaspberryP)](https://thingm.com/blink1-tool/releases)
+[Mac OSX](https://github.com/todbot/blink1-tool/releases) /
+[Windows](https://github.com/todbot/blink1-tool/releases) /
+[Linux](https://github.com/todbot/blink1-tool/releases) /
+[RaspberryP)](https://github.com/todbot/blink1-tool/releases)
 
 
 ## What is in this repo ##
