@@ -8,20 +8,28 @@ This document shows the formats of the feature report data packet sent to blink(
 
 ## Command Summary ##
 
-    - Fade to RGB color       format: { 1, 'c', r,g,b,     th,tl, n } (*)
-    - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, 0 } 
-    - Read current RGB color  format: { 1, 'r', 0,0,0,       0,0, n } (2)
+    - Fade to RGB color       format: { 1, 'c', r,g,b,     th,tl, n }
+    - Set RGB color now       format: { 1, 'n', r,g,b,       0,0, n } (*)
+    - Read current RGB color  format: { 1, 'r', n,0,0,       0,0, n } (2)
     - Serverdown tickle/off   format: { 1, 'D', on,th,tl,  st,sp,ep } (*)
-    - Play/Pause              format: { 1, 'p', on,sp,0,     0,0, 0 }
     - PlayLoop                format: { 1, 'p', on,sp,ep,c,    0, 0 } (2)
     - Playstate readback      format: { 1, 'S', 0,0,0,       0,0, 0 } (2)
     - Set color pattern line  format: { 1, 'P', r,g,b,     th,tl, p }
-    - read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
-    - Save color patterns     format: { 1, 'W', 0xBE,0xEF,0xCA,0xFE,0, 0 } (2)
+    - Save color patterns     format: { 1, 'W', 0,0,0,       0,0, 0 } (2)
+    - Read color pattern line format: { 1, 'R', 0,0,0,       0,0, p }
+    - Set ledn                format: { 1, 'l', n,0,0,       0,0, 0 } (2+)
     - Read EEPROM location    format: { 1, 'e', ad,0,0,      0,0, 0 } (1)
     - Write EEPROM location   format: { 1, 'E', ad,v,0,      0,0, 0 } (1)
     - Get version             format: { 1, 'v', 0,0,0,       0,0, 0 }
     - Test command            format: { 1, '!', 0,0,0,       0,0, 0 }
+    - Write 50-byte note      format: { 2, 'F', noteid, data0 ... data99 } (3)
+    - Read  50-byte note      format: { 2, 'f', noteid, data0 ... data99 } (3)
+    - Go to bootloader        format: { 1, 'G', 'o','B','o','o','t',0 } (3)
+    - Lock go to bootload     format: { 2','L'  'o','c','k','B','o','o','t','l','o','a','d'} (3)
+    - Set startup params      format: { 1, 'B', bootmode, playstart,playend,playcnt,0,0} (3)
+    - Get startup params      format: { 1, 'b', 0,0,0, 0,0,0        } (3)
+    - Server mode tickle      format: { 1, 'D', {1/0},th,tl, {1,0},sp, ep }
+    - Get chip unique id      format: { 2, 'U', 0 } (3)
 
 where:
 
@@ -41,6 +49,7 @@ where:
         1 = report id (must always be present)
 
       (*) some arguments for command is only available in mk2 devices
+      (3) mk3 devices only
       (2) mk2 devices only
       (1) mk1 devices only
 
