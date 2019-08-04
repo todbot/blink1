@@ -1,0 +1,25 @@
+#
+# Here is a simple example of a systemd unit for blink1-tiny-server
+#
+# Stick this file in /etc/systemd/system
+# Use 'systemctl' to install.
+# e.g.
+#  $ sudo cp blink1-tiny-server.service /etc/systemd/system
+#  $ sudo systemctl daemon-reload
+#  $ sudo systemctl enable blink1-tiny-server.service
+# then:
+#  $ sudo systemctl blink1-tiny-server status
+#  $ sudo systemctl blink1-tiny-server start
+#  $ sudo systemctl blink1-tiny-server stop
+#
+[Unit]
+Description=blink1-tiny-server
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/sbin/blink1-tiny-server
+
+[Install]
+WantedBy=multi-user.target
