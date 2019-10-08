@@ -21,6 +21,7 @@ The official repositories for blink(1) software are:
 | [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
 | [blink1-python](https://github.com/todbot/blink1-python) | Python library |
 | [node-blink1](https://github.com/sandeepmistry/node-blink1) | Node.js library |
+| [blinkrs](https://github.com/dadleyy/blinkrs) | Rust library |
 | [blink1mk3](https://github.com/todbot/blink1mk3) | Hardware/firmware design for blink(1) mk3 |
 | [blink1](https://github.com/todbot/blink1) | Hardware/firmware design, misc docs & notes (this repo) |
 
