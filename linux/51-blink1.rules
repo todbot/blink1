@@ -1,6 +1,6 @@
 # Copy this udev with "sudo cp 51-blink1.rules /etc/udev/rules.d/"
 # Edit it to suit your type of Linux. It's currently set up for modern Ubuntu
-# When done, do "sudo udevadm control --reload-rules"
+# When done, do "sudo udevadm control --reload"
 # and unplug and replug in the blink1 device.
 
 # Note the hex values for vid & pid must be lower-case
@@ -8,6 +8,6 @@
 #ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", SUBSYSTEMS=="usb", ACTION=="add", MODE="0666", GROUP="plugdev"
 
 # modern ubuntu
-SUBSYSTEM=="input", GROUP="input", MODE="0666"
-SUBSYSTEM=="usb", ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", MODE:="666", GROUP="plugdev"
-KERNEL=="hidraw*", ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", MODE="0666", GROUP="plugdev"
+#SUBSYSTEM=="input", GROUP="input", MODE="0666"
+ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", MODE:="666", GROUP="plugdev"
+#KERNEL=="hidraw*", ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", MODE="0666", GROUP="plugdev"
