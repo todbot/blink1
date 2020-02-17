@@ -3,6 +3,8 @@ blink(1) HID commands
 
 Communication with blink(1) is done via USB HID Feature Reports.
 blink(1) currently responds to one feature report, with a report id of 0x01.
+The blink(1) mk3 or greater also responds to feature report 0x02
+for certain advanced features.
 This document shows the formats of the feature report data packet sent to blink(1).
 
 
@@ -48,10 +50,10 @@ where:
         v = arbitrary value
         1 = report id (must always be present)
 
-      (*) some arguments for command is only available in mk2 devices
-      (3) mk3 devices only
-      (2) mk2 devices only
-      (1) mk1 devices only
+      (*) some arguments for command is only available in mk2 or greater devices
+      (3) mk3 devices or greater
+      (2) mk2 devices or greater
+      (1) mk1 devices or greater
 
 
 Protocol
@@ -76,7 +78,7 @@ Note:
 - On mk2 devices, gamma-correction of R,G,B values is done on the device,
   while on mk1 devices, the gamma correction is done in blink1-lib
 - The preferred implementation of of the protocol is in blink1-lib.{c,h}
-- patt_max = 12 (mk1), patt_max = 32 (mk2)
+- patt_max = 12 (mk1), patt_max = 32 (mk2+)
 
 The most common command is "fade to RGB", which has the form:
 
@@ -87,13 +89,13 @@ The most common command is "fade to RGB", which has the form:
     - byte 4 = blue value
     - byte 5 = th    (fadeMillis/10 high byte)
     - byte 6 = tl    (fadeMillis/10 low byte)
-    - byte 7 = 0     (unused on mk1, 0=all on mk2) 
+    - byte 7 = ledn  (unused on mk1, 0=all on mk2) 
 
 
 Commands
 --------
 
-### Fade To RGB - `format: {0x01, 'c', r,g,b,    th,tl, 0 }`
+### Fade To RGB - `format: {0x01, 'c', r,g,b,    th,tl, n }`
 
 This is the most common command sent to a blink(1).
 It lights up the blink(1) with the specified RGB color,
@@ -114,7 +116,7 @@ This command does not produce a return value.
     - byte 4 = blue value
     - byte 5 = th    (fadeMillis/10 high byte)
     - byte 6 = tl    (fadeMillis/10 low byte)
-    - byte 7 = 0     (unused on mk1)
+    - byte 7 = ledn  (unused on mk1, ledn on mk2+)
 
 ### Servertickle - `format: {0x01, 'D', on,th,tl,  st,0, 0 }`
 
