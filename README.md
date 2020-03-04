@@ -18,9 +18,9 @@ The official repositories for blink(1) software are:
 | ---------- | ----------- |
 | [Blink1Control2](https://github.com/todbot/Blink1Control2) | Graphical app for Mac / Windows / Linux |
 | [blink1-tool](https://github.com/todbot/blink1-tool) | Command-line tools & C-library for all platforms |
-| [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
 | [blink1-python](https://github.com/todbot/blink1-python) | Python library |
 | [node-blink1](https://github.com/sandeepmistry/node-blink1) | Node.js library |
+| [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
 | [blinkrs](https://github.com/dadleyy/blinkrs) | Rust library |
 | [blink1-android](https://github.com/todbot/blink1-android) | Android library |
 | [blink1-webhid](https://github.com/todbot/blink1-webhid) | WebHID demos for blink(1) |
