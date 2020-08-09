@@ -80,9 +80,10 @@ Then to make the blink(1) do things, do something like:
 
 Type "./blink1-tool" by itself to get a help screen.
 ## Credits
+https://www.ccammack.com/posts/display-server-notifications-using-a-blink1/
 https://www.freebsd.org/cgi/man.cgi?query=devd.conf
 https://www.freebsd.org/cgi/man.cgi?query=devfs.rules
-https://www.ccammack.com/posts/display-server-notifications-using-a-blink1/
+
 
 -eof-
 
