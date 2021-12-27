@@ -35,6 +35,7 @@ install this fork of node-hid before node-blink1:
   - https://www.npmjs.com/package/grunt-blink1  
 - tweet-blink - real-time visualtion of tweets using blink(1)
   - https://www.npmjs.com/package/tweet-blink
-
+- pfsense-blink1 - Watch your pfSense® firewall with blink(1) 
+  - https://www.npmjs.com/package/pfsense-blink1
 
 
