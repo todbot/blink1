@@ -1,0 +1,34 @@
+# This is a simple systemd script originally written for use with a
+# headless Raspberry Pi running Ubuntu Linux, but it should run on any
+# Linux host using systemd. It turns the blink(1) into a status light
+# that tells you:
+#
+#   1. When the system is up and accessible via ssh. (Green.)
+#   2. When the system is in the process of shutting down. (Red.)
+#   3. When the system has powered off and is safe to disconnect. (Dark.)
+#
+# - The script presumes that `blink1-tool` has been installed in
+#   /usr/local/bin.
+# - It defaults to a moderate brightness in an attempt to signal
+#   clearly without being distracting, but you can tweak BRIGHTNESS
+#   to your personal taste below.
+#
+# To install:
+#
+# $ sudo cp blink1-status.service /etc/systemd/system
+# $ sudo systemctl daemon-reload
+# $ sudo systemctl enable blink1-status.service
+# $ sudo systemctl blink1-service start
+
+[Unit]
+Description=blink(1) system status indication
+Wants=sshd.service
+
+[Service]
+Environment="BRIGHTNESS=112"
+ExecStart=/usr/local/bin/blink1-tool --green --brightness ${BRIGHTNESS}
+ExecStop=/usr/local/bin/blink1-tool --red --brightness ${BRIGHTNESS}
+RemainAfterExit=True
+
+[Install]
+WantedBy=multi-user.target
