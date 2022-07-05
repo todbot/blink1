@@ -1,11 +1,14 @@
  
 URL API for blink(1) Applications
 =================================
-version 0.6 -- 20121020 -- Tod E. Kurt
+version 1.0 -- 20220105 -- Tod Kurt
 
-The application that controls a blink(1) device is comprised of an HTML5 GUI 
-running on an embedded webserver.  The GUI communicates to the application
-backend via the URL API described below.
+The application that controls a blink(1) device is comprised of a GUI 
+containing an embedded webserver.  The embedded webserver has this API
+to let you control blink(1) devices via HTTP REST API.
+
+The ~~strikeout text~~ are API endpoints that existed in the original app
+but not in the current app, mostly for security reasons.
 
 In this document:
 
@@ -25,6 +28,14 @@ The application maintains a list of color patterns.
 The application runs one or more color patterns when triggered by inputs.
 There is a user-defined mapping of input source to color pattern.
 
+### Color Patterns ###
+A color pattern is a named list of RGB colors and times between colors.
+A color pattern can also specify an optional number of repeats to perform.
+These colors are scheduled and sent to blink(1) based on the given timing.
+There are multiple color patterns that can play on a blink(1) simultaneously.
+
+<s>
+ 
 ### Inputs ###
 There are multiple kinds of data input sources: text files, URL responses, etc.
 Each configured input is given a unique human-readable input name.
@@ -33,16 +44,8 @@ When an input is evaluated, it produces as a color pattern name as output.
 Depending on the input, generation of color pattern names may happen external to the application (e.g. URL fetch) or internal (e.g. CPU load setpoint).
 The color pattern name does not need to previously exist the color pattern list.
 
-### Color Patterns ###
-A color pattern is a named list of RGB colors and times between colors.
-A color pattern can also specify an optional number of repeats to perform.
-These colors are scheduled and sent to blink(1) based on the given timing.
-There are multiple color patterns that can play on a blink(1) simultaneously.
+</s>
 
-### Examples ###
-- input: "fetch a URL every 30 seconds"
-- pattern name: "blink3times_red" or "ladygagatweet"
-- pattern: "blink3times_red,3,#FF0000,1.0,#000000,1.0"
 
 ### File Formats ###
 In general, files emitted or parsed are text files with JSON data structures.  
@@ -138,25 +141,25 @@ for new events on user's blink1_id.
 
 ### URL Watcher ###
 
-There can be at most 5 tracked URLs.
-These URLs contain RGB hex strings or color pattern names in simple text files.
-URLs are scanned for changes every 30 seconds.
+These URLs contain RGB hex strings or color pattern names in simple text files or JSON files.
+URLs are scanned for changes every 30 seconds, or a configurable duration.
 
 
 ### File Watcher ###
 
 There can be at most 5 tracked files.  
-These files contain RGB hex strings or color pattern names in simple text files.
-Files are scanned every 15 seconds for changes.
+These files contain RGB hex strings or color pattern names in simple text files or JSON files.
+Files are scanned every 15 seconds for changes, or a configurable duration.
 
 
 ### Script Executer ###
 
 All scripts must live in the "blink-scripts" folder in the user's "Documents" folder.
-Scripts are executed every 15 seconds.  Output is parsed like files.
+Scripts are executed every 15 seconds, or configurable duration.  Output is parsed like files.
 
 
 ### Color Pattern Player ###
+
 Color patterns are updated on the blink(1) device at a maximum rate of 100msec.
 Multiple color patterns may be active simultaneously.
 The color pattern player does not need to reconcile collisions between
@@ -191,9 +194,34 @@ Base URL: `http://localhost:8934/blink1`
 * `/blink1/lastColor`
 -- Return the last color command sent to blink(1)
 
+<s>
+ 
 * `/blink1/logging`
 -- Enable or disable logging (Windows only currently)
 
+</s>
+ 
+### Color Patterns ###
+
+* `/blink1/patterns`
+-- List saved color patterns
+
+* `/blink1/pattern/add`
+-- Add color pattern to color pattern list
+
+* `/blink1/pattern/del`
+-- Remove color pattern from color pattern list
+
+* `/blink1/pattern/delall`
+-- Remove all color patterns from color pattern list
+
+* `/blink1/pattern/play`
+-- Play/test a specific color pattern
+
+* `/blink1/pattern/stop`
+-- Stop a pattern playback, for a given pattern or all patterns
+
+<s>
 
 ### Input Selection ###
 
@@ -227,27 +255,7 @@ Base URL: `http://localhost:8934/blink1`
 * `/blink1/input/netload`
 -- Start network load watching input
 
-
-### Color Patterns ###
-
-* `/blink1/patterns`
--- List saved color patterns
-
-* `/blink1/pattern/add`
--- Add color pattern to color pattern list
-
-* `/blink1/pattern/del`
--- Remove color pattern from color pattern list
-
-* `/blink1/pattern/delall`
--- Remove all color patterns from color pattern list
-
-* `/blink1/pattern/play`
--- Play/test a specific color pattern
-
-* `/blink1/pattern/stop`
--- Stop a pattern playback, for a given pattern or all patterns
-
+</s>
 
 
 
@@ -284,7 +292,8 @@ With blink(1) plugged in:
       "status": "blink1 id"
     }
 
-
+<s>
+ 
 `/blink1/regenerateblink1id`
 ----------
 __Description:__ Regenerate the blink1_id based on current blink(1) device.
@@ -303,7 +312,7 @@ __Response:__
       ],
       "status": "regenerateid"
     }
-
+</s>
 
 `/blink1/enumerate`
 -----------------
@@ -369,6 +378,106 @@ __Response:__
     }
 
 
+`/blink1/patterns`
+----------------
+__Description:__
+List saved color patterns
+
+__Query args:__ -none-
+
+__Example:__
+
+`http://localhost:8934/blink1/pattern/`
+
+__Response:__ 
+
+    { 
+      "patterns": [ 
+        { 
+           "name":"blink3_red",
+           "pattern":"3,%23FF0000,1.0,%23000000,1.0"
+        },
+        { 
+           "name":"Springtime",
+           "pattern":"0,%2333FF000,2.1,%255ff00,3.0"
+        }
+      ]
+    }
+
+
+
+`/blink1/pattern/add`
+---------------------
+__Description:__
+Add color pattern to color pattern list
+
+__Query args:__
+
+* `pname` -- name of color pattern to add
+* `pattern` -- color pattern definition in string format
+    
+    format: "repeats,color1,color1time,color2,color2time,..."
+
+__Example:__
+
+`http://localhost:8934/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
+
+__Response:__ Standard JSON 'status' response
+
+
+`/blink1/pattern/del`
+---------------------
+__Description:__
+Remove color pattern from color pattern list
+
+__Query args:__
+
+* `pname` -- name of color pattern to delete
+
+__Example:__
+
+`http://localhost:8934/blink1/pattern/del?pname=blink3_red`
+
+__Response:__ Standard JSON 'status' response
+
+
+`/blink1/pattern/play`
+----------------------
+__Description:__
+Play/test a specific color pattern
+
+__Query args:__
+
+* `pname` -- name of color pattern to play
+
+__Example:__
+
+`http://localhost:8934/blink1/pattern/play?pname=blink3_red`
+
+__Response:__ Standard JSON 'status' response
+
+
+`/blink1/pattern/stop`
+----------------------
+__Description:__
+Stop a pattern playback, for a given pattern or all patterns
+
+__Query args:__
+
+* `pname` -- pattern name string
+
+__Example:__
+
+`http://localhost:8934/blink1/pattern/stop?pname=blink3_red`
+
+__Response:__ Standard 'status' JSON response
+
+
+
+
+
+<s>
+ 
 `/blink1/logging`
 -----------------
 __Description:__ Enable or disable logfile writing
@@ -385,7 +494,10 @@ __Response:__
       "loglevel": 0,
       "status": "logging"
     }
-    
+ 
+</s>
+
+<s>
 
 `/blink1/inputs`
 --------------
@@ -603,102 +715,6 @@ __Example:__
 
 __Response:__  Standard JSON 'status' response
 
-
-
-`/blink1/patterns`
-----------------
-__Description:__
-List saved color patterns
-
-__Query args:__ -none-
-
-__Example:__
-
-`http://localhost:8934/blink1/pattern/`
-
-__Response:__ 
-
-    { 
-      "patterns": [ 
-        { 
-           "name":"blink3_red",
-           "pattern":"3,%23FF0000,1.0,%23000000,1.0"
-        },
-        { 
-           "name":"Springtime",
-           "pattern":"0,%2333FF000,2.1,%255ff00,3.0"
-        }
-      ]
-    }
-
-
-
-`/blink1/pattern/add`
----------------------
-__Description:__
-Add color pattern to color pattern list
-
-__Query args:__
-
-* `pname` -- name of color pattern to add
-* `pattern` -- color pattern definition in string format
-    
-    format: "repeats,color1,color1time,color2,color2time,..."
-
-__Example:__
-
-`http://localhost:8934/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
-
-__Response:__ Standard JSON 'status' response
-
-
-`/blink1/pattern/del`
----------------------
-__Description:__
-Remove color pattern from color pattern list
-
-__Query args:__
-
-* `pname` -- name of color pattern to delete
-
-__Example:__
-
-`http://localhost:8934/blink1/pattern/del?pname=blink3_red`
-
-__Response:__ Standard JSON 'status' response
-
-
-`/blink1/pattern/play`
-----------------------
-__Description:__
-Play/test a specific color pattern
-
-__Query args:__
-
-* `pname` -- name of color pattern to play
-
-__Example:__
-
-`http://localhost:8934/blink1/pattern/play?pname=blink3_red`
-
-__Response:__ Standard JSON 'status' response
-
-
-`/blink1/pattern/stop`
-----------------------
-__Description:__
-Stop a pattern playback, for a given pattern or all patterns
-
-__Query args:__
-
-* `pname` -- pattern name string
-
-__Example:__
-
-`http://localhost:8934/blink1/pattern/stop?pname=blink3_red`
-
-__Response:__ Standard 'status' JSON response
-
-
+</s>
 
 
