@@ -1,17 +1,39 @@
 Compiling blink1-tool for OpenWrt
 =================================
 
-
+This step-by-step was designed for Linino, the OpenWrt in Arduino Yun,
+but the general process works for any OpenWrt.
 Must do this on a Linux box.  (I use an Ubuntu VM)  
-And for the below, assume that the checkouts are going into the "~/projects/" directory.
 
+
+* Follow guide:
+https://openwrt.org/docs/guide-developer/single.package
+
+```
+cd openwrt
+./scripts/feeds install -a
+./scripts/feeds install -a
+make menuconfig  
+```
+* In `menuconfig` select `Build the OpenWrt SDK (CONFIG_SDK)` and Save
+
+```
+make
+```
+
+* Run `make` to build the SDK (this takes a long time and several gigabytes)
+
+
+----------------------
 * Install needed tools
 ```
-     % apt-get install subversion build-essential git-core libncurses5-dev zlib1g-dev gawk asciidoc bash bc binutils bzip2 fastjar flex g++ gcc util-linux zlib1g-dev libncurses5-dev libssl-dev perl-modules python2.6-dev rsync ruby sdcc unzip wget gettext xsltproc zlib1g-dev libxml-parser-perl
+     % apt-get install build-essential git-core libncurses5-dev zlib1g-dev gawk asciidoc bash bc binutils bzip2 fastjar flex g++ gcc util-linux zlib1g-dev libncurses5-dev libssl-dev perl-modules rsync ruby sdcc unzip wget gettext xsltproc zlib1g-dev libxml-parser-perl
 ```
 
-* Download version of OpenWrt used on the Yun:
+* Download version of OpenWrt used on the Arduino Yun:
 ```
+    % mkdir ~/projects
+    % cd projects
     % git clone https://github.com/arduino/linino.git linino
 ```
 

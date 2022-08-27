@@ -2,7 +2,7 @@
 # Ipkg Makefile for building blink1-tool on OpenWrt / Arduino Yun
 #
 # Symlink this directory into your openwrt 'package' directory,
-# with name 'blink1', then add it as a package, e.g. 
+# with name 'blink1', then add it as a package, e.g.
 # % cd ~/projects/linino/trunk/package
 # % ln -s ~/projects/blink1/openwrt blink1
 # % cd ~/projects/linino/trunk
@@ -16,7 +16,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=blink1
-PKG_VERSION:=007
+PKG_VERSION:=008
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
@@ -34,14 +34,14 @@ include $(INCLUDE_DIR)/package.mk
 define Package/blink1
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=+libusb-compat 
+  DEPENDS:=+libusb-compat
   TITLE:=blink(1) device utilities
-  URL:=http://blink1.thingm.com/
+  URL:=https://blink1.thingm.com/
 endef
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
+	$(CP) ./blink1-tool/* $(PKG_BUILD_DIR)/
 endef
 
 define Build/Compile

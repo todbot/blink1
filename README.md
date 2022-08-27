@@ -80,9 +80,9 @@ https://github.com/todbot/Blink1Control2
 - __qt__               -- old Blink1Control1 Qt app
 - __mac__              -- Mac OS X details and old Blink1Control0 app
   - scripts      -- command-line scripts to do cool things
-- __windows__          -- Windows details and old Blink1Control0 app
-  - Blink1Lib     -- .NET library wrapping blink1-lib
-  - ManagedBlink1 -- 100% .NET library
+- __windows__          -- Windows and .NET details and old Blink1Control0 app
+  - Blink1Lib     -- .NET library wrapping blink1-lib 
+  - ManagedBlink1 -- 100% .NET library, supercedd by [Sleddog.Blink1](https://github.com/SleddogSoftwareDevelopment/blink1)
   - scripts  -- Windows command-line scripts to do cool things
 - __linux__            -- Linux details and scripts
   - contrib__    -- contributed Linux scripts

@@ -4,3 +4,6 @@
 [submodule "qt/third-party/fervor"]
 	path = qt/third-party/fervor
 	url = https://github.com/todbot/fervor.git
+[submodule "openwrt/blink1-tool"]
+	path = openwrt/blink1-tool
+	url = https://github.com/todbot/blink1-tool
