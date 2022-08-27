@@ -182,9 +182,19 @@ Delete a pattern
 
 
 --------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
-Data Inputs!
-============
+> ## NOTE: 
+> 
+> Data Input (Event Rules) are no longer accessible via the REST API for security reasons
+> 
+> The below is included as a historical note
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+
+
+## Data Inputs
 
 Add an URL watching input
 -------------------------
