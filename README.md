@@ -58,17 +58,19 @@ https://github.com/todbot/Blink1Control2
 
 ## blink1-tool ##
 
-`blink1-tool` is a C-based command-line for script-writers, programmers and hackers. It lives in the repo: https://github.com/todbot/blink1-tool 
+`blink1-tool` is a C-based command-line for script-writers, programmers and hackers. It lives in the [blink1-tool repo]( https://github.com/todbot/blink1-tool):
 
 The repo contains several useful tools:
 
 - **blink1-tool** -- command-line program for use in your own scripts
-- **blink1-tiny-server** -- simple RESET JSON API server for controlling blink(1)s
+- **blink1-tiny-server** -- simple RESTish JSON API server for controlling blink(1)s
 - **blink1control-tool** -- control blink(1) through Blink1Controll app as if with blink1-tool
 
 --- 
 
-## What is in this repo ##
+--- 
+
+## What is in *this* repo ##
 
 Most code in this repo is **deprecated** but kept around for historical interest.
 
@@ -95,7 +97,7 @@ Most code in this repo is **deprecated** but kept around for historical interest
 Useful docs
 -------------
 
-- [blink1-tool](https://github.com/todbot/blink1-tool/#commmand-line-options-for-blink1-tool)
+- [blink1-tool usage](https://github.com/todbot/blink1-tool/#commmand-line-options-for-blink1-tool)
 - [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
 - [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 
