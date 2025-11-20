@@ -204,7 +204,7 @@ Base URL: `http://localhost:8934/blink1`
  
 ### Color Patterns ###
 
-* `/blink1/patterns`
+* `/blink1/patterns` or `/blink1/pattern/`
 -- List saved color patterns
 
 * `/blink1/pattern/add`

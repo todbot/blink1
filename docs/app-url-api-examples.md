@@ -114,6 +114,7 @@ And create "policeflash" = "alternate between red & blue, every second, repeat f
 
 List color patterns
 -------------------
+Can use `/blink1/pattern` or `/blink1/patterns` endpoint.
 
     $ curl 'http://localhost:8934/blink1/pattern' 
     {
