@@ -204,7 +204,7 @@ Base URL: `http://localhost:8934/blink1`
  
 ### Color Patterns ###
 
-* `/blink1/patterns` or `/blink1/pattern/`
+* `/blink1/patterns` or `/blink1/pattern`
 -- List saved color patterns
 
 * `/blink1/pattern/add`
@@ -379,16 +379,19 @@ __Response:__
     }
 
 
-`/blink1/patterns`
+`/blink1/patterns` or `/blink1/pattern`
 ----------------
 __Description:__
-List saved color patterns
+List saved color patterns. 
+Either `/blink1/patterns` or `/blink1/pattern` works.
 
 __Query args:__ -none-
 
 __Example:__
 
 `http://localhost:8934/blink1/pattern/`
+
+`http://localhost:8934/blink1/patterns/`
 
 __Response:__ 
 
