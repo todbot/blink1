@@ -17,7 +17,7 @@ The official repositories for blink(1) software are:
 | repository | description |
 | ---------- | ----------- |
 | [Blink1Control2](https://github.com/todbot/Blink1Control2) | Graphical app for Mac / Windows / Linux |
-| [blink1-tool](https://github.com/todbot/blink1-tool) | Command-line tools & C-library for all platforms |
+| [blink1-tool](https://github.com/todbot/blink1-tool) | Command-line tool, simple API server, and C-library for all platforms |
 | [blink1-python](https://github.com/todbot/blink1-python) | Python library |
 | [node-blink1](https://github.com/sandeepmistry/node-blink1) | Node.js library |
 | [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
@@ -58,17 +58,19 @@ https://github.com/todbot/Blink1Control2
 
 ## blink1-tool ##
 
-`blink1-tool` is a C-based command-line for script-writers, programmers and hackers. It lives in the repo: https://github.com/todbot/blink1-tool
+`blink1-tool` is a C-based command-line for script-writers, programmers and hackers. It lives in the repo: https://github.com/todbot/blink1-tool 
 
-- **blink1-tool** -- command-line program for use in your own scripts.
-  - Download for:
-[Mac OSX](https://github.com/todbot/blink1-tool/releases) /
-[Windows](https://github.com/todbot/blink1-tool/releases) /
-[Linux](https://github.com/todbot/blink1-tool/releases) /
-[RaspberryP)](https://github.com/todbot/blink1-tool/releases)
+The repo contains several useful tools:
 
+- **blink1-tool** -- command-line program for use in your own scripts
+- **blink1-tiny-server** -- simple RESET JSON API server for controlling blink(1)s
+- **blink1control-tool** -- control blink(1) through Blink1Controll app as if with blink1-tool
+
+--- 
 
 ## What is in this repo ##
+
+Most code in this repo is **deprecated** but kept around for historical interest.
 
 - __docs__             -- Documentation of APIs and tips & tricks
 - __java__             -- Java / Processing library info
@@ -90,10 +92,10 @@ https://github.com/todbot/Blink1Control2
 - __hardware__         -- all hardware-related info (firmware & schematic & enclosure)
 
 
-Some docs that might be useful
-------------------------------
+Useful docs
+-------------
 
-- [blink1-tool](https://github.com/todbot/blink1/blob/master/docs/blink1-tool.md)
+- [blink1-tool](https://github.com/todbot/blink1-tool/#commmand-line-options-for-blink1-tool)
 - [app-url-api-examples](https://github.com/todbot/blink1/blob/master/docs/app-url-api-examples.md)
 - [app-url-api](https://github.com/todbot/blink1/blob/master/docs/app-url-api.md)
 

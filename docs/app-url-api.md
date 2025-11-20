@@ -1,11 +1,13 @@
  
 URL API for blink(1) Applications
 =================================
-version 1.0 -- 20220105 -- Tod Kurt
+version 1.1 -- 20251118 -- Tod Kurt
 
-The application that controls a blink(1) device is comprised of a GUI 
+The Blink1Control application that controls a blink(1) device is comprised of a GUI 
 containing an embedded webserver.  The embedded webserver has this API
-to let you control blink(1) devices via HTTP REST API.
+to let you control blink(1) devices via HTTP REST API.  There is also
+the [`blink1-tiny-server`](https://github.com/todbot/blink1-tool/) with an
+API that tries to match.
 
 The ~~strikeout text~~ are API endpoints that existed in the original app
 but not in the current app, mostly for security reasons.
@@ -32,7 +34,6 @@ There is a user-defined mapping of input source to color pattern.
 A color pattern is a named list of RGB colors and times between colors.
 A color pattern can also specify an optional number of repeats to perform.
 These colors are scheduled and sent to blink(1) based on the given timing.
-There are multiple color patterns that can play on a blink(1) simultaneously.
 
 <s>
  
@@ -416,11 +417,19 @@ __Query args:__
 * `pname` -- name of color pattern to add
 * `pattern` -- color pattern definition in string format
     
-    format: "repeats,color1,color1time,color2,color2time,..."
+    pattern format: "repeats,color1,color1time,ledn1,color2,color2time,ledn2,..."
+    
+    where: 
+    
+    - "repeats" is how many times to run the pattern, 0 = forever
+    - "colorN" is a hex string version of a color, e.g. "#FF0033"
+    - "colorNtime" is the time in seconds to get to that color, e.g. 1.3
+    - "lednN" is which LED on the blink(1) to target: 0=all, 1=top, 2=bottom
+        
 
 __Example:__
 
-`http://localhost:8934/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0000,1.0,%23000000,1.0`
+`http://localhost:8934/blink1/pattern/add?pname=blink3_red&pattern=3,%23FF0033,1.3,0,%23000000,1.0,0`
 
 __Response:__ Standard JSON 'status' response
 

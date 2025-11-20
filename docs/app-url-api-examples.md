@@ -1,4 +1,4 @@
-Examples of the blink(1) application URL API
+Examples of the blink(1) JSON API
 ============================================
 
 Below is a series of command-line "curl" commands you can use to 
@@ -80,11 +80,11 @@ Add some color patterns
 
 Let's create "blink3green" = "blink green 3 times, 1.5 secs on, 0.5 secs off".
 
-    $ curl 'http://localhost:8934/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,%23000000,0.5'
+    $ curl 'http://localhost:8934/blink1/pattern/add?pname=blink3green&pattern=3,%2300ff00,1.5,0,%23000000,0.5,0'
     {
       "pattern": {
         "name": "blink3green",
-        "pattern": "3,#00FF00,1.5,#000000,0.5",
+        "pattern": "3,#00FF00,1.5,0,#000000,0.5,0",
         "playcount": 0,
         "playing": false,
         "playpos": 0
@@ -95,11 +95,11 @@ Let's create "blink3green" = "blink green 3 times, 1.5 secs on, 0.5 secs off".
 
 And create "policeflash" = "alternate between red & blue, every second, repeat forever".
 
-    $ curl 'http://localhost:8934/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,%230000ff,0.5'
+    $ curl 'http://localhost:8934/blink1/pattern/add?pname=policeflash&pattern=0,%23ff0000,0.5,0,%230000ff,0.5,0'
     {
       "pattern": {
         "name": "policeflash",
-        "pattern": "0,#FF0000,0.5,#0000FF,0.5",
+        "pattern": "0,#FF0000,0.5,0,#0000FF,0.5,0",
         "playcount": 0,
         "playedColor": "#000000",
         "playing": false,
@@ -120,7 +120,7 @@ List color patterns
       "patterns": [
         {
           "name": "blink3green",
-          "pattern": "3,#00FF00,1.5,#000000,0.5",
+          "pattern": "3,#00FF00,1.5,0,#000000,0.5,0",
           "playcount": 0,
           "playedColor": "#000000",
           "playing": false,
@@ -129,7 +129,7 @@ List color patterns
         },
         {
           "name": "policeflash",
-          "pattern": "0,#FF0000,0.5,#0000FF,0.5",
+          "pattern": "0,#FF0000,0.5,0,#0000FF,0.5,0",
           "playcount": 0,
           "playedColor": "#000000",
           "playing": false,
@@ -179,130 +179,6 @@ Delete a pattern
 
 - Deleted patterns are stopped.
 - Can use "/blink1/pattern/delall" to remove all patterns
-
-
---------------------------------------------------------------------------
---------------------------------------------------------------------------
-
-> ## NOTE: 
-> 
-> Data Input (Event Rules) are no longer accessible via the REST API for security reasons
-> 
-> The below is included as a historical note
-
---------------------------------------------------------------------------
---------------------------------------------------------------------------
-
-
-## Data Inputs
-
-Add an URL watching input
--------------------------
-
-Start watching URL "http://todbot.com/tst/color.txt".
-I'll call it "mycolorfile".
-
-    $ curl 'http://localhost:8934/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt'
-    {
-      "input": {
-        "arg1": "http://todbot.com/tst/color.txt",
-        "iname": "mycolorfile",
-        "lastVal": "#9970FF",
-        "type": "url"
-      },
-      "status": "input url"
-    }
-
-- Parsed input is returned in array called "input".
-- On a bad URL, "lastVal" is set to "bad url".
-- For this URL, data returned is an RGB hex color code, sent to blink(1) 
-- Other URLs can receive pattern names.
-- "iname" can be any user-desirable string.
-- Input watching happens once on add.
-- Input watching continue on next update cycle (every 30 seconds).
-
-
-Do a test watch of a hex RGB URL input
----------------------------------------
-
-    $ curl 'http://localhost:8934/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt&test=true'
-    {
-      "input": {
-        "arg1": "http://todbot.com/tst/color.txt",
-        "iname": "mycolorfile",
-        "lastVal": "#9970FF",
-        "type": "url"
-      },
-      "status": "input url"
-    }
-
-- A test watch of an input does not add it to the input scheduler
-
-
-Do a test watch of a color pattern URL input
---------------------------------------------
-
-Watch JSON URL "http://todbot.com/tst/pattern.txt" for "pattern" entry:
-
-    $ curl 'http://localhost:8934/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt&test=on'
-    {
-      "input": {
-        "arg1": "http://todbot.com/tst/pattern.txt",
-        "iname": "mypattern",
-        "lastVal": "policeflash",
-        "type": "url"
-      },
-      "status": "input url"
-    }
-
-- "lastVal" is a pattern for this URL.
-
-
-List all inputs
----------------
-
-First let's add a view inputs, same as before:
-
-    $ curl 'http://localhost:8934/blink1/input/url?iname=mycolorfile&arg1=http://todbot.com/tst/color.txt' 
-    $ curl 'http://localhost:8934/blink1/input/url?iname=mypattern&arg1=http://todbot.com/tst/pattern.txt'
-
-Now look at the list:
-
-    $ curl 'http://localhost:8934/blink1/inputs'
-    {
-      "enabled": true,
-      "inputs": [
-        {
-          "arg1": "http://todbot.com/tst/color.txt",
-          "iname": "mycolorfile",
-          "lastVal": "#9970FF",
-          "type": "url"
-        },
-        {
-          "arg1": "http://todbot.com/tst/pattern.txt",
-          "iname": "mypattern",
-          "lastVal": "policeflash",
-          "type": "url"
-        }
-      ],
-      "status": "input results"
-    }
-
-- Inputs are returned in "inputs" array.
-- Inputs will have a "lastVal" 
-- Use "enabled=false" queryarg to turn off running of all inputs
-- URL and IFTTT inputs was fetched every 30 seconds
-
-
-Delete the input
-----------------
-
-    $ curl 'http://localhost:8934/blink1/input/del?iname=mycolorfile'
-    {
-      "status": "input 'mycolorfile' removed"
-    }
-
-- can use "/blink1/input/delall" to remove all inputs at once
 
 
 
