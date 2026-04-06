@@ -12,7 +12,7 @@ websites or typing any commands." - Get a blink(1) at https://buy.thingm.com/
 
 More technically, blink(1) is a Smart LED controller with built-in USB firmware. blink(1) has a huge range of support from the Linux kernel to Node.js.
 
-The official repositories for blink(1) software are:
+The officially supported repositories for blink(1) software are:
 
 | repository | description |
 | ---------- | ----------- |
@@ -22,12 +22,22 @@ The official repositories for blink(1) software are:
 | [node-blink1](https://github.com/sandeepmistry/node-blink1) | Node.js library |
 | [blink1-java](https://github.com/todbot/blink1-java) | Java and Processing library |
 | [blinkrs](https://github.com/dadleyy/blinkrs) | Rust library |
+| [go-blink1](https://github.com/todbot/go-blink1) | Go library |
 | [blink1-android](https://github.com/todbot/blink1-android) | Android library |
 | [blink1-webhid](https://github.com/todbot/blink1-webhid) | WebHID demos for blink(1) |
 | [blink1mk3](https://github.com/todbot/blink1mk3) | Hardware/firmware design for blink(1) mk3 |
 | [blink1](https://github.com/todbot/blink1) | Hardware/firmware design, misc docs & notes (this repo) |
 
-See below for descriptions of each, including APIs for languages not mentioned.
+
+Other instructive examples: 
+
+| repository | description |
+| ---------- | ----------- |
+| [electron-blink1-toy](https://github.com/todbot/electron-blink1-toy/) | Simplest possible Electron app for controlling blink(1) |
+| [tauri-blink1-toy](https://github.com/todbot/tauri-blink1-toy/) | Simplest possible Tauri/Rust app for controlling blink(1) |
+
+
+See each project for details, including APIs for languages not mentioned.
 
 This repo used to house all blink(1)-related code, but is now a clearinghouse and links to official and supported blink(1) repositories.
 
